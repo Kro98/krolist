@@ -3,13 +3,13 @@ import {
   Home, 
   Package, 
   Settings, 
-  Tag, 
   Heart,
   Gift,
   PlusCircle,
   Megaphone
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import {
   Sidebar,
@@ -24,16 +24,15 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Products", url: "/products", icon: Package },
-  { title: "Categories", url: "/categories", icon: Tag },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "nav.dashboard", url: "/", icon: Home },
+  { title: "nav.products", url: "/products", icon: Package },
+  { title: "nav.analytics", url: "/analytics", icon: BarChart3 },
 ];
 
 const otherItems = [
-  { title: "Promo Codes", url: "/promo-codes", icon: Gift },
-  { title: "Support Dev", url: "/donation", icon: Heart },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "nav.promoCodes", url: "/promo-codes", icon: Gift },
+  { title: "nav.donation", url: "/donation", icon: Heart },
+  { title: "nav.settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -41,22 +40,23 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const { t, language } = useLanguage();
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-primary text-primary-foreground font-medium" : "hover:bg-accent";
+    isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
-      <SidebarContent>
+    <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-sidebar border-sidebar-border`} collapsible="icon">
+      <SidebarContent className="bg-sidebar">
         {/* Dev Announcement Section */}
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2 mb-2">
-            <Megaphone className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Dev Update</span>
+            <Megaphone className="h-4 w-4 text-sidebar-primary" />
+            <span className="text-sm font-medium text-sidebar-foreground">Dev Update</span>
           </div>
           {!collapsed && (
-            <div className="text-xs text-muted-foreground bg-primary/10 p-2 rounded">
+            <div className="text-xs text-sidebar-foreground/70 bg-sidebar-primary/10 p-2 rounded">
               Welcome to PriceTracker! More features coming soon.
             </div>
           )}
@@ -67,13 +67,13 @@ export function AppSidebar() {
           <NavLink to="/add-product">
             <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white py-2 px-4 rounded-lg hover:shadow-hover transition-all duration-200">
               <PlusCircle className="h-4 w-4" />
-              {!collapsed && <span className="font-medium">Add Product</span>}
+              {!collapsed && <span className="font-medium">{t('nav.addProduct')}</span>}
             </div>
           </NavLink>
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -81,7 +81,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.title)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -91,7 +91,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Other</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">Other</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {otherItems.map((item) => (
@@ -99,7 +99,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls}>
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.title)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

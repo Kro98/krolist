@@ -1,167 +1,227 @@
-import { useState } from "react";
-import { ProductCard } from "@/components/ProductCard";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Plus, Package } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ProductCard } from "@/components/ProductCard";
+import { Package, Plus, TrendingDown, TrendingUp, Eye } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { NavLink } from "react-router-dom";
+import heroImage from "@/assets/hero-image.jpg";
 
-// Sample data
-const sampleProducts = [
+const mockProducts = [
   {
     id: "1",
-    title: "Apple iPhone 15 Pro Max 256GB Natural Titanium",
-    price: 1199.99,
-    previousPrice: 1299.99,
+    title: "iPhone 15 Pro",
+    price: 899,
+    previousPrice: 999,
     currency: "$",
-    imageUrl: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=300&h=300&fit=crop",
-    url: "https://apple.com/iphone-15-pro",
-    store: "Apple Store",
+    imageUrl: "https://images.unsplash.com/photo-1696446702061-95bd7bbe7449?w=300&h=300&fit=crop",
+    url: "https://apple.com/iphone",
+    store: "Amazon",
     category: "Electronics",
     lastUpdated: "2 hours ago",
     priceHistory: [
-      { date: "2024-01-01", price: 1299.99 },
-      { date: "2024-01-02", price: 1289.99 },
-      { date: "2024-01-03", price: 1279.99 },
-      { date: "2024-01-04", price: 1249.99 },
-      { date: "2024-01-05", price: 1229.99 },
-      { date: "2024-01-06", price: 1209.99 },
-      { date: "2024-01-07", price: 1199.99 },
+      { date: "2024-01-01", price: 999 },
+      { date: "2024-01-02", price: 949 },
+      { date: "2024-01-03", price: 925 },
+      { date: "2024-01-04", price: 899 }
     ]
   },
   {
     id: "2",
-    title: "Sony WH-1000XM5 Wireless Noise Canceling Headphones",
-    price: 349.99,
-    previousPrice: 329.99,
+    title: "Sony WH-1000XM5",
+    image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=300&h=300&fit=crop",
+    currentPrice: 349,
+    originalPrice: 349,
     currency: "$",
-    imageUrl: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300&h=300&fit=crop",
-    url: "https://sony.com/headphones",
-    store: "Best Buy",
-    category: "Audio",
-    lastUpdated: "1 hour ago",
-    priceHistory: [
-      { date: "2024-01-01", price: 329.99 },
-      { date: "2024-01-02", price: 334.99 },
-      { date: "2024-01-03", price: 339.99 },
-      { date: "2024-01-04", price: 344.99 },
-      { date: "2024-01-05", price: 349.99 },
-      { date: "2024-01-06", price: 349.99 },
-      { date: "2024-01-07", price: 349.99 },
-    ]
+    store: "Best Buy", 
+    category: "Electronics",
+    priceHistory: [349, 349, 349, 349],
+    lastUpdated: "1 day ago"
   },
   {
-    id: "3",
-    title: "MacBook Air 13-inch with M3 chip - 8GB RAM, 256GB SSD",
-    price: 1099.99,
-    previousPrice: 1199.99,
+    id: "3", 
+    title: "MacBook Air M3",
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=300&fit=crop",
+    currentPrice: 1199,
+    originalPrice: 1299,
     currency: "$",
-    imageUrl: "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&h=300&fit=crop",
-    url: "https://apple.com/macbook-air",
+    store: "Apple Store",
+    category: "Electronics", 
+    priceHistory: [1299, 1249, 1225, 1199],
+    lastUpdated: "5 hours ago"
+  }
+];
+
+const stats = [
+  {
+    title: "dashboard.totalProducts",
+    value: "24",
+    change: "+3",
+    icon: Package,
+    color: "text-primary"
+  },
+  {
+    title: "dashboard.priceDrops",
+    value: "8", 
+    change: "+2",
+    icon: TrendingDown,
+    color: "text-price-decrease"
+  },
+  {
+    title: "dashboard.priceIncreases",
+    value: "3",
+    change: "+1", 
+    icon: TrendingUp,
+    color: "text-price-increase"
+  },
+  {
+    title: "dashboard.watching",
+    value: "156",
+    change: "+12",
+    icon: Eye,
+    color: "text-muted-foreground"
+  },
+];
+
+const recentAlerts = [
+  {
+    product: "iPhone 15 Pro",
     store: "Amazon",
-    category: "Computers",
-    lastUpdated: "30 minutes ago",
-    priceHistory: [
-      { date: "2024-01-01", price: 1199.99 },
-      { date: "2024-01-02", price: 1189.99 },
-      { date: "2024-01-03", price: 1179.99 },
-      { date: "2024-01-04", price: 1149.99 },
-      { date: "2024-01-05", price: 1129.99 },
-      { date: "2024-01-06", price: 1109.99 },
-      { date: "2024-01-07", price: 1099.99 },
-    ]
+    oldPrice: 999,
+    newPrice: 899,
+    currency: "$",
+    type: "decrease"
+  },
+  {
+    product: "Sony WH-1000XM5",
+    store: "Best Buy",
+    oldPrice: 349,
+    newPrice: 379,
+    currency: "$",
+    type: "increase"
+  },
+  {
+    product: "MacBook Air M3",
+    store: "Apple Store",
+    oldPrice: 1299,
+    newPrice: 1199,
+    currency: "$",
+    type: "decrease"
   },
 ];
 
 export default function Products() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("recent");
-  const [filterBy, setFilterBy] = useState("all");
-
-  const filteredProducts = sampleProducts.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.store.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (filterBy === "all") return matchesSearch;
-    if (filterBy === "price-drop") return matchesSearch && product.price < product.previousPrice;
-    if (filterBy === "price-increase") return matchesSearch && product.price > product.previousPrice;
-    
-    return matchesSearch;
-  });
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Your Products</h1>
-          <p className="text-muted-foreground">Track and manage your product watchlist</p>
-        </div>
-        <Link to="/add-product">
-          <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
-        </Link>
-      </div>
-
-      {/* Filters and Search */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products, stores, or categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Most Recent</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="name">Name A-Z</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterBy} onValueChange={setFilterBy}>
-            <SelectTrigger className="w-40">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Products</SelectItem>
-              <SelectItem value="price-drop">Price Drops</SelectItem>
-              <SelectItem value="price-increase">Price Increases</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden rounded-lg bg-gradient-primary">
+        <img
+          src={heroImage}
+          alt="Price tracking dashboard"
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
+        <div className="relative p-8 text-white">
+          <h1 className="text-3xl font-bold mb-2">{t('dashboard.welcome')}</h1>
+          <p className="text-lg opacity-90">
+            {t('dashboard.subtitle')}
+          </p>
         </div>
       </div>
 
-      {/* Products Grid */}
-      <div className="grid gap-4">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <div className="text-center py-12">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No products found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm ? "Try adjusting your search terms" : "Start by adding your first product to track"}
-            </p>
-            <Link to="/add-product">
-              <Button>Add Your First Product</Button>
-            </Link>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => (
+          <Card key={stat.title} className="shadow-card hover:shadow-hover transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t(stat.title)}
+              </CardTitle>
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-price-decrease">{stat.change}</span> from last week
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Recent Alerts */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>{t('dashboard.recentAlerts')}</CardTitle>
+          <CardDescription>{t('dashboard.latestChanges')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentAlerts.map((alert, index) => (
+              <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-gradient-card border">
+                <div className="flex-1">
+                  <h4 className="font-medium">{alert.product}</h4>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {alert.store}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground line-through">
+                      {alert.currency}{alert.oldPrice}
+                    </span>
+                    <span className={`font-bold ${
+                      alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'
+                    }`}>
+                      {alert.currency}{alert.newPrice}
+                    </span>
+                  </div>
+                  <div className={`flex items-center gap-1 text-sm ${
+                    alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'
+                  }`}>
+                    {alert.type === 'decrease' ? (
+                      <TrendingDown className="h-4 w-4" />
+                    ) : (
+                      <TrendingUp className="h-4 w-4" />
+                    )}
+                    <span>
+                      {alert.currency}{Math.abs(alert.newPrice - alert.oldPrice)} 
+                      ({((Math.abs(alert.newPrice - alert.oldPrice) / alert.oldPrice) * 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
+
+      {/* Products List */}
+      {mockProducts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>{t('products.noProducts')}</CardTitle>
+            <CardDescription>{t('products.startTracking')}</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <NavLink to="/add-product">
+              <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('nav.addProduct')}
+              </Button>
+            </NavLink>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

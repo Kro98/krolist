@@ -8,11 +8,12 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Save, Globe, Bell, Palette, User } from "lucide-react";
+import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Settings() {
-  const [language, setLanguage] = useState("en");
-  const [currency, setCurrency] = useState("USD");
-  const [theme, setTheme] = useState("light");
+  const { language, currency, setLanguage, setCurrency, t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [priceDropAlerts, setPriceDropAlerts] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(false);
@@ -20,16 +21,16 @@ export default function Settings() {
 
   const handleSave = () => {
     toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated successfully.",
+      title: t('settings.settingsSaved'),
+      description: t('settings.settingsSavedDesc'),
     });
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account preferences and app settings</p>
+        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
+        <p className="text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
 
       <div className="grid gap-6 max-w-4xl">
@@ -38,43 +39,40 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary" />
-              Language & Region
+              {t('settings.languageRegion')}
             </CardTitle>
             <CardDescription>
-              Configure your preferred language and default currency
+              {t('settings.languageDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
+                <Label htmlFor="language">{t('settings.language')}</Label>
+                <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Español</SelectItem>
-                    <SelectItem value="fr">Français</SelectItem>
-                    <SelectItem value="de">Deutsch</SelectItem>
-                    <SelectItem value="ja">日本語</SelectItem>
-                    <SelectItem value="zh">中文</SelectItem>
+                    <SelectItem value="en">{t('language.en')}</SelectItem>
+                    <SelectItem value="ar">{t('language.ar')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="currency">Default Currency</Label>
-                <Select value={currency} onValueChange={setCurrency}>
+                <Label htmlFor="currency">{t('settings.currency')}</Label>
+                <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USD">USD - US Dollar</SelectItem>
-                    <SelectItem value="EUR">EUR - Euro</SelectItem>
-                    <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                    <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
-                    <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
-                    <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                    <SelectItem value="USD">{t('currency.USD')}</SelectItem>
+                    <SelectItem value="EUR">{t('currency.EUR')}</SelectItem>
+                    <SelectItem value="GBP">{t('currency.GBP')}</SelectItem>
+                    <SelectItem value="CAD">{t('currency.CAD')}</SelectItem>
+                    <SelectItem value="JPY">{t('currency.JPY')}</SelectItem>
+                    <SelectItem value="AUD">{t('currency.AUD')}</SelectItem>
+                    <SelectItem value="SAR">{t('currency.SAR')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -87,18 +85,18 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
-              Notifications
+              {t('settings.notifications')}
             </CardTitle>
             <CardDescription>
-              Choose what notifications you want to receive
+              {t('settings.notificationsDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="notifications" className="text-base">Enable Notifications</Label>
+                <Label htmlFor="notifications" className="text-base">{t('settings.enableNotifications')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Receive notifications about price changes and updates
+                  {t('settings.enableNotificationsDesc')}
                 </p>
               </div>
               <Switch
@@ -111,9 +109,9 @@ export default function Settings() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="price-drops" className="text-base">Price Drop Alerts</Label>
+                  <Label htmlFor="price-drops" className="text-base">{t('settings.priceDropAlerts')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Get notified when tracked product prices decrease
+                    {t('settings.priceDropAlertsDesc')}
                   </p>
                 </div>
                 <Switch
@@ -125,9 +123,9 @@ export default function Settings() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="weekly-reports" className="text-base">Weekly Reports</Label>
+                  <Label htmlFor="weekly-reports" className="text-base">{t('settings.weeklyReports')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive weekly summaries of your tracked products
+                    {t('settings.weeklyReportsDesc')}
                   </p>
                 </div>
                 <Switch
@@ -146,23 +144,23 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5 text-primary" />
-              Appearance
+              {t('settings.appearance')}
             </CardTitle>
             <CardDescription>
-              Customize the look and feel of the application
+              {t('settings.appearanceDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="theme">Theme</Label>
+              <Label htmlFor="theme">{t('settings.theme')}</Label>
               <Select value={theme} onValueChange={setTheme}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
+                  <SelectItem value="light">{t('theme.light')}</SelectItem>
+                  <SelectItem value="dark">{t('theme.dark')}</SelectItem>
+                  <SelectItem value="system">{t('theme.system')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -174,16 +172,16 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              Account
+              {t('settings.account')}
             </CardTitle>
             <CardDescription>
-              Manage your account information
+              {t('settings.accountDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('settings.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -193,7 +191,7 @@ export default function Settings() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="name">Display Name</Label>
+                <Label htmlFor="name">{t('settings.displayName')}</Label>
                 <Input
                   id="name"
                   placeholder="Your Name"
@@ -208,7 +206,7 @@ export default function Settings() {
         <div className="flex justify-end">
           <Button onClick={handleSave} className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
             <Save className="h-4 w-4 mr-2" />
-            Save Settings
+            {t('settings.saveSettings')}
           </Button>
         </div>
       </div>
