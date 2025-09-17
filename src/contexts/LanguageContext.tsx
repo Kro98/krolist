@@ -32,6 +32,7 @@ const translations = {
     'dashboard.watching': 'Watching',
     'dashboard.recentAlerts': 'Recent Price Alerts',
     'dashboard.latestChanges': 'Latest price changes on your tracked products',
+    'dashboard.overview': 'Overview',
     
     // Products
     'products.title': 'Your Products',
@@ -39,6 +40,9 @@ const translations = {
     'products.noProducts': 'No products tracked yet',
     'products.startTracking': 'Start tracking products to see them here',
     'products.viewDetails': 'View Details',
+    'products.searchPlaceholder': 'Search products, stores, or categories...',
+    'products.noResults': 'No products found',
+    'products.noResultsDesc': 'Try adjusting your search terms',
     
     // Settings
     'settings.title': 'Settings',
@@ -112,6 +116,7 @@ const translations = {
     'dashboard.watching': 'قيد المتابعة',
     'dashboard.recentAlerts': 'تنبيهات الأسعار الحديثة',
     'dashboard.latestChanges': 'آخر تغييرات الأسعار على منتجاتك المتابعة',
+    'dashboard.overview': 'نظرة عامة',
     
     // Products
     'products.title': 'منتجاتك',
@@ -119,6 +124,9 @@ const translations = {
     'products.noProducts': 'لا توجد منتجات متابعة حتى الآن',
     'products.startTracking': 'ابدأ بمتابعة المنتجات لرؤيتها هنا',
     'products.viewDetails': 'عرض التفاصيل',
+    'products.searchPlaceholder': 'البحث في المنتجات أو المتاجر أو الفئات...',
+    'products.noResults': 'لم يتم العثور على منتجات',
+    'products.noResultsDesc': 'جرب تعديل مصطلحات البحث',
     
     // Settings
     'settings.title': 'الإعدادات',
