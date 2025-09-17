@@ -9,6 +9,7 @@ import { Package, Plus, TrendingDown, TrendingUp, Eye, Search, X } from "lucide-
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
+import { MobileAnalytics } from "@/components/MobileAnalytics";
 import Analytics from "./Analytics";
 
 const mockProducts = [
@@ -384,7 +385,7 @@ export default function Products() {
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-4">
-            <Analytics />
+            <MobileAnalytics />
           </TabsContent>
         </div>
       </Tabs>

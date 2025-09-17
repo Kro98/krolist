@@ -186,7 +186,7 @@ export default function Settings() {
                   id="email"
                   type="email"
                   placeholder="your.email@example.com"
-                  value="user@example.com"
+                  defaultValue="user@example.com"
                   disabled
                 />
               </div>
@@ -195,7 +195,7 @@ export default function Settings() {
                 <Input
                   id="name"
                   placeholder="Your Name"
-                  value="John Doe"
+                  defaultValue="John Doe"
                 />
               </div>
             </div>
