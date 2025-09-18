@@ -96,6 +96,40 @@ const translations = {
     'currency.JPY': 'JPY - Japanese Yen',
     'currency.AUD': 'AUD - Australian Dollar',
     'currency.SAR': 'SAR - Saudi Riyal',
+
+    // Analytics
+    'analytics.trends': 'Price Trends',
+    'analytics.stores': 'Store Performance',
+    'analytics.categories': 'Categories',
+    'analytics.patterns': 'Price Patterns',
+    'analytics.trendsDesc': 'Track price movements over time',
+    'analytics.storesDesc': 'Compare store savings and reliability',
+    'analytics.categoriesDesc': 'Analyze products by category',
+    'analytics.patternsDesc': 'Discover when prices drop most',
+    'analytics.avgSavings': 'Avg Savings',
+    'analytics.reliability': 'Reliability',
+    
+    // UI Controls
+    'ui.fontSize': 'Font Size',
+    'ui.iconSize': 'Icon Size',
+    'ui.display': 'Display',
+    'ui.displayDesc': 'Customize font and icon sizes',
+    'ui.small': 'Small',
+    'ui.medium': 'Medium',
+    'ui.large': 'Large',
+
+    // Shops
+    'shops.shein': 'SHEIN',
+    'shops.noon': 'NOON',
+    'shops.amazon': 'Amazon',
+    'shops.ikea': 'IKEA',
+    'shops.abyat': 'ABYAT',
+    'shops.namshi': 'NAMSHI',
+    'shops.trendyol': 'TRENDYOL',
+    'shops.asos': 'ASOS',
+    'shops.title': 'Shops',
+    
+    'settings.other': 'Other',
   },
   ar: {
     // Navigation
@@ -180,6 +214,40 @@ const translations = {
     'currency.JPY': 'ين ياباني - JPY',
     'currency.AUD': 'دولار أسترالي - AUD',
     'currency.SAR': 'ريال سعودي - SAR',
+
+    // Analytics
+    'analytics.trends': 'اتجاهات الأسعار',
+    'analytics.stores': 'أداء المتاجر',
+    'analytics.categories': 'الفئات',
+    'analytics.patterns': 'أنماط الأسعار',
+    'analytics.trendsDesc': 'تتبع حركات الأسعار عبر الزمن',
+    'analytics.storesDesc': 'مقارنة وفورات وموثوقية المتاجر',
+    'analytics.categoriesDesc': 'تحليل المنتجات حسب الفئة',
+    'analytics.patternsDesc': 'اكتشف متى تنخفض الأسعار أكثر',
+    'analytics.avgSavings': 'متوسط الوفورات',
+    'analytics.reliability': 'الموثوقية',
+    
+    // UI Controls
+    'ui.fontSize': 'حجم الخط',
+    'ui.iconSize': 'حجم الأيقونات',
+    'ui.display': 'العرض',
+    'ui.displayDesc': 'تخصيص أحجام الخط والأيقونات',
+    'ui.small': 'صغير',
+    'ui.medium': 'متوسط',
+    'ui.large': 'كبير',
+
+    // Shops
+    'shops.shein': 'شي إن',
+    'shops.noon': 'نون',
+    'shops.amazon': 'أمازون',
+    'shops.ikea': 'إيكيا',
+    'shops.abyat': 'أبيات',
+    'shops.namshi': 'نمشي',
+    'shops.trendyol': 'تريندي يول',
+    'shops.asos': 'إيسوس',
+    'shops.title': 'المتاجر',
+    
+    'settings.other': 'أخرى',
   }
 };
 

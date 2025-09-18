@@ -25,8 +25,17 @@ import {
 
 const mainItems = [
   { title: "nav.dashboard", url: "/", icon: Home },
-  { title: "nav.products", url: "/products", icon: Package },
-  { title: "nav.analytics", url: "/analytics", icon: BarChart3 },
+];
+
+const shopItems = [
+  { title: "shops.shein", url: "/shop/shein", icon: Package },
+  { title: "shops.noon", url: "/shop/noon", icon: Package },
+  { title: "shops.amazon", url: "/shop/amazon", icon: Package },
+  { title: "shops.ikea", url: "/shop/ikea", icon: Package },
+  { title: "shops.abyat", url: "/shop/abyat", icon: Package },
+  { title: "shops.namshi", url: "/shop/namshi", icon: Package },
+  { title: "shops.trendyol", url: "/shop/trendyol", icon: Package },
+  { title: "shops.asos", url: "/shop/asos", icon: Package },
 ];
 
 const otherItems = [
@@ -36,18 +45,27 @@ const otherItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const { t, language } = useLanguage();
+  
+  const handleNavClick = () => {
+    // Close sidebar on mobile after navigation
+    setOpenMobile(false);
+  };
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-sidebar border-sidebar-border`} collapsible="icon">
+    <Sidebar 
+      className={`${collapsed ? "w-16" : "w-64"} bg-sidebar border-sidebar-border`} 
+      collapsible="icon"
+      side={language === 'ar' ? 'right' : 'left'}
+    >
       <SidebarContent className="bg-sidebar">
         {/* Dev Announcement Section */}
         <div className="p-4 border-b border-sidebar-border">
@@ -64,7 +82,7 @@ export function AppSidebar() {
 
         {/* Add Product Button */}
         <div className="p-4">
-          <NavLink to="/add-product">
+          <NavLink to="/add-product" onClick={handleNavClick}>
             <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white py-2 px-4 rounded-lg hover:shadow-hover transition-all duration-200">
               <PlusCircle className="h-4 w-4" />
               {!collapsed && <span className="font-medium">{t('nav.addProduct')}</span>}
@@ -73,13 +91,13 @@ export function AppSidebar() {
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">Main</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
+                    <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{t(item.title)}</span>}
                     </NavLink>
@@ -91,13 +109,31 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">Other</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('shops.title') || 'Shops'}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {shopItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{t(item.title)}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('settings.other') || 'Other'}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {otherItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavCls}>
+                    <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{t(item.title)}</span>}
                     </NavLink>

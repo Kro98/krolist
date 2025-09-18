@@ -167,6 +167,61 @@ export default function Settings() {
           </CardContent>
         </Card>
 
+        {/* Display Settings */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" />
+              {t('ui.display')}
+            </CardTitle>
+            <CardDescription>
+              {t('ui.displayDesc')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fontSize">{t('ui.fontSize')}</Label>
+                <Select 
+                  value={localStorage.getItem('fontSize') || 'medium'} 
+                  onValueChange={(value) => {
+                    localStorage.setItem('fontSize', value);
+                    window.dispatchEvent(new Event('storage'));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">{t('ui.small')}</SelectItem>
+                    <SelectItem value="medium">{t('ui.medium')}</SelectItem>
+                    <SelectItem value="large">{t('ui.large')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="iconSize">{t('ui.iconSize')}</Label>
+                <Select 
+                  value={localStorage.getItem('iconSize') || 'medium'} 
+                  onValueChange={(value) => {
+                    localStorage.setItem('iconSize', value);
+                    window.dispatchEvent(new Event('storage'));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">{t('ui.small')}</SelectItem>
+                    <SelectItem value="medium">{t('ui.medium')}</SelectItem>
+                    <SelectItem value="large">{t('ui.large')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Account */}
         <Card className="shadow-card">
           <CardHeader>

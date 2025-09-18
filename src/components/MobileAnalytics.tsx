@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { 
   TrendingDown, 
   TrendingUp, 
@@ -38,10 +45,14 @@ const analyticsData = {
     { period: "Last 90 days", increases: 45, decreases: 89, stable: 34 }
   ],
   storePerformance: [
+    { store: "SHEIN", products: 18, avgSavings: 25.4, reliability: 92 },
+    { store: "NOON", products: 15, avgSavings: 18.7, reliability: 96 },
     { store: "Amazon", products: 12, avgSavings: 15.2, reliability: 95 },
-    { store: "Best Buy", products: 8, avgSavings: 12.8, reliability: 89 },
-    { store: "Apple Store", products: 4, avgSavings: 8.5, reliability: 98 },
-    { store: "Walmart", products: 6, avgSavings: 18.3, reliability: 82 }
+    { store: "IKEA", products: 8, avgSavings: 12.3, reliability: 89 },
+    { store: "ABYAT", products: 6, avgSavings: 14.8, reliability: 88 },
+    { store: "NAMSHI", products: 10, avgSavings: 22.1, reliability: 91 },
+    { store: "TRENDYOL", products: 14, avgSavings: 19.6, reliability: 87 },
+    { store: "ASOS", products: 9, avgSavings: 16.9, reliability: 93 }
   ],
   categoryAnalysis: [
     { category: "Electronics", products: 15, avgPrice: 485, savings: 23.4 },
@@ -57,19 +68,56 @@ const analyticsData = {
   ]
 };
 
+// Get font and icon sizes from localStorage
+const getFontSize = () => localStorage.getItem('fontSize') || 'medium';
+const getIconSize = () => localStorage.getItem('iconSize') || 'medium';
+
+// Size mappings
+const fontSizes = {
+  small: 'text-xs',
+  medium: 'text-sm', 
+  large: 'text-base'
+};
+
+const iconSizes = {
+  small: 'h-3 w-3',
+  medium: 'h-4 w-4',
+  large: 'h-5 w-5'
+};
+
 // Compact Analytics Cards for Mobile
-const CompactAnalyticsCard = ({ title, value, change, icon: Icon, color }: any) => (
-  <div className="bg-gradient-card rounded-lg p-3 border">
-    <div className="flex items-center justify-between mb-2">
-      <Icon className={`h-4 w-4 ${color}`} />
-      <span className="text-xs text-muted-foreground">{title}</span>
+const CompactAnalyticsCard = ({ title, value, change, icon: Icon, color }: any) => {
+  const [fontSize, setFontSize] = useState(getFontSize());
+  const [iconSize, setIconSize] = useState(getIconSize());
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setFontSize(getFontSize());
+      setIconSize(getIconSize());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(handleStorageChange, 100);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  return (
+    <div className="bg-gradient-card rounded-lg p-3 border min-h-[80px]">
+      <div className="flex items-center justify-between mb-2">
+        <Icon className={`${iconSizes[iconSize as keyof typeof iconSizes]} ${color}`} />
+        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground`}>{title}</span>
+      </div>
+      <div className={`${fontSize === 'small' ? 'text-base' : fontSize === 'medium' ? 'text-lg' : 'text-xl'} font-bold`}>{value}</div>
+      {change && (
+        <div className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-price-decrease`}>{change}</div>
+      )}
     </div>
-    <div className="text-lg font-bold">{value}</div>
-    {change && (
-      <div className="text-xs text-price-decrease">{change}</div>
-    )}
-  </div>
-);
+  );
+};
 
 // Mini Chart Component for Mobile
 const MiniChart = ({ data, type = "bar" }: { data: any[], type?: "bar" | "progress" }) => {
@@ -289,47 +337,57 @@ export function MobileAnalytics() {
     );
   }
 
-  // Mobile view with window pattern
+  // Mobile view with card swiping pattern
   return (
     <div className="space-y-4">
-      {/* Quick Stats Grid - Mobile */}
-      <div className="grid grid-cols-2 gap-3">
-        {quickStats.map((stat, index) => (
-          <CompactAnalyticsCard key={index} {...stat} />
-        ))}
-      </div>
+      {/* Quick Stats Carousel - Mobile */}
+      <Carousel className="w-full">
+        <CarouselContent className="-ml-2 md:-ml-4">
+          {quickStats.map((stat, index) => (
+            <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/2">
+              <CompactAnalyticsCard {...stat} />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="left-0" />
+        <CarouselNext className="right-0" />
+      </Carousel>
 
-      {/* Analytics Sections - Mobile Window Pattern */}
+      {/* Analytics Sections Carousel - Mobile */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold mb-3">Detailed Analytics</h3>
-        {sections.map((section) => (
-          <Sheet key={section.id}>
-            <SheetTrigger asChild>
-              <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <section.icon className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-sm">{section.title}</h4>
-                        <p className="text-xs text-muted-foreground">{section.description}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  
-                  {/* Mini Preview Chart */}
-                  <div className="h-12">
-                    <MiniChart 
-                      data={section.data} 
-                      type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </SheetTrigger>
+        <h3 className="text-lg font-semibold mb-3">{t('dashboard.overview')}</h3>
+        
+        <Carousel className="w-full">
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {sections.map((section) => (
+              <CarouselItem key={section.id} className="pl-2 md:pl-4 basis-4/5">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <section.icon className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm truncate">{t(`analytics.${section.id}`)}</h4>
+                              <p className="text-xs text-muted-foreground truncate">{t(`analytics.${section.id}Desc`)}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        </div>
+                        
+                        {/* Mini Preview Chart */}
+                        <div className="h-12">
+                          <MiniChart 
+                            data={section.data} 
+                            type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </SheetTrigger>
             
             <SheetContent side="bottom" className="h-[80vh] rounded-t-xl">
               <SheetHeader>
@@ -373,21 +431,27 @@ export function MobileAnalytics() {
                       <Card key={index} className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium">{store.store}</h4>
-                          <Badge variant="secondary">{store.products} products</Badge>
+                          <Badge variant="secondary">{store.products} {t('products.title').toLowerCase()}</Badge>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                          <div>
-                            <span className="text-muted-foreground">Avg Savings:</span>
-                            <span className="ml-2 font-medium text-price-decrease">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground text-sm">{t('analytics.avgSavings')}:</span>
+                            <span className="font-medium text-price-decrease">
                               {store.avgSavings}%
                             </span>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Reliability:</span>
-                            <span className="ml-2 font-medium">{store.reliability}%</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground text-sm">{t('analytics.reliability')}:</span>
+                            <span className="font-medium">{store.reliability}%</span>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span>{t('analytics.reliability')}</span>
+                              <span>{store.reliability}%</span>
+                            </div>
+                            <Progress value={store.reliability} className="h-2" />
                           </div>
                         </div>
-                        <Progress value={store.reliability} className="h-2" />
                       </Card>
                     ))}
                   </div>
@@ -440,12 +504,17 @@ export function MobileAnalytics() {
                       </Card>
                     ))}
                   </div>
-                )}
+                 )}
               </div>
             </SheetContent>
           </Sheet>
-        ))}
-      </div>
-    </div>
-  );
+        </CarouselItem>
+      ))}
+    </CarouselContent>
+    <CarouselPrevious className="left-0" />
+    <CarouselNext className="right-0" />
+  </Carousel>
+</div>
+</div>
+);
 }
