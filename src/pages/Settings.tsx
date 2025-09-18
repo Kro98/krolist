@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Save, Globe, Bell, Palette, User } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { ShopManager } from "@/components/ShopManager";
 
 export default function Settings() {
   const { language, currency, setLanguage, setCurrency, t } = useLanguage();
@@ -221,6 +222,9 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Shop Management */}
+        <ShopManager />
 
         {/* Account */}
         <Card className="shadow-card">

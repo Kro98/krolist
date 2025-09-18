@@ -118,6 +118,14 @@ const translations = {
     'ui.medium': 'Medium',
     'ui.large': 'Large',
 
+    // Shop Management
+    'settings.shopManagement': 'Shop Management',
+    'settings.shopManagementDesc': 'Organize and customize your tracked shops',
+    'settings.addNewShop': 'Add new shop...',
+    'settings.dragToReorder': 'Drag to reorder',
+    'status.active': 'Active',
+    'search.placeholder': 'Search shops...',
+
     // Shops
     'shops.shein': 'SHEIN',
     'shops.noon': 'NOON',
@@ -235,6 +243,14 @@ const translations = {
     'ui.small': 'صغير',
     'ui.medium': 'متوسط',
     'ui.large': 'كبير',
+
+    // Shop Management
+    'settings.shopManagement': 'إدارة المتاجر',
+    'settings.shopManagementDesc': 'تنظيم وتخصيص المتاجر المتتبعة',
+    'settings.addNewShop': 'إضافة متجر جديد...',
+    'settings.dragToReorder': 'اسحب لإعادة الترتيب',
+    'status.active': 'نشط',
+    'search.placeholder': 'البحث في المتاجر...',
 
     // Shops
     'shops.shein': 'شي إن',

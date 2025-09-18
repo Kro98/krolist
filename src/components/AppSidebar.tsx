@@ -8,6 +8,7 @@ import {
   PlusCircle,
   Megaphone
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -27,16 +28,31 @@ const mainItems = [
   { title: "nav.dashboard", url: "/", icon: Home },
 ];
 
-const shopItems = [
-  { title: "shops.shein", url: "/shop/shein", icon: Package },
-  { title: "shops.noon", url: "/shop/noon", icon: Package },
-  { title: "shops.amazon", url: "/shop/amazon", icon: Package },
-  { title: "shops.ikea", url: "/shop/ikea", icon: Package },
-  { title: "shops.abyat", url: "/shop/abyat", icon: Package },
-  { title: "shops.namshi", url: "/shop/namshi", icon: Package },
-  { title: "shops.trendyol", url: "/shop/trendyol", icon: Package },
-  { title: "shops.asos", url: "/shop/asos", icon: Package },
-];
+const getShopItems = () => {
+  const saved = localStorage.getItem('shopOrder');
+  if (saved) {
+    const shopOrder = JSON.parse(saved);
+    return shopOrder
+      .filter((shop: any) => shop.enabled)
+      .map((shop: any) => ({
+        title: `shops.${shop.id}`,
+        url: `/shop/${shop.id}`,
+        icon: Package,
+        name: shop.name
+      }));
+  }
+  
+  return [
+    { title: "shops.shein", url: "/shop/shein", icon: Package },
+    { title: "shops.noon", url: "/shop/noon", icon: Package },
+    { title: "shops.amazon", url: "/shop/amazon", icon: Package },
+    { title: "shops.ikea", url: "/shop/ikea", icon: Package },
+    { title: "shops.abyat", url: "/shop/abyat", icon: Package },
+    { title: "shops.namshi", url: "/shop/namshi", icon: Package },
+    { title: "shops.trendyol", url: "/shop/trendyol", icon: Package },
+    { title: "shops.asos", url: "/shop/asos", icon: Package },
+  ];
+};
 
 const otherItems = [
   { title: "nav.promoCodes", url: "/promo-codes", icon: Gift },
@@ -50,6 +66,19 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const { t, language } = useLanguage();
+  const [shopItems, setShopItems] = useState(getShopItems());
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setShopItems(getShopItems());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
   
   const handleNavClick = () => {
     // Close sidebar on mobile after navigation

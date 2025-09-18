@@ -106,14 +106,14 @@ const CompactAnalyticsCard = ({ title, value, change, icon: Icon, color }: any) 
   }, []);
 
   return (
-    <div className="bg-gradient-card rounded-lg p-3 border min-h-[80px]">
-      <div className="flex items-center justify-between mb-2">
-        <Icon className={`${iconSizes[iconSize as keyof typeof iconSizes]} ${color}`} />
-        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground`}>{title}</span>
+    <div className="bg-gradient-card rounded-lg p-2 border min-h-[70px] w-full">
+      <div className="flex items-center justify-between mb-1">
+        <Icon className={`${iconSizes[iconSize as keyof typeof iconSizes]} ${color} flex-shrink-0`} />
+        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground text-right truncate ml-1`}>{title}</span>
       </div>
-      <div className={`${fontSize === 'small' ? 'text-base' : fontSize === 'medium' ? 'text-lg' : 'text-xl'} font-bold`}>{value}</div>
+      <div className={`${fontSize === 'small' ? 'text-sm' : fontSize === 'medium' ? 'text-base' : 'text-lg'} font-bold truncate`}>{value}</div>
       {change && (
-        <div className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-price-decrease`}>{change}</div>
+        <div className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-price-decrease truncate`}>{change}</div>
       )}
     </div>
   );
@@ -341,53 +341,56 @@ export function MobileAnalytics() {
   return (
     <div className="space-y-4">
       {/* Quick Stats Carousel - Mobile */}
-      <Carousel className="w-full">
-        <CarouselContent className="-ml-2 md:-ml-4">
+      <Carousel className="w-full max-w-full overflow-hidden">
+        <CarouselContent className="-ml-1">
           {quickStats.map((stat, index) => (
-            <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/2">
-              <CompactAnalyticsCard {...stat} />
+            <CarouselItem key={index} className="pl-1 basis-1/2 min-w-0">
+              <div className="p-1">
+                <CompactAnalyticsCard {...stat} />
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-0" />
-        <CarouselNext className="right-0" />
+        <CarouselPrevious className="left-2 h-6 w-6" />
+        <CarouselNext className="right-2 h-6 w-6" />
       </Carousel>
 
       {/* Analytics Sections Carousel - Mobile */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold mb-3">{t('dashboard.overview')}</h3>
         
-        <Carousel className="w-full">
-          <CarouselContent className="-ml-2 md:-ml-4">
+        <Carousel className="w-full max-w-full overflow-hidden">
+          <CarouselContent className="-ml-1">
             {sections.map((section) => (
-              <CarouselItem key={section.id} className="pl-2 md:pl-4 basis-4/5">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <section.icon className="h-4 w-4 text-primary" />
+              <CarouselItem key={section.id} className="pl-1 basis-[85%] min-w-0">
+                <div className="p-1">
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full min-h-[120px]">
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <div className="p-1.5 rounded-lg bg-primary/10 flex-shrink-0">
+                                <section.icon className="h-3 w-3 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium text-xs truncate">{t(`analytics.${section.id}`)}</h4>
+                                <p className="text-[10px] text-muted-foreground truncate">{t(`analytics.${section.id}Desc`)}</p>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-sm truncate">{t(`analytics.${section.id}`)}</h4>
-                              <p className="text-xs text-muted-foreground truncate">{t(`analytics.${section.id}Desc`)}</p>
-                            </div>
+                            <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0 ml-1" />
                           </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        </div>
-                        
-                        {/* Mini Preview Chart */}
-                        <div className="h-12">
-                          <MiniChart 
-                            data={section.data} 
-                            type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </SheetTrigger>
+                          
+                          {/* Mini Preview Chart */}
+                          <div className="h-10">
+                            <MiniChart 
+                              data={section.data} 
+                              type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </SheetTrigger>
             
             <SheetContent side="bottom" className="h-[80vh] rounded-t-xl">
               <SheetHeader>
@@ -425,37 +428,39 @@ export function MobileAnalytics() {
                   </div>
                 )}
                 
-                {section.id === "stores" && (
-                  <div className="space-y-3">
-                    {analyticsData.storePerformance.map((store, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-medium">{store.store}</h4>
-                          <Badge variant="secondary">{store.products} {t('products.title').toLowerCase()}</Badge>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground text-sm">{t('analytics.avgSavings')}:</span>
-                            <span className="font-medium text-price-decrease">
-                              {store.avgSavings}%
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground text-sm">{t('analytics.reliability')}:</span>
-                            <span className="font-medium">{store.reliability}%</span>
-                          </div>
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span>{t('analytics.reliability')}</span>
-                              <span>{store.reliability}%</span>
-                            </div>
-                            <Progress value={store.reliability} className="h-2" />
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                 {section.id === "stores" && (
+                   <div className="space-y-3">
+                     {analyticsData.storePerformance.map((store, index) => (
+                       <Card key={index} className="p-3">
+                         <div className="space-y-3">
+                           <div className="flex items-center justify-between">
+                             <h4 className="font-medium text-sm">{store.store}</h4>
+                             <Badge variant="secondary" className="text-xs">{store.products} products</Badge>
+                           </div>
+                           <div className="grid grid-cols-2 gap-3 text-sm">
+                             <div className="space-y-1">
+                               <span className="text-muted-foreground text-xs">{t('analytics.avgSavings')}:</span>
+                               <div className="font-medium text-price-decrease text-sm">
+                                 {store.avgSavings}%
+                               </div>
+                             </div>
+                             <div className="space-y-1">
+                               <span className="text-muted-foreground text-xs">{t('analytics.reliability')}:</span>
+                               <div className="font-medium text-sm">{store.reliability}%</div>
+                             </div>
+                           </div>
+                           <div className="space-y-1">
+                             <div className="flex justify-between text-xs">
+                               <span>{t('analytics.reliability')}</span>
+                               <span>{store.reliability}%</span>
+                             </div>
+                             <Progress value={store.reliability} className="h-1.5" />
+                           </div>
+                         </div>
+                       </Card>
+                     ))}
+                   </div>
+                 )}
                 
                 {section.id === "categories" && (
                   <div className="space-y-3">
@@ -505,16 +510,17 @@ export function MobileAnalytics() {
                     ))}
                   </div>
                  )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </CarouselItem>
-      ))}
-    </CarouselContent>
-    <CarouselPrevious className="left-0" />
-    <CarouselNext className="right-0" />
-  </Carousel>
-</div>
-</div>
-);
+               </div>
+             </SheetContent>
+           </Sheet>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-2 h-6 w-6" />
+          <CarouselNext className="right-2 h-6 w-6" />
+        </Carousel>
+      </div>
+    </div>
+  );
 }
