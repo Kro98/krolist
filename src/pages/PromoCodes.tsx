@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw } from "lucide-react";
+import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -137,6 +137,20 @@ export default function PromoCodes() {
     ));
   };
 
+  const toggleUsed = (id: string) => {
+    setPromoCodes(promoCodes.map(p => 
+      p.id === id ? { ...p, used: !p.used } : p
+    ));
+  };
+
+  const handleDeletePromo = (id: string) => {
+    setPromoCodes(promoCodes.filter(p => p.id !== id));
+    toast({
+      title: "Promo Code Deleted",
+      description: "The promo code has been removed from your collection",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -208,14 +222,18 @@ export default function PromoCodes() {
                     <Badge variant={promo.used && !promo.reusable ? "secondary" : "default"}>
                       {promo.store}
                     </Badge>
-                    {promo.reusable && (
+                    {promo.reusable ? (
                       <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                         <RotateCcw className="h-3 w-3 mr-1" />
                         Reusable
                       </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
+                        One-time use
+                      </Badge>
                     )}
-                    {promo.used && !promo.reusable && (
-                      <Badge variant="outline" className="text-muted-foreground">
+                    {promo.used && (
+                      <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
                         Used
                       </Badge>
                     )}
@@ -227,13 +245,21 @@ export default function PromoCodes() {
                     Expires: {new Date(promo.expires).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleEditPromo(promo)}
                   >
                     <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleUsed(promo.id)}
+                    className={promo.used ? "bg-success/10 hover:bg-success/20" : ""}
+                  >
+                    {promo.used ? "Mark Unused" : "Mark Used"}
                   </Button>
                   <Button
                     size="sm"
@@ -249,6 +275,14 @@ export default function PromoCodes() {
                     onClick={() => window.open(`https://${promo.store.toLowerCase()}.com`, '_blank')}
                   >
                     <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDeletePromo(promo.id)}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

@@ -359,28 +359,28 @@ export function MobileAnalytics() {
       <div className="space-y-3 px-1">
         <h3 className="text-lg font-semibold mb-3">{t('dashboard.overview')}</h3>
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {sections.map((section) => (
             <Sheet key={section.id}>
               <SheetTrigger asChild>
-                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full bg-gradient-card">
-                  <CardContent className="p-3">
-                    <div className="flex flex-col items-center text-center space-y-2">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        <section.icon className="h-4 w-4 text-primary" />
+                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full bg-gradient-card min-h-[140px]">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
+                    <div className="flex flex-col items-center text-center space-y-3">
+                      <div className="p-2.5 rounded-full bg-primary/10">
+                        <section.icon className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <h4 className="font-medium text-xs leading-tight">{t(`analytics.${section.id}`)}</h4>
-                        <p className="text-[10px] text-muted-foreground leading-tight mt-1">{t(`analytics.${section.id}Desc`)}</p>
+                      <div className="space-y-1">
+                        <h4 className="font-semibold text-sm leading-tight">{t(`analytics.${section.id}`)}</h4>
+                        <p className="text-xs text-muted-foreground leading-tight overflow-hidden">{t(`analytics.${section.id}Desc`)}</p>
                       </div>
-                      
-                      {/* Compact Chart */}
-                      <div className="h-6 w-full">
-                        <MiniChart 
-                          data={section.data} 
-                          type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
-                        />
-                      </div>
+                    </div>
+                    
+                    {/* Compact Chart */}
+                    <div className="h-8 w-full mt-3">
+                      <MiniChart 
+                        data={section.data} 
+                        type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
+                      />
                     </div>
                   </CardContent>
                 </Card>
