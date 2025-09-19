@@ -28,6 +28,20 @@ const mainItems = [
   { title: "nav.dashboard", url: "/", icon: Home },
 ];
 
+const getShopAffiliateUrl = (shopId: string) => {
+  const affiliateUrls: Record<string, string> = {
+    shein: "https://s.click.aliexpress.com/e/_DCyUaLh",
+    noon: "https://www.noon.com/?ref=affiliate123",
+    amazon: "https://amazon.com/ref=affiliate123",
+    ikea: "https://www.ikea.com/ref/affiliate123",
+    abyat: "https://www.abyat.com/?ref=affiliate123",
+    namshi: "https://www.namshi.com/?ref=affiliate123", 
+    trendyol: "https://www.trendyol.com/?ref=affiliate123",
+    asos: "https://www.asos.com/?ref=affiliate123"
+  };
+  return affiliateUrls[shopId] || `https://${shopId}.com`;
+};
+
 const getShopItems = () => {
   const saved = localStorage.getItem('shopOrder');
   if (saved) {
@@ -36,21 +50,22 @@ const getShopItems = () => {
       .filter((shop: any) => shop.enabled)
       .map((shop: any) => ({
         title: `shops.${shop.id}`,
-        url: `/shop/${shop.id}`,
+        url: getShopAffiliateUrl(shop.id),
         icon: Package,
-        name: shop.name
+        name: shop.name,
+        isExternal: true
       }));
   }
   
   return [
-    { title: "shops.shein", url: "/shop/shein", icon: Package },
-    { title: "shops.noon", url: "/shop/noon", icon: Package },
-    { title: "shops.amazon", url: "/shop/amazon", icon: Package },
-    { title: "shops.ikea", url: "/shop/ikea", icon: Package },
-    { title: "shops.abyat", url: "/shop/abyat", icon: Package },
-    { title: "shops.namshi", url: "/shop/namshi", icon: Package },
-    { title: "shops.trendyol", url: "/shop/trendyol", icon: Package },
-    { title: "shops.asos", url: "/shop/asos", icon: Package },
+    { title: "shops.shein", url: getShopAffiliateUrl("shein"), icon: Package, isExternal: true },
+    { title: "shops.noon", url: getShopAffiliateUrl("noon"), icon: Package, isExternal: true },
+    { title: "shops.amazon", url: getShopAffiliateUrl("amazon"), icon: Package, isExternal: true },
+    { title: "shops.ikea", url: getShopAffiliateUrl("ikea"), icon: Package, isExternal: true },
+    { title: "shops.abyat", url: getShopAffiliateUrl("abyat"), icon: Package, isExternal: true },
+    { title: "shops.namshi", url: getShopAffiliateUrl("namshi"), icon: Package, isExternal: true },
+    { title: "shops.trendyol", url: getShopAffiliateUrl("trendyol"), icon: Package, isExternal: true },
+    { title: "shops.asos", url: getShopAffiliateUrl("asos"), icon: Package, isExternal: true },
   ];
 };
 
@@ -83,6 +98,13 @@ export function AppSidebar() {
   const handleNavClick = () => {
     // Close sidebar on mobile after navigation
     setOpenMobile(false);
+  };
+
+  const handleShopClick = (url: string, isExternal?: boolean) => {
+    setOpenMobile(false);
+    if (isExternal) {
+      window.open(url, '_blank');
+    }
   };
 
   const isActive = (path: string) => currentPath === path;
@@ -144,10 +166,20 @@ export function AppSidebar() {
               {shopItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{t(item.title)}</span>}
-                    </NavLink>
+                    {item.isExternal ? (
+                      <button 
+                        onClick={() => handleShopClick(item.url, true)}
+                        className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span>{t(item.title)}</span>}
+                      </button>
+                    ) : (
+                      <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span>{t(item.title)}</span>}
+                      </NavLink>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

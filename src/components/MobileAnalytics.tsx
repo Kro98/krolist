@@ -106,10 +106,10 @@ const CompactAnalyticsCard = ({ title, value, change, icon: Icon, color }: any) 
   }, []);
 
   return (
-    <div className="bg-gradient-card rounded-lg p-2 border min-h-[70px] w-full">
+    <div className="bg-gradient-card rounded-lg p-2 border min-h-[70px] w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between mb-1">
         <Icon className={`${iconSizes[iconSize as keyof typeof iconSizes]} ${color} flex-shrink-0`} />
-        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground text-right truncate ml-1`}>{title}</span>
+        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground text-right truncate ml-1 max-w-[60%]`}>{title}</span>
       </div>
       <div className={`${fontSize === 'small' ? 'text-sm' : fontSize === 'medium' ? 'text-base' : 'text-lg'} font-bold truncate`}>{value}</div>
       {change && (
@@ -341,30 +341,29 @@ export function MobileAnalytics() {
   return (
     <div className="space-y-4">
       {/* Quick Stats Carousel - Mobile */}
-      <Carousel className="w-full max-w-full overflow-hidden">
-        <CarouselContent className="-ml-1">
-          {quickStats.map((stat, index) => (
-            <CarouselItem key={index} className="pl-1 basis-1/2 min-w-0">
-              <div className="p-1">
+      <div className="px-1">
+        <Carousel className="w-full max-w-full">
+          <CarouselContent className="-ml-2">
+            {quickStats.map((stat, index) => (
+              <CarouselItem key={index} className="pl-2 basis-1/2">
                 <CompactAnalyticsCard {...stat} />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="left-2 h-6 w-6" />
-        <CarouselNext className="right-2 h-6 w-6" />
-      </Carousel>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-1 h-6 w-6" />
+          <CarouselNext className="right-1 h-6 w-6" />
+        </Carousel>
+      </div>
 
       {/* Analytics Sections Carousel - Mobile */}
-      <div className="space-y-3">
+      <div className="space-y-3 px-1">
         <h3 className="text-lg font-semibold mb-3">{t('dashboard.overview')}</h3>
         
-        <Carousel className="w-full max-w-full overflow-hidden">
-          <CarouselContent className="-ml-1">
+        <Carousel className="w-full max-w-full">
+          <CarouselContent className="-ml-2">
             {sections.map((section) => (
-              <CarouselItem key={section.id} className="pl-1 basis-[85%] min-w-0">
-                <div className="p-1">
-                  <Sheet>
+              <CarouselItem key={section.id} className="pl-2 basis-[80%]">
+                <Sheet>
                     <SheetTrigger asChild>
                       <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full min-h-[120px]">
                         <CardContent className="p-3">
@@ -512,13 +511,12 @@ export function MobileAnalytics() {
                  )}
                </div>
              </SheetContent>
-           </Sheet>
-                </div>
+            </Sheet>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-2 h-6 w-6" />
-          <CarouselNext className="right-2 h-6 w-6" />
+          <CarouselPrevious className="left-1 h-6 w-6" />
+          <CarouselNext className="right-1 h-6 w-6" />
         </Carousel>
       </div>
     </div>

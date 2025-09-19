@@ -32,6 +32,30 @@ const samplePromoCodes = [
     expires: "2024-03-01",
     used: false
   },
+  {
+    id: "4",
+    code: "PALESTINE",
+    store: "NOON",
+    description: "Special discount code for NOON",
+    expires: "2025-12-31",
+    used: false
+  },
+  {
+    id: "5",
+    code: "CLEARANCE",
+    store: "NOON",
+    description: "Special discount code for NOON",
+    expires: "2025-12-31",
+    used: false
+  },
+  {
+    id: "6",
+    code: "KINGDOM",
+    store: "NOON",
+    description: "Special discount code for NOON",
+    expires: "2025-12-31",
+    used: false
+  },
 ];
 
 export default function PromoCodes() {
