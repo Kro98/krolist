@@ -355,41 +355,39 @@ export function MobileAnalytics() {
         </Carousel>
       </div>
 
-      {/* Analytics Sections Carousel - Mobile */}
+      {/* Analytics Sections - Mobile */}
       <div className="space-y-3 px-1">
         <h3 className="text-lg font-semibold mb-3">{t('dashboard.overview')}</h3>
         
-        <Carousel className="w-full max-w-full">
-          <CarouselContent className="-ml-2">
-            {sections.map((section) => (
-              <CarouselItem key={section.id} className="pl-2 basis-[80%]">
-                <Sheet>
-                    <SheetTrigger asChild>
-                      <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer h-full min-h-[120px]">
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <div className="p-1.5 rounded-lg bg-primary/10 flex-shrink-0">
-                                <section.icon className="h-3 w-3 text-primary" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-xs truncate">{t(`analytics.${section.id}`)}</h4>
-                                <p className="text-[10px] text-muted-foreground truncate">{t(`analytics.${section.id}Desc`)}</p>
-                              </div>
-                            </div>
-                            <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0 ml-1" />
-                          </div>
-                          
-                          {/* Mini Preview Chart */}
-                          <div className="h-10">
-                            <MiniChart 
-                              data={section.data} 
-                              type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </SheetTrigger>
+        <div className="space-y-3">
+          {sections.map((section) => (
+            <Sheet key={section.id}>
+              <SheetTrigger asChild>
+                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer w-full">
+                  <CardContent className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="p-1.5 rounded-lg bg-primary/10 flex-shrink-0">
+                          <section.icon className="h-3 w-3 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{t(`analytics.${section.id}`)}</h4>
+                          <p className="text-xs text-muted-foreground truncate">{t(`analytics.${section.id}Desc`)}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0 ml-1" />
+                    </div>
+                    
+                    {/* Mini Preview Chart */}
+                    <div className="h-10">
+                      <MiniChart 
+                        data={section.data} 
+                        type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </SheetTrigger>
             
             <SheetContent side="bottom" className="h-[80vh] rounded-t-xl">
               <SheetHeader>
@@ -512,12 +510,8 @@ export function MobileAnalytics() {
                </div>
              </SheetContent>
             </Sheet>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="left-1 h-6 w-6" />
-          <CarouselNext className="right-1 h-6 w-6" />
-        </Carousel>
+          ))}
+        </div>
       </div>
     </div>
   );
