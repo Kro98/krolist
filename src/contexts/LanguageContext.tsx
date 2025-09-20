@@ -117,6 +117,9 @@ const translations = {
     'ui.small': 'Small',
     'ui.medium': 'Medium',
     'ui.large': 'Large',
+    
+    // Events
+    'events.upcoming': 'Upcoming Events',
 
     // Shop Management
     'settings.shopManagement': 'Shop Management',
