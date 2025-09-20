@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { UpcomingEvents } from "@/components/UpcomingEvents";
 
 const analyticsData = {
   overview: {
@@ -211,20 +210,6 @@ export function MobileAnalytics() {
       icon: Store,
       data: analyticsData.storePerformance,
       description: "Compare store savings and reliability"
-    },
-    {
-      id: "categories",
-      title: "Categories",
-      icon: Tag,
-      data: analyticsData.categoryAnalysis,
-      description: "Analyze products by category"
-    },
-    {
-      id: "patterns",
-      title: "Price Patterns",
-      icon: Clock,
-      data: analyticsData.pricePatterns,
-      description: "Discover when prices drop most"
     }
   ];
 
@@ -341,11 +326,6 @@ export function MobileAnalytics() {
   // Mobile view with card swiping pattern
   return (
     <div className="space-y-4">
-      {/* Upcoming Events Notice */}
-      <div className="px-1">
-        <UpcomingEvents />
-      </div>
-
       {/* Quick Stats Carousel - Mobile */}
       <div className="px-1">
         <Carousel className="w-full max-w-full">
@@ -361,31 +341,31 @@ export function MobileAnalytics() {
         </Carousel>
       </div>
 
-      {/* Analytics Sections - Mobile */}
-      <div className="space-y-4 px-1">
-        <h3 className="text-lg font-semibold mb-4">{t('dashboard.overview')}</h3>
+      {/* Analytics Sections - Mobile - Compact Grid */}
+      <div className="space-y-3 px-1">
+        <h3 className="text-lg font-semibold mb-3">{t('dashboard.overview')}</h3>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-3">
           {sections.map((section) => (
             <Sheet key={section.id}>
               <SheetTrigger asChild>
-                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer bg-gradient-card min-h-[160px] w-full">
-                  <CardContent className="p-5 h-full flex flex-col justify-between">
-                    <div className="flex flex-col items-center text-center space-y-4">
-                      <div className="p-3 rounded-full bg-primary/10">
-                        <section.icon className="h-6 w-6 text-primary" />
+                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer bg-gradient-card min-h-[120px] w-full">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        <section.icon className="h-5 w-5 text-primary" />
                       </div>
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-base leading-tight">{t(`analytics.${section.id}`)}</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{t(`analytics.${section.id}Desc`)}</p>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-sm leading-tight">{t(`analytics.${section.id}`)}</h4>
+                        <p className="text-xs text-muted-foreground leading-tight">{t(`analytics.${section.id}Desc`)}</p>
                       </div>
                     </div>
                     
                     {/* Compact Chart */}
-                    <div className="h-10 w-full mt-4">
+                    <div className="h-8 w-full mt-2">
                       <MiniChart 
                         data={section.data} 
-                        type={section.id === "stores" || section.id === "categories" ? "progress" : "bar"} 
+                        type={section.id === "stores" ? "progress" : "bar"} 
                       />
                     </div>
                   </CardContent>

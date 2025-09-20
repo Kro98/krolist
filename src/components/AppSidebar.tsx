@@ -6,7 +6,8 @@ import {
   Heart,
   Gift,
   PlusCircle,
-  Megaphone
+  Megaphone,
+  Calendar
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -70,6 +71,7 @@ const getShopItems = () => {
 };
 
 const otherItems = [
+  { title: "nav.events", url: "/events", icon: Calendar },
   { title: "nav.promoCodes", url: "/promo-codes", icon: Gift },
   { title: "nav.donation", url: "/donation", icon: Heart },
   { title: "nav.settings", url: "/settings", icon: Settings },
