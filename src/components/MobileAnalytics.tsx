@@ -106,12 +106,12 @@ const CompactAnalyticsCard = ({ title, value, change, icon: Icon, color }: any) 
   }, []);
 
   return (
-    <div className="bg-gradient-card rounded-lg p-2 border min-h-[70px] w-full max-w-full overflow-hidden">
-      <div className="flex items-center justify-between mb-1">
+    <div className="bg-gradient-card rounded-lg p-3 border min-h-[100px] w-full max-w-full overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
         <Icon className={`${iconSizes[iconSize as keyof typeof iconSizes]} ${color} flex-shrink-0`} />
-        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground text-right truncate ml-1 max-w-[60%]`}>{title}</span>
+        <span className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-muted-foreground text-right truncate ml-2 max-w-[65%]`}>{title}</span>
       </div>
-      <div className={`${fontSize === 'small' ? 'text-sm' : fontSize === 'medium' ? 'text-base' : 'text-lg'} font-bold truncate`}>{value}</div>
+      <div className={`${fontSize === 'small' ? 'text-base' : fontSize === 'medium' ? 'text-lg' : 'text-xl'} font-bold truncate mb-1`}>{value}</div>
       {change && (
         <div className={`${fontSizes[fontSize as keyof typeof fontSizes]} text-price-decrease truncate`}>{change}</div>
       )}
@@ -123,14 +123,14 @@ const CompactAnalyticsCard = ({ title, value, change, icon: Icon, color }: any) 
 const MiniChart = ({ data, type = "bar" }: { data: any[], type?: "bar" | "progress" }) => {
   if (type === "progress") {
     return (
-      <div className="space-y-2">
-        {data.map((item, index) => (
+      <div className="space-y-1.5">
+        {data.slice(0, 3).map((item, index) => (
           <div key={index} className="space-y-1">
             <div className="flex justify-between text-xs">
-              <span className="truncate">{item.store || item.category}</span>
-              <span className="text-price-decrease">{item.avgSavings || item.savings}%</span>
+              <span className="truncate text-xs font-medium">{item.store || item.category}</span>
+              <span className="text-price-decrease text-xs font-semibold">{item.avgSavings || item.savings}%</span>
             </div>
-            <Progress value={item.reliability || item.avgSavings || item.savings} className="h-1.5" />
+            <Progress value={item.reliability || item.avgSavings || item.savings} className="h-1" />
           </div>
         ))}
       </div>
@@ -138,19 +138,19 @@ const MiniChart = ({ data, type = "bar" }: { data: any[], type?: "bar" | "progre
   }
 
   return (
-    <div className="flex items-end justify-between h-16 gap-1">
-      {data.slice(0, 4).map((item, index) => (
+    <div className="flex items-end justify-between h-10 gap-1">
+      {data.slice(0, 3).map((item, index) => (
         <div key={index} className="flex flex-col items-center flex-1">
           <div 
             className="w-full bg-primary/20 rounded-t"
             style={{ 
-              height: `${Math.max((item.decreases || item.savings || 20) / 2, 8)}px` 
+              height: `${Math.max((item.decreases || item.savings || 20) / 3, 6)}px` 
             }}
           >
             <div 
               className="w-full bg-primary rounded-t"
               style={{ 
-                height: `${Math.max((item.decreases || item.savings || 20) / 3, 4)}px` 
+                height: `${Math.max((item.decreases || item.savings || 20) / 4, 3)}px` 
               }}
             />
           </div>
@@ -325,13 +325,13 @@ export function MobileAnalytics() {
 
   // Mobile view with card swiping pattern
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-sm mx-auto px-2">
       {/* Quick Stats Carousel - Mobile */}
       <div className="px-1">
         <Carousel className="w-full max-w-full">
-          <CarouselContent className="-ml-2">
+          <CarouselContent className="-ml-1">
             {quickStats.map((stat, index) => (
-              <CarouselItem key={index} className="pl-2 basis-1/2">
+              <CarouselItem key={index} className="pl-1 basis-1/2">
                 <CompactAnalyticsCard {...stat} />
               </CarouselItem>
             ))}
@@ -349,20 +349,20 @@ export function MobileAnalytics() {
           {sections.map((section) => (
             <Sheet key={section.id}>
               <SheetTrigger asChild>
-                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer bg-gradient-card min-h-[120px] w-full">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        <section.icon className="h-5 w-5 text-primary" />
+                <Card className="shadow-card hover:shadow-hover transition-all duration-200 cursor-pointer bg-gradient-card min-h-[140px] w-full max-w-full">
+                  <CardContent className="p-3 h-full flex flex-col justify-between">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded-full bg-primary/10 flex-shrink-0">
+                        <section.icon className="h-4 w-4 text-primary" />
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-sm leading-tight">{t(`analytics.${section.id}`)}</h4>
-                        <p className="text-xs text-muted-foreground leading-tight">{t(`analytics.${section.id}Desc`)}</p>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-xs leading-tight truncate">{t(`analytics.${section.id}`)}</h4>
+                        <p className="text-xs text-muted-foreground leading-tight truncate">{t(`analytics.${section.id}Desc`)}</p>
                       </div>
                     </div>
                     
                     {/* Compact Chart */}
-                    <div className="h-8 w-full mt-2">
+                    <div className="h-12 w-full">
                       <MiniChart 
                         data={section.data} 
                         type={section.id === "stores" ? "progress" : "bar"} 
