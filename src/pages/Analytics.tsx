@@ -56,7 +56,7 @@ export default function Analytics() {
   const { t, getCurrencySymbol } = useLanguage();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 md:px-6">
       <div>
         <h1 className="text-3xl font-bold">{t('nav.analytics')}</h1>
         <p className="text-muted-foreground">Deep insights into your price tracking performance</p>
