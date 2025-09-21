@@ -188,7 +188,7 @@ export default function Products() {
     <div className="space-y-4 md:space-y-6">
       {/* Main Navigation Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex flex-col space-y-4 w-[90%] mx-auto">
+        <div className="flex flex-col space-y-4">
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto md:mx-0">
             <TabsTrigger value="products" className="text-xs md:text-sm">
               {t('nav.products')}
