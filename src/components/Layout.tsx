@@ -25,7 +25,7 @@ export function Layout({ children }: LayoutProps) {
             </header>
             
             {/* Main Content */}
-            <main className="flex-1 p-6 overflow-auto w-full max-w-[80%] md:max-w-none mx-auto">
+            <main className="flex-1 p-6 overflow-auto">
               {children}
             </main>
           </div>
