@@ -25,20 +25,21 @@ interface Event {
 }
 
 const defaultEvents: Event[] = [
+  // Global Shopping Events
   {
-    id: "saudi-national-day",
-    name: "Saudi National Day",
-    date: new Date("2024-09-23"),
-    description: "Special discounts across Saudi retailers",
-    location: "Saudi Arabia",
-    type: "discount",
-    emoji: "🇸🇦",
+    id: "amazon-prime-day",
+    name: "Amazon Prime Day",
+    date: new Date("2025-07-15"),
+    description: "Exclusive deals for Prime members",
+    location: "Worldwide",
+    type: "sale",
+    emoji: "📦",
     isUserCreated: false
   },
   {
     id: "black-friday",
     name: "Black Friday",
-    date: new Date("2024-11-29"),
+    date: new Date("2025-11-28"),
     description: "Worldwide mega sales event",
     location: "Worldwide",
     type: "sale",
@@ -48,11 +49,143 @@ const defaultEvents: Event[] = [
   {
     id: "cyber-monday",
     name: "Cyber Monday",
-    date: new Date("2024-12-02"),
+    date: new Date("2025-12-01"),
     description: "Online shopping deals",
     location: "Worldwide",
     type: "sale",
     emoji: "💻",
+    isUserCreated: false
+  },
+  {
+    id: "singles-day",
+    name: "Single's Day",
+    date: new Date("2025-11-11"),
+    description: "World's largest shopping event from China",
+    location: "Worldwide",
+    type: "sale",
+    emoji: "🎊",
+    isUserCreated: false
+  },
+  {
+    id: "boxing-day",
+    name: "Boxing Day",
+    date: new Date("2025-12-26"),
+    description: "Post-Christmas sales and clearance",
+    location: "UK, Canada, Australia",
+    type: "sale",
+    emoji: "🎁",
+    isUserCreated: false
+  },
+  {
+    id: "back-to-school",
+    name: "Back-to-School Sales",
+    date: new Date("2025-08-15"),
+    description: "Educational supplies and electronics discounts",
+    location: "Worldwide",
+    type: "sale",
+    emoji: "🎒",
+    isUserCreated: false
+  },
+  {
+    id: "eofy-sales",
+    name: "End of Financial Year (EOFY) Sales",
+    date: new Date("2025-06-30"),
+    description: "Major discounts before new financial year",
+    location: "Australia",
+    type: "sale",
+    emoji: "💰",
+    isUserCreated: false
+  },
+  // Holiday Shopping Events
+  {
+    id: "fathers-day",
+    name: "Father's Day Sales",
+    date: new Date("2025-06-15"),
+    description: "Special offers for Father's Day gifts",
+    location: "Worldwide",
+    type: "holiday",
+    emoji: "👨‍👧‍👦",
+    isUserCreated: false
+  },
+  {
+    id: "valentines-day",
+    name: "Valentine's Day Sales",
+    date: new Date("2025-02-14"),
+    description: "Romantic gifts and special discounts",
+    location: "Worldwide",
+    type: "holiday",
+    emoji: "💝",
+    isUserCreated: false
+  },
+  {
+    id: "christmas-sales",
+    name: "Christmas Sales",
+    date: new Date("2025-12-25"),
+    description: "Holiday shopping deals and gift discounts",
+    location: "Worldwide",
+    type: "holiday",
+    emoji: "🎄",
+    isUserCreated: false
+  },
+  // National Days and Regional Events
+  {
+    id: "saudi-national-day",
+    name: "Saudi National Day",
+    date: new Date("2025-09-23"),
+    description: "Special discounts across Saudi retailers",
+    location: "Saudi Arabia",
+    type: "discount",
+    emoji: "🇸🇦",
+    isUserCreated: false
+  },
+  {
+    id: "uae-national-day",
+    name: "UAE National Day",
+    date: new Date("2025-12-02"),
+    description: "Celebrate UAE with special offers",
+    location: "UAE",
+    type: "discount",
+    emoji: "🇦🇪",
+    isUserCreated: false
+  },
+  {
+    id: "independence-day-us",
+    name: "Independence Day Sales",
+    date: new Date("2025-07-04"),
+    description: "4th of July shopping deals",
+    location: "United States",
+    type: "discount",
+    emoji: "🇺🇸",
+    isUserCreated: false
+  },
+  {
+    id: "canada-day",
+    name: "Canada Day Sales",
+    date: new Date("2025-07-01"),
+    description: "Canadian retailers celebrate with discounts",
+    location: "Canada",
+    type: "discount",
+    emoji: "🇨🇦",
+    isUserCreated: false
+  },
+  {
+    id: "diwali-sales",
+    name: "Diwali Festival Sales",
+    date: new Date("2025-10-20"),
+    description: "Festival of lights shopping extravaganza",
+    location: "India, Worldwide",
+    type: "holiday",
+    emoji: "🪔",
+    isUserCreated: false
+  },
+  {
+    id: "golden-week",
+    name: "Golden Week Sales",
+    date: new Date("2025-04-29"),
+    description: "Japanese holiday shopping period",
+    location: "Japan",
+    type: "holiday",
+    emoji: "🌸",
     isUserCreated: false
   }
 ];
@@ -147,7 +280,7 @@ export default function Events() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('nav.events')}</h1>
-          <p className="text-muted-foreground">Track important shopping events and create your own reminders</p>
+          <p className="text-muted-foreground">Plan purchases around global sales, holidays, and national days. Create custom events for personalized shopping strategy.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
