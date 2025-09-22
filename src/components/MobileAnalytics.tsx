@@ -364,7 +364,7 @@ export function MobileAnalytics() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-xs leading-tight truncate">{t(`analytics.${section.id}`)}</h4>
-                        <p className="text-xs text-muted-foreground leading-tight truncate">{t(`analytics.${section.id}Desc`)}</p>
+                        <p className="text-xs text-muted-foreground leading-tight truncate py-[50px]">{t(`analytics.${section.id}Desc`)}</p>
                       </div>
                     </div>
                     

@@ -25,7 +25,7 @@ export function Layout({
             </header>
             
             {/* Main Content */}
-            <main className="flex-1 p-6 overflow-auto mx-0 px-0">
+            <main className="flex-1 p-6 overflow-auto mx-0 px-0 py-[20px]">
               {children}
             </main>
           </div>
