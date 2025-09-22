@@ -4,16 +4,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
-
 interface LayoutProps {
   children: React.ReactNode;
 }
-
-export function Layout({ children }: LayoutProps) {
-  const { language } = useLanguage();
-  
-  return (
-    <TooltipProvider>
+export function Layout({
+  children
+}: LayoutProps) {
+  const {
+    language
+  } = useLanguage();
+  return <TooltipProvider>
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
           <AppSidebar />
@@ -25,7 +25,7 @@ export function Layout({ children }: LayoutProps) {
             </header>
             
             {/* Main Content */}
-            <main className="flex-1 p-6 overflow-auto">
+            <main className="flex-1 p-6 overflow-auto px-[10px]">
               {children}
             </main>
           </div>
@@ -33,6 +33,5 @@ export function Layout({ children }: LayoutProps) {
         <Toaster />
         <Sonner />
       </SidebarProvider>
-    </TooltipProvider>
-  );
+    </TooltipProvider>;
 }
