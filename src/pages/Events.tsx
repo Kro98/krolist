@@ -244,7 +244,7 @@ export default function Events() {
   };
   const eventsForSelectedDate = selectedDate ? events.filter(event => format(event.date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')) : [];
   const upcomingEvents = events.filter(event => event.date >= new Date()).sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
-  return <div className="space-y-6">
+  return <div className="space-y-6 px-[10px]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('nav.events')}</h1>
@@ -333,8 +333,8 @@ export default function Events() {
               Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-[2px]">
-            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{
+          <CardContent>
+            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} className="rounded-md border p-3 pointer-events-auto" modifiers={{
             hasEvent: events.map(event => event.date)
           }} modifiersStyles={{
             hasEvent: {
@@ -342,7 +342,7 @@ export default function Events() {
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 'bold'
             }
-          }} className="rounded-md border p-3 pointer-events-auto px-[40px] mx-0" />
+          }} />
           </CardContent>
         </Card>
 
@@ -381,7 +381,7 @@ export default function Events() {
                         </Button>
                       </div>}
                   </div>
-                </div>) : <p className="text-muted-foreground text-sm text-center py-[20px] mx-0 px-[50px]">
+                </div>) : <p className="text-muted-foreground text-sm text-center py-4">
                 No events for this date
               </p>}
           </CardContent>
