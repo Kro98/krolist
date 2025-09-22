@@ -17,7 +17,7 @@ export function Layout({
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
           <AppSidebar />
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col px-0 mx-0">
             {/* Header */}
             <header className="h-16 flex items-center border-b border-border bg-card px-4">
               <SidebarTrigger className="mr-4" />
@@ -25,7 +25,7 @@ export function Layout({
             </header>
             
             {/* Main Content */}
-            <main className="flex-1 p-6 overflow-auto px-[10px]">
+            <main className="flex-1 p-6 overflow-auto mx-0 px-0">
               {children}
             </main>
           </div>

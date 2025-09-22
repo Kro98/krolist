@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
 interface Product {
   id: string;
   title: string;
@@ -16,42 +15,36 @@ interface Product {
   store: string;
   category: string;
   lastUpdated: string;
-  priceHistory: Array<{ date: string; price: number }>;
+  priceHistory: Array<{
+    date: string;
+    price: number;
+  }>;
 }
-
 interface ProductCardProps {
   product: Product;
 }
-
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({
+  product
+}: ProductCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
   const priceChange = product.price - product.previousPrice;
-  const priceChangePercent = ((priceChange / product.previousPrice) * 100).toFixed(1);
-  
+  const priceChangePercent = (priceChange / product.previousPrice * 100).toFixed(1);
   const getPriceChangeIcon = () => {
     if (priceChange > 0) return <TrendingUp className="h-4 w-4 text-price-increase" />;
     if (priceChange < 0) return <TrendingDown className="h-4 w-4 text-price-decrease" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
-
   const getPriceChangeColor = () => {
     if (priceChange > 0) return "text-price-increase";
     if (priceChange < 0) return "text-price-decrease";
     return "text-muted-foreground";
   };
-
-  return (
-    <Card className="bg-gradient-card shadow-card hover:shadow-hover transition-all duration-300 group">
-      <CardContent className="p-4">
+  return <Card className="bg-gradient-card shadow-card hover:shadow-hover transition-all duration-300 group">
+      <CardContent className="p-4 px-[16px] my-0">
         <div className="flex gap-4">
           {/* Product Image */}
           <div className="flex-shrink-0">
-            <img
-              src={product.imageUrl}
-              alt={product.title}
-              className="w-20 h-20 object-cover rounded-lg"
-            />
+            <img src={product.imageUrl} alt={product.title} className="w-20 h-20 object-cover rounded-lg" />
           </div>
           
           {/* Product Info */}
@@ -60,12 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
                 {product.title}
               </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.open(product.url, '_blank')}
-                className="flex-shrink-0 ml-2"
-              >
+              <Button variant="ghost" size="sm" onClick={() => window.open(product.url, '_blank')} className="flex-shrink-0 ml-2">
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </div>
@@ -104,11 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Expandable Details */}
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
           <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full mt-3 justify-center"
-              size="sm"
-            >
+            <Button variant="ghost" className="w-full mt-3 justify-center" size="sm">
               <MoreHorizontal className="h-4 w-4 mr-2" />
               {isExpanded ? 'Show Less' : 'Show Details'}
             </Button>
@@ -119,15 +103,9 @@ export function ProductCard({ product }: ProductCardProps) {
               <div className="bg-muted/50 rounded-lg p-4">
                 <h4 className="text-sm font-medium mb-2">Price History</h4>
                 <div className="h-24 flex items-end gap-1">
-                  {product.priceHistory.slice(-7).map((point, index) => (
-                    <div
-                      key={index}
-                      className="bg-primary flex-1 rounded-sm opacity-70"
-                      style={{
-                        height: `${(point.price / Math.max(...product.priceHistory.map(p => p.price))) * 100}%`
-                      }}
-                    />
-                  ))}
+                  {product.priceHistory.slice(-7).map((point, index) => <div key={index} className="bg-primary flex-1 rounded-sm opacity-70" style={{
+                  height: `${point.price / Math.max(...product.priceHistory.map(p => p.price)) * 100}%`
+                }} />)}
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-2">
                   <span>7 days ago</span>
@@ -154,6 +132,5 @@ export function ProductCard({ product }: ProductCardProps) {
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
