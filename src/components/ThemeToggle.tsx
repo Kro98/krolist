@@ -20,28 +20,6 @@ export function ThemeToggle() {
         }
       `}
     >
-      {/* Sun */}
-      <div 
-        className={`
-          absolute top-[20%] left-[20%] w-10 h-10 
-          bg-[#ffd700] rounded-full
-          shadow-[0_0_20px_#ffd700]
-          transition-all duration-1000 ease-in-out
-          ${isDark ? 'opacity-0 -translate-y-8' : 'opacity-100 translate-y-0'}
-        `}
-      />
-
-      {/* Moon */}
-      <div 
-        className={`
-          absolute top-[20%] left-[20%] w-10 h-10 
-          bg-[#f0f0f0] rounded-full
-          shadow-[inset_-10px_-10px_0px_#c0c0c0]
-          transition-all duration-1000 ease-in-out
-          ${isDark ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
-        `}
-      />
-
       {/* Stars */}
       <div 
         className={`
