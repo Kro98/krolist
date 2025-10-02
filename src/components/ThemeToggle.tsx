@@ -1,20 +1,15 @@
 import { useTheme } from "@/contexts/ThemeContext";
 
 export function ThemeToggle() {
-  const { actualTheme, setTheme } = useTheme();
+  const { actualTheme } = useTheme();
   const isDark = actualTheme === 'dark';
-
-  const handleToggle = () => {
-    setTheme(isDark ? 'light' : 'dark');
-  };
 
   return (
     <div 
-      onClick={handleToggle}
       className={`
-        relative w-40 h-20 rounded-full cursor-pointer overflow-hidden
+        relative w-40 h-20 rounded-full overflow-hidden
         transition-all duration-1000 ease-in-out
-        ${isDark 
+        ${isDark
           ? 'bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]' 
           : 'bg-gradient-to-b from-[#87ceeb] to-[#4682b4]'
         }
@@ -105,6 +100,17 @@ export function ThemeToggle() {
           bg-gradient-to-t from-[rgba(0,255,150,0.4)] to-transparent
           transition-opacity duration-1000 ease-in-out
           ${isDark ? 'opacity-100' : 'opacity-0'}
+        `}
+      />
+
+      {/* Clouds */}
+      <div 
+        className={`
+          absolute bottom-[10%] left-[10%] w-16 h-8 
+          bg-white rounded-full
+          shadow-[2em_0_#fff,_-2em_0_#fff]
+          transition-opacity duration-1000 ease-in-out
+          ${isDark ? 'opacity-0' : 'opacity-90'}
         `}
       />
     </div>
