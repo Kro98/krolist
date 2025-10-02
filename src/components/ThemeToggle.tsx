@@ -12,7 +12,7 @@ export function ThemeToggle() {
     <div 
       onClick={handleToggle}
       className={`
-        relative w-24 h-24 rounded-full cursor-pointer overflow-hidden
+        relative w-40 h-20 rounded-full cursor-pointer overflow-hidden
         transition-all duration-1000 ease-in-out
         ${isDark 
           ? 'bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]' 
