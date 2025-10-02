@@ -11,6 +11,7 @@ import { Save, Globe, Bell, Palette, User } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ShopManager } from "@/components/ShopManager";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Settings() {
   const { language, currency, setLanguage, setCurrency, t } = useLanguage();
@@ -152,18 +153,14 @@ export default function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="theme">{t('settings.theme')}</Label>
-              <Select value={theme} onValueChange={setTheme}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">{t('theme.light')}</SelectItem>
-                  <SelectItem value="dark">{t('theme.dark')}</SelectItem>
-                  <SelectItem value="system">{t('theme.system')}</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="theme">{t('settings.theme')}</Label>
+                <p className="text-sm text-muted-foreground">
+                  Click to toggle between light and dark mode
+                </p>
+              </div>
+              <ThemeToggle />
             </div>
           </CardContent>
         </Card>
