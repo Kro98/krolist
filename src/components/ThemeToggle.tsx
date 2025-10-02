@@ -20,8 +20,30 @@ export function ThemeToggle() {
         }
       `}
     >
-      {/* Stars */}
+      {/* Sun */}
       <div 
+        className={`
+          absolute top-[20%] left-[20%] w-10 h-10 
+          bg-[#ffd700] rounded-full
+          shadow-[0_0_20px_#ffd700]
+          transition-all duration-1000 ease-in-out
+          ${isDark ? 'opacity-0 -translate-y-8' : 'opacity-100 translate-y-0'}
+        `}
+      />
+
+      {/* Moon */}
+      <div 
+        className={`
+          absolute top-[20%] left-[20%] w-10 h-10 
+          bg-[#f0f0f0] rounded-full
+          shadow-[inset_-10px_-10px_0px_#c0c0c0]
+          transition-all duration-1000 ease-in-out
+          ${isDark ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
+        `}
+      />
+
+      {/* Stars */}
+      <div
         className={`
           absolute top-[10%] left-[60%] w-1 h-1 
           bg-white rounded-full
@@ -83,17 +105,6 @@ export function ThemeToggle() {
           bg-gradient-to-t from-[rgba(0,255,150,0.4)] to-transparent
           transition-opacity duration-1000 ease-in-out
           ${isDark ? 'opacity-100' : 'opacity-0'}
-        `}
-      />
-
-      {/* Clouds */}
-      <div 
-        className={`
-          absolute bottom-[10%] left-[10%] w-16 h-8 
-          bg-white rounded-full
-          shadow-[2em_0_#fff,_-2em_0_#fff]
-          transition-opacity duration-1000 ease-in-out
-          ${isDark ? 'opacity-0' : 'opacity-90'}
         `}
       />
     </div>
