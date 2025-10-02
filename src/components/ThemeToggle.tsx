@@ -1,13 +1,18 @@
 import { useTheme } from "@/contexts/ThemeContext";
 
 export function ThemeToggle() {
-  const { actualTheme } = useTheme();
+  const { actualTheme, setTheme } = useTheme();
   const isDark = actualTheme === 'dark';
+
+  const handleToggle = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
 
   return (
     <div 
+      onClick={handleToggle}
       className={`
-        relative w-40 h-20 rounded-full overflow-hidden
+        relative w-40 h-20 rounded-full cursor-pointer overflow-hidden
         transition-all duration-1000 ease-in-out
         ${isDark
           ? 'bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]' 
