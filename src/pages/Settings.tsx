@@ -12,24 +12,31 @@ import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ShopManager } from "@/components/ShopManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
 export default function Settings() {
-  const { language, currency, setLanguage, setCurrency, t } = useLanguage();
-  const { theme, setTheme } = useTheme();
+  const {
+    language,
+    currency,
+    setLanguage,
+    setCurrency,
+    t
+  } = useLanguage();
+  const {
+    theme,
+    setTheme
+  } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [priceDropAlerts, setPriceDropAlerts] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleSave = () => {
     toast({
       title: t('settings.settingsSaved'),
-      description: t('settings.settingsSavedDesc'),
+      description: t('settings.settingsSavedDesc')
     });
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
         <p className="text-muted-foreground">{t('settings.subtitle')}</p>
@@ -101,11 +108,7 @@ export default function Settings() {
                   {t('settings.enableNotificationsDesc')}
                 </p>
               </div>
-              <Switch
-                id="notifications"
-                checked={notifications}
-                onCheckedChange={setNotifications}
-              />
+              <Switch id="notifications" checked={notifications} onCheckedChange={setNotifications} />
             </div>
             <Separator />
             <div className="space-y-4">
@@ -116,12 +119,7 @@ export default function Settings() {
                     {t('settings.priceDropAlertsDesc')}
                   </p>
                 </div>
-                <Switch
-                  id="price-drops"
-                  checked={priceDropAlerts}
-                  onCheckedChange={setPriceDropAlerts}
-                  disabled={!notifications}
-                />
+                <Switch id="price-drops" checked={priceDropAlerts} onCheckedChange={setPriceDropAlerts} disabled={!notifications} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -130,12 +128,7 @@ export default function Settings() {
                     {t('settings.weeklyReportsDesc')}
                   </p>
                 </div>
-                <Switch
-                  id="weekly-reports"
-                  checked={weeklyReports}
-                  onCheckedChange={setWeeklyReports}
-                  disabled={!notifications}
-                />
+                <Switch id="weekly-reports" checked={weeklyReports} onCheckedChange={setWeeklyReports} disabled={!notifications} />
               </div>
             </div>
           </CardContent>
@@ -154,12 +147,7 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="theme">{t('settings.theme')}</Label>
-                <p className="text-sm text-muted-foreground">
-                  Click to toggle between light and dark mode
-                </p>
-              </div>
+              
               <ThemeToggle />
             </div>
           </CardContent>
@@ -180,13 +168,10 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="fontSize">{t('ui.fontSize')}</Label>
-                <Select 
-                  value={localStorage.getItem('fontSize') || 'medium'} 
-                  onValueChange={(value) => {
-                    localStorage.setItem('fontSize', value);
-                    window.dispatchEvent(new Event('storage'));
-                  }}
-                >
+                <Select value={localStorage.getItem('fontSize') || 'medium'} onValueChange={value => {
+                localStorage.setItem('fontSize', value);
+                window.dispatchEvent(new Event('storage'));
+              }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -199,13 +184,10 @@ export default function Settings() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="iconSize">{t('ui.iconSize')}</Label>
-                <Select 
-                  value={localStorage.getItem('iconSize') || 'medium'} 
-                  onValueChange={(value) => {
-                    localStorage.setItem('iconSize', value);
-                    window.dispatchEvent(new Event('storage'));
-                  }}
-                >
+                <Select value={localStorage.getItem('iconSize') || 'medium'} onValueChange={value => {
+                localStorage.setItem('iconSize', value);
+                window.dispatchEvent(new Event('storage'));
+              }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -238,21 +220,11 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="email">{t('settings.email')}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your.email@example.com"
-                  defaultValue="user@example.com"
-                  disabled
-                />
+                <Input id="email" type="email" placeholder="your.email@example.com" defaultValue="user@example.com" disabled />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">{t('settings.displayName')}</Label>
-                <Input
-                  id="name"
-                  placeholder="Your Name"
-                  defaultValue="John Doe"
-                />
+                <Input id="name" placeholder="Your Name" defaultValue="John Doe" />
               </div>
             </div>
           </CardContent>
@@ -266,6 +238,5 @@ export default function Settings() {
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
