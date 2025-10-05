@@ -142,7 +142,7 @@ export default function Settings() {
               {t('settings.appearance')}
             </CardTitle>
             <CardDescription>
-              {t('settings.appearanceDesc')}
+              Click for light or dark view
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
