@@ -51,17 +51,17 @@ const getShopItems = () => {
       .filter((shop: any) => shop.enabled)
       .map((shop: any) => ({
         title: `shops.${shop.id}`,
-        url: getShopAffiliateUrl(shop.id),
+        url: shop.id === 'amazon' ? '/amazon' : getShopAffiliateUrl(shop.id),
         icon: Package,
         name: shop.name,
-        isExternal: true
+        isExternal: shop.id !== 'amazon'
       }));
   }
   
   return [
     { title: "shops.shein", url: getShopAffiliateUrl("shein"), icon: Package, isExternal: true },
     { title: "shops.noon", url: getShopAffiliateUrl("noon"), icon: Package, isExternal: true },
-    { title: "shops.amazon", url: getShopAffiliateUrl("amazon"), icon: Package, isExternal: true },
+    { title: "shops.amazon", url: "/amazon", icon: Package, isExternal: false },
     { title: "shops.ikea", url: getShopAffiliateUrl("ikea"), icon: Package, isExternal: true },
     { title: "shops.abyat", url: getShopAffiliateUrl("abyat"), icon: Package, isExternal: true },
     { title: "shops.namshi", url: getShopAffiliateUrl("namshi"), icon: Package, isExternal: true },
