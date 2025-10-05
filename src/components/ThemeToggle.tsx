@@ -79,12 +79,6 @@ export function ThemeToggle() {
         `} />
 
       {/* Clouds */}
-      <div className={`
-          absolute bottom-[10%] left-[10%] w-16 h-8 
-          bg-white rounded-full
-          shadow-[2em_0_#fff,_-2em_0_#fff]
-          transition-opacity duration-1000 ease-in-out
-          ${isDark ? 'opacity-0' : 'opacity-90'}
-        `} />
+      
     </div>;
 }
