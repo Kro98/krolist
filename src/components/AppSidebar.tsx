@@ -183,9 +183,14 @@ export function AppSidebar() {
                             <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                               <span className="shrink-0">{t(item.title)}</span>
                               {isNoon && (
-                                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30">
-                                  KINGDOME 10%
-                                </span>
+                                <>
+                                  <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30">
+                                    KINGDOME
+                                  </span>
+                                  <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-medium rounded border border-orange-500/30">
+                                    save 10 rial
+                                  </span>
+                                </>
                               )}
                               {isShein && (
                                 <>
