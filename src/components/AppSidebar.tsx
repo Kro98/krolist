@@ -165,26 +165,51 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/70">{t('shops.title') || 'Shops'}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {shopItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    {item.isExternal ? (
-                      <button 
-                        onClick={() => handleShopClick(item.url, true)}
-                        className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{t(item.title)}</span>}
-                      </button>
-                    ) : (
-                      <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{t(item.title)}</span>}
-                      </NavLink>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {shopItems.map((item) => {
+                const shopId = item.title.split('.')[1]; // Extract shop id from 'shops.noon'
+                const isNoon = shopId === 'noon';
+                const isShein = shopId === 'shein';
+                
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      {item.isExternal ? (
+                        <button 
+                          onClick={() => handleShopClick(item.url, true)}
+                          className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          {!collapsed && (
+                            <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                              <span className="shrink-0">{t(item.title)}</span>
+                              {isNoon && (
+                                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30">
+                                  KINGDOME 10%
+                                </span>
+                              )}
+                              {isShein && (
+                                <>
+                                  <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium rounded border border-blue-500/30">
+                                    search for
+                                  </span>
+                                  <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-700 dark:text-purple-400 text-[10px] font-medium rounded border border-purple-500/30">
+                                    R2M6A
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </button>
+                      ) : (
+                        <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
+                          <item.icon className="h-4 w-4" />
+                          {!collapsed && <span>{t(item.title)}</span>}
+                        </NavLink>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
