@@ -33,7 +33,7 @@ const getShopAffiliateUrl = (shopId: string) => {
   const affiliateUrls: Record<string, string> = {
     shein: "https://s.click.aliexpress.com/e/_DCyUaLh",
     noon: "https://www.noon.com/?ref=affiliate123",
-    amazon: "https://amazon.com/ref=affiliate123",
+    amazon: "https://amzn.to/4ny9VLJ",
     ikea: "https://www.ikea.com/ref/affiliate123",
     abyat: "https://www.abyat.com/?ref=affiliate123",
     namshi: "https://www.namshi.com/?ref=affiliate123", 
@@ -51,17 +51,17 @@ const getShopItems = () => {
       .filter((shop: any) => shop.enabled)
       .map((shop: any) => ({
         title: `shops.${shop.id}`,
-        url: shop.id === 'amazon' ? '/amazon' : getShopAffiliateUrl(shop.id),
+        url: getShopAffiliateUrl(shop.id),
         icon: Package,
         name: shop.name,
-        isExternal: shop.id !== 'amazon'
+        isExternal: true
       }));
   }
   
   return [
     { title: "shops.shein", url: getShopAffiliateUrl("shein"), icon: Package, isExternal: true },
     { title: "shops.noon", url: getShopAffiliateUrl("noon"), icon: Package, isExternal: true },
-    { title: "shops.amazon", url: "/amazon", icon: Package, isExternal: false },
+    { title: "shops.amazon", url: getShopAffiliateUrl("amazon"), icon: Package, isExternal: true },
     { title: "shops.ikea", url: getShopAffiliateUrl("ikea"), icon: Package, isExternal: true },
     { title: "shops.abyat", url: getShopAffiliateUrl("abyat"), icon: Package, isExternal: true },
     { title: "shops.namshi", url: getShopAffiliateUrl("namshi"), icon: Package, isExternal: true },
@@ -169,21 +169,11 @@ export function AppSidebar() {
                 const shopId = item.title.split('.')[1]; // Extract shop id from 'shops.noon'
                 const isNoon = shopId === 'noon';
                 const isShein = shopId === 'shein';
-                const isAmazon = shopId === 'amazon';
                 
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      {isAmazon ? (
-                        <NavLink to="/amazon" className={getNavCls} onClick={handleNavClick}>
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          {!collapsed && (
-                            <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                              <span className="shrink-0">{t(item.title)}</span>
-                            </div>
-                          )}
-                        </NavLink>
-                      ) : item.isExternal ? (
+                      {item.isExternal ? (
                         <button 
                           onClick={() => handleShopClick(item.url, true)}
                           className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground"
