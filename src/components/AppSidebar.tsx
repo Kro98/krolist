@@ -13,6 +13,16 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+// Import shop brand icons
+import sheinIcon from "@/assets/shop-icons/shein-icon.png";
+import noonIcon from "@/assets/shop-icons/noon-icon.png";
+import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
+import ikeaIcon from "@/assets/shop-icons/ikea-icon.png";
+import abyatIcon from "@/assets/shop-icons/abyat-icon.png";
+import namshiIcon from "@/assets/shop-icons/namshi-icon.png";
+import trendyolIcon from "@/assets/shop-icons/trendyol-icon.png";
+import asosIcon from "@/assets/shop-icons/asos-icon.png";
+
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +53,17 @@ const getShopAffiliateUrl = (shopId: string) => {
   return affiliateUrls[shopId] || `https://${shopId}.com`;
 };
 
+const shopIconMap: Record<string, string> = {
+  shein: sheinIcon,
+  noon: noonIcon,
+  amazon: amazonIcon,
+  ikea: ikeaIcon,
+  abyat: abyatIcon,
+  namshi: namshiIcon,
+  trendyol: trendyolIcon,
+  asos: asosIcon,
+};
+
 const getShopItems = () => {
   const saved = localStorage.getItem('shopOrder');
   if (saved) {
@@ -52,21 +73,21 @@ const getShopItems = () => {
       .map((shop: any) => ({
         title: `shops.${shop.id}`,
         url: getShopAffiliateUrl(shop.id),
-        icon: Package,
+        icon: shopIconMap[shop.id] || Package,
         name: shop.name,
         isExternal: true
       }));
   }
   
   return [
-    { title: "shops.shein", url: getShopAffiliateUrl("shein"), icon: Package, isExternal: true },
-    { title: "shops.noon", url: getShopAffiliateUrl("noon"), icon: Package, isExternal: true },
-    { title: "shops.amazon", url: getShopAffiliateUrl("amazon"), icon: Package, isExternal: true },
-    { title: "shops.ikea", url: getShopAffiliateUrl("ikea"), icon: Package, isExternal: true },
-    { title: "shops.abyat", url: getShopAffiliateUrl("abyat"), icon: Package, isExternal: true },
-    { title: "shops.namshi", url: getShopAffiliateUrl("namshi"), icon: Package, isExternal: true },
-    { title: "shops.trendyol", url: getShopAffiliateUrl("trendyol"), icon: Package, isExternal: true },
-    { title: "shops.asos", url: getShopAffiliateUrl("asos"), icon: Package, isExternal: true },
+    { title: "shops.shein", url: getShopAffiliateUrl("shein"), icon: sheinIcon, isExternal: true },
+    { title: "shops.noon", url: getShopAffiliateUrl("noon"), icon: noonIcon, isExternal: true },
+    { title: "shops.amazon", url: getShopAffiliateUrl("amazon"), icon: amazonIcon, isExternal: true },
+    { title: "shops.ikea", url: getShopAffiliateUrl("ikea"), icon: ikeaIcon, isExternal: true },
+    { title: "shops.abyat", url: getShopAffiliateUrl("abyat"), icon: abyatIcon, isExternal: true },
+    { title: "shops.namshi", url: getShopAffiliateUrl("namshi"), icon: namshiIcon, isExternal: true },
+    { title: "shops.trendyol", url: getShopAffiliateUrl("trendyol"), icon: trendyolIcon, isExternal: true },
+    { title: "shops.asos", url: getShopAffiliateUrl("asos"), icon: asosIcon, isExternal: true },
   ];
 };
 
@@ -169,6 +190,7 @@ export function AppSidebar() {
                 const shopId = item.title.split('.')[1]; // Extract shop id from 'shops.noon'
                 const isNoon = shopId === 'noon';
                 const isShein = shopId === 'shein';
+                const isImageIcon = typeof item.icon === 'string';
                 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -178,7 +200,15 @@ export function AppSidebar() {
                           onClick={() => handleShopClick(item.url, true)}
                           className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground"
                         >
-                          <item.icon className="h-4 w-4 shrink-0" />
+                          {isImageIcon ? (
+                            <img 
+                              src={item.icon as string} 
+                              alt={`${shopId} icon`}
+                              className="h-5 w-5 rounded-full object-cover shrink-0"
+                            />
+                          ) : (
+                            <item.icon className="h-4 w-4 shrink-0" />
+                          )}
                           {!collapsed && (
                             <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                               <span className="shrink-0">{t(item.title)}</span>
@@ -207,7 +237,15 @@ export function AppSidebar() {
                         </button>
                       ) : (
                         <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                          <item.icon className="h-4 w-4" />
+                          {isImageIcon ? (
+                            <img 
+                              src={item.icon as string} 
+                              alt={`${shopId} icon`}
+                              className="h-5 w-5 rounded-full object-cover shrink-0"
+                            />
+                          ) : (
+                            <item.icon className="h-4 w-4" />
+                          )}
                           {!collapsed && <span>{t(item.title)}</span>}
                         </NavLink>
                       )}
