@@ -42,7 +42,7 @@ const mainItems = [
 const getShopAffiliateUrl = (shopId: string) => {
   const affiliateUrls: Record<string, string> = {
     shein: "https://s.click.aliexpress.com/e/_DCyUaLh",
-    noon: "https://www.noon.com/?ref=affiliate123",
+    noon: "https://s.noon.com/sLVK_sCBGo4",
     amazon: "https://amzn.to/4ny9VLJ",
     ikea: "https://www.ikea.com/ref/affiliate123",
     abyat: "https://www.abyat.com/?ref=affiliate123",
