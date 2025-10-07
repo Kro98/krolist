@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
 export type Language = 'en' | 'ar';
-export type Currency = 'USD' | 'EUR' | 'GBP' | 'CAD' | 'JPY' | 'AUD' | 'SAR';
+export type Currency = 'USD' | 'SAR' | 'EGP' | 'AED';
 
 interface LanguageContextType {
   language: Language;
@@ -91,12 +91,9 @@ const translations = {
     
     // Currencies
     'currency.USD': 'USD - US Dollar',
-    'currency.EUR': 'EUR - Euro',
-    'currency.GBP': 'GBP - British Pound',
-    'currency.CAD': 'CAD - Canadian Dollar',
-    'currency.JPY': 'JPY - Japanese Yen',
-    'currency.AUD': 'AUD - Australian Dollar',
     'currency.SAR': 'SAR - Saudi Riyal',
+    'currency.EGP': 'EGP - Egyptian Pound',
+    'currency.AED': 'AED - UAE Dirham',
 
     // Analytics
     'analytics.trends': 'Price Trends',
@@ -220,12 +217,9 @@ const translations = {
     
     // Currencies
     'currency.USD': 'دولار أمريكي - USD',
-    'currency.EUR': 'يورو - EUR',
-    'currency.GBP': 'جنيه إسترليني - GBP',
-    'currency.CAD': 'دولار كندي - CAD',
-    'currency.JPY': 'ين ياباني - JPY',
-    'currency.AUD': 'دولار أسترالي - AUD',
     'currency.SAR': 'ريال سعودي - SAR',
+    'currency.EGP': 'جنيه مصري - EGP',
+    'currency.AED': 'درهم إماراتي - AED',
 
     // Analytics
     'analytics.trends': 'اتجاهات الأسعار',
@@ -273,12 +267,9 @@ const translations = {
 
 const currencySymbols: Record<Currency, string> = {
   USD: '$',
-  EUR: '€',
-  GBP: '£',
-  CAD: 'C$',
-  JPY: '¥',
-  AUD: 'A$',
-  SAR: '﷼'
+  SAR: '﷼',
+  EGP: 'E£',
+  AED: 'د.إ'
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);

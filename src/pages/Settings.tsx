@@ -77,12 +77,9 @@ export default function Settings() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="USD">{t('currency.USD')}</SelectItem>
-                    <SelectItem value="EUR">{t('currency.EUR')}</SelectItem>
-                    <SelectItem value="GBP">{t('currency.GBP')}</SelectItem>
-                    <SelectItem value="CAD">{t('currency.CAD')}</SelectItem>
-                    <SelectItem value="JPY">{t('currency.JPY')}</SelectItem>
-                    <SelectItem value="AUD">{t('currency.AUD')}</SelectItem>
                     <SelectItem value="SAR">{t('currency.SAR')}</SelectItem>
+                    <SelectItem value="EGP">{t('currency.EGP')}</SelectItem>
+                    <SelectItem value="AED">{t('currency.AED')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
