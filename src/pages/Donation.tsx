@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
-
 declare global {
   interface Window {
     kofiWidgetOverlay?: {
@@ -10,7 +9,6 @@ declare global {
     };
   }
 }
-
 export default function Donation() {
   useEffect(() => {
     // Load Ko-fi widget script
@@ -28,7 +26,6 @@ export default function Donation() {
       }
     };
     document.body.appendChild(script);
-
     return () => {
       // Cleanup script on unmount
       if (script.parentNode) {
@@ -36,9 +33,7 @@ export default function Donation() {
       }
     };
   }, []);
-
-  return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+  return <div className="space-y-6 max-w-4xl mx-auto">
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <div className="bg-gradient-primary p-4 rounded-full">
@@ -84,13 +79,9 @@ export default function Donation() {
             <Badge variant="secondary">Community Driven</Badge>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            Even if you can't contribute financially, sharing the app with friends who might find it useful 
-            is greatly appreciated! ❤️
-          </p>
+          <p className="text-sm text-muted-foreground">Even if you can't contribute financially, sharing this project with friends who might find it useful is greatly appreciated! ❤️</p>
         </CardContent>
       </Card>
 
-    </div>
-  );
+    </div>;
 }
