@@ -43,19 +43,20 @@ export default function Settings() {
       </div>
 
       <div className="grid gap-6 max-w-4xl">
-        {/* Language & Region */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              {t('settings.languageRegion')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.languageDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Language & Currency + Appearance */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Language & Currency */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                Language & Currency
+              </CardTitle>
+              <CardDescription>
+                {t('settings.languageDesc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="language">{t('settings.language')}</Label>
                 <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
@@ -85,122 +86,27 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Notifications */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              {t('settings.notifications')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.notificationsDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="notifications" className="text-base">{t('settings.enableNotifications')}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {t('settings.enableNotificationsDesc')}
-                </p>
+          {/* Appearance */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5 text-primary" />
+                {t('settings.appearance')}
+              </CardTitle>
+              <CardDescription>
+                Click for light or dark view
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <ThemeToggle />
               </div>
-              <Switch id="notifications" checked={notifications} onCheckedChange={setNotifications} />
-            </div>
-            <Separator />
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="price-drops" className="text-base">{t('settings.priceDropAlerts')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.priceDropAlertsDesc')}
-                  </p>
-                </div>
-                <Switch id="price-drops" checked={priceDropAlerts} onCheckedChange={setPriceDropAlerts} disabled={!notifications} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="weekly-reports" className="text-base">{t('settings.weeklyReports')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.weeklyReportsDesc')}
-                  </p>
-                </div>
-                <Switch id="weekly-reports" checked={weeklyReports} onCheckedChange={setWeeklyReports} disabled={!notifications} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Appearance */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-primary" />
-              {t('settings.appearance')}
-            </CardTitle>
-            <CardDescription>
-              Click for light or dark view
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              
-              <ThemeToggle />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Display Settings */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-primary" />
-              {t('ui.display')}
-            </CardTitle>
-            <CardDescription>
-              {t('ui.displayDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fontSize">{t('ui.fontSize')}</Label>
-                <Select value={localStorage.getItem('fontSize') || 'medium'} onValueChange={value => {
-                localStorage.setItem('fontSize', value);
-                window.dispatchEvent(new Event('storage'));
-              }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">{t('ui.small')}</SelectItem>
-                    <SelectItem value="medium">{t('ui.medium')}</SelectItem>
-                    <SelectItem value="large">{t('ui.large')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="iconSize">{t('ui.iconSize')}</Label>
-                <Select value={localStorage.getItem('iconSize') || 'medium'} onValueChange={value => {
-                localStorage.setItem('iconSize', value);
-                window.dispatchEvent(new Event('storage'));
-              }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">{t('ui.small')}</SelectItem>
-                    <SelectItem value="medium">{t('ui.medium')}</SelectItem>
-                    <SelectItem value="large">{t('ui.large')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Shop Management */}
         <ShopManager />

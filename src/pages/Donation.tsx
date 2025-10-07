@@ -1,40 +1,42 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Coffee, Gift, Star } from "lucide-react";
+import { Heart } from "lucide-react";
+import { useEffect } from "react";
 
-const donationTiers = [
-  {
-    name: "Coffee",
-    amount: 5,
-    icon: Coffee,
-    description: "Buy me a coffee to fuel late-night coding sessions",
-    color: "bg-amber-500"
-  },
-  {
-    name: "Supporter",
-    amount: 15,
-    icon: Heart,
-    description: "Show your appreciation for the app and its features",
-    color: "bg-rose-500"
-  },
-  {
-    name: "Champion",
-    amount: 30,
-    icon: Star,
-    description: "Help prioritize new features and improvements",
-    color: "bg-purple-500"
-  },
-  {
-    name: "Patron",
-    amount: 50,
-    icon: Gift,
-    description: "Support the long-term development of PriceTracker",
-    color: "bg-blue-500"
-  },
-];
+declare global {
+  interface Window {
+    kofiWidgetOverlay?: {
+      draw: (username: string, config: Record<string, string>) => void;
+    };
+  }
+}
 
 export default function Donation() {
+  useEffect(() => {
+    // Load Ko-fi widget script
+    const script = document.createElement('script');
+    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';
+    script.async = true;
+    script.onload = () => {
+      if (window.kofiWidgetOverlay) {
+        window.kofiWidgetOverlay.draw('krolist', {
+          'type': 'floating-chat',
+          'floating-chat.donateButton.text': 'Donate',
+          'floating-chat.donateButton.background-color': '#fcbf47',
+          'floating-chat.donateButton.text-color': '#323842'
+        });
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="text-center space-y-4">
@@ -48,33 +50,6 @@ export default function Donation() {
           PriceTracker is a passion project built to help people save money on their purchases. 
           Your support helps keep the app running and enables new features.
         </p>
-      </div>
-
-      {/* Donation Tiers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {donationTiers.map((tier) => (
-          <Card key={tier.name} className="shadow-card hover:shadow-hover transition-all duration-300 text-center">
-            <CardHeader>
-              <div className="mx-auto mb-2">
-                <div className={`${tier.color} p-3 rounded-full inline-flex`}>
-                  <tier.icon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <CardTitle className="text-xl">{tier.name}</CardTitle>
-              <div className="text-3xl font-bold text-primary">
-                ${tier.amount}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4">
-                {tier.description}
-              </CardDescription>
-              <Button className="w-full bg-gradient-primary hover:shadow-hover transition-all duration-200">
-                Donate ${tier.amount}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       {/* Thank You Message */}
@@ -116,31 +91,6 @@ export default function Donation() {
         </CardContent>
       </Card>
 
-      {/* Alternative Support */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Other Ways to Support</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 border rounded-lg">
-              <Star className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <h3 className="font-medium mb-1">Rate the App</h3>
-              <p className="text-sm text-muted-foreground">Leave a review on app stores</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <Heart className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <h3 className="font-medium mb-1">Share with Friends</h3>
-              <p className="text-sm text-muted-foreground">Tell others about PriceTracker</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <Gift className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <h3 className="font-medium mb-1">Provide Feedback</h3>
-              <p className="text-sm text-muted-foreground">Help improve the app</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
