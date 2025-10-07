@@ -83,5 +83,16 @@ export default function Donation() {
         </CardContent>
       </Card>
 
+      {/* Ko-fi Donate Button */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Support via Ko-fi</CardTitle>
+          <CardDescription>Your donation helps keep this project running</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <div id="kofi-widget-container"></div>
+        </CardContent>
+      </Card>
+
     </div>;
 }
