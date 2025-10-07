@@ -13,10 +13,12 @@ export default function Donation() {
   useEffect(() => {
     // Load Ko-fi widget script
     const script = document.createElement('script');
-    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';
+    script.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js';
     script.async = true;
     script.onload = () => {
+      // @ts-ignore
       if (window.kofiWidgetOverlay) {
+        // @ts-ignore
         window.kofiWidgetOverlay.draw('krolist', {
           'type': 'floating-chat',
           'floating-chat.donateButton.text': 'Donate',
@@ -80,6 +82,20 @@ export default function Donation() {
           </div>
 
           <p className="text-sm text-muted-foreground">Even if you can't contribute financially, sharing this project with friends who might find it useful is greatly appreciated! ❤️</p>
+        </CardContent>
+      </Card>
+
+      {/* Ko-fi Button */}
+      <Card className="shadow-card">
+        <CardContent className="pt-6 flex justify-center">
+          <a href='https://ko-fi.com/N4N716DR8L' target='_blank' rel="noopener noreferrer">
+            <img 
+              height='36' 
+              style={{border: '0px', height: '36px'}} 
+              src='https://storage.ko-fi.com/cdn/kofi2.png?v=3' 
+              alt='Buy Me a Coffee at ko-fi.com' 
+            />
+          </a>
         </CardContent>
       </Card>
 
