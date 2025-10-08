@@ -21,7 +21,7 @@ export function Layout({
             {/* Header */}
             <header className="h-16 flex items-center border-b border-border bg-card px-4">
               <SidebarTrigger className="mr-4" />
-              <h2 className="text-lg font-semibold text-primary">PriceTracker</h2>
+              <h2 className="text-lg font-semibold text-primary">Krolist</h2>
             </header>
             
             {/* Main Content */}

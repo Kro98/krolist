@@ -22,7 +22,9 @@ export default function Settings() {
   } = useLanguage();
   const {
     theme,
-    setTheme
+    setTheme,
+    undertone,
+    setUndertone
   } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [priceDropAlerts, setPriceDropAlerts] = useState(true);
@@ -100,6 +102,24 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 <ThemeToggle />
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-2">
+                <Label htmlFor="undertone">Undertone Color</Label>
+                <Select value={undertone} onValueChange={(value: any) => setUndertone(value)}>
+                  <SelectTrigger id="undertone">
+                    <SelectValue placeholder="Select undertone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="orange">Orange</SelectItem>
+                    <SelectItem value="blue">Blue</SelectItem>
+                    <SelectItem value="green">Green</SelectItem>
+                    <SelectItem value="purple">Purple</SelectItem>
+                    <SelectItem value="red">Red</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>

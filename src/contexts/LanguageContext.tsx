@@ -32,7 +32,7 @@ const translations = {
     'dashboard.priceIncreases': 'Price Increases',
     'dashboard.totalAmount': 'Total Amount of Products',
     'dashboard.watching': 'Watching',
-    'dashboard.recentAlerts': 'Recent Price Alerts',
+    'dashboard.recentAlerts': 'Recent Price Change',
     'dashboard.latestChanges': 'Latest price changes on your tracked products',
     'dashboard.overview': 'Overview',
     
@@ -159,7 +159,7 @@ const translations = {
     'dashboard.priceIncreases': 'ارتفاع الأسعار',
     'dashboard.totalAmount': 'المبلغ الإجمالي للمنتجات',
     'dashboard.watching': 'قيد المتابعة',
-    'dashboard.recentAlerts': 'تنبيهات الأسعار الحديثة',
+    'dashboard.recentAlerts': 'تغيير الأسعار الحديث',
     'dashboard.latestChanges': 'آخر تغييرات الأسعار على منتجاتك المتابعة',
     'dashboard.overview': 'نظرة عامة',
     
