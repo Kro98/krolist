@@ -3,14 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/ProductCard";
-import { Package, Plus, TrendingDown, TrendingUp, Eye, Search, X } from "lucide-react";
+import { Package, Plus, TrendingDown, TrendingUp, Eye, Search, EyeOff, DollarSign } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
-import heroImage from "@/assets/hero-image.jpg";
-import { MobileAnalytics } from "@/components/MobileAnalytics";
-import Analytics from "./Analytics";
 
 const mockProducts = [
   {
@@ -72,30 +68,26 @@ const mockProducts = [
 const stats = [
   {
     title: "dashboard.totalProducts",
-    value: "24",
-    change: "+3",
+    value: "23",
     icon: Package,
     color: "text-primary"
   },
   {
     title: "dashboard.priceDrops",
-    value: "8", 
-    change: "+2",
+    value: "7", 
     icon: TrendingDown,
     color: "text-price-decrease"
   },
   {
     title: "dashboard.priceIncreases",
     value: "3",
-    change: "+1", 
     icon: TrendingUp,
     color: "text-price-increase"
   },
   {
-    title: "dashboard.watching",
-    value: "156",
-    change: "+12",
-    icon: Eye,
+    title: "dashboard.totalAmount",
+    value: "1,572$",
+    icon: DollarSign,
     color: "text-muted-foreground"
   },
 ];
@@ -129,11 +121,9 @@ const recentAlerts = [
 
 export default function Products() {
   const { t } = useLanguage();
-  const [showBanner, setShowBanner] = useState(true);
   const [showStats, setShowStats] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("products");
 
   // Filter products based on search query
   const filteredProducts = mockProducts.filter(product =>
@@ -186,209 +176,166 @@ export default function Products() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Main Navigation Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex flex-col space-y-4">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto md:mx-0">
-            <TabsTrigger value="products" className="text-xs md:text-sm">
-              {t('nav.products')}
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs md:text-sm">
-              {t('nav.analytics')}
-            </TabsTrigger>
-          </TabsList>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={t('products.searchPlaceholder')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 bg-card border-border"
+        />
+      </div>
 
-          <TabsContent value="products" className="space-y-4 md:space-y-6 mt-4">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('products.searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-card border-border"
-              />
-            </div>
-
-            {/* Closeable Banner */}
-            {showBanner && (
-              <div className="relative overflow-hidden rounded-lg bg-gradient-primary">
-                <img
-                  src={heroImage}
-                  alt="Price tracking dashboard"
-                  className="absolute inset-0 w-full h-full object-cover opacity-20"
-                />
-                <div className="relative p-4 md:p-8 text-white">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowBanner(false)}
-                    className="absolute top-2 right-2 text-white hover:bg-white/20 h-8 w-8 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <h1 className="text-xl md:text-3xl font-bold mb-2">{t('dashboard.welcome')}</h1>
-                  <p className="text-sm md:text-lg opacity-90">
-                    {t('dashboard.subtitle')}
-                  </p>
-                </div>
-              </div>
+      {/* Toggleable Recent Alerts */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base md:text-lg font-semibold">{t('dashboard.recentAlerts')}</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAlerts(!showAlerts)}
+            className="h-8 w-8 p-0"
+          >
+            {showAlerts ? (
+              <Eye className="h-4 w-4 text-primary" />
+            ) : (
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
             )}
+          </Button>
+        </div>
 
-            {/* Toggleable Stats Grid */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t('dashboard.overview')}</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowStats(!showStats)}
-                className="h-8 w-8 p-0"
-              >
-                <Eye className={`h-4 w-4 ${showStats ? 'text-primary' : 'text-muted-foreground'}`} />
-              </Button>
-            </div>
-
-            {showStats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                {stats.map((stat) => (
-                  <Card key={stat.title} className="shadow-card hover:shadow-hover transition-all duration-300">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-6">
-                      <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
-                        {t(stat.title)}
-                      </CardTitle>
-                      <stat.icon className={`h-3 w-3 md:h-4 md:w-4 ${stat.color}`} />
-                    </CardHeader>
-                    <CardContent className="p-3 md:p-6 pt-0">
-                      <div className="text-lg md:text-2xl font-bold">{stat.value}</div>
-                      <p className="text-xs text-muted-foreground">
-                        <span className="text-price-decrease">{stat.change}</span> from last week
-                      </p>
-                    </CardContent>
-                  </Card>
+        {showAlerts && (
+          <Card className="shadow-card">
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                {recentAlerts.map((alert, index) => (
+                  <div key={index} className="flex items-center p-3 rounded-lg bg-gradient-card border">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate">{alert.product}</h4>
+                      <Badge variant="secondary" className="text-xs mt-1">
+                        {alert.store}
+                      </Badge>
+                    </div>
+                    
+                    <MiniGraph alert={alert} />
+                    
+                    <div className="text-right flex-shrink-0">
+                      <div className="flex items-center gap-1 flex-col">
+                        <span className="text-xs text-muted-foreground line-through">
+                          {alert.currency}{alert.oldPrice}
+                        </span>
+                        <span className={`font-bold text-sm ${
+                          alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'
+                        }`}>
+                          {alert.currency}{alert.newPrice}
+                        </span>
+                      </div>
+                      <div className={`flex items-center justify-end gap-1 text-xs ${
+                        alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'
+                      }`}>
+                        {alert.type === 'decrease' ? (
+                          <TrendingDown className="h-3 w-3" />
+                        ) : (
+                          <TrendingUp className="h-3 w-3" />
+                        )}
+                        <span>
+                          ({((Math.abs(alert.newPrice - alert.oldPrice) / alert.oldPrice) * 100).toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
-            )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-            {/* Toggleable Recent Alerts */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t('dashboard.recentAlerts')}</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAlerts(!showAlerts)}
-                className="h-8 w-8 p-0"
-              >
-                <Eye className={`h-4 w-4 ${showAlerts ? 'text-primary' : 'text-muted-foreground'}`} />
-              </Button>
-            </div>
-
-            {showAlerts && (
-              <Card className="shadow-card">
-                <CardHeader className="p-4 md:p-6">
-                  <CardTitle className="text-base md:text-lg">{t('dashboard.recentAlerts')}</CardTitle>
-                  <CardDescription className="text-sm">{t('dashboard.latestChanges')}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 md:p-6 pt-0">
-                  <div className="space-y-3 md:space-y-4">
-                    {recentAlerts.map((alert, index) => (
-                      <div key={index} className="flex items-center p-3 md:p-4 rounded-lg bg-gradient-card border">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm md:text-base truncate">{alert.product}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {alert.store}
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        {/* Embedded Mini Graph */}
-                        <MiniGraph alert={alert} />
-                        
-                        <div className="text-right flex-shrink-0">
-                          <div className="flex items-center gap-1 md:gap-2 flex-col md:flex-row">
-                            <span className="text-xs md:text-sm text-muted-foreground line-through">
-                              {alert.currency}{alert.oldPrice}
-                            </span>
-                            <span className={`font-bold text-xs md:text-sm ${
-                              alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'
-                            }`}>
-                              {alert.currency}{alert.newPrice}
-                            </span>
-                          </div>
-                          <div className={`flex items-center gap-1 text-xs ${
-                            alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'
-                          }`}>
-                            {alert.type === 'decrease' ? (
-                              <TrendingDown className="h-3 w-3" />
-                            ) : (
-                              <TrendingUp className="h-3 w-3" />
-                            )}
-                            <span>
-                              ({((Math.abs(alert.newPrice - alert.oldPrice) / alert.oldPrice) * 100).toFixed(1)}%)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Products List */}
-            {filteredProducts.length > 0 ? (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">{t('nav.products')}</h2>
-                  <span className="text-sm text-muted-foreground">
-                    {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </div>
-            ) : searchQuery ? (
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>{t('products.noResults')}</CardTitle>
-                  <CardDescription>{t('products.noResultsDesc')}</CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSearchQuery("")}
-                    className="border-border hover:bg-accent"
-                  >
-                    Clear Search
-                  </Button>
-                </CardContent>
-              </Card>
+      {/* Toggleable Overview Stats Grid */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base md:text-lg font-semibold">{t('dashboard.overview')}</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowStats(!showStats)}
+            className="h-8 w-8 p-0"
+          >
+            {showStats ? (
+              <Eye className="h-4 w-4 text-primary" />
             ) : (
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>{t('products.noProducts')}</CardTitle>
-                  <CardDescription>{t('products.startTracking')}</CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <NavLink to="/add-product">
-                    <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('nav.addProduct')}
-                    </Button>
-                  </NavLink>
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        </div>
+
+        {showStats && (
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => (
+              <Card key={stat.title} className="shadow-card hover:shadow-hover transition-all duration-300">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {t(stat.title)}
+                    </p>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
+                  <div className="text-2xl font-bold">{stat.value}</div>
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
+            ))}
+          </div>
+        )}
+      </div>
 
-          <TabsContent value="analytics" className="mt-4">
-            <MobileAnalytics />
-          </TabsContent>
+      {/* Products List */}
+      {filteredProducts.length > 0 ? (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base md:text-lg font-semibold">{t('nav.products')}</h2>
+            <span className="text-sm text-muted-foreground">
+              {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         </div>
-      </Tabs>
+      ) : searchQuery ? (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>{t('products.noResults')}</CardTitle>
+            <CardDescription>{t('products.noResultsDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button 
+              variant="outline" 
+              onClick={() => setSearchQuery("")}
+              className="border-border hover:bg-accent"
+            >
+              Clear Search
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>{t('products.noProducts')}</CardTitle>
+            <CardDescription>{t('products.startTracking')}</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <NavLink to="/add-product">
+              <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('nav.addProduct')}
+              </Button>
+            </NavLink>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
