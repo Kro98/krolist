@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Products from "./pages/Products";
 import AddProduct from "./pages/AddProduct";
+import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import PromoCodes from "./pages/PromoCodes";
 import Donation from "./pages/Donation";
@@ -27,7 +28,7 @@ const App = () => (
                 <Route path="/" element={<Products />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/add-product" element={<AddProduct />} />
-                <Route path="/analytics" element={<Products />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/promo-codes" element={<PromoCodes />} />
                 <Route path="/donation" element={<Donation />} />

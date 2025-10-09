@@ -36,7 +36,8 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "nav.dashboard", url: "/", icon: Home },
+  { title: "nav.products", url: "/", icon: Package },
+  { title: "nav.analytics", url: "/analytics", icon: BarChart3 },
 ];
 
 const getShopAffiliateUrl = (shopId: string) => {
@@ -165,7 +166,7 @@ export function AppSidebar() {
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard') || 'Main'}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
