@@ -143,17 +143,17 @@ export function AppSidebar() {
     >
       <SidebarContent className="bg-sidebar">
         {/* Dev Announcement Section */}
-        <div className="p-4 border-b border-sidebar-border">
-          <div className="flex items-center gap-2 mb-2">
-            <Megaphone className="h-4 w-4 text-sidebar-primary" />
-            <span className="text-sm font-medium text-sidebar-foreground">Dev Update</span>
-          </div>
-          {!collapsed && (
+        {!collapsed && (
+          <div className="p-4 border-b border-sidebar-border">
+            <div className="flex items-center gap-2 mb-2">
+              <Megaphone className="h-4 w-4 text-sidebar-primary" />
+              <span className="text-sm font-medium text-sidebar-foreground">Dev Update</span>
+            </div>
             <div className="text-xs text-sidebar-foreground/70 bg-sidebar-primary/10 p-2 rounded">
               Welcome to PriceTracker! More features coming soon.
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Search Products Button */}
         <div className="p-4">
