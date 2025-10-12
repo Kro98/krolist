@@ -6,13 +6,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// TODO: Replace these with your actual affiliate IDs
 const AFFILIATE_CONFIG = {
   noon: {
-    affiliateParam: 'YOUR_NOON_AFFILIATE_ID', // Replace with your Noon affiliate ID
+    affiliateParam: 'YOUR_NOON_AFFILIATE_ID', // TODO: Add your Noon affiliate ref parameter
   },
   amazon: {
-    affiliateTag: 'YOUR_AMAZON_TAG-21', // Replace with your Amazon Associates tag
+    affiliateTag: 'krolist07-21',
+  },
+  shein: {
+    affiliateId: '83650433',
   }
 };
 
