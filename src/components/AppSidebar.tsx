@@ -204,8 +204,8 @@ export function AppSidebar() {
               const isImageIcon = typeof item.icon === 'string';
               return <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground px-[15px] py-0">
-                          {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4 shrink-0"} />}
+                      {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-full hover:bg-sidebar-accent/50 text-sidebar-foreground" : "flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground px-[15px] py-0"}>
+                          {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
                           {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                               <span className="shrink-0">{t(item.title)}</span>
                               {isNoon && <>
