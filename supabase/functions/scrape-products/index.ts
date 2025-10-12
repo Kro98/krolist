@@ -95,16 +95,18 @@ interface ScrapedProduct {
   bestPrice: number;
 }
 
-// Helper function to check daily search limit
+// Helper function to check daily search limit (calendar day based)
 async function checkSearchLimit(supabase: any, userId: string): Promise<{ allowed: boolean; remaining: number; resetAt?: string }> {
+  // Use calendar day instead of rolling 24-hour window
   const now = new Date();
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
 
   const { data, error } = await supabase
     .from('search_logs')
     .select('searched_at')
     .eq('user_id', userId)
-    .gte('searched_at', twentyFourHoursAgo.toISOString())
+    .gte('searched_at', today.toISOString())
     .order('searched_at', { ascending: true });
 
   if (error) {
@@ -115,11 +117,10 @@ async function checkSearchLimit(supabase: any, userId: string): Promise<{ allowe
   const searchCount = data?.length || 0;
   const remaining = Math.max(0, DAILY_SEARCH_LIMIT - searchCount);
   
-  let resetAt;
-  if (searchCount > 0 && data) {
-    const firstSearchTime = new Date(data[0].searched_at);
-    resetAt = new Date(firstSearchTime.getTime() + 24 * 60 * 60 * 1000).toISOString();
-  }
+  // Calculate reset time (midnight of next day)
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const resetAt = tomorrow.toISOString();
 
   return {
     allowed: searchCount < DAILY_SEARCH_LIMIT,
