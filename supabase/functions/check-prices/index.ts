@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,12 +21,31 @@ serve(async (req) => {
   }
 
   try {
+    // Validate input parameters
+    const requestSchema = z.object({
+      productId: z.string().uuid().optional(),
+      userId: z.string().uuid().optional()
+    }).refine(
+      data => data.productId || data.userId,
+      { message: 'Either productId or userId must be provided' }
+    );
+
+    const body = await req.json();
+    const validationResult = requestSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid parameters', details: validationResult.error.issues }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { productId, userId } = validationResult.data;
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    const { productId, userId } = await req.json();
 
     // Get products to check
     let query = supabaseClient
@@ -123,7 +143,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in check-prices:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An internal error occurred while checking prices. Please try again later.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

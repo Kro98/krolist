@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -343,14 +344,29 @@ serve(async (req) => {
       );
     }
 
-    const { query } = await req.json();
+    const body = await req.json();
     
-    if (!query || typeof query !== 'string') {
+    // Validate search query
+    const searchSchema = z.object({
+      query: z.string()
+        .trim()
+        .min(2, 'Query must be at least 2 characters')
+        .max(200, 'Query must not exceed 200 characters')
+    });
+
+    const validationResult = searchSchema.safeParse(body);
+
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: 'Query parameter is required' }),
+        JSON.stringify({ 
+          error: 'Invalid search query', 
+          details: validationResult.error.issues 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { query } = validationResult.data;
 
     // Check daily search limit
     const limitCheck = await checkSearchLimit(supabase, user.id);
@@ -411,8 +427,7 @@ serve(async (req) => {
     console.error('Error in scrape-products function:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to search products',
-        details: error.message 
+        error: 'An internal error occurred while searching products. Please try again later.'
       }),
       { 
         status: 500, 
