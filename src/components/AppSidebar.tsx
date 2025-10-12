@@ -173,7 +173,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
                       {!collapsed && <span>{t(item.title)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -205,10 +205,10 @@ export function AppSidebar() {
                             <img 
                               src={item.icon as string} 
                               alt={`${shopId} icon`}
-                              className="h-5 w-5 rounded-full object-cover shrink-0"
+                              className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"}
                             />
                           ) : (
-                            <item.icon className="h-4 w-4 shrink-0" />
+                            <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4 shrink-0"} />
                           )}
                           {!collapsed && (
                             <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
@@ -242,10 +242,10 @@ export function AppSidebar() {
                             <img 
                               src={item.icon as string} 
                               alt={`${shopId} icon`}
-                              className="h-5 w-5 rounded-full object-cover shrink-0"
+                              className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"}
                             />
                           ) : (
-                            <item.icon className="h-4 w-4" />
+                            <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
                           )}
                           {!collapsed && <span>{t(item.title)}</span>}
                         </NavLink>
@@ -266,7 +266,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
                       {!collapsed && <span>{t(item.title)}</span>}
                     </NavLink>
                   </SidebarMenuButton>

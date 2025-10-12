@@ -97,6 +97,7 @@ export default function SearchProducts() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedShops, setSelectedShops] = useState<string[]>([]);
   const [activeShops, setActiveShops] = useState(getActiveShops());
+  const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -218,9 +219,21 @@ export default function SearchProducts() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Mobile Filter Toggle */}
+        <div className="lg:hidden mb-4">
+          <Button
+            onClick={() => setShowFilters(!showFilters)}
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Filters */}
-          <aside className="w-full lg:w-64 space-y-4">
+          <aside className={`w-full lg:w-64 space-y-4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-card rounded-lg p-4 border border-border">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4" />
