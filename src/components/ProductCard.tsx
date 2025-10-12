@@ -210,10 +210,10 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               </Button>
             </CollapsibleTrigger>
             
-            <CollapsibleContent className="mt-4">
-              <div className="space-y-4 pt-4 border-t border-border">
+            <CollapsibleContent className="mt-3">
+              <div className="space-y-3 pt-3 border-t border-border">
                 {/* Price Details Header */}
-                <div>
+                <div className="px-1">
                   <h4 className="text-sm font-semibold mb-1">{t('products.priceDetails')}</h4>
                   <p className="text-xs text-muted-foreground">
                     {t('products.recordedHistory')}
@@ -221,7 +221,7 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 </div>
                 
                 {/* Chart */}
-                <div className="w-full">
+                <div className="w-full -mx-2">
                   <ChartContainer config={chartConfig} className="h-[180px] sm:h-[200px] md:h-[240px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -260,7 +260,7 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 </div>
                 
                 {/* Price Stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 px-1">
                   {/* Highest */}
                   <div className="bg-accent/10 border border-border rounded-lg p-2 sm:p-3">
                     <div className="flex items-center justify-center mb-1.5">
