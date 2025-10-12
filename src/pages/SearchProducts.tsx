@@ -283,13 +283,13 @@ export default function SearchProducts() {
           style={{ gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))` }}
         >
           {searchResults.map((result) => (
-            <Card key={result.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={result.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50">
               <div className="aspect-square overflow-hidden bg-muted">
                 {result.image ? (
                   <img
                     src={result.image}
                     alt={result.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
