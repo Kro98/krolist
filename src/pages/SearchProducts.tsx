@@ -135,28 +135,14 @@ export default function SearchProducts() {
       return;
     }
 
-    // Determine which stores to search - use selected shops or all active shops if none selected
-    const storesToSearch = selectedShops.length > 0 
-      ? selectedShops.filter(shop => ['noon', 'amazon'].includes(shop)) // Only supported stores
-      : ['noon', 'amazon'];
-
-    if (storesToSearch.length === 0) {
-      toast({
-        title: "No Stores Selected",
-        description: "Please select at least one supported store (Noon or Amazon)",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSearching(true);
     
     try {
-      // Call the scrape-products edge function with selected stores
+      // Always search all available stores - filters will be applied to results
       const { data, error } = await supabase.functions.invoke('scrape-products', {
         body: { 
           query: searchQuery,
-          stores: storesToSearch
+          stores: ['noon', 'amazon']
         }
       });
 
@@ -172,17 +158,12 @@ export default function SearchProducts() {
       }
 
       if (data?.success && data?.results) {
-        // Filter results by price range
-        const filteredResults = data.results.filter((product: SearchResult) => {
-          return product.bestPrice >= priceRange[0] && product.bestPrice <= priceRange[1];
-        });
-
-        setSearchResults(filteredResults);
+        setSearchResults(data.results);
         
-        if (filteredResults.length === 0) {
+        if (data.results.length === 0) {
           toast({
             title: "No Results",
-            description: "No products found matching your filters.",
+            description: "No products found for your search query.",
           });
         }
       } else {
@@ -409,7 +390,26 @@ export default function SearchProducts() {
               </div>
             ) : (
               <div className="space-y-4">
-                {searchResults.map((result) => (
+                {searchResults
+                  .filter((result) => {
+                    // Filter by price range
+                    if (result.bestPrice < priceRange[0] || result.bestPrice > priceRange[1]) {
+                      return false;
+                    }
+                    
+                    // Filter by selected shops - if no shops selected, show all
+                    if (selectedShops.length > 0) {
+                      const hasSelectedShop = result.sellers.some(seller => 
+                        selectedShops.some(shop => 
+                          seller.store.toLowerCase() === shop.toLowerCase()
+                        )
+                      );
+                      if (!hasSelectedShop) return false;
+                    }
+                    
+                    return true;
+                  })
+                  .map((result) => (
                   <Card key={result.id} className="p-6 hover:shadow-lg transition-all">
                     <div className="flex flex-col md:flex-row gap-6">
                       {/* Product Image */}
@@ -434,7 +434,15 @@ export default function SearchProducts() {
 
                         {/* Sellers Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {result.sellers.map((seller, idx) => (
+                          {result.sellers
+                            .filter(seller => {
+                              // Filter sellers by selected shops
+                              if (selectedShops.length === 0) return true;
+                              return selectedShops.some(shop => 
+                                seller.store.toLowerCase() === shop.toLowerCase()
+                              );
+                            })
+                            .map((seller, idx) => (
                             <div
                               key={idx}
                               className="border border-border rounded-lg p-3 space-y-2"
