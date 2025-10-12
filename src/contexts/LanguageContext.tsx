@@ -18,6 +18,7 @@ const translations = {
     'nav.dashboard': 'Dashboard',
     'nav.products': 'Products',
     'nav.analytics': 'Analytics',
+    'nav.news': 'News & Updates',
     'nav.events': 'Events',
     'nav.promoCodes': 'Promo Codes',
     'nav.donation': 'Support Dev',

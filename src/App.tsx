@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import PromoCodes from "./pages/PromoCodes";
 import Donation from "./pages/Donation";
 import Events from "./pages/Events";
+import NewsUpdates from "./pages/NewsUpdates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
                 <Route path="/products" element={<Products />} />
                 <Route path="/search-products" element={<SearchProducts />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/news" element={<NewsUpdates />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/promo-codes" element={<PromoCodes />} />
                 <Route path="/donation" element={<Donation />} />
