@@ -11,11 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import sheinIcon from "@/assets/shop-icons/shein-icon.png";
 import noonIcon from "@/assets/shop-icons/noon-icon.png";
 import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
-import ikeaIcon from "@/assets/shop-icons/ikea-icon.png";
-import abyatIcon from "@/assets/shop-icons/abyat-icon.png";
-import namshiIcon from "@/assets/shop-icons/namshi-icon.png";
-import trendyolIcon from "@/assets/shop-icons/trendyol-icon.png";
-import asosIcon from "@/assets/shop-icons/asos-icon.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 const mainItems = [{
   title: "nav.products",
@@ -30,24 +25,14 @@ const getShopAffiliateUrl = (shopId: string) => {
   const affiliateUrls: Record<string, string> = {
     shein: "https://onelink.shein.com/17/535mkxhsd9a6",
     noon: "https://s.noon.com/sLVK_sCBGo4",
-    amazon: "https://amzn.to/4ny9VLJ",
-    ikea: "https://www.ikea.com/ref/affiliate123",
-    abyat: "https://www.abyat.com/?ref=affiliate123",
-    namshi: "https://www.namshi.com/?ref=affiliate123",
-    trendyol: "https://www.trendyol.com/?ref=affiliate123",
-    asos: "https://www.asos.com/?ref=affiliate123"
+    amazon: "https://amzn.to/4ny9VLJ"
   };
   return affiliateUrls[shopId] || `https://${shopId}.com`;
 };
 const shopIconMap: Record<string, string> = {
   shein: sheinIcon,
   noon: noonIcon,
-  amazon: amazonIcon,
-  ikea: ikeaIcon,
-  abyat: abyatIcon,
-  namshi: namshiIcon,
-  trendyol: trendyolIcon,
-  asos: asosIcon
+  amazon: amazonIcon
 };
 const getShopItems = () => {
   const saved = localStorage.getItem('shopOrder');
@@ -75,31 +60,6 @@ const getShopItems = () => {
     title: "shops.amazon",
     url: getShopAffiliateUrl("amazon"),
     icon: amazonIcon,
-    isExternal: true
-  }, {
-    title: "shops.ikea",
-    url: getShopAffiliateUrl("ikea"),
-    icon: ikeaIcon,
-    isExternal: true
-  }, {
-    title: "shops.abyat",
-    url: getShopAffiliateUrl("abyat"),
-    icon: abyatIcon,
-    isExternal: true
-  }, {
-    title: "shops.namshi",
-    url: getShopAffiliateUrl("namshi"),
-    icon: namshiIcon,
-    isExternal: true
-  }, {
-    title: "shops.trendyol",
-    url: getShopAffiliateUrl("trendyol"),
-    icon: trendyolIcon,
-    isExternal: true
-  }, {
-    title: "shops.asos",
-    url: getShopAffiliateUrl("asos"),
-    icon: asosIcon,
     isExternal: true
   }];
 };
