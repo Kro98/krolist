@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import krolistCircleLogo from "@/assets/krolist-circle-logo.png";
-import krolistTextLogo from "@/assets/krolist-text-logo.png";
+import krolistHeaderLogo from "@/assets/krolist-header-logo.png";
 import krolistWelcomeLogo from "@/assets/krolist-welcome-logo.png";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,7 +104,7 @@ export default function Auth() {
       {/* Header */}
       <header className="p-6 flex justify-center">
         <img 
-          src={krolistTextLogo} 
+          src={krolistHeaderLogo} 
           alt="Krolist" 
           className="h-16 object-contain"
         />
