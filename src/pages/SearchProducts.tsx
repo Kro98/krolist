@@ -101,6 +101,7 @@ export default function SearchProducts() {
   const [activeShops, setActiveShops] = useState(getActiveShops());
   const [showFilters, setShowFilters] = useState(false);
   const [filterSidebarCollapsed, setFilterSidebarCollapsed] = useState(false);
+  const [gridColumns, setGridColumns] = useState(2); // 1, 2, 3, or 4 columns
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -300,6 +301,38 @@ export default function SearchProducts() {
 
           {/* Results Grid */}
           <main className="flex-1">
+            {/* Grid Controls */}
+            {searchResults.length > 0 && (
+              <div className="mb-4 flex items-center justify-between bg-card border border-border rounded-lg p-3">
+                <p className="text-sm text-muted-foreground">
+                  {searchResults.filter((result) => {
+                    if (result.bestPrice < priceRange[0] || result.bestPrice > priceRange[1]) return false;
+                    if (selectedShops.length > 0) {
+                      const hasSelectedShop = result.sellers.some(seller => 
+                        selectedShops.some(shop => seller.store.toLowerCase() === shop.toLowerCase())
+                      );
+                      if (!hasSelectedShop) return false;
+                    }
+                    return true;
+                  }).length} results
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground hidden md:inline">Grid:</span>
+                  {[1, 2, 3, 4].map((cols) => (
+                    <Button
+                      key={cols}
+                      size="sm"
+                      variant={gridColumns === cols ? "default" : "outline"}
+                      onClick={() => setGridColumns(cols)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {cols}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {searchResults.length === 0 ? (
               <div className="text-center py-20">
                 <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -311,7 +344,12 @@ export default function SearchProducts() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className={`grid gap-4 ${
+                gridColumns === 1 ? 'grid-cols-1' :
+                gridColumns === 2 ? 'grid-cols-1 lg:grid-cols-2' :
+                gridColumns === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+                'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              }`}>
                 {searchResults
                   .filter((result) => {
                     // Filter by price range
@@ -332,30 +370,29 @@ export default function SearchProducts() {
                     return true;
                   })
                   .map((result) => (
-                  <Card key={result.id} className="p-6 hover:shadow-lg transition-all">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      {/* Product Image */}
-                      <div className="w-full md:w-48 h-48 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                        <img
-                          src={result.image}
-                          alt={result.title}
-                          className="w-full h-full object-contain bg-muted"
-                        />
+                  <Card key={result.id} className="p-4 hover:shadow-lg transition-all flex flex-col h-full">
+                    {/* Product Image */}
+                    <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center overflow-hidden mb-4">
+                      <img
+                        src={result.image}
+                        alt={result.title}
+                        className="w-full h-full object-contain bg-muted"
+                      />
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="flex-1 space-y-3 flex flex-col">
+                      <div className="mb-2">
+                        <h3 className="text-lg font-semibold mb-1 line-clamp-2">
+                          {result.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {result.description}
+                        </p>
                       </div>
 
-                      {/* Product Info */}
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-1">
-                            {result.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {result.description}
-                          </p>
-                        </div>
-
-                        {/* Sellers Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {/* Sellers Grid */}
+                      <div className="grid grid-cols-1 gap-2 flex-1">
                           {result.sellers
                             .filter(seller => {
                               // Filter sellers by selected shops
@@ -367,50 +404,44 @@ export default function SearchProducts() {
                             .map((seller, idx) => (
                             <div
                               key={idx}
-                              className="border border-border rounded-lg p-3 space-y-2"
+                              className="border border-border rounded-lg p-2 space-y-1.5"
                             >
-                              {seller.badge && (
-                                <Badge className="bg-green-500/10 text-green-500 text-xs">
-                                  {seller.badge}
-                                </Badge>
-                              )}
-                              <div>
-                                <p className="text-xs text-muted-foreground">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-xs font-medium text-muted-foreground">
                                   {seller.store}
                                 </p>
+                                {seller.badge && (
+                                  <Badge className="bg-green-500/10 text-green-500 text-[10px] h-5">
+                                    {seller.badge}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div>
                                 {seller.originalPrice && (
-                                  <p className="text-xs line-through text-muted-foreground">
+                                  <p className="text-[10px] line-through text-muted-foreground">
                                     SAR {seller.originalPrice}
                                   </p>
                                 )}
-                                <p className="text-lg font-bold">
+                                <p className="text-base font-bold">
                                   SAR {seller.price}
                                 </p>
                               </div>
                               <Button
                                 size="sm"
                                 onClick={() => handleAddToList(result, seller)}
-                                className="w-full"
+                                className="w-full h-8 text-xs"
                               >
                                 <Plus className="h-3 w-3 mr-1" />
-                                Add to List
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full text-xs"
-                              >
-                                Compare Sellers
+                                Add
                               </Button>
                             </div>
                           ))}
-                        </div>
+                      </div>
 
-                        <div className="pt-2 border-t border-border">
-                          <p className="text-sm font-semibold text-primary">
-                            Best Price: SAR {result.bestPrice}
-                          </p>
-                        </div>
+                      <div className="pt-2 mt-auto border-t border-border">
+                        <p className="text-sm font-semibold text-primary">
+                          Best Price: SAR {result.bestPrice}
+                        </p>
                       </div>
                     </div>
                   </Card>
