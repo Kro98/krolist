@@ -62,7 +62,7 @@ export function Layout({ children }: LayoutProps) {
           <Button
             size="icon"
             className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover"
-            onClick={() => navigate('/search-products')}
+            onClick={() => navigate('/add-product')}
           >
             <Plus className="h-6 w-6" />
           </Button>

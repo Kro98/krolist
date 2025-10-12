@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Products from "./pages/Products";
 import SearchProducts from "./pages/SearchProducts";
+import AddProduct from "./pages/AddProduct";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import PromoCodes from "./pages/PromoCodes";
@@ -33,6 +34,7 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/" element={<Products />} />
                   <Route path="/products" element={<Products />} />
+                  <Route path="/add-product" element={<AddProduct />} />
                   <Route path="/search-products" element={<SearchProducts />} />
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/news" element={<NewsUpdates />} />
