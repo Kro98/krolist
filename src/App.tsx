@@ -15,6 +15,7 @@ import Events from "./pages/Events";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+// Search products page for affiliate link system
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
