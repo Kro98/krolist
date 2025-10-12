@@ -1,94 +1,87 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Link as LinkIcon } from "lucide-react";
+import { Search, PenLine } from "lucide-react";
+import { ManualProductForm } from "./ManualProductForm";
+
+type Mode = 'select' | 'search' | 'manual';
 
 export function AddProductForm() {
-  const [url, setUrl] = useState("");
-  const [currency, setCurrency] = useState("USD");
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [mode, setMode] = useState<Mode>('select');
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast({
-      title: "Product Added Successfully!",
-      description: "We'll start tracking this product's price for you.",
-    });
-    
-    setUrl("");
-    setIsLoading(false);
+  const handleSearchClick = () => {
+    navigate('/search-products');
   };
+
+  const handleManualClick = () => {
+    setMode('manual');
+  };
+
+  const handleBack = () => {
+    setMode('select');
+  };
+
+  if (mode === 'manual') {
+    return <ManualProductForm onBack={handleBack} />;
+  }
 
   return (
     <Card className="max-w-2xl mx-auto shadow-card">
       <CardHeader className="text-center">
-        <CardTitle className="flex items-center justify-center gap-2">
-          <Plus className="h-5 w-5 text-primary" />
-          Add New Product
-        </CardTitle>
+        <CardTitle>Add a Product</CardTitle>
         <CardDescription>
-          Paste a product URL and we'll track its price for you
+          Choose how you'd like to add a product to track
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="url" className="text-sm font-medium">
-              Product URL
-            </Label>
-            <div className="relative">
-              <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="url"
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="pl-10"
-                placeholder="https://example.com/product"
-                required
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Supports Amazon, eBay, Best Buy, Target, and many more stores
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="currency" className="text-sm font-medium">
-              Preferred Currency
-            </Label>
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select currency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD - US Dollar</SelectItem>
-                <SelectItem value="EUR">EUR - Euro</SelectItem>
-                <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
-                <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-primary hover:shadow-hover transition-all duration-200"
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Search Option */}
+          <button
+            onClick={handleSearchClick}
+            className="group relative overflow-hidden rounded-lg border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
-            {isLoading ? "Adding Product..." : "Track This Product"}
-          </Button>
-        </form>
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Search className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Search for Products</h3>
+                <p className="text-sm text-muted-foreground">
+                  Search across multiple stores and compare prices from different sellers
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <span className="text-xs bg-muted px-2 py-1 rounded">Amazon</span>
+                <span className="text-xs bg-muted px-2 py-1 rounded">Noon</span>
+                <span className="text-xs bg-muted px-2 py-1 rounded">More...</span>
+              </div>
+            </div>
+          </button>
+
+          {/* Manual Option */}
+          <button
+            onClick={handleManualClick}
+            className="group relative overflow-hidden rounded-lg border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <PenLine className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Add Manually</h3>
+                <p className="text-sm text-muted-foreground">
+                  Paste a product URL and we'll auto-fill the details, or enter everything manually
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <span className="text-xs bg-muted px-2 py-1 rounded">Any URL</span>
+                <span className="text-xs bg-muted px-2 py-1 rounded">Full Control</span>
+              </div>
+            </div>
+          </button>
+        </div>
       </CardContent>
     </Card>
   );

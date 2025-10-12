@@ -333,8 +333,39 @@ serve(async (req) => {
   }
 
   try {
-    const { query, stores = ['noon', 'amazon'] } = await req.json();
+    const { query, url, stores = ['noon', 'amazon'] } = await req.json();
+    
+    // If URL is provided, try to scrape that specific product
+    if (url) {
+      console.log(`Scraping single product URL: ${url}`);
+      
+      // Detect which store based on URL
+      let storeProducts: ScrapedProduct[] = [];
+      
+      if (url.toLowerCase().includes('noon.com')) {
+        storeProducts = await scrapeNoon(url);
+      } else if (url.toLowerCase().includes('amazon')) {
+        storeProducts = await scrapeAmazon(url);
+      } else {
+        // For unknown stores, return a basic structure
+        console.log('Unknown store, returning basic structure');
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            results: [],
+            message: 'Store not supported for auto-fill. Please enter details manually.'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ success: true, results: storeProducts }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
+    // Original search query logic
     if (!query || typeof query !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Query parameter is required' }),
