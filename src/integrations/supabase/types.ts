@@ -128,7 +128,6 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          ip_address: string | null
           search_query: string
           searched_at: string
           user_id: string
@@ -136,7 +135,6 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          ip_address?: string | null
           search_query: string
           searched_at?: string
           user_id: string
@@ -144,7 +142,6 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          ip_address?: string | null
           search_query?: string
           searched_at?: string
           user_id?: string

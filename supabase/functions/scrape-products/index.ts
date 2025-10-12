@@ -128,13 +128,12 @@ async function checkSearchLimit(supabase: any, userId: string): Promise<{ allowe
 }
 
 // Helper function to log search
-async function logSearch(supabase: any, userId: string, query: string, ipAddress?: string) {
+async function logSearch(supabase: any, userId: string, query: string) {
   const { error } = await supabase
     .from('search_logs')
     .insert({
       user_id: userId,
-      search_query: query,
-      ip_address: ipAddress
+      search_query: query
     });
 
   if (error) {
@@ -382,9 +381,8 @@ serve(async (req) => {
     
     const amazonProducts = await searchAmazonAPI(query);
     
-    // Log the search
-    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
-    await logSearch(supabase, user.id, query, clientIp || undefined);
+    // Log the search (without IP address for privacy)
+    await logSearch(supabase, user.id, query);
     
     // Get updated search limit info
     const updatedLimitCheck = await checkSearchLimit(supabase, user.id);
