@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 // Affiliate link configuration for Saudi Arabia
 const AFFILIATE_LINKS = {
@@ -33,6 +34,7 @@ interface SearchResult {
     price: number;
     originalPrice?: number;
     badge?: string;
+    productUrl?: string;
   }[];
   bestPrice: number;
 }
@@ -135,28 +137,62 @@ export default function SearchProducts() {
 
     setIsSearching(true);
     
-    // Simulate API call to search across Saudi stores
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In production, this would call your backend API that searches across
-    // Noon, Amazon Saudi, Namshi, etc. using their APIs
-    setSearchResults(mockSearchResults);
-    setIsSearching(false);
+    try {
+      // Call the scrape-products edge function
+      const { data, error } = await supabase.functions.invoke('scrape-products', {
+        body: { 
+          query: searchQuery,
+          stores: ['noon', 'amazon']
+        }
+      });
+
+      if (error) {
+        console.error('Error scraping products:', error);
+        toast({
+          title: "Search Failed",
+          description: "Unable to fetch products. Please try again.",
+          variant: "destructive",
+        });
+        setSearchResults([]);
+        return;
+      }
+
+      if (data?.success && data?.results) {
+        setSearchResults(data.results);
+        
+        if (data.results.length === 0) {
+          toast({
+            title: "No Results",
+            description: "No products found for your search query.",
+          });
+        }
+      } else {
+        setSearchResults([]);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      toast({
+        title: "Search Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleAddToList = (result: SearchResult, seller: any) => {
-    // Generate affiliate link based on store
-    const storeName = seller.store.toLowerCase();
-    let affiliateUrl = "";
+    // Use the productUrl from the scraper (already has affiliate params)
+    const affiliateUrl = seller.productUrl || '';
     
-    if (storeName.includes("noon")) {
-      affiliateUrl = AFFILIATE_LINKS.noon(result.id);
-    } else if (storeName.includes("amazon")) {
-      affiliateUrl = AFFILIATE_LINKS.amazon(result.id);
-    } else if (storeName.includes("namshi")) {
-      affiliateUrl = AFFILIATE_LINKS.namshi(result.id);
-    } else if (storeName.includes("shein")) {
-      affiliateUrl = AFFILIATE_LINKS.shein(result.id);
+    if (!affiliateUrl) {
+      toast({
+        title: "Error",
+        description: "Product link not available",
+        variant: "destructive",
+      });
+      return;
     }
 
     // Open affiliate link in new tab

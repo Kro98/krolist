@@ -1,1 +1,4 @@
 project_id = "cnmdwgdizfrvyplllmdn"
+
+[functions.scrape-products]
+verify_jwt = false
