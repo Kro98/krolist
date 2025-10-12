@@ -45,9 +45,9 @@ const mockSearchResults: SearchResult[] = [
     description: "Powerful latency with best in class performance",
     image: "/placeholder.svg",
     sellers: [
-      { store: "TechDrive", price: 4200, originalPrice: 4500, badge: "FLASH SALES" },
-      { store: "HomComfort", price: 4350 },
-      { store: "DigitalDeals", price: 4195, badge: "FLASH SALES" },
+      { store: "Noon", price: 4200, originalPrice: 4500, badge: "FLASH SALES" },
+      { store: "Amazon", price: 4350 },
+      { store: "Shein", price: 4195, badge: "FLASH SALES" },
     ],
     bestPrice: 4195,
   },
@@ -57,8 +57,8 @@ const mockSearchResults: SearchResult[] = [
     description: "Designed for maximum comfort",
     image: "/placeholder.svg",
     sellers: [
-      { store: "HomComfort", price: 350 },
-      { store: "OfficesMart", price: 325 },
+      { store: "IKEA", price: 350 },
+      { store: "Noon", price: 325 },
     ],
     bestPrice: 325,
   },
@@ -70,14 +70,12 @@ export default function SearchProducts() {
   const [isSearching, setIsSearching] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedSellers, setSelectedSellers] = useState<string[]>([]);
+  const [selectedShops, setSelectedShops] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
 
   const categories = ["Electronics", "Home Goods", "Fashion", "Books", "Toys"];
-  const brands = ["TechDrive", "HomComfort", "DigitalDeals", "OfficesMart"];
-  const sellers = ["TechDrive", "HomComfort", "DigitalDeals", "OfficesMart"];
+  const shops = ["Noon", "Amazon", "Shein", "Namshi", "IKEA", "Abyat", "Trendyol", "ASOS"];
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -133,15 +131,9 @@ export default function SearchProducts() {
     );
   };
 
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev =>
-      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
-    );
-  };
-
-  const toggleSeller = (seller: string) => {
-    setSelectedSellers(prev =>
-      prev.includes(seller) ? prev.filter(s => s !== seller) : [...prev, seller]
+  const toggleShop = (shop: string) => {
+    setSelectedShops(prev =>
+      prev.includes(shop) ? prev.filter(s => s !== shop) : [...prev, shop]
     );
   };
 
@@ -229,54 +221,30 @@ export default function SearchProducts() {
                     className="w-full"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>${priceRange[0]}</span>
-                    <span>Max: ${priceRange[1]}</span>
+                    <span>SAR {priceRange[0]}</span>
+                    <span>Max: SAR {priceRange[1]}</span>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
 
-              {/* Brands Filter */}
+              {/* Shops Filter */}
               <Collapsible defaultOpen className="mt-6">
                 <CollapsibleTrigger className="w-full text-left font-medium mb-2">
-                  Brands
+                  Shops
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-2">
-                  {brands.map((brand) => (
-                    <div key={brand} className="flex items-center space-x-2">
+                  {shops.map((shop) => (
+                    <div key={shop} className="flex items-center space-x-2">
                       <Checkbox
-                        id={`brand-${brand}`}
-                        checked={selectedBrands.includes(brand)}
-                        onCheckedChange={() => toggleBrand(brand)}
+                        id={`shop-${shop}`}
+                        checked={selectedShops.includes(shop)}
+                        onCheckedChange={() => toggleShop(shop)}
                       />
                       <Label
-                        htmlFor={`brand-${brand}`}
+                        htmlFor={`shop-${shop}`}
                         className="text-sm cursor-pointer"
                       >
-                        {brand}
-                      </Label>
-                    </div>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Sellers Filter */}
-              <Collapsible defaultOpen className="mt-6">
-                <CollapsibleTrigger className="w-full text-left font-medium mb-2">
-                  Sellers
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2">
-                  {sellers.map((seller) => (
-                    <div key={seller} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`seller-${seller}`}
-                        checked={selectedSellers.includes(seller)}
-                        onCheckedChange={() => toggleSeller(seller)}
-                      />
-                      <Label
-                        htmlFor={`seller-${seller}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {seller}
+                        {shop}
                       </Label>
                     </div>
                   ))}
@@ -340,11 +308,11 @@ export default function SearchProducts() {
                                 </p>
                                 {seller.originalPrice && (
                                   <p className="text-xs line-through text-muted-foreground">
-                                    ${seller.originalPrice}
+                                    SAR {seller.originalPrice}
                                   </p>
                                 )}
                                 <p className="text-lg font-bold">
-                                  ${seller.price}
+                                  SAR {seller.price}
                                 </p>
                               </div>
                               <Button
@@ -368,7 +336,7 @@ export default function SearchProducts() {
 
                         <div className="pt-2 border-t border-border">
                           <p className="text-sm font-semibold text-primary">
-                            Best Price: ${result.bestPrice}
+                            Best Price: SAR {result.bestPrice}
                           </p>
                         </div>
                       </div>
