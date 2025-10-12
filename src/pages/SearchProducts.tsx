@@ -202,7 +202,7 @@ export default function SearchProducts() {
 
             {user && searchesRemaining === 0 && <Alert className="mt-4" variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+                <AlertDescription className="mx-0">
                   You've reached your daily search limit. Resets in {formatResetTime()}
                 </AlertDescription>
               </Alert>}
