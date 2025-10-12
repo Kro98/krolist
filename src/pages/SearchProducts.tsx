@@ -244,7 +244,7 @@ export default function SearchProducts() {
                 </div>
                 <button 
                   onClick={() => setShowFilterCard(!showFilterCard)}
-                  className="p-1 hover:bg-sidebar-accent rounded-md transition-colors"
+                  className="hidden lg:block p-1 hover:bg-sidebar-accent rounded-md transition-colors"
                   aria-label={showFilterCard ? "Hide filters" : "Show filters"}
                 >
                   {showFilterCard ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
