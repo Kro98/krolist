@@ -101,7 +101,7 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <header className="p-6">
+      <header className="p-6 flex justify-center">
         <img 
           src={krolistTextLogo} 
           alt="Krolist" 
