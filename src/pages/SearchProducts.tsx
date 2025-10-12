@@ -100,6 +100,7 @@ export default function SearchProducts() {
   const [selectedShops, setSelectedShops] = useState<string[]>([]);
   const [activeShops, setActiveShops] = useState(getActiveShops());
   const [showFilters, setShowFilters] = useState(false);
+  const [filterSidebarCollapsed, setFilterSidebarCollapsed] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -271,108 +272,29 @@ export default function SearchProducts() {
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Filters */}
-          <aside className={`w-full lg:w-64 space-y-4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-            <div className="bg-card rounded-lg p-4 border border-border">
-              <h3 className="font-semibold mb-4 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filter Results
-                </div>
-                <button 
-                  onClick={() => setShowFilterCard(!showFilterCard)}
-                  className="hidden lg:block p-1 hover:bg-sidebar-accent rounded-md transition-colors"
-                  aria-label={showFilterCard ? "Hide filters" : "Show filters"}
-                >
-                  {showFilterCard ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </button>
+          <aside className={`space-y-4 transition-all duration-300 ${showFilters ? 'block' : 'hidden lg:block'} ${filterSidebarCollapsed ? 'lg:w-12' : 'lg:w-64'} w-full`}>
+            <div className="bg-card rounded-lg p-4 border border-border relative">
+              <button 
+                onClick={() => setFilterSidebarCollapsed(!filterSidebarCollapsed)}
+                className="hidden lg:flex absolute -right-3 top-4 h-6 w-6 items-center justify-center rounded-full border border-border bg-card hover:bg-accent z-10"
+                aria-label={filterSidebarCollapsed ? "Expand filters" : "Collapse filters"}
+              >
+                {filterSidebarCollapsed ? <SlidersHorizontal className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+              </button>
+              
+              {!filterSidebarCollapsed && (
+                <>
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" />
+                Filter Results
               </h3>
 
-              {showFilterCard && (<>
               {/* Categories Filter - Disabled for scraped products */}
               <Collapsible defaultOpen>
-                <CollapsibleTrigger className="w-full text-left font-medium mb-2 text-muted-foreground">
-                  Categories (Not available for search)
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2">
-                  <p className="text-xs text-muted-foreground italic">
-                    Category filtering is not available for product search results
-                  </p>
-                </CollapsibleContent>
+...
               </Collapsible>
-
-              {/* Price Range Filter */}
-              <Collapsible defaultOpen className="mt-6">
-                <CollapsibleTrigger className="w-full text-left font-medium mb-2">
-                  Price Range
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-4">
-                  <Slider
-                    min={0}
-                    max={10000}
-                    step={100}
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>SAR {priceRange[0]}</span>
-                    <span>Max: SAR {priceRange[1]}</span>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Shops Filter */}
-              <Collapsible defaultOpen className="mt-6">
-                <CollapsibleTrigger className="w-full text-left font-medium mb-2">
-                  Shops
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2">
-                  {activeShops.map((shop) => {
-                    const isNoon = shop.id === 'noon';
-                    const isShein = shop.id === 'shein';
-                    
-                    return (
-                      <div key={shop.id} className="flex items-start space-x-2">
-                        <Checkbox
-                          id={`shop-${shop.id}`}
-                          checked={selectedShops.includes(shop.id)}
-                          onCheckedChange={() => toggleShop(shop.id)}
-                          className="mt-0.5"
-                        />
-                        <div className="flex flex-col gap-1 flex-1 min-w-0">
-                          <Label
-                            htmlFor={`shop-${shop.id}`}
-                            className="text-sm cursor-pointer flex items-center gap-1 flex-wrap"
-                          >
-                            <span className="shrink-0">{shop.name}</span>
-                            {isNoon && (
-                              <>
-                                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30 shrink-0">
-                                  KINGDOME
-                                </span>
-                                <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-medium rounded border border-orange-500/30 shrink-0">
-                                  save 10 rial
-                                </span>
-                              </>
-                            )}
-                            {isShein && (
-                              <>
-                                <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium rounded border border-blue-500/30 shrink-0">
-                                  search for
-                                </span>
-                                <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-700 dark:text-purple-400 text-[10px] font-medium rounded border border-purple-500/30 shrink-0">
-                                  R2M6A
-                                </span>
-                              </>
-                            )}
-                          </Label>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CollapsibleContent>
-              </Collapsible>
-              </>)}
+              </>
+              )}
             </div>
           </aside>
 
