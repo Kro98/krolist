@@ -13,9 +13,14 @@ const DEFAULT_SHOPS = [
   { id: "shein", name: "SHEIN", enabled: true },
   { id: "noon", name: "NOON", enabled: true },
   { id: "amazon", name: "Amazon", enabled: true },
+  { id: "ikea", name: "IKEA", enabled: true },
+  { id: "abyat", name: "ABYAT", enabled: true },
+  { id: "namshi", name: "NAMSHI", enabled: true },
+  { id: "trendyol", name: "TRENDYOL", enabled: true },
+  { id: "asos", name: "ASOS", enabled: true },
 ];
 
-const COMING_SOON_SHOPS: string[] = [];
+const COMING_SOON_SHOPS = ["ikea", "abyat", "namshi", "trendyol", "asos"];
 
 interface Shop {
   id: string;

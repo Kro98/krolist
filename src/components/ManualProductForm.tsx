@@ -388,6 +388,11 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                       <SelectItem value="SHEIN">SHEIN</SelectItem>
                       <SelectItem value="Noon">Noon</SelectItem>
                       <SelectItem value="Amazon">Amazon</SelectItem>
+                      <SelectItem value="IKEA">IKEA</SelectItem>
+                      <SelectItem value="Abyat">Abyat</SelectItem>
+                      <SelectItem value="Namshi">Namshi</SelectItem>
+                      <SelectItem value="Trendyol">Trendyol</SelectItem>
+                      <SelectItem value="ASOS">ASOS</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
