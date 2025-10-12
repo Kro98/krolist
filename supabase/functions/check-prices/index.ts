@@ -1,11 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Rate limit: Only check products not updated in the last 3 weeks (21 days)
+const RATE_LIMIT_DAYS = 21;
 
 interface Product {
   id: string;
@@ -13,6 +15,7 @@ interface Product {
   store: string;
   current_price: number;
   currency: string;
+  last_checked_at: string | null;
 }
 
 serve(async (req) => {
@@ -21,52 +24,80 @@ serve(async (req) => {
   }
 
   try {
-    // Validate input parameters
-    const requestSchema = z.object({
-      productId: z.string().uuid().optional(),
-      userId: z.string().uuid().optional()
-    }).refine(
-      data => data.productId || data.userId,
-      { message: 'Either productId or userId must be provided' }
+    // Step 1: Authenticate the request
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { auth: { persistSession: false } }
     );
 
-    const body = await req.json();
-    const validationResult = requestSchema.safeParse(body);
-
-    if (!validationResult.success) {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Invalid parameters', details: validationResult.error.issues }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Unauthorized - Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const { productId, userId } = validationResult.data;
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
-    const supabaseClient = createClient(
+    if (userError || !user) {
+      console.error('Authentication error:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
+    // Step 2: Create admin client for database operations
+    const adminClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get products to check
-    let query = supabaseClient
+    // Step 3: Calculate rate limit threshold (3 weeks ago)
+    const rateLimitDate = new Date();
+    rateLimitDate.setDate(rateLimitDate.getDate() - RATE_LIMIT_DAYS);
+    const rateLimitThreshold = rateLimitDate.toISOString();
+
+    console.log(`Rate limit threshold: ${rateLimitThreshold} (checking products not updated in ${RATE_LIMIT_DAYS} days)`);
+
+    // Step 4: Get products to check - only user's own products that haven't been checked in 3 weeks
+    const { data: products, error: fetchError } = await adminClient
       .from('products')
       .select('*')
-      .eq('is_active', true);
-      
-    if (productId) {
-      query = query.eq('id', productId);
-    } else if (userId) {
-      query = query.eq('user_id', userId);
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .or(`last_checked_at.is.null,last_checked_at.lt.${rateLimitThreshold}`);
+
+    if (fetchError) {
+      console.error('Error fetching products:', fetchError);
+      throw fetchError;
     }
-    
-    const { data: products, error: fetchError } = await query;
 
-    if (fetchError) throw fetchError;
+    if (!products || products.length === 0) {
+      console.log('No products eligible for price check (all products checked within last 3 weeks)');
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'No products need price checking at this time. Products are checked automatically every 3 weeks.',
+          updates: [],
+          nextCheckAvailable: rateLimitThreshold
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
+    console.log(`Found ${products.length} products eligible for price check`);
     const results = [];
 
     for (const product of (products as Product[])) {
       try {
+        console.log(`Checking price for product ${product.id} (${product.store})`);
+        
         // Fetch the product page
         const response = await fetch(product.product_url, {
           headers: {
@@ -76,6 +107,13 @@ serve(async (req) => {
 
         if (!response.ok) {
           console.log(`Failed to fetch ${product.product_url}: ${response.status}`);
+          // Still update last_checked_at even on failure to prevent constant retries
+          await adminClient
+            .from('products')
+            .update({
+              last_checked_at: new Date().toISOString()
+            })
+            .eq('id', product.id);
           continue;
         }
 
@@ -97,8 +135,10 @@ serve(async (req) => {
         }
 
         if (newPrice && newPrice !== product.current_price) {
+          console.log(`Price changed for product ${product.id}: ${product.current_price} -> ${newPrice}`);
+          
           // Update product
-          await supabaseClient
+          await adminClient
             .from('products')
             .update({
               current_price: newPrice,
@@ -108,7 +148,7 @@ serve(async (req) => {
             .eq('id', product.id);
 
           // Add price history entry
-          await supabaseClient
+          await adminClient
             .from('price_history')
             .insert({
               product_id: product.id,
@@ -123,8 +163,9 @@ serve(async (req) => {
             change: newPrice - product.current_price
           });
         } else {
+          console.log(`No price change for product ${product.id}`);
           // Update last checked time even if price didn't change
-          await supabaseClient
+          await adminClient
             .from('products')
             .update({
               last_checked_at: new Date().toISOString()
@@ -133,17 +174,39 @@ serve(async (req) => {
         }
       } catch (error) {
         console.error(`Failed to check price for ${product.id}:`, error);
+        // Update last_checked_at to prevent getting stuck on failing products
+        try {
+          await adminClient
+            .from('products')
+            .update({
+              last_checked_at: new Date().toISOString()
+            })
+            .eq('id', product.id);
+        } catch (updateError) {
+          console.error(`Failed to update last_checked_at for ${product.id}:`, updateError);
+        }
       }
     }
 
+    console.log(`Price check complete. ${results.length} price changes detected.`);
+    
     return new Response(
-      JSON.stringify({ success: true, updates: results }),
+      JSON.stringify({ 
+        success: true, 
+        updates: results,
+        productsChecked: products.length,
+        priceChanges: results.length,
+        message: `Checked ${products.length} products. Found ${results.length} price changes. Products will be automatically checked again in 3 weeks.`
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error in check-prices:', error);
     return new Response(
-      JSON.stringify({ error: 'An internal error occurred while checking prices. Please try again later.' }),
+      JSON.stringify({ 
+        error: 'An internal error occurred while checking prices. Please try again later.',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
