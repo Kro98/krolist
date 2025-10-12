@@ -135,14 +135,28 @@ export default function SearchProducts() {
       return;
     }
 
+    // Determine which stores to search - use selected shops or all active shops if none selected
+    const storesToSearch = selectedShops.length > 0 
+      ? selectedShops.filter(shop => ['noon', 'amazon'].includes(shop)) // Only supported stores
+      : ['noon', 'amazon'];
+
+    if (storesToSearch.length === 0) {
+      toast({
+        title: "No Stores Selected",
+        description: "Please select at least one supported store (Noon or Amazon)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSearching(true);
     
     try {
-      // Call the scrape-products edge function
+      // Call the scrape-products edge function with selected stores
       const { data, error } = await supabase.functions.invoke('scrape-products', {
         body: { 
           query: searchQuery,
-          stores: ['noon', 'amazon']
+          stores: storesToSearch
         }
       });
 
@@ -158,12 +172,17 @@ export default function SearchProducts() {
       }
 
       if (data?.success && data?.results) {
-        setSearchResults(data.results);
+        // Filter results by price range
+        const filteredResults = data.results.filter((product: SearchResult) => {
+          return product.bestPrice >= priceRange[0] && product.bestPrice <= priceRange[1];
+        });
+
+        setSearchResults(filteredResults);
         
-        if (data.results.length === 0) {
+        if (filteredResults.length === 0) {
           toast({
             title: "No Results",
-            description: "No products found for your search query.",
+            description: "No products found matching your filters.",
           });
         }
       } else {
@@ -288,27 +307,15 @@ export default function SearchProducts() {
               </h3>
 
               {showFilterCard && (<>
-              {/* Categories Filter */}
+              {/* Categories Filter - Disabled for scraped products */}
               <Collapsible defaultOpen>
-                <CollapsibleTrigger className="w-full text-left font-medium mb-2">
-                  Categories
+                <CollapsibleTrigger className="w-full text-left font-medium mb-2 text-muted-foreground">
+                  Categories (Not available for search)
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-2">
-                  {categories.map((category) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`cat-${category}`}
-                        checked={selectedCategories.includes(category)}
-                        onCheckedChange={() => toggleCategory(category)}
-                      />
-                      <Label
-                        htmlFor={`cat-${category}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {category}
-                      </Label>
-                    </div>
-                  ))}
+                  <p className="text-xs text-muted-foreground italic">
+                    Category filtering is not available for product search results
+                  </p>
                 </CollapsibleContent>
               </Collapsible>
 
