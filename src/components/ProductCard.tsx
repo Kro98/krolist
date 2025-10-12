@@ -133,6 +133,10 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 <RefreshCw className="h-4 w-4" />
               </Button>
             )}
+            <div className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+              <ExternalLink className="h-2.5 w-2.5" />
+              {t('products.updated')}: {new Date(product.last_checked_at).toLocaleDateString()}
+            </div>
           </div>
           
           {/* Product Info */}
@@ -196,10 +200,6 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
           <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="text-xs flex items-center gap-2">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <ExternalLink className="h-3 w-3" />
-                  {t('products.updated')}: {new Date(product.last_checked_at).toLocaleDateString()}
-                </span>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 {t('products.showHistory')}
               </Button>
