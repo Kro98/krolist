@@ -404,7 +404,7 @@ export default function SearchProducts() {
                   {isSearching ? "Searching..." : "Search for products"}
                 </h2>
                 <p className="text-muted-foreground">
-                  Enter a product name to search across all Saudi stores
+                  Enter a product name to search for
                 </p>
               </div>
             ) : (
