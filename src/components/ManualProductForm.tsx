@@ -380,13 +380,21 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                   <Label htmlFor="store" className="text-sm font-medium">
                     Store *
                   </Label>
-                  <Input
-                    id="store"
-                    value={store}
-                    onChange={(e) => setStore(e.target.value)}
-                    placeholder="e.g., Amazon, Noon"
-                    required
-                  />
+                  <Select value={store} onValueChange={setStore} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a store" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover z-50">
+                      <SelectItem value="SHEIN">SHEIN</SelectItem>
+                      <SelectItem value="Noon">Noon</SelectItem>
+                      <SelectItem value="Amazon">Amazon</SelectItem>
+                      <SelectItem value="IKEA">IKEA</SelectItem>
+                      <SelectItem value="Abyat">Abyat</SelectItem>
+                      <SelectItem value="Namshi">Namshi</SelectItem>
+                      <SelectItem value="Trendyol">Trendyol</SelectItem>
+                      <SelectItem value="ASOS">ASOS</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category" className="text-sm font-medium">
