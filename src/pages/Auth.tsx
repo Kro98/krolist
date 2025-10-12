@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import krolistCircleLogo from "@/assets/krolist-circle-logo.png";
 import krolistTextLogo from "@/assets/krolist-text-logo.png";
+import krolistWelcomeLogo from "@/assets/krolist-welcome-logo.png";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -127,7 +128,7 @@ export default function Auth() {
             <div className="bg-[#1a1a1a] rounded-lg p-8">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold mb-2">
-                  Welcome to <img src={krolistTextLogo} alt="Krolist" className="inline h-8 mb-1" />
+                  Welcome to <img src={krolistWelcomeLogo} alt="Krolist" className="inline h-8 mb-1" />
                 </h1>
                 <p className="text-gray-400">
                   {isSignUp ? "Create an account to get started" : "Sign in to your account to continue"}
