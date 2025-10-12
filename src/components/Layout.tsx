@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
+import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -45,7 +46,11 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex-1 flex flex-col">
             <header className="h-16 flex items-center border-b border-border bg-card px-4">
               <SidebarTrigger className="mr-4" />
-              <h2 className="text-lg font-semibold text-primary">Krolist</h2>
+              <img 
+                src={krolistLogo} 
+                alt="Krolist" 
+                className="h-8 object-contain"
+              />
             </header>
             
             <main className="flex-1 p-6 overflow-auto mx-0 px-[10px] py-[10px]">

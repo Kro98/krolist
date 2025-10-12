@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import krolistLogo from "@/assets/krolist-logo.png";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,8 +100,14 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-card">
         <CardHeader>
-          <CardTitle className="text-2xl">Welcome to Krolist</CardTitle>
-          <CardDescription>Track prices and save money on your favorite products</CardDescription>
+          <div className="flex justify-center mb-4">
+            <img 
+              src={krolistLogo} 
+              alt="Krolist Logo" 
+              className="h-16 object-contain"
+            />
+          </div>
+          <CardDescription className="text-center">Track prices and save money on your favorite products</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
