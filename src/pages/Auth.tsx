@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import krolistCircleLogo from "@/assets/krolist-circle-logo.png";
 import krolistTextLogo from "@/assets/krolist-text-logo.png";
 import krolistWelcomeLogo from "@/assets/krolist-welcome-logo.png";
+import footerIcon from "@/assets/footer-icon.png";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -243,6 +244,12 @@ export default function Auth() {
               <li className="hover:text-white cursor-pointer">Help Center</li>
             </ul>
           </div>
+
+          <img 
+            src={footerIcon} 
+            alt="Krolist Icon" 
+            className="w-16 h-16 object-contain"
+          />
         </div>
         
         <div className="max-w-6xl mx-auto mt-6 pt-6 border-t border-gray-800 text-center text-sm text-gray-400">
