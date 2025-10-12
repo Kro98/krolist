@@ -20,6 +20,8 @@ const DEFAULT_SHOPS = [
   { id: "asos", name: "ASOS", enabled: true },
 ];
 
+const COMING_SOON_SHOPS = ["ikea", "abyat", "namshi", "trendyol", "asos"];
+
 interface Shop {
   id: string;
   name: string;
@@ -133,7 +135,10 @@ export function ShopManager() {
           <Droppable droppableId="shops">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                {filteredShops.map((shop, index) => (
+                {filteredShops.map((shop, index) => {
+                  const isComingSoon = COMING_SOON_SHOPS.includes(shop.id);
+                  
+                  return (
                   <Draggable key={shop.id} draggableId={shop.id} index={index}>
                     {(provided, snapshot) => (
                       <div
@@ -149,7 +154,11 @@ export function ShopManager() {
                           </div>
                           <Package className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{shop.name}</span>
-                          {shop.enabled && (
+                          {isComingSoon ? (
+                            <Badge variant="outline" className="text-xs bg-muted">
+                              Coming Soon
+                            </Badge>
+                          ) : shop.enabled && (
                             <Badge variant="secondary" className="text-xs">
                               {t('status.active')}
                             </Badge>
@@ -157,10 +166,12 @@ export function ShopManager() {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <Switch
-                            checked={shop.enabled}
-                            onCheckedChange={() => toggleShop(shop.id)}
-                          />
+                          {!isComingSoon && (
+                            <Switch
+                              checked={shop.enabled}
+                              onCheckedChange={() => toggleShop(shop.id)}
+                            />
+                          )}
                           {!DEFAULT_SHOPS.find(s => s.id === shop.id) && (
                             <Button
                               variant="ghost"
@@ -175,7 +186,7 @@ export function ShopManager() {
                       </div>
                     )}
                   </Draggable>
-                ))}
+                )})}
                 {provided.placeholder}
               </div>
             )}
