@@ -105,7 +105,7 @@ export default function Auth() {
         <img 
           src={krolistTextLogo} 
           alt="Krolist" 
-          className="h-8 object-contain"
+          className="h-16 object-contain"
         />
       </header>
 
