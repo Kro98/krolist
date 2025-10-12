@@ -347,27 +347,56 @@ serve(async (req) => {
 
     const body = await req.json();
     
-    // Validate search query
-    const searchSchema = z.object({
-      query: z.string()
-        .trim()
-        .min(2, 'Query must be at least 2 characters')
-        .max(200, 'Query must not exceed 200 characters')
-    });
+    // Validate request - accept either query or url
+    const requestSchema = z.union([
+      z.object({
+        query: z.string()
+          .trim()
+          .min(2, 'Query must be at least 2 characters')
+          .max(200, 'Query must not exceed 200 characters'),
+        url: z.string().optional()
+      }),
+      z.object({
+        url: z.string().url('Invalid URL'),
+        query: z.string().optional()
+      })
+    ]);
 
-    const validationResult = searchSchema.safeParse(body);
+    const validationResult = requestSchema.safeParse(body);
 
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid search query', 
+          error: 'Invalid request', 
           details: validationResult.error.issues 
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const { query } = validationResult.data;
+    const { query, url } = validationResult.data;
+    
+    // Extract search term from URL if provided, otherwise use query
+    let searchQuery = query;
+    if (url) {
+      // Extract ASIN from Amazon URL or product name
+      const asinMatch = url.match(/\/dp\/([A-Z0-9]{10})/i) || url.match(/\/gp\/product\/([A-Z0-9]{10})/i);
+      if (asinMatch) {
+        searchQuery = asinMatch[1]; // Use ASIN as search query
+      } else {
+        // Extract keywords from URL
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/').filter(p => p && !['dp', 'gp', 'product'].includes(p));
+        searchQuery = pathParts.join(' ').replace(/-/g, ' ').trim() || 'product';
+      }
+    }
+    
+    if (!searchQuery) {
+      return new Response(
+        JSON.stringify({ error: 'Either query or url must be provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Check daily search limit
     const limitCheck = await checkSearchLimit(supabase, user.id);
@@ -394,12 +423,12 @@ serve(async (req) => {
     }
 
     // Search for products from Amazon only
-    console.log(`Searching products for query: "${query}"`);
+    console.log(`Searching products for query: "${searchQuery}"`);
     
-    const amazonProducts = await searchAmazonAPI(query);
+    const amazonProducts = await searchAmazonAPI(searchQuery);
     
     // Log the search (without IP address for privacy)
-    await logSearch(supabase, user.id, query);
+    await logSearch(supabase, user.id, url || searchQuery);
     
     // Get updated search limit info
     const updatedLimitCheck = await checkSearchLimit(supabase, user.id);

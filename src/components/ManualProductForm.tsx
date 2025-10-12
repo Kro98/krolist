@@ -86,10 +86,34 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         body: { url: productUrl }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check for rate limit error
+        if (error.message?.includes('429') || error.message?.includes('limit')) {
+          setHasAutoFilled(true);
+          toast({
+            title: "Daily Limit Reached",
+            description: "Amazon API limit reached. Please enter product details manually.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
 
-      if (data && data.length > 0) {
-        const product = data[0];
+      if (data?.success && data?.results && data.results.length > 0) {
+        const product = data.results[0];
+        
+        // Check if it's a fallback result (rate limited)
+        if (product.id === 'amazon-fallback' || product.bestPrice === 0) {
+          setHasAutoFilled(true);
+          toast({
+            title: "API Limit Reached",
+            description: "Amazon API limit reached. Please enter the product details manually.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         setTitle(product.title || "");
         setDescription(product.description || "");
         setImageUrl(product.image || "");
@@ -97,7 +121,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         // Extract price from sellers if available
         if (product.sellers && product.sellers.length > 0) {
           const bestPrice = product.sellers[0];
-          if (bestPrice.price) {
+          if (bestPrice.price && bestPrice.price > 0) {
             setPrice(bestPrice.price.toString());
           }
         }
@@ -105,7 +129,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         setHasAutoFilled(true);
         toast({
           title: "Details Loaded",
-          description: "Product details have been auto-filled. Review and edit as needed.",
+          description: "Product details auto-filled from Amazon. Review and save.",
         });
       } else {
         setHasAutoFilled(true);
