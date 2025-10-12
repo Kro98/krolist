@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Plus } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -183,6 +183,8 @@ export default function SearchProducts() {
     );
   };
 
+  const [showFilterCard, setShowFilterCard] = useState(true);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -235,11 +237,21 @@ export default function SearchProducts() {
           {/* Sidebar Filters */}
           <aside className={`w-full lg:w-64 space-y-4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-card rounded-lg p-4 border border-border">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4" />
-                Filter Results
+              <h3 className="font-semibold mb-4 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filter Results
+                </div>
+                <button 
+                  onClick={() => setShowFilterCard(!showFilterCard)}
+                  className="p-1 hover:bg-sidebar-accent rounded-md transition-colors"
+                  aria-label={showFilterCard ? "Hide filters" : "Show filters"}
+                >
+                  {showFilterCard ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                </button>
               </h3>
 
+              {showFilterCard && (<>
               {/* Categories Filter */}
               <Collapsible defaultOpen>
                 <CollapsibleTrigger className="w-full text-left font-medium mb-2">
@@ -336,6 +348,7 @@ export default function SearchProducts() {
                   })}
                 </CollapsibleContent>
               </Collapsible>
+              </>)}
             </div>
           </aside>
 
