@@ -6,7 +6,7 @@ import { Layout } from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Products from "./pages/Products";
-import AddProduct from "./pages/AddProduct";
+import SearchProducts from "./pages/SearchProducts";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import PromoCodes from "./pages/PromoCodes";
@@ -27,7 +27,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Products />} />
                 <Route path="/products" element={<Products />} />
-                <Route path="/add-product" element={<AddProduct />} />
+                <Route path="/search-products" element={<SearchProducts />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/promo-codes" element={<PromoCodes />} />

@@ -155,12 +155,12 @@ export function AppSidebar() {
           )}
         </div>
 
-        {/* Add Product Button */}
+        {/* Search Products Button */}
         <div className="p-4">
-          <NavLink to="/add-product" onClick={handleNavClick}>
+          <NavLink to="/search-products" onClick={handleNavClick}>
             <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white py-2 px-4 rounded-lg hover:shadow-hover transition-all duration-200">
               <PlusCircle className="h-4 w-4" />
-              {!collapsed && <span className="font-medium">{t('nav.addProduct')}</span>}
+              {!collapsed && <span className="font-medium">Search Products</span>}
             </div>
           </NavLink>
         </div>
