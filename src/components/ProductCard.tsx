@@ -142,9 +142,14 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
           {/* Product Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-1">
-              <h3 className="font-semibold text-base line-clamp-1 group-hover:text-primary transition-colors">
+              <a 
+                href={product.product_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="font-semibold text-base line-clamp-1 group-hover:text-primary transition-colors hover:underline cursor-pointer"
+              >
                 {product.title}
-              </h3>
+              </a>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
