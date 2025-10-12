@@ -283,40 +283,41 @@ export default function SearchProducts() {
                     const isShein = shop.id === 'shein';
                     
                     return (
-                      <div key={shop.id} className="flex flex-col gap-1">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`shop-${shop.id}`}
-                            checked={selectedShops.includes(shop.id)}
-                            onCheckedChange={() => toggleShop(shop.id)}
-                          />
+                      <div key={shop.id} className="flex items-start space-x-2">
+                        <Checkbox
+                          id={`shop-${shop.id}`}
+                          checked={selectedShops.includes(shop.id)}
+                          onCheckedChange={() => toggleShop(shop.id)}
+                          className="mt-0.5"
+                        />
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
                           <Label
                             htmlFor={`shop-${shop.id}`}
-                            className="text-sm cursor-pointer"
+                            className="text-sm cursor-pointer flex items-center gap-1 flex-wrap"
                           >
-                            {shop.name}
+                            <span className="shrink-0">{shop.name}</span>
+                            {isNoon && (
+                              <>
+                                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30 shrink-0">
+                                  KINGDOME
+                                </span>
+                                <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-medium rounded border border-orange-500/30 shrink-0">
+                                  save 10 rial
+                                </span>
+                              </>
+                            )}
+                            {isShein && (
+                              <>
+                                <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium rounded border border-blue-500/30 shrink-0">
+                                  search for
+                                </span>
+                                <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-700 dark:text-purple-400 text-[10px] font-medium rounded border border-purple-500/30 shrink-0">
+                                  R2M6A
+                                </span>
+                              </>
+                            )}
                           </Label>
                         </div>
-                        {isNoon && (
-                          <div className="ml-6 flex items-center gap-1 flex-wrap">
-                            <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30">
-                              KINGDOME
-                            </span>
-                            <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-medium rounded border border-orange-500/30">
-                              save 10 rial
-                            </span>
-                          </div>
-                        )}
-                        {isShein && (
-                          <div className="ml-6 flex items-center gap-1 flex-wrap">
-                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium rounded border border-blue-500/30">
-                              search for
-                            </span>
-                            <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-700 dark:text-purple-400 text-[10px] font-medium rounded border border-purple-500/30">
-                              R2M6A
-                            </span>
-                          </div>
-                        )}
                       </div>
                     );
                   })}
