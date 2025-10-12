@@ -410,7 +410,7 @@ export default function SearchProducts() {
                         <img
                           src={result.image}
                           alt={result.title}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-contain bg-muted"
                         />
                       </div>
 
