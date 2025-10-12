@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, SlidersHorizontal, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,31 @@ const mockSearchResults: SearchResult[] = [
   },
 ];
 
+// Get active shops from localStorage (same as sidebar)
+const getActiveShops = () => {
+  const saved = localStorage.getItem('shopOrder');
+  if (saved) {
+    const shopOrder = JSON.parse(saved);
+    return shopOrder
+      .filter((shop: any) => shop.enabled)
+      .map((shop: any) => ({
+        id: shop.id,
+        name: shop.name
+      }));
+  }
+  
+  return [
+    { id: "shein", name: "Shein" },
+    { id: "noon", name: "Noon" },
+    { id: "amazon", name: "Amazon" },
+    { id: "ikea", name: "IKEA" },
+    { id: "abyat", name: "Abyat" },
+    { id: "namshi", name: "Namshi" },
+    { id: "trendyol", name: "Trendyol" },
+    { id: "asos", name: "ASOS" },
+  ];
+};
+
 export default function SearchProducts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -71,11 +96,31 @@ export default function SearchProducts() {
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedShops, setSelectedShops] = useState<string[]>([]);
+  const [activeShops, setActiveShops] = useState(getActiveShops());
   const { toast } = useToast();
   const { t } = useLanguage();
 
   const categories = ["Electronics", "Home Goods", "Fashion", "Books", "Toys"];
-  const shops = ["Noon", "Amazon", "Shein", "Namshi", "IKEA", "Abyat", "Trendyol", "ASOS"];
+
+  // Update active shops when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setActiveShops(getActiveShops());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom event when shops are updated
+    const handleShopsUpdate = () => {
+      setActiveShops(getActiveShops());
+    };
+    window.addEventListener('shopsUpdated', handleShopsUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('shopsUpdated', handleShopsUpdate);
+    };
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -233,21 +278,48 @@ export default function SearchProducts() {
                   Shops
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-2">
-                  {shops.map((shop) => (
-                    <div key={shop} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`shop-${shop}`}
-                        checked={selectedShops.includes(shop)}
-                        onCheckedChange={() => toggleShop(shop)}
-                      />
-                      <Label
-                        htmlFor={`shop-${shop}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {shop}
-                      </Label>
-                    </div>
-                  ))}
+                  {activeShops.map((shop) => {
+                    const isNoon = shop.id === 'noon';
+                    const isShein = shop.id === 'shein';
+                    
+                    return (
+                      <div key={shop.id} className="flex flex-col gap-1">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`shop-${shop.id}`}
+                            checked={selectedShops.includes(shop.id)}
+                            onCheckedChange={() => toggleShop(shop.id)}
+                          />
+                          <Label
+                            htmlFor={`shop-${shop.id}`}
+                            className="text-sm cursor-pointer"
+                          >
+                            {shop.name}
+                          </Label>
+                        </div>
+                        {isNoon && (
+                          <div className="ml-6 flex items-center gap-1 flex-wrap">
+                            <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30">
+                              KINGDOME
+                            </span>
+                            <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-medium rounded border border-orange-500/30">
+                              save 10 rial
+                            </span>
+                          </div>
+                        )}
+                        {isShein && (
+                          <div className="ml-6 flex items-center gap-1 flex-wrap">
+                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium rounded border border-blue-500/30">
+                              search for
+                            </span>
+                            <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-700 dark:text-purple-400 text-[10px] font-medium rounded border border-purple-500/30">
+                              R2M6A
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </CollapsibleContent>
               </Collapsible>
             </div>

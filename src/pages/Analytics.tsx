@@ -1,58 +1,68 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingDown, TrendingUp, Package, Eye, DollarSign, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-const stats = [{
-  title: "dashboard.totalProducts",
-  value: "23",
-  icon: Package,
-  color: "text-primary"
-}, {
-  title: "dashboard.priceDrops",
-  value: "7",
-  icon: TrendingDown,
-  color: "text-price-decrease"
-}, {
-  title: "dashboard.priceIncreases",
-  value: "3",
-  icon: TrendingUp,
-  color: "text-price-increase"
-}, {
-  title: "dashboard.totalAmount",
-  value: "1,572$",
-  icon: DollarSign,
-  color: "text-muted-foreground"
-}];
+import { mockProducts } from "@/data/mockProducts";
+
 const recentAlerts = [{
   product: "iPhone 15 Pro",
   store: "Amazon",
   oldPrice: 999,
   newPrice: 899,
   currency: "$",
-  type: "decrease"
+  type: "decrease" as const
 }, {
   product: "Sony WH-1000XM5",
   store: "Best Buy",
   oldPrice: 349,
   newPrice: 379,
   currency: "$",
-  type: "increase"
+  type: "increase" as const
 }, {
   product: "MacBook Air M3",
   store: "Apple Store",
   oldPrice: 1299,
   newPrice: 1199,
   currency: "$",
-  type: "decrease"
+  type: "decrease" as const
 }];
+
 export default function Analytics() {
-  const {
-    t
-  } = useLanguage();
+  const { t } = useLanguage();
   const [showStats, setShowStats] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
+
+  // Calculate real stats from mockProducts
+  const stats = useMemo(() => {
+    const totalProducts = mockProducts.length;
+    const priceDrops = mockProducts.filter(p => p.price < p.previousPrice).length;
+    const priceIncreases = mockProducts.filter(p => p.price > p.previousPrice).length;
+    const totalAmount = mockProducts.reduce((sum, p) => sum + p.price, 0);
+
+    return [{
+      title: "dashboard.totalProducts",
+      value: totalProducts.toString(),
+      icon: Package,
+      color: "text-primary"
+    }, {
+      title: "dashboard.priceDrops",
+      value: priceDrops.toString(),
+      icon: TrendingDown,
+      color: "text-price-decrease"
+    }, {
+      title: "dashboard.priceIncreases",
+      value: priceIncreases.toString(),
+      icon: TrendingUp,
+      color: "text-price-increase"
+    }, {
+      title: "dashboard.totalAmount",
+      value: `${totalAmount}$`,
+      icon: DollarSign,
+      color: "text-muted-foreground"
+    }];
+  }, []);
 
   // Mini price graph component
   const MiniGraph = ({
