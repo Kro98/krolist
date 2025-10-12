@@ -187,17 +187,6 @@ export function AppSidebar() {
   }) => isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
   return <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-sidebar border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
       <SidebarContent className="bg-sidebar">
-        {/* Dev Announcement Section */}
-        {!collapsed && <div className="p-4 border-b border-sidebar-border">
-            <div className="flex items-center gap-2 mb-2">
-              <Megaphone className="h-4 w-4 text-sidebar-primary" />
-              <span className="text-sm font-medium text-sidebar-foreground">Dev Update</span>
-            </div>
-            <div className="text-xs text-sidebar-foreground/70 bg-sidebar-primary/10 p-2 rounded">
-              Welcome to PriceTracker! More features coming soon.
-            </div>
-          </div>}
-
         {/* Search Products Button */}
         <div className="p-4 px-[5px] py-[5px]">
           <NavLink to="/search-products" onClick={handleNavClick}>
