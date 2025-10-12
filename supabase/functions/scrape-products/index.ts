@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,18 +7,14 @@ const corsHeaders = {
 };
 
 const AFFILIATE_CONFIG = {
-  noon: {
-    baseUrl: 'https://s.noon.com/sLVK_sCBGo4',
-  },
   amazon: {
     affiliateTag: Deno.env.get('AMAZON_PARTNER_TAG') || 'krolist07-21',
     accessKey: Deno.env.get('AMAZON_ACCESS_KEY'),
     secretKey: Deno.env.get('AMAZON_SECRET_KEY'),
-  },
-  shein: {
-    affiliateId: '83650433',
   }
 };
+
+const DAILY_SEARCH_LIMIT = 5;
 
 // Amazon PA-API helpers
 async function sha256(message: string): Promise<ArrayBuffer> {
@@ -98,153 +94,55 @@ interface ScrapedProduct {
   bestPrice: number;
 }
 
-async function scrapeNoon(query: string): Promise<ScrapedProduct[]> {
-  console.log(`Scraping Noon for query: ${query}`);
+// Helper function to check daily search limit
+async function checkSearchLimit(supabase: any, userId: string): Promise<{ allowed: boolean; remaining: number; resetAt?: string }> {
+  const now = new Date();
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  const { data, error } = await supabase
+    .from('search_logs')
+    .select('searched_at')
+    .eq('user_id', userId)
+    .gte('searched_at', twentyFourHoursAgo.toISOString())
+    .order('searched_at', { ascending: true });
+
+  if (error) {
+    console.error('Error checking search limit:', error);
+    throw new Error('Failed to check search limit');
+  }
+
+  const searchCount = data?.length || 0;
+  const remaining = Math.max(0, DAILY_SEARCH_LIMIT - searchCount);
   
-  try {
-    const searchUrl = `https://www.noon.com/saudi-en/search/?q=${encodeURIComponent(query)}`;
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
-        'Cache-Control': 'no-cache',
-      },
+  let resetAt;
+  if (searchCount > 0 && data) {
+    const firstSearchTime = new Date(data[0].searched_at);
+    resetAt = new Date(firstSearchTime.getTime() + 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  return {
+    allowed: searchCount < DAILY_SEARCH_LIMIT,
+    remaining,
+    resetAt
+  };
+}
+
+// Helper function to log search
+async function logSearch(supabase: any, userId: string, query: string, ipAddress?: string) {
+  const { error } = await supabase
+    .from('search_logs')
+    .insert({
+      user_id: userId,
+      search_query: query,
+      ip_address: ipAddress
     });
 
-    if (!response.ok) {
-      console.error(`Noon request failed: ${response.status}`);
-      // Return a placeholder result directing to affiliate link
-      return [{
-        id: 'noon-affiliate',
-        title: `Search for "${query}" on Noon`,
-        description: `Click to view ${query} results on Noon`,
-        image: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-logo-en.svg',
-        sellers: [{
-          store: 'Noon',
-          price: 0,
-          badge: 'Visit Noon',
-          productUrl: AFFILIATE_CONFIG.noon.baseUrl,
-        }],
-        bestPrice: 0,
-      }];
-    }
-
-    const html = await response.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    
-    if (!doc) {
-      console.error('Failed to parse Noon HTML');
-      return [];
-    }
-
-    const products: ScrapedProduct[] = [];
-    
-    // Noon uses specific selectors - these may need adjustment based on actual HTML structure
-    const productCards = doc.querySelectorAll('[data-qa="product-card"], .productContainer, [class*="ProductCard"]');
-    
-    console.log(`Found ${productCards.length} Noon product cards`);
-
-    for (let i = 0; i < Math.min(productCards.length, 20); i++) {
-      const card = productCards[i];
-      
-      try {
-        // Extract product data
-        const titleEl = card.querySelector('[data-qa="product-name"], h3, [class*="title"]');
-        const imageEl = card.querySelector('img');
-        const priceEl = card.querySelector('[data-qa="product-price"], [class*="price"]:not([class*="old"])');
-        const oldPriceEl = card.querySelector('[data-qa="product-oldPrice"], [class*="oldPrice"], [class*="was"]');
-        const linkEl = card.querySelector('a[href*="/product/"]');
-        
-        if (!titleEl || !imageEl || !priceEl || !linkEl) {
-          continue;
-        }
-
-        const title = titleEl.textContent?.trim() || '';
-        const image = imageEl.getAttribute('src') || imageEl.getAttribute('data-src') || '';
-        const priceText = priceEl.textContent?.replace(/[^\d.]/g, '') || '0';
-        const price = parseFloat(priceText);
-        const oldPriceText = oldPriceEl?.textContent?.replace(/[^\d.]/g, '') || '';
-        const originalPrice = oldPriceText ? parseFloat(oldPriceText) : undefined;
-        
-        let productUrl = linkEl.getAttribute('href') || '';
-        if (productUrl.startsWith('/')) {
-          productUrl = `https://www.noon.com${productUrl}`;
-        }
-        
-        // Extract product ID from URL
-        const productIdMatch = productUrl.match(/\/([^\/]+)\/p\/?$/);
-        const productId = productIdMatch ? productIdMatch[1] : `noon-${i}`;
-        
-        // Use affiliate link instead of direct product URL
-        const affiliateUrl = AFFILIATE_CONFIG.noon.baseUrl;
-        
-        // Check for badges
-        const badgeEl = card.querySelector('[class*="badge"], [class*="tag"]');
-        const badge = badgeEl?.textContent?.trim();
-
-        if (title && price > 0) {
-          products.push({
-            id: productId,
-            title,
-            description: title,
-            image: image.startsWith('//') ? `https:${image}` : image,
-            sellers: [{
-              store: 'Noon',
-              price,
-              originalPrice,
-              badge,
-              productUrl: affiliateUrl,
-            }],
-            bestPrice: price,
-          });
-        }
-      } catch (err) {
-        console.error(`Error parsing Noon product card ${i}:`, err);
-      }
-    }
-
-    // If no products were found, return affiliate link
-    if (products.length === 0) {
-      return [{
-        id: 'noon-affiliate',
-        title: `Search for "${query}" on Noon`,
-        description: `Click to view ${query} results on Noon`,
-        image: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-logo-en.svg',
-        sellers: [{
-          store: 'Noon',
-          price: 0,
-          badge: 'Visit Noon',
-          productUrl: AFFILIATE_CONFIG.noon.baseUrl,
-        }],
-        bestPrice: 0,
-      }];
-    }
-
-    console.log(`Successfully scraped ${products.length} products from Noon`);
-    return products;
-    
-  } catch (error) {
-    console.error('Error scraping Noon:', error);
-    // Return affiliate link as fallback
-    return [{
-      id: 'noon-affiliate',
-      title: `Search for "${query}" on Noon`,
-      description: `Click to view ${query} results on Noon`,
-      image: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-logo-en.svg',
-      sellers: [{
-        store: 'Noon',
-        price: 0,
-        badge: 'Visit Noon',
-        productUrl: AFFILIATE_CONFIG.noon.baseUrl,
-      }],
-      bestPrice: 0,
-    }];
+  if (error) {
+    console.error('Error logging search:', error);
   }
 }
 
-async function searchAmazonAPI(query: string): Promise<ScrapedProduct[]> {
+async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedProduct[]> {
   console.log(`Searching Amazon PA-API for query: ${query}`);
   
   const { accessKey, secretKey, affiliateTag } = AFFILIATE_CONFIG.amazon;
@@ -282,7 +180,7 @@ async function searchAmazonAPI(query: string): Promise<ScrapedProduct[]> {
         'Offers.Listings.Price',
         'Offers.Listings.SavingBasis'
       ],
-      ItemCount: 10
+      ItemCount: 5 // Reduced to conserve API quota
     });
     
     const { authorization, amzDate, contentHash } = await signAmazonRequest(
@@ -312,6 +210,32 @@ async function searchAmazonAPI(query: string): Promise<ScrapedProduct[]> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Amazon PA-API request failed: ${response.status}`, errorText);
+      
+      // Handle rate limiting with exponential backoff
+      if (response.status === 429 && retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.log(`Rate limited. Retrying in ${delay}ms (attempt ${retryCount + 1}/3)`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return searchAmazonAPI(query, retryCount + 1);
+      }
+      
+      // Return fallback for rate limiting
+      if (response.status === 429) {
+        console.log('Amazon rate limit exceeded, returning fallback search link');
+        return [{
+          id: 'amazon-fallback',
+          title: 'Search on Amazon',
+          description: 'Amazon API rate limit reached. Click to search directly on Amazon.',
+          image: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+          sellers: [{
+            store: 'Amazon',
+            price: 0,
+            productUrl: `https://www.amazon.sa/s?k=${encodeURIComponent(query)}&tag=${affiliateTag}`
+          }],
+          bestPrice: 0
+        }];
+      }
+      
       return [{
         id: 'amazon-search',
         title: `Search for "${query}" on Amazon`,
@@ -374,27 +298,18 @@ async function searchAmazonAPI(query: string): Promise<ScrapedProduct[]> {
   } catch (error) {
     console.error('Error calling Amazon PA-API:', error);
     return [{
-      id: 'amazon-search',
-      title: `Search for "${query}" on Amazon`,
-      description: `Click to view ${query} results on Amazon`,
+      id: 'amazon-error',
+      title: 'Search on Amazon',
+      description: 'Unable to fetch results. Click to search directly on Amazon.',
       image: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
       sellers: [{
         store: 'Amazon',
         price: 0,
-        badge: 'Visit Amazon',
-        productUrl: `https://www.amazon.sa/s?k=${encodeURIComponent(query)}&tag=${affiliateTag}`,
+        productUrl: `https://www.amazon.sa/s?k=${encodeURIComponent(query)}&tag=${affiliateTag}`
       }],
-      bestPrice: 0,
+      bestPrice: 0
     }];
   }
-}
-
-function mergeResults(noonProducts: ScrapedProduct[], amazonProducts: ScrapedProduct[]): ScrapedProduct[] {
-  const merged: ScrapedProduct[] = [];
-  const allProducts = [...noonProducts, ...amazonProducts];
-  
-  // For now, just combine them (could implement matching logic later)
-  return allProducts;
 }
 
 serve(async (req) => {
@@ -404,39 +319,33 @@ serve(async (req) => {
   }
 
   try {
-    const { query, url, stores = ['noon', 'amazon'] } = await req.json();
-    
-    // If URL is provided, try to scrape that specific product
-    if (url) {
-      console.log(`Scraping single product URL: ${url}`);
-      
-      // Detect which store based on URL
-      let storeProducts: ScrapedProduct[] = [];
-      
-      if (url.toLowerCase().includes('noon.com')) {
-        storeProducts = await scrapeNoon(url);
-      } else if (url.toLowerCase().includes('amazon')) {
-        storeProducts = await scrapeAmazon(url);
-      } else {
-        // For unknown stores, return a basic structure
-        console.log('Unknown store, returning basic structure');
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            results: [],
-            message: 'Store not supported for auto-fill. Please enter details manually.'
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
+    // Check authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ success: true, results: storeProducts }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Authentication required to search products' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Original search query logic
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Get authenticated user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { query } = await req.json();
+    
     if (!query || typeof query !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Query parameter is required' }),
@@ -444,28 +353,59 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Scraping products for query: "${query}" from stores: ${stores.join(', ')}`);
+    // Check daily search limit
+    const limitCheck = await checkSearchLimit(supabase, user.id);
+    
+    if (!limitCheck.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Daily search limit reached',
+          message: `You have reached your daily limit of ${DAILY_SEARCH_LIMIT} searches. Please try again after ${new Date(limitCheck.resetAt!).toLocaleString()}.`,
+          resetAt: limitCheck.resetAt,
+          limit: DAILY_SEARCH_LIMIT
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': DAILY_SEARCH_LIMIT.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': limitCheck.resetAt!
+          } 
+        }
+      );
+    }
 
-    const results = await Promise.all([
-      stores.includes('noon') ? scrapeNoon(query) : Promise.resolve([]),
-      stores.includes('amazon') ? searchAmazonAPI(query) : Promise.resolve([]),
-    ]);
-
-    const noonProducts = results[0];
-    const amazonProducts = results[1];
-    const mergedProducts = mergeResults(noonProducts, amazonProducts);
-
-    console.log(`Returning ${mergedProducts.length} total products`);
+    // Search for products from Amazon only
+    console.log(`Searching products for query: "${query}"`);
+    
+    const amazonProducts = await searchAmazonAPI(query);
+    
+    // Log the search
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
+    await logSearch(supabase, user.id, query, clientIp || undefined);
+    
+    // Get updated search limit info
+    const updatedLimitCheck = await checkSearchLimit(supabase, user.id);
+    
+    console.log(`Returning ${amazonProducts.length} products. Searches remaining: ${updatedLimitCheck.remaining}`);
 
     return new Response(
-      JSON.stringify({
+      JSON.stringify({ 
         success: true,
-        results: mergedProducts,
-        count: mergedProducts.length,
+        results: amazonProducts,
+        count: amazonProducts.length
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': DAILY_SEARCH_LIMIT.toString(),
+          'X-RateLimit-Remaining': updatedLimitCheck.remaining.toString(),
+          'X-RateLimit-Reset': updatedLimitCheck.resetAt || ''
+        },
+        status: 200
       }
     );
 
@@ -473,7 +413,7 @@ serve(async (req) => {
     console.error('Error in scrape-products function:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to scrape products',
+        error: 'Failed to search products',
         details: error.message 
       }),
       { 

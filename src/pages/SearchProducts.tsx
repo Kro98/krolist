@@ -1,21 +1,15 @@
-import { useState } from "react";
-import { Search, Plus, LayoutGrid } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Plus, LayoutGrid, Clock, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-
-const AFFILIATE_LINKS = {
-  noon: (productId: string) => `https://www.noon.com/saudi-en/product/${productId}?ref=YOUR_AFFILIATE_ID`,
-  amazon: (productId: string) => `https://www.amazon.sa/dp/${productId}?tag=YOUR_AFFILIATE_TAG`,
-  namshi: (productId: string) => `https://www.namshi.com/sa/product/${productId}?aff=YOUR_AFFILIATE_ID`,
-  shein: (productId: string) => `https://sa.shein.com/product/${productId}?aff_id=YOUR_AFFILIATE_ID`,
-};
 
 interface SearchResult {
   id: string;
@@ -37,37 +31,80 @@ export default function SearchProducts() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [gridColumns, setGridColumns] = useState(2);
+  const [searchesRemaining, setSearchesRemaining] = useState<number>(5);
+  const [resetAt, setResetAt] = useState<string>("");
+  const [lastSearchTime, setLastSearchTime] = useState<number>(0);
   const { t } = useLanguage();
   const { user } = useAuth();
 
+  const DEBOUNCE_DELAY = 1000; // 1 second debounce
+
   const handleSearch = async () => {
+    if (!user) {
+      toast.error("Please login to search products");
+      return;
+    }
+
     if (!searchQuery.trim()) {
       toast.error("Please enter a search query");
       return;
     }
+
+    // Debounce check
+    const now = Date.now();
+    if (now - lastSearchTime < DEBOUNCE_DELAY) {
+      toast.info("Please wait a moment before searching again");
+      return;
+    }
+    setLastSearchTime(now);
 
     setIsSearching(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('scrape-products', {
         body: {
-          query: searchQuery,
-          stores: ['noon', 'amazon']
+          query: searchQuery
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a rate limit error
+        if (error.message?.includes('Daily search limit')) {
+          toast.error("Daily search limit reached. Please try again tomorrow.");
+          return;
+        }
+        throw error;
+      }
 
-      if (data?.products && Array.isArray(data.products)) {
-        setSearchResults(data.products);
-        toast.success(`Found ${data.products.length} products`);
+      // Extract rate limit info from headers
+      const rateLimitRemaining = data?.remaining;
+      const rateLimitReset = data?.resetAt;
+
+      if (rateLimitRemaining !== undefined) {
+        setSearchesRemaining(rateLimitRemaining);
+      }
+      if (rateLimitReset) {
+        setResetAt(rateLimitReset);
+      }
+
+      if (data?.results && Array.isArray(data.results)) {
+        setSearchResults(data.results);
+        toast.success(`Found ${data.results.length} products. ${rateLimitRemaining ?? searchesRemaining} searches remaining today.`);
       } else {
         setSearchResults([]);
         toast.info("No products found");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Search error:', error);
-      toast.error("Failed to search products");
+      
+      // Handle different error types
+      if (error.message?.includes('429') || error.message?.includes('limit')) {
+        toast.error("Daily search limit reached. Please try again tomorrow.");
+      } else if (error.message?.includes('401') || error.message?.includes('Authentication')) {
+        toast.error("Please login to search products");
+      } else {
+        toast.error("Failed to search products. Please try again.");
+      }
     } finally {
       setIsSearching(false);
     }
@@ -132,6 +169,16 @@ export default function SearchProducts() {
     }
   };
 
+  const formatResetTime = () => {
+    if (!resetAt) return '';
+    const resetDate = new Date(resetAt);
+    const now = new Date();
+    const diff = resetDate.getTime() - now.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
@@ -139,6 +186,20 @@ export default function SearchProducts() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Find Your Perfect Product, Instantly.
           </h1>
+          
+          {user && (
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Badge variant="secondary" className="text-sm">
+                <Clock className="h-3 w-3 mr-1" />
+                {searchesRemaining} searches remaining today
+              </Badge>
+              {resetAt && searchesRemaining < 5 && (
+                <Badge variant="outline" className="text-sm">
+                  Resets in {formatResetTime()}
+                </Badge>
+              )}
+            </div>
+          )}
           
           <div className="max-w-3xl mx-auto mt-8">
             <div className="relative flex gap-2">
@@ -150,16 +211,35 @@ export default function SearchProducts() {
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Search for products, brands, or sellers..."
                   className="pl-12 h-14 text-base bg-card border-2"
+                  disabled={!user || searchesRemaining === 0}
                 />
               </div>
               <Button
                 onClick={handleSearch}
-                disabled={isSearching}
+                disabled={isSearching || !user || searchesRemaining === 0}
                 className="h-14 px-8 bg-primary hover:bg-primary/90"
               >
                 {isSearching ? "Searching..." : "Search"}
               </Button>
             </div>
+
+            {!user && (
+              <Alert className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Please login to search for products
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {user && searchesRemaining === 0 && (
+              <Alert className="mt-4" variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You've reached your daily search limit. Resets in {formatResetTime()}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </div>
       </div>
@@ -205,11 +285,17 @@ export default function SearchProducts() {
           {searchResults.map((result) => (
             <Card key={result.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="aspect-square overflow-hidden bg-muted">
-                <img
-                  src={result.image}
-                  alt={result.title}
-                  className="w-full h-full object-cover"
-                />
+                {result.image ? (
+                  <img
+                    src={result.image}
+                    alt={result.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    No image
+                  </div>
+                )}
               </div>
               
               <div className="p-4">
@@ -226,13 +312,26 @@ export default function SearchProducts() {
                     >
                       <div>
                         <div className="font-medium">{seller.store}</div>
-                        <div className="text-lg font-bold">
-                          SAR {seller.price.toFixed(2)}
-                        </div>
-                        {seller.originalPrice && seller.originalPrice > seller.price && (
-                          <div className="text-sm text-muted-foreground line-through">
-                            SAR {seller.originalPrice.toFixed(2)}
+                        {seller.price > 0 ? (
+                          <>
+                            <div className="text-lg font-bold">
+                              SAR {seller.price.toFixed(2)}
+                            </div>
+                            {seller.originalPrice && seller.originalPrice > seller.price && (
+                              <div className="text-sm text-muted-foreground line-through">
+                                SAR {seller.originalPrice.toFixed(2)}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            Click to view prices
                           </div>
+                        )}
+                        {seller.badge && (
+                          <Badge variant="secondary" className="text-xs mt-1">
+                            {seller.badge}
+                          </Badge>
                         )}
                       </div>
                       
