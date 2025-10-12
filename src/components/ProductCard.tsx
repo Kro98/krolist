@@ -123,6 +123,16 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               alt={product.title} 
               className="w-24 h-24 object-cover rounded-lg"
             />
+            {onRefreshPrice && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onRefreshPrice(product.id)}
+                className="h-8 w-8 mt-1"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           
           {/* Product Info */}
@@ -183,18 +193,6 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
 
         {/* Bottom Section */}
         <div className="flex items-center justify-between pt-2 border-t border-border">
-          {onRefreshPrice && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRefreshPrice(product.id)}
-              className="h-7 text-xs"
-            >
-              <RefreshCw className="h-3 w-3 mr-1" />
-              Refresh
-            </Button>
-          )}
-          
           <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="text-xs flex items-center gap-2">
