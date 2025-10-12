@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const AFFILIATE_CONFIG = {
   noon: {
-    affiliateParam: 'YOUR_NOON_AFFILIATE_ID', // TODO: Add your Noon affiliate ref parameter
+    baseUrl: 'https://s.noon.com/sLVK_sCBGo4',
   },
   amazon: {
     affiliateTag: 'krolist07-21',
@@ -44,12 +44,26 @@ async function scrapeNoon(query: string): Promise<ScrapedProduct[]> {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+        'Cache-Control': 'no-cache',
       },
     });
 
     if (!response.ok) {
       console.error(`Noon request failed: ${response.status}`);
-      return [];
+      // Return a placeholder result directing to affiliate link
+      return [{
+        id: 'noon-affiliate',
+        title: `Search for "${query}" on Noon`,
+        description: `Click to view ${query} results on Noon`,
+        image: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-logo-en.svg',
+        sellers: [{
+          store: 'Noon',
+          price: 0,
+          badge: 'Visit Noon',
+          productUrl: AFFILIATE_CONFIG.noon.baseUrl,
+        }],
+        bestPrice: 0,
+      }];
     }
 
     const html = await response.text();
@@ -98,8 +112,8 @@ async function scrapeNoon(query: string): Promise<ScrapedProduct[]> {
         const productIdMatch = productUrl.match(/\/([^\/]+)\/p\/?$/);
         const productId = productIdMatch ? productIdMatch[1] : `noon-${i}`;
         
-        // Add affiliate parameter
-        const affiliateUrl = `${productUrl}${productUrl.includes('?') ? '&' : '?'}ref=${AFFILIATE_CONFIG.noon.affiliateParam}`;
+        // Use affiliate link instead of direct product URL
+        const affiliateUrl = AFFILIATE_CONFIG.noon.baseUrl;
         
         // Check for badges
         const badgeEl = card.querySelector('[class*="badge"], [class*="tag"]');
@@ -126,12 +140,42 @@ async function scrapeNoon(query: string): Promise<ScrapedProduct[]> {
       }
     }
 
+    // If no products were found, return affiliate link
+    if (products.length === 0) {
+      return [{
+        id: 'noon-affiliate',
+        title: `Search for "${query}" on Noon`,
+        description: `Click to view ${query} results on Noon`,
+        image: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-logo-en.svg',
+        sellers: [{
+          store: 'Noon',
+          price: 0,
+          badge: 'Visit Noon',
+          productUrl: AFFILIATE_CONFIG.noon.baseUrl,
+        }],
+        bestPrice: 0,
+      }];
+    }
+
     console.log(`Successfully scraped ${products.length} products from Noon`);
     return products;
     
   } catch (error) {
     console.error('Error scraping Noon:', error);
-    return [];
+    // Return affiliate link as fallback
+    return [{
+      id: 'noon-affiliate',
+      title: `Search for "${query}" on Noon`,
+      description: `Click to view ${query} results on Noon`,
+      image: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-logo-en.svg',
+      sellers: [{
+        store: 'Noon',
+        price: 0,
+        badge: 'Visit Noon',
+        productUrl: AFFILIATE_CONFIG.noon.baseUrl,
+      }],
+      bestPrice: 0,
+    }];
   }
 }
 
@@ -146,12 +190,26 @@ async function scrapeAmazon(query: string): Promise<ScrapedProduct[]> {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+        'Cache-Control': 'no-cache',
       },
     });
 
     if (!response.ok) {
-      console.error(`Amazon request failed: ${response.status}`);
-      return [];
+      console.error(`Amazon request failed: ${response.status} - ${response.statusText}`);
+      // Return a placeholder result directing to Amazon search
+      return [{
+        id: 'amazon-search',
+        title: `Search for "${query}" on Amazon`,
+        description: `Click to view ${query} results on Amazon`,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+        sellers: [{
+          store: 'Amazon',
+          price: 0,
+          badge: 'Visit Amazon',
+          productUrl: `https://www.amazon.sa/s?k=${encodeURIComponent(query)}&tag=${AFFILIATE_CONFIG.amazon.affiliateTag}`,
+        }],
+        bestPrice: 0,
+      }];
     }
 
     const html = await response.text();
@@ -221,12 +279,42 @@ async function scrapeAmazon(query: string): Promise<ScrapedProduct[]> {
       }
     }
 
+    // If no products found, return a search link
+    if (products.length === 0) {
+      return [{
+        id: 'amazon-search',
+        title: `Search for "${query}" on Amazon`,
+        description: `Click to view ${query} results on Amazon`,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+        sellers: [{
+          store: 'Amazon',
+          price: 0,
+          badge: 'Visit Amazon',
+          productUrl: `https://www.amazon.sa/s?k=${encodeURIComponent(query)}&tag=${AFFILIATE_CONFIG.amazon.affiliateTag}`,
+        }],
+        bestPrice: 0,
+      }];
+    }
+
     console.log(`Successfully scraped ${products.length} products from Amazon`);
     return products;
     
   } catch (error) {
     console.error('Error scraping Amazon:', error);
-    return [];
+    // Return search link as fallback
+    return [{
+      id: 'amazon-search',
+      title: `Search for "${query}" on Amazon`,
+      description: `Click to view ${query} results on Amazon`,
+      image: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+      sellers: [{
+        store: 'Amazon',
+        price: 0,
+        badge: 'Visit Amazon',
+        productUrl: `https://www.amazon.sa/s?k=${encodeURIComponent(query)}&tag=${AFFILIATE_CONFIG.amazon.affiliateTag}`,
+      }],
+      bestPrice: 0,
+    }];
   }
 }
 
