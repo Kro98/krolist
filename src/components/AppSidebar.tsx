@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import shop brand icons
 import sheinIcon from "@/assets/shop-icons/shein-icon.png";
@@ -137,6 +138,8 @@ export function AppSidebar() {
   } = useLanguage();
   const { user, signOut } = useAuth();
   const [shopItems, setShopItems] = useState(getShopItems());
+  const [username, setUsername] = useState("");
+
   useEffect(() => {
     const handleStorageChange = () => {
       setShopItems(getShopItems());
@@ -146,6 +149,26 @@ export function AppSidebar() {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchUsername();
+    }
+  }, [user]);
+
+  const fetchUsername = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .single();
+    
+    if (data) {
+      setUsername(data.username);
+    }
+  };
   const handleNavClick = () => {
     // Close sidebar on mobile after navigation
     setOpenMobile(false);
@@ -267,7 +290,7 @@ export function AppSidebar() {
             <div className="p-4 space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sidebar-foreground truncate">{user?.email}</span>
+                <span className="text-sidebar-foreground truncate">{username || user?.email}</span>
               </div>
               <Button
                 variant="ghost"

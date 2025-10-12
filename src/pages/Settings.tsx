@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,9 @@ import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ShopManager } from "@/components/ShopManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast as sonner } from "sonner";
 export default function Settings() {
   const {
     language,
@@ -26,17 +29,75 @@ export default function Settings() {
     undertone,
     setUndertone
   } = useTheme();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [priceDropAlerts, setPriceDropAlerts] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(false);
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
   const {
     toast
   } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email || "");
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .single();
+    
+    if (data) {
+      setUsername(data.username);
+    }
+  };
+
   const handleSave = () => {
     toast({
       title: t('settings.settingsSaved'),
       description: t('settings.settingsSavedDesc')
     });
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Update username in profiles table
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ username })
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Update email if changed
+      if (email !== user.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: email
+        });
+
+        if (emailError) throw emailError;
+        
+        sonner.success("Profile updated! Please check your new email to confirm the change.");
+      } else {
+        sonner.success("Profile updated successfully!");
+      }
+    } catch (error: any) {
+      sonner.error(error.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
   return <div className="space-y-6">
       <div>
@@ -143,13 +204,32 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="email">{t('settings.email')}</Label>
-                <Input id="email" type="email" placeholder="your.email@example.com" defaultValue="user@example.com" disabled />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="your.email@example.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="name">{t('settings.displayName')}</Label>
-                <Input id="name" placeholder="Your Name" defaultValue="John Doe" />
+                <Label htmlFor="username">Username</Label>
+                <Input 
+                  id="username" 
+                  placeholder="Your Username" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
               </div>
             </div>
+            <Button 
+              onClick={handleUpdateProfile} 
+              disabled={loading}
+              className="bg-gradient-primary hover:shadow-hover"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {loading ? "Updating..." : "Update Account"}
+            </Button>
           </CardContent>
         </Card>
 
