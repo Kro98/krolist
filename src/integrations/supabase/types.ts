@@ -14,13 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      price_history: {
+        Row: {
+          currency: string
+          id: string
+          original_price: number | null
+          price: number
+          product_id: string
+          scraped_at: string | null
+        }
+        Insert: {
+          currency: string
+          id?: string
+          original_price?: number | null
+          price: number
+          product_id: string
+          scraped_at?: string | null
+        }
+        Update: {
+          currency?: string
+          id?: string
+          original_price?: number | null
+          price?: number
+          product_id?: string
+          scraped_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          currency: string | null
+          current_price: number
+          description: string | null
+          external_id: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          last_checked_at: string | null
+          product_url: string
+          store: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_price: number
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          last_checked_at?: string | null
+          product_url: string
+          store: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_price?: number
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          last_checked_at?: string | null
+          product_url?: string
+          store?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_product_stats: {
+        Args: { user_uuid: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

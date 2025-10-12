@@ -1,176 +1,215 @@
-import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Eye, EyeOff, TrendingDown, TrendingUp, Package, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TrendingDown, TrendingUp, Package, Eye, DollarSign, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { mockProducts } from "@/data/mockProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-const recentAlerts = [{
-  product: "iPhone 15 Pro",
-  store: "Amazon",
-  oldPrice: 999,
-  newPrice: 899,
-  currency: "$",
-  type: "decrease" as const
-}, {
-  product: "Sony WH-1000XM5",
-  store: "Best Buy",
-  oldPrice: 349,
-  newPrice: 379,
-  currency: "$",
-  type: "increase" as const
-}, {
-  product: "MacBook Air M3",
-  store: "Apple Store",
-  oldPrice: 1299,
-  newPrice: 1199,
-  currency: "$",
-  type: "decrease" as const
-}];
+interface AnalyticsStats {
+  total_products: number;
+  price_drops: number;
+  price_increases: number;
+  total_value: number;
+}
+
+interface RecentChange {
+  id: string;
+  price: number;
+  scraped_at: string;
+  products: {
+    title: string;
+    store: string;
+    current_price: number;
+    currency: string;
+  };
+}
 
 export default function Analytics() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [showStats, setShowStats] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
+  const [stats, setStats] = useState<AnalyticsStats | null>(null);
+  const [recentChanges, setRecentChanges] = useState<RecentChange[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Calculate real stats from mockProducts
-  const stats = useMemo(() => {
-    const totalProducts = mockProducts.length;
-    const priceDrops = mockProducts.filter(p => p.price < p.previousPrice).length;
-    const priceIncreases = mockProducts.filter(p => p.price > p.previousPrice).length;
-    const totalAmount = mockProducts.reduce((sum, p) => sum + p.price, 0);
+  useEffect(() => {
+    if (user) {
+      loadAnalytics();
+    }
+  }, [user]);
 
-    return [{
+  const loadAnalytics = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please login to view analytics");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('get-analytics', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        setStats(data.stats);
+        setRecentChanges(data.recentChanges || []);
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+      toast.error("Failed to load analytics");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statsDisplay = stats ? [
+    {
       title: "dashboard.totalProducts",
-      value: totalProducts.toString(),
+      value: stats.total_products.toString(),
       icon: Package,
       color: "text-primary"
-    }, {
+    },
+    {
       title: "dashboard.priceDrops",
-      value: priceDrops.toString(),
+      value: stats.price_drops.toString(),
       icon: TrendingDown,
       color: "text-price-decrease"
-    }, {
+    },
+    {
       title: "dashboard.priceIncreases",
-      value: priceIncreases.toString(),
+      value: stats.price_increases.toString(),
       icon: TrendingUp,
       color: "text-price-increase"
-    }, {
+    },
+    {
       title: "dashboard.totalAmount",
-      value: `${totalAmount}$`,
+      value: `${stats.total_value.toFixed(2)} SAR`,
       icon: DollarSign,
       color: "text-muted-foreground"
-    }];
-  }, []);
+    }
+  ] : [];
 
-  // Mini price graph component
-  const MiniGraph = ({
-    alert
-  }: {
-    alert: typeof recentAlerts[0];
-  }) => {
-    const change = alert.newPrice - alert.oldPrice;
-    const points = [{
-      x: 0,
-      y: alert.oldPrice
-    }, {
-      x: 20,
-      y: alert.oldPrice + change * 0.3
-    }, {
-      x: 40,
-      y: alert.oldPrice + change * 0.7
-    }, {
-      x: 60,
-      y: alert.newPrice
-    }];
-    const minPrice = Math.min(alert.oldPrice, alert.newPrice);
-    const maxPrice = Math.max(alert.oldPrice, alert.newPrice);
-    const range = maxPrice - minPrice || 1;
-    const normalizedPoints = points.map(p => ({
-      x: p.x,
-      y: 20 - (p.y - minPrice) / range * 16
-    }));
-    const pathD = `M ${normalizedPoints.map(p => `${p.x} ${p.y}`).join(' L ')}`;
-    return <div className="w-16 h-5 mx-3 flex items-center">
-        <svg width="60" height="20" className="overflow-visible">
-          <path d={pathD} fill="none" stroke={alert.type === 'decrease' ? 'hsl(var(--price-decrease))' : 'hsl(var(--price-increase))'} strokeWidth="1.5" className="drop-shadow-sm" />
-          <circle cx={normalizedPoints[normalizedPoints.length - 1].x} cy={normalizedPoints[normalizedPoints.length - 1].y} r="2" fill={alert.type === 'decrease' ? 'hsl(var(--price-decrease))' : 'hsl(var(--price-increase))'} />
-        </svg>
-      </div>;
-  };
-  return <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold">{t('nav.analytics')}</h1>
-        <p className="text-muted-foreground">{t('dashboard.latestChanges')}</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-muted-foreground">Loading analytics...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+          <p className="text-muted-foreground">{t('dashboard.description')}</p>
+        </div>
       </div>
 
-      {/* Recent Price Change and Overview side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Toggleable Recent Price Change */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base md:text-lg font-semibold">{t('dashboard.recentAlerts')}</h2>
-            
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>{t('dashboard.recentAlerts')}</CardTitle>
+              <CardDescription>{t('dashboard.latestPriceChanges')}</CardDescription>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setShowAlerts(!showAlerts)}
+            >
+              {showAlerts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </CardHeader>
+          {showAlerts && (
+            <CardContent>
+              <div className="space-y-3">
+                {recentChanges.length > 0 ? (
+                  recentChanges.slice(0, 5).map((change) => {
+                    const product = change.products;
+                    const priceChange = product.current_price - change.price;
+                    const isDecrease = priceChange < 0;
 
-          {showAlerts && <Card className="shadow-card">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {recentAlerts.map((alert, index) => <div key={index} className="flex items-center p-3 rounded-lg bg-gradient-card border">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{alert.product}</h4>
-                        <Badge variant="secondary" className="text-xs mt-1">
-                          {alert.store}
-                        </Badge>
-                      </div>
-                      
-                      <MiniGraph alert={alert} />
-                      
-                      <div className="text-right flex-shrink-0">
-                        <div className="flex items-center gap-1 flex-col">
-                          <span className="text-xs text-muted-foreground line-through">
-                            {alert.currency}{alert.oldPrice}
-                          </span>
-                          <span className={`font-bold text-sm ${alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'}`}>
-                            {alert.currency}{alert.newPrice}
-                          </span>
+                    return (
+                      <div
+                        key={change.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium text-sm line-clamp-1">{product.title}</div>
+                          <div className="text-xs text-muted-foreground">{product.store}</div>
                         </div>
-                        <div className={`flex items-center justify-end gap-1 text-xs ${alert.type === 'decrease' ? 'text-price-decrease' : 'text-price-increase'}`}>
-                          {alert.type === 'decrease' ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
-                          <span>
-                            ({(Math.abs(alert.newPrice - alert.oldPrice) / alert.oldPrice * 100).toFixed(1)}%)
-                          </span>
+                        
+                        <div className="flex items-center gap-2">
+                          <div className={`text-sm font-medium ${isDecrease ? 'text-price-decrease' : 'text-price-increase'}`}>
+                            {product.currency} {product.current_price.toFixed(2)}
+                          </div>
+                          {isDecrease ? (
+                            <TrendingDown className="h-4 w-4 text-price-decrease" />
+                          ) : (
+                            <TrendingUp className="h-4 w-4 text-price-increase" />
+                          )}
                         </div>
                       </div>
-                    </div>)}
-                </div>
-              </CardContent>
-            </Card>}
-        </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No recent price changes
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          )}
+        </Card>
 
-        {/* Toggleable Overview Stats Grid */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base md:text-lg font-semibold">{t('dashboard.overview')}</h2>
-            
-          </div>
-
-          {showStats && <div className="grid grid-cols-2 gap-3">
-              {stats.map(stat => <Card key={stat.title} className="shadow-card hover:shadow-hover transition-all duration-300">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {t(stat.title)}
-                      </p>
-                      <stat.icon className={`h-4 w-4 ${stat.color}`} />
+        <Card className="shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>{t('dashboard.overview')}</CardTitle>
+              <CardDescription>{t('dashboard.keyMetrics')}</CardDescription>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setShowStats(!showStats)}
+            >
+              {showStats ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </CardHeader>
+          {showStats && (
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {statsDisplay.map((stat) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div
+                      key={stat.title}
+                      className="p-4 rounded-lg bg-muted/50 space-y-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className={`h-4 w-4 ${stat.color}`} />
+                        <span className="text-sm text-muted-foreground">
+                          {t(stat.title)}
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold">{stat.value}</div>
                     </div>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                  </CardContent>
-                </Card>)}
-            </div>}
-        </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          )}
+        </Card>
       </div>
-    </div>;
+    </div>
+  );
 }

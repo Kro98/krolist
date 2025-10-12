@@ -1,126 +1,137 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/ProductCard";
-import { Package, Plus, TrendingDown, TrendingUp, Eye, Search, EyeOff, DollarSign } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
-import { mockProducts } from "@/data/mockProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const stats = [
-  {
-    title: "dashboard.totalProducts",
-    value: "23",
-    icon: Package,
-    color: "text-primary"
-  },
-  {
-    title: "dashboard.priceDrops",
-    value: "7", 
-    icon: TrendingDown,
-    color: "text-price-decrease"
-  },
-  {
-    title: "dashboard.priceIncreases",
-    value: "3",
-    icon: TrendingUp,
-    color: "text-price-increase"
-  },
-  {
-    title: "dashboard.totalAmount",
-    value: "1,572$",
-    icon: DollarSign,
-    color: "text-muted-foreground"
-  },
-];
-
-const recentAlerts = [
-  {
-    product: "iPhone 15 Pro",
-    store: "Amazon",
-    oldPrice: 999,
-    newPrice: 899,
-    currency: "$",
-    type: "decrease"
-  },
-  {
-    product: "Sony WH-1000XM5",
-    store: "Best Buy",
-    oldPrice: 349,
-    newPrice: 379,
-    currency: "$",
-    type: "increase"
-  },
-  {
-    product: "MacBook Air M3",
-    store: "Apple Store",
-    oldPrice: 1299,
-    newPrice: 1199,
-    currency: "$",
-    type: "decrease"
-  },
-];
+interface Product {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  category: string | null;
+  store: string;
+  product_url: string;
+  current_price: number;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+  last_checked_at: string;
+  price_history?: Array<{
+    price: number;
+    scraped_at: string;
+  }>;
+}
 
 export default function Products() {
   const { t } = useLanguage();
-  const [showStats, setShowStats] = useState(true);
-  const [showAlerts, setShowAlerts] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          price_history (
+            price,
+            scraped_at
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setProducts(products.filter(p => p.id !== id));
+      toast.success('Product removed from tracking');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    }
+  };
+
+  const handleUpdate = async (id: string, updates: Partial<Product>) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setProducts(products.map(p => 
+        p.id === id ? { ...p, ...updates } : p
+      ));
+      toast.success('Product updated');
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Failed to update product');
+    }
+  };
+
+  const handleRefreshPrice = async (id: string) => {
+    try {
+      toast.info('Checking price...');
+      
+      await supabase.functions.invoke('check-prices', {
+        body: { productId: id }
+      });
+
+      await loadProducts();
+      toast.success('Price updated');
+    } catch (error) {
+      console.error('Error refreshing price:', error);
+      toast.error('Failed to refresh price');
+    }
+  };
+
   // Filter products based on search query
-  const filteredProducts = mockProducts.filter(product =>
+  const filteredProducts = products.filter(product =>
     product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Mini price graph component
-  const MiniGraph = ({ alert }: { alert: typeof recentAlerts[0] }) => {
-    const change = alert.newPrice - alert.oldPrice;
-    const points = [
-      { x: 0, y: alert.oldPrice },
-      { x: 20, y: alert.oldPrice + (change * 0.3) },
-      { x: 40, y: alert.oldPrice + (change * 0.7) },
-      { x: 60, y: alert.newPrice }
-    ];
-    
-    const minPrice = Math.min(alert.oldPrice, alert.newPrice);
-    const maxPrice = Math.max(alert.oldPrice, alert.newPrice);
-    const range = maxPrice - minPrice || 1;
-    
-    const normalizedPoints = points.map(p => ({
-      x: p.x,
-      y: 20 - ((p.y - minPrice) / range) * 16
-    }));
-    
-    const pathD = `M ${normalizedPoints.map(p => `${p.x} ${p.y}`).join(' L ')}`;
-    
+  if (loading) {
     return (
-      <div className="w-16 h-5 mx-3 flex items-center">
-        <svg width="60" height="20" className="overflow-visible">
-          <path
-            d={pathD}
-            fill="none"
-            stroke={alert.type === 'decrease' ? 'hsl(var(--price-decrease))' : 'hsl(var(--price-increase))'}
-            strokeWidth="1.5"
-            className="drop-shadow-sm"
-          />
-          <circle
-            cx={normalizedPoints[normalizedPoints.length - 1].x}
-            cy={normalizedPoints[normalizedPoints.length - 1].y}
-            r="2"
-            fill={alert.type === 'decrease' ? 'hsl(var(--price-decrease))' : 'hsl(var(--price-increase))'}
-          />
-        </svg>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-muted-foreground">Loading products...</div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -131,7 +142,6 @@ export default function Products() {
         />
       </div>
 
-      {/* Products List */}
       {filteredProducts.length > 0 ? (
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -142,7 +152,13 @@ export default function Products() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product}
+                onDelete={handleDelete}
+                onUpdate={handleUpdate}
+                onRefreshPrice={handleRefreshPrice}
+              />
             ))}
           </div>
         </div>
@@ -169,10 +185,10 @@ export default function Products() {
             <CardDescription>{t('products.startTracking')}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <NavLink to="/add-product">
+            <NavLink to="/search-products">
               <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
                 <Plus className="h-4 w-4 mr-2" />
-                {t('nav.addProduct')}
+                Search Products
               </Button>
             </NavLink>
           </CardContent>

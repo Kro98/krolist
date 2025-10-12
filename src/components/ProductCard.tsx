@@ -17,26 +17,30 @@ import { toast } from "sonner";
 interface Product {
   id: string;
   title: string;
-  price: number;
-  previousPrice: number;
-  currency: string;
-  imageUrl: string;
-  url: string;
+  description: string | null;
+  image_url: string | null;
+  category: string | null;
   store: string;
-  category: string;
-  lastUpdated: string;
-  priceHistory: Array<{
-    date: string;
+  product_url: string;
+  current_price: number;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+  last_checked_at: string;
+  price_history?: Array<{
     price: number;
+    scraped_at: string;
   }>;
 }
+
 interface ProductCardProps {
   product: Product;
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, updates: Partial<Product>) => void;
+  onRefreshPrice?: (id: string) => void;
 }
 
-export function ProductCard({ product, onDelete, onUpdate }: ProductCardProps) {
+export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: ProductCardProps) {
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCurrencyDialog, setShowCurrencyDialog] = useState(false);
@@ -44,23 +48,30 @@ export function ProductCard({ product, onDelete, onUpdate }: ProductCardProps) {
   const [selectedCurrency, setSelectedCurrency] = useState(product.currency);
   const [editForm, setEditForm] = useState({
     title: product.title,
-    description: t('products.description'),
-    imageUrl: product.imageUrl,
-    price: product.price.toString(),
+    description: product.description || '',
+    imageUrl: product.image_url || '',
+    price: product.current_price.toString(),
+    category: product.category || ''
   });
-  
-  const priceChange = product.price - product.previousPrice;
-  const priceChangePercent = ((priceChange / product.previousPrice) * 100).toFixed(2);
+
+  // Calculate price change
+  const priceHistory = product.price_history || [];
+  const sortedHistory = [...priceHistory].sort((a, b) => 
+    new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime()
+  );
+  const previousPrice = sortedHistory[1]?.price || product.current_price;
+  const priceChange = product.current_price - previousPrice;
+  const priceChangePercent = previousPrice > 0 ? ((priceChange / previousPrice) * 100).toFixed(2) : '0';
   
   // Calculate price statistics
-  const prices = product.priceHistory.map(p => p.price);
-  const highestPrice = Math.max(...prices);
-  const lowestPrice = Math.min(...prices);
-  const originalPrice = product.priceHistory[0]?.price || product.price;
+  const prices = priceHistory.map(p => p.price);
+  const highestPrice = prices.length > 0 ? Math.max(...prices) : product.current_price;
+  const lowestPrice = prices.length > 0 ? Math.min(...prices) : product.current_price;
+  const originalPrice = sortedHistory[sortedHistory.length - 1]?.price || product.current_price;
   
   // Prepare chart data
-  const chartData = product.priceHistory.map((point) => ({
-    date: point.date,
+  const chartData = priceHistory.map((point) => ({
+    date: new Date(point.scraped_at).toLocaleDateString(),
     price: point.price,
   }));
   
@@ -90,8 +101,10 @@ export function ProductCard({ product, onDelete, onUpdate }: ProductCardProps) {
     if (onUpdate) {
       onUpdate(product.id, {
         title: editForm.title,
-        imageUrl: editForm.imageUrl,
-        price: parseFloat(editForm.price),
+        description: editForm.description,
+        image_url: editForm.imageUrl,
+        current_price: parseFloat(editForm.price),
+        category: editForm.category
       });
       toast.success(t('products.editSuccess'));
     }
@@ -106,7 +119,7 @@ export function ProductCard({ product, onDelete, onUpdate }: ProductCardProps) {
           {/* Product Image */}
           <div className="flex-shrink-0">
             <img 
-              src={product.imageUrl} 
+              src={product.image_url || '/placeholder.svg'}
               alt={product.title} 
               className="w-24 h-24 object-cover rounded-lg"
             />
@@ -148,7 +161,7 @@ export function ProductCard({ product, onDelete, onUpdate }: ProductCardProps) {
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-3">
               <span className="text-2xl font-bold">
-                {product.currency}{product.price.toFixed(2)}
+                {product.currency}{product.current_price.toFixed(2)}
               </span>
               <span className={`text-sm ${priceChange < 0 ? 'text-price-decrease' : priceChange > 0 ? 'text-price-increase' : 'text-muted-foreground'}`}>
                 {priceChange !== 0 && (priceChange > 0 ? '+' : '')}
@@ -172,8 +185,20 @@ export function ProductCard({ product, onDelete, onUpdate }: ProductCardProps) {
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ExternalLink className="h-4 w-4" />
-            <span>{t('products.updated')}: {product.lastUpdated}</span>
+            <span>{t('products.updated')}: {new Date(product.last_checked_at).toLocaleDateString()}</span>
           </div>
+          
+          {onRefreshPrice && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRefreshPrice(product.id)}
+              className="h-7 text-xs"
+            >
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Refresh
+            </Button>
+          )}
           
           <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
             <CollapsibleTrigger asChild>

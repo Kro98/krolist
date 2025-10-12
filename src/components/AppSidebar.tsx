@@ -1,7 +1,10 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 // Import shop brand icons
 import sheinIcon from "@/assets/shop-icons/shein-icon.png";
@@ -132,6 +135,7 @@ export function AppSidebar() {
     t,
     language
   } = useLanguage();
+  const { user, signOut } = useAuth();
   const [shopItems, setShopItems] = useState(getShopItems());
   useEffect(() => {
     const handleStorageChange = () => {
@@ -255,6 +259,28 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* User Profile Section */}
+        {!collapsed && (
+          <>
+            <Separator className="my-2" />
+            <div className="p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sidebar-foreground truncate">{user?.email}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+          </>
+        )}
       </SidebarContent>
     </Sidebar>;
 }
