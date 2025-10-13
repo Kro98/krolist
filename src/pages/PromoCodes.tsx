@@ -182,19 +182,21 @@ export default function PromoCodes() {
       </Card>
 
       {/* Promo Codes List */}
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {promoCodes.map((promo) => (
           <Card key={promo.id} className={`shadow-card hover:shadow-hover transition-all duration-300 ${promo.used && !promo.reusable ? 'opacity-60' : ''}`}>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <div className="bg-primary/10 px-3 py-1 rounded-lg font-mono font-bold text-primary">
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <div className="bg-primary/10 px-3 py-1 rounded-lg font-mono font-bold text-primary text-sm">
                       {promo.code}
                     </div>
                     <Badge variant={promo.used && !promo.reusable ? "secondary" : "default"}>
                       {promo.store}
                     </Badge>
+                  </div>
+                  <div className="flex gap-2 mb-3 flex-wrap">
                     {promo.reusable ? (
                       <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                         <RotateCcw className="h-3 w-3 mr-1" />
@@ -211,18 +213,19 @@ export default function PromoCodes() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-1">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {promo.description}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Expires: {new Date(promo.expires).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleEditPromo(promo)}
+                    className="w-full"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -230,15 +233,16 @@ export default function PromoCodes() {
                     size="sm"
                     variant="outline"
                     onClick={() => toggleUsed(promo.id)}
-                    className={promo.used ? "bg-success/10 hover:bg-success/20" : ""}
+                    className={`w-full ${promo.used ? "bg-success/10 hover:bg-success/20" : ""}`}
                   >
-                    {promo.used ? "Mark Unused" : "Mark Used"}
+                    {promo.used ? "Unused" : "Used"}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleCopyCode(promo.code)}
                     disabled={promo.used && !promo.reusable}
+                    className="w-full"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -246,6 +250,7 @@ export default function PromoCodes() {
                     size="sm"
                     variant="outline"
                     onClick={() => window.open(`https://${promo.store.toLowerCase()}.com`, '_blank')}
+                    className="w-full"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
@@ -253,7 +258,7 @@ export default function PromoCodes() {
                     size="sm"
                     variant="outline"
                     onClick={() => handleDeletePromo(promo.id)}
-                    className="text-destructive hover:bg-destructive/10"
+                    className="text-destructive hover:bg-destructive/10 w-full col-span-2"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
