@@ -105,6 +105,16 @@ export default function Analytics() {
     );
   }
 
+  if (stats && stats.total_products === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Package className="h-16 w-16 text-muted-foreground" />
+        <h3 className="text-xl font-medium">No Products Yet</h3>
+        <p className="text-muted-foreground">Add products to view their analytics</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

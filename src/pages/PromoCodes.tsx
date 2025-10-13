@@ -20,33 +20,6 @@ interface PromoCode {
 
 const samplePromoCodes: PromoCode[] = [
   {
-    id: "1",
-    code: "SAVE20",
-    store: "Amazon",
-    description: "20% off electronics",
-    expires: "2024-02-15",
-    used: false,
-    reusable: false
-  },
-  {
-    id: "2",
-    code: "NEWUSER15",
-    store: "Best Buy",
-    description: "15% off first purchase",
-    expires: "2024-01-30",
-    used: true,
-    reusable: false
-  },
-  {
-    id: "3",
-    code: "FREESHIP",
-    store: "Target",
-    description: "Free shipping on orders over $50",
-    expires: "2024-03-01",
-    used: false,
-    reusable: true
-  },
-  {
     id: "4",
     code: "PALESTINE",
     store: "NOON",
