@@ -1,11 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Calendar, Megaphone, Sparkles, Shield, TrendingUp } from "lucide-react";
+import { Calendar, Megaphone, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigate } from "react-router-dom";
-import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 
 interface NewsItem {
   id: string;
@@ -67,48 +64,29 @@ const getCategoryColor = (category: string) => {
 
 export default function NewsUpdates() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <Megaphone className="h-8 w-8 text-primary" />
-                <h1 className="text-4xl md:text-5xl font-bold">News & Updates</h1>
-              </div>
-              <p className="text-lg text-muted-foreground">
-                Stay informed about new features, announcements, and platform updates
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/privacy-policy')}
-              className="flex items-center gap-2 shrink-0"
-            >
-              <Shield className="h-4 w-4" />
-              Privacy
-            </Button>
+          <div className="flex items-center gap-3 mb-4">
+            <Megaphone className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold">News & Updates</h1>
           </div>
+          <p className="text-lg text-muted-foreground">
+            Stay informed about new features, announcements, and platform updates
+          </p>
         </div>
       </div>
 
-      {/* News Items with ScrollStack */}
-      <ScrollStack
-        itemDistance={120}
-        itemScale={0.05}
-        baseScale={0.8}
-        rotationAmount={1}
-        onStackComplete={() => console.log('News stack completed!')}
-      >
-        {newsItems.map((item) => (
-          <ScrollStackItem key={item.id}>
-            <Card className="h-full border-0 shadow-none">
-              <CardHeader>
+      {/* News Items */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {newsItems.map((item, index) => (
+            <Card key={item.id} className="p-6 hover:shadow-lg transition-all">
+              <div className="space-y-4">
+                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <Badge className={`${getCategoryColor(item.category)} border`}>
@@ -127,55 +105,54 @@ export default function NewsUpdates() {
                     })}</span>
                   </div>
                 </div>
-                <CardTitle className="text-2xl mt-2">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Separator className="mb-4" />
+
+                {/* Title */}
+                <h2 className="text-2xl font-semibold">{item.title}</h2>
+
+                <Separator />
+
+                {/* Content */}
                 <p className="text-muted-foreground leading-relaxed">
                   {item.content}
                 </p>
-              </CardContent>
+              </div>
             </Card>
-          </ScrollStackItem>
-        ))}
+          ))}
+        </div>
 
         {/* Future Plans Section */}
-        <ScrollStackItem>
-          <Card className="h-full border-0 shadow-none bg-primary/5">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-6 w-6 text-primary" />
-                <CardTitle className="text-2xl">What's Next?</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Separator className="mb-4" />
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                  <span>Integration with more Saudi stores (Shein, IKEA, Namshi, Trendyol, ASOS)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                  <span>Price history tracking and alerts</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                  <span>User accounts and saved product lists</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                  <span>Advanced filtering and sorting options</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                  <span>Mobile app for iOS and Android</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-        </ScrollStackItem>
-      </ScrollStack>
+        <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold">What's Next?</h2>
+            </div>
+            <Separator />
+            <ul className="space-y-3 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Integration with more Saudi stores (Shein, IKEA, Namshi, Trendyol, ASOS)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Price history tracking and alerts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>User accounts and saved product lists</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Advanced filtering and sorting options</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Mobile app for iOS and Android</span>
+              </li>
+            </ul>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

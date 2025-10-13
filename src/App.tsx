@@ -17,7 +17,6 @@ import Events from "./pages/Events";
 import NewsUpdates from "./pages/NewsUpdates";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 // Search products page for affiliate link system
@@ -43,7 +42,6 @@ const App = () => (
                   <Route path="/promo-codes" element={<PromoCodes />} />
                   <Route path="/donation" element={<Donation />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Layout>
