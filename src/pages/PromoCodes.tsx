@@ -188,15 +188,15 @@ export default function PromoCodes() {
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <div className="bg-primary/10 px-3 py-1 rounded-lg font-mono font-bold text-primary text-sm">
+                  <div className="mb-3">
+                    <div className="bg-primary/10 px-3 py-1 rounded-lg font-mono font-bold text-primary text-sm inline-block">
                       {promo.code}
                     </div>
+                  </div>
+                  <div className="flex gap-2 mb-3 flex-wrap">
                     <Badge variant={promo.used && !promo.reusable ? "secondary" : "default"}>
                       {promo.store}
                     </Badge>
-                  </div>
-                  <div className="flex gap-2 mb-3 flex-wrap">
                     {promo.reusable ? (
                       <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                         <RotateCcw className="h-3 w-3 mr-1" />
