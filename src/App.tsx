@@ -15,6 +15,7 @@ import PromoCodes from "./pages/PromoCodes";
 import Donation from "./pages/Donation";
 import Events from "./pages/Events";
 import NewsUpdates from "./pages/NewsUpdates";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
@@ -42,6 +43,7 @@ const App = () => (
                   <Route path="/promo-codes" element={<PromoCodes />} />
                   <Route path="/donation" element={<Donation />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Layout>

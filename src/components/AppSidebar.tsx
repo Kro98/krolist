@@ -49,24 +49,24 @@ const shopIconMap: Record<string, string> = {
   trendyol: trendyolIcon,
   asos: asosIcon
 };
+const COMING_SOON_SHOPS = ['ikea', 'abyat', 'namshi', 'trendyol', 'asos'];
+
 const getShopItems = () => {
   const saved = localStorage.getItem('shopOrder');
   if (saved) {
     const shopOrder = JSON.parse(saved);
-    return shopOrder.filter((shop: any) => shop.enabled).map((shop: any) => ({
-      title: `shops.${shop.id}`,
-      url: getShopAffiliateUrl(shop.id),
-      icon: shopIconMap[shop.id] || Package,
-      name: shop.name,
-      isExternal: true
-    }));
+    return shopOrder
+      .filter((shop: any) => shop.enabled && !COMING_SOON_SHOPS.includes(shop.id))
+      .map((shop: any) => ({
+        title: `shops.${shop.id}`,
+        url: getShopAffiliateUrl(shop.id),
+        icon: shopIconMap[shop.id] || Package,
+        name: shop.name,
+        isExternal: true
+      }));
   }
+  // Default active shops only
   return [{
-    title: "shops.shein",
-    url: getShopAffiliateUrl("shein"),
-    icon: sheinIcon,
-    isExternal: true
-  }, {
     title: "shops.noon",
     url: getShopAffiliateUrl("noon"),
     icon: noonIcon,
@@ -77,29 +77,9 @@ const getShopItems = () => {
     icon: amazonIcon,
     isExternal: true
   }, {
-    title: "shops.ikea",
-    url: getShopAffiliateUrl("ikea"),
-    icon: ikeaIcon,
-    isExternal: true
-  }, {
-    title: "shops.abyat",
-    url: getShopAffiliateUrl("abyat"),
-    icon: abyatIcon,
-    isExternal: true
-  }, {
-    title: "shops.namshi",
-    url: getShopAffiliateUrl("namshi"),
-    icon: namshiIcon,
-    isExternal: true
-  }, {
-    title: "shops.trendyol",
-    url: getShopAffiliateUrl("trendyol"),
-    icon: trendyolIcon,
-    isExternal: true
-  }, {
-    title: "shops.asos",
-    url: getShopAffiliateUrl("asos"),
-    icon: asosIcon,
+    title: "shops.shein",
+    url: getShopAffiliateUrl("shein"),
+    icon: sheinIcon,
     isExternal: true
   }];
 };
