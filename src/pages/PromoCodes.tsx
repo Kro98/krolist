@@ -232,27 +232,11 @@ export default function PromoCodes() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => toggleUsed(promo.id)}
-                    className={`w-full ${promo.used ? "bg-success/10 hover:bg-success/20" : ""}`}
-                  >
-                    {promo.used ? "Unused" : "Used"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
                     onClick={() => handleCopyCode(promo.code)}
                     disabled={promo.used && !promo.reusable}
                     className="w-full"
                   >
                     <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => window.open(`https://${promo.store.toLowerCase()}.com`, '_blank')}
-                    className="w-full"
-                  >
-                    <ExternalLink className="h-4 w-4" />
                   </Button>
                   <Button
                     size="sm"
