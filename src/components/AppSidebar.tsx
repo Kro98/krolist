@@ -50,10 +50,15 @@ const shopIconMap: Record<string, string> = {
   asos: asosIcon
 };
 const getShopItems = () => {
+  const COMING_SOON_SHOPS = ["ikea", "abyat", "namshi", "trendyol", "asos"];
   const saved = localStorage.getItem('shopOrder');
   if (saved) {
     const shopOrder = JSON.parse(saved);
-    return shopOrder.filter((shop: any) => shop.enabled).map((shop: any) => ({
+    // Filter out disabled shops and coming soon shops
+    const activeShops = shopOrder.filter((shop: any) => 
+      shop.enabled && !COMING_SOON_SHOPS.includes(shop.id)
+    );
+    return activeShops.map((shop: any) => ({
       title: `shops.${shop.id}`,
       url: getShopAffiliateUrl(shop.id),
       icon: shopIconMap[shop.id] || Package,
