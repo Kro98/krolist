@@ -333,8 +333,8 @@ export default function Events() {
               Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} className="rounded-md border p-3 pointer-events-auto" modifiers={{
+          <CardContent className="mx-0 px-[10px]">
+            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{
             hasEvent: events.map(event => event.date)
           }} modifiersStyles={{
             hasEvent: {
@@ -342,7 +342,7 @@ export default function Events() {
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 'bold'
             }
-          }} />
+          }} className="rounded-md border p-3 pointer-events-auto px-0" />
           </CardContent>
         </Card>
 
