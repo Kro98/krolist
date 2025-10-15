@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
+import { AdSpace } from "@/components/AdSpace";
 interface Event {
   id: string;
   name: string;
@@ -333,7 +334,7 @@ export default function Events() {
               Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent className="mx-0 px-[10px]">
+          <CardContent className="mx-0 px-[10px] flex gap-4">
             <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{
             hasEvent: events.map(event => event.date)
           }} modifiersStyles={{
@@ -342,7 +343,10 @@ export default function Events() {
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 'bold'
             }
-          }} className="rounded-md border p-3 pointer-events-auto px-0" />
+          }} className="rounded-md border p-3 pointer-events-auto px-0 flex-1" />
+            
+            {/* Ad Space next to calendar */}
+            <AdSpace className="w-[300px] hidden lg:block" height="h-[400px]" />
           </CardContent>
         </Card>
 

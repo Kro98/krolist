@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { AdSpace } from "@/components/AdSpace";
 interface SearchResult {
   id: string;
   title: string;
@@ -168,7 +169,11 @@ export default function SearchProducts() {
   };
   return <div className="min-h-screen bg-background">
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+        <div className="flex gap-6 items-start">
+          {/* Left Ad Space */}
+          <AdSpace className="w-[250px] sticky top-6 hidden lg:block" height="h-[250px]" />
+          
+          <div className="flex-1 max-w-7xl mx-auto px-4 py-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Find Your Perfect Product, Instantly.
           </h1>
@@ -226,6 +231,10 @@ export default function SearchProducts() {
               </Alert>}
           </div>
         </div>
+        
+        {/* Right Ad Space */}
+        <AdSpace className="w-[250px] sticky top-6 hidden lg:block" height="h-[250px]" />
+      </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-[50px]">

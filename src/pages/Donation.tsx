@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
+import { AdSpace } from "@/components/AdSpace";
 declare global {
   interface Window {
     kofiWidgetOverlay?: {
@@ -33,8 +34,13 @@ export default function Donation() {
       }
     };
   }, []);
-  return <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="text-center space-y-4">
+  return (
+    <div className="flex gap-6 items-start">
+      {/* Left Ad Space */}
+      <AdSpace className="w-[250px] sticky top-6 hidden lg:block" height="h-[600px]" />
+      
+      <div className="flex-1 space-y-6 max-w-4xl mx-auto">
+        <div className="text-center space-y-4">
         <div className="flex justify-center">
           <div className="bg-gradient-primary p-4 rounded-full">
             <Heart className="h-8 w-8 text-white" />
@@ -93,6 +99,10 @@ export default function Donation() {
           <div id="kofi-widget-container"></div>
         </CardContent>
       </Card>
-
-    </div>;
+      </div>
+      
+      {/* Right Ad Space */}
+      <AdSpace className="w-[250px] sticky top-6 hidden lg:block" height="h-[600px]" />
+    </div>
+  );
 }

@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { Calendar, Megaphone, Sparkles, Shield } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { AdSpace } from "@/components/AdSpace";
 
 interface NewsItem {
   id: string;
@@ -34,7 +35,7 @@ const newsItems: NewsItem[] = [
     title: "Coming Soon: More Stores",
     date: "2025-10-12",
     category: "update",
-    content: "We're working on adding support for more stores including Shein, IKEA, Namshi, and others. Stay tuned for updates!"
+    content: "We're working on adding support for Shein, IKEA, Namshi, Trendyol, ASOS, and more Saudi retailers. Stay tuned!"
   }
 ];
 
@@ -94,78 +95,93 @@ export default function NewsUpdates() {
         </div>
       </div>
 
-      {/* News Items */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          {newsItems.map((item, index) => (
-            <Card key={item.id} className="p-6 hover:shadow-lg transition-all">
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Badge className={`${getCategoryColor(item.category)} border`}>
-                      <span className="flex items-center gap-1.5">
-                        {getCategoryIcon(item.category)}
-                        <span className="capitalize">{item.category}</span>
-                      </span>
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(item.date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</span>
-                  </div>
-                </div>
-
-                {/* Title */}
-                <h2 className="text-2xl font-semibold">{item.title}</h2>
-
-                <Separator />
-
-                {/* Content */}
-                <p className="text-muted-foreground leading-relaxed">
-                  {item.content}
-                </p>
-              </div>
-            </Card>
-          ))}
+      {/* Main Layout with Ad Spaces */}
+      <div className="flex gap-6 items-start py-8">
+        {/* Left Ad Spaces */}
+        <div className="w-[250px] sticky top-6 hidden lg:flex flex-col gap-6">
+          <AdSpace height="h-[250px]" />
+          <AdSpace height="h-[250px]" />
         </div>
 
-        {/* Future Plans Section */}
-        <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">What's Next?</h2>
-            </div>
-            <Separator />
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Integration with more Saudi stores (Shein, IKEA, Namshi, Trendyol, ASOS)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Price history tracking and alerts</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>User accounts and saved product lists</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Advanced filtering and sorting options</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Mobile app for iOS and Android</span>
-              </li>
-            </ul>
+        {/* News Items */}
+        <div className="flex-1 max-w-4xl px-4">
+          <div className="space-y-6">
+            {newsItems.map((item, index) => (
+              <Card key={item.id} className="p-6 hover:shadow-lg transition-all">
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${getCategoryColor(item.category)} border`}>
+                        <span className="flex items-center gap-1.5">
+                          {getCategoryIcon(item.category)}
+                          <span className="capitalize">{item.category}</span>
+                        </span>
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(item.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</span>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h2 className="text-2xl font-semibold">{item.title}</h2>
+
+                  <Separator />
+
+                  {/* Content */}
+                  <p className="text-muted-foreground leading-relaxed">
+                    {item.content}
+                  </p>
+                </div>
+              </Card>
+            ))}
           </div>
-        </Card>
+
+          {/* Future Plans Section */}
+          <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold">What's Next?</h2>
+              </div>
+              <Separator />
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Integration with more Saudi stores (Shein, IKEA, Namshi, Trendyol, ASOS)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Price history tracking and alerts</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>User accounts and saved product lists</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Advanced filtering and sorting options</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Mobile app for iOS and Android</span>
+                </li>
+              </ul>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Ad Spaces */}
+        <div className="w-[250px] sticky top-6 hidden lg:flex flex-col gap-6">
+          <AdSpace height="h-[250px]" />
+          <AdSpace height="h-[250px]" />
+        </div>
       </div>
     </div>
   );

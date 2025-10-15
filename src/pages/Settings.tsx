@@ -15,6 +15,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast as sonner } from "sonner";
+import { AdSpace } from "@/components/AdSpace";
 export default function Settings() {
   const {
     language,
@@ -99,13 +100,15 @@ export default function Settings() {
       setLoading(false);
     }
   };
-  return <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
-        <p className="text-muted-foreground">{t('settings.subtitle')}</p>
-      </div>
+  return (
+    <div className="flex gap-6 items-start">
+      <div className="flex-1 space-y-6 max-w-4xl">
+        <div>
+          <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
+          <p className="text-muted-foreground">{t('settings.subtitle')}</p>
+        </div>
 
-      <div className="grid gap-6 max-w-4xl">
+        <div className="grid gap-6">
         {/* Language & Currency + Appearance */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Language & Currency */}
@@ -233,13 +236,18 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button onClick={handleSave} className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
-            <Save className="h-4 w-4 mr-2" />
-            {t('settings.saveSettings')}
-          </Button>
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleSave} className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
+              <Save className="h-4 w-4 mr-2" />
+              {t('settings.saveSettings')}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>;
+      
+      {/* Right Ad Space */}
+      <AdSpace className="w-[350px] sticky top-6 hidden lg:block" height="h-[600px]" />
+    </div>
+  );
 }
