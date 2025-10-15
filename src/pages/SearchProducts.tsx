@@ -28,7 +28,6 @@ export default function SearchProducts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [gridColumns, setGridColumns] = useState(2);
   const [searchesRemaining, setSearchesRemaining] = useState<number>(5);
   const [resetAt, setResetAt] = useState<string>("");
   const [lastSearchTime, setLastSearchTime] = useState<number>(0);
@@ -86,8 +85,10 @@ export default function SearchProducts() {
         setResetAt(rateLimitReset);
       }
       if (data?.results && Array.isArray(data.results)) {
-        setSearchResults(data.results);
-        toast.success(`Found ${data.results.length} products. ${rateLimitRemaining ?? searchesRemaining} searches remaining today.`);
+        // Limit to 6 results for 3x2 grid
+        const limitedResults = data.results.slice(0, 6);
+        setSearchResults(limitedResults);
+        toast.success(`Found ${limitedResults.length} products. ${rateLimitRemaining ?? searchesRemaining} searches remaining today.`);
       } else {
         setSearchResults([]);
         toast.info("No products found");
@@ -172,7 +173,7 @@ export default function SearchProducts() {
             Find Your Perfect Product, Instantly.
           </h1>
           
-          {user && <div className="flex items-center justify-center gap-2 mb-4">
+          {user && searchesRemaining > 0 && <div className="flex items-center justify-center gap-2 mb-4">
               <Badge variant="secondary" className="text-sm">
                 <Clock className="h-3 w-3 mr-1" />
                 {searchesRemaining} searches remaining today
@@ -180,6 +181,23 @@ export default function SearchProducts() {
               {resetAt && searchesRemaining < 5 && <Badge variant="outline" className="text-sm">
                   Resets in {formatResetTime()}
                 </Badge>}
+            </div>}
+
+          {user && searchesRemaining === 0 && <div className="max-w-2xl mx-auto mb-4 p-4 bg-muted/50 rounded-lg border">
+              <p className="text-sm text-muted-foreground text-center mb-3">
+                We apologize, but you've reached your daily search limit. As we're currently operating with limited API resources, searches are restricted to 5 per day.
+              </p>
+              <p className="text-sm text-center">
+                Continue your shopping on{" "}
+                <a 
+                  href={`https://www.amazon.com/s?k=${encodeURIComponent(searchQuery || "products")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline hover:text-primary/80"
+                >
+                  Amazon.com
+                </a>
+              </p>
             </div>}
           
           <div className="max-w-3xl mx-auto mt-8">
@@ -211,33 +229,13 @@ export default function SearchProducts() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-[50px]">
-        {searchResults.length > 0 && <div className="flex items-center justify-between mb-6">
+        {searchResults.length > 0 && <div className="mb-6">
             <h2 className="text-2xl font-semibold px-0 mx-0">
               {searchResults.length} Results Found
             </h2>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <LayoutGrid className="h-4 w-4 mr-2" />
-                  Grid: {gridColumns} columns
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-4">
-                  <h4 className="font-medium">Grid Columns</h4>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-muted-foreground w-8">{gridColumns}</span>
-                    <input type="range" min="1" max="4" value={gridColumns} onChange={e => setGridColumns(parseInt(e.target.value))} className="flex-1" />
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
           </div>}
 
-        <div style={{
-        gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`
-      }} className="grid gap-6 px-[10px] py-[10px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-[10px] py-[10px]">
           {searchResults.map(result => <Card key={result.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 mx-0">
               <div className="aspect-square overflow-hidden bg-muted">
                 {result.image ? <img src={result.image} alt={result.title} className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground">
