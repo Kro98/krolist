@@ -6,7 +6,6 @@ import { Calendar, Megaphone, Sparkles, Shield } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { AdSpace } from "@/components/AdSpace";
-
 interface NewsItem {
   id: string;
   title: string;
@@ -14,31 +13,25 @@ interface NewsItem {
   category: "announcement" | "update" | "feature";
   content: string;
 }
-
-const newsItems: NewsItem[] = [
-  {
-    id: "1",
-    title: "Welcome to Our Price Comparison Platform!",
-    date: "2025-10-12",
-    category: "announcement",
-    content: "We're excited to launch our affiliate price comparison platform. Search for products across multiple Saudi stores including Noon, Amazon, and more. Get the best deals with our real-time price tracking."
-  },
-  {
-    id: "2",
-    title: "New Feature: Product Search",
-    date: "2025-10-12",
-    category: "feature",
-    content: "Introducing our powerful product search feature! Search across Noon and Amazon to find the best prices. Our affiliate links help support the platform while you save money."
-  },
-  {
-    id: "3",
-    title: "Coming Soon: More Stores",
-    date: "2025-10-12",
-    category: "update",
-    content: "We're working on adding support for Shein, IKEA, Namshi, Trendyol, ASOS, and more Saudi retailers. Stay tuned!"
-  }
-];
-
+const newsItems: NewsItem[] = [{
+  id: "1",
+  title: "Welcome to Our Price Comparison Platform!",
+  date: "2025-10-12",
+  category: "announcement",
+  content: "We're excited to launch our affiliate price comparison platform. Search for products across multiple Saudi stores including Noon, Amazon, and more. Get the best deals with our real-time price tracking."
+}, {
+  id: "2",
+  title: "New Feature: Product Search",
+  date: "2025-10-12",
+  category: "feature",
+  content: "Introducing our powerful product search feature! Search across Noon and Amazon to find the best prices. Our affiliate links help support the platform while you save money."
+}, {
+  id: "3",
+  title: "Coming Soon: More Stores",
+  date: "2025-10-12",
+  category: "update",
+  content: "We're working on adding support for Shein, IKEA, Namshi, Trendyol, ASOS, and more Saudi retailers. Stay tuned!"
+}];
 const getCategoryIcon = (category: string) => {
   switch (category) {
     case "announcement":
@@ -51,7 +44,6 @@ const getCategoryIcon = (category: string) => {
       return <Calendar className="h-4 w-4" />;
   }
 };
-
 const getCategoryColor = (category: string) => {
   switch (category) {
     case "announcement":
@@ -64,13 +56,12 @@ const getCategoryColor = (category: string) => {
       return "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/30";
   }
 };
-
 export default function NewsUpdates() {
-  const { t } = useLanguage();
+  const {
+    t
+  } = useLanguage();
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
@@ -79,12 +70,7 @@ export default function NewsUpdates() {
               <Megaphone className="h-8 w-8 text-primary" />
               <h1 className="text-4xl md:text-5xl font-bold">News & Updates</h1>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/privacy-policy')}
-              className="gap-2"
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate('/privacy-policy')} className="gap-2">
               <Shield className="h-4 w-4" />
               Privacy
             </Button>
@@ -100,14 +86,13 @@ export default function NewsUpdates() {
         {/* Left Ad Spaces */}
         <div className="w-[250px] sticky top-6 hidden lg:flex flex-col gap-6">
           <AdSpace height="h-[250px]" />
-          <AdSpace height="h-[250px]" />
+          <AdSpace height="h-[250px]" className="py-[450px]" />
         </div>
 
         {/* News Items */}
         <div className="flex-1 max-w-4xl px-4">
           <div className="space-y-6">
-            {newsItems.map((item, index) => (
-              <Card key={item.id} className="p-6 hover:shadow-lg transition-all">
+            {newsItems.map((item, index) => <Card key={item.id} className="p-6 hover:shadow-lg transition-all">
                 <div className="space-y-4">
                   {/* Header */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -122,10 +107,10 @@ export default function NewsUpdates() {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>{new Date(item.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}</span>
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}</span>
                     </div>
                   </div>
 
@@ -139,8 +124,7 @@ export default function NewsUpdates() {
                     {item.content}
                   </p>
                 </div>
-              </Card>
-            ))}
+              </Card>)}
           </div>
 
           {/* Future Plans Section */}
@@ -180,9 +164,8 @@ export default function NewsUpdates() {
         {/* Right Ad Spaces */}
         <div className="w-[250px] sticky top-6 hidden lg:flex flex-col gap-6">
           <AdSpace height="h-[250px]" />
-          <AdSpace height="h-[250px]" />
+          <AdSpace height="h-[250px]" className="py-[450px]" />
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
