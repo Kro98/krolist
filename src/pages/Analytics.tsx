@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, TrendingDown, TrendingUp, Package, DollarSign } from "lucide-react";
+import { Eye, EyeOff, TrendingDown, TrendingUp, DollarSign, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import emptyStateIcon from "@/assets/empty-state-icon.png";
 
 interface AnalyticsStats {
   total_products: number;
@@ -108,7 +109,7 @@ export default function Analytics() {
   if (stats && stats.total_products === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <Package className="h-16 w-16 text-muted-foreground" />
+        <img src={emptyStateIcon} alt="No products" className="h-24 w-24 opacity-70" />
         <h3 className="text-xl font-medium">No Products Yet</h3>
         <p className="text-muted-foreground">Add products to view their analytics</p>
       </div>
