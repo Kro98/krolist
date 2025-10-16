@@ -267,17 +267,17 @@ export default function Auth() {
             <h3 className="text-white font-semibold mb-2">Resources</h3>
             <ul className="space-y-1 text-sm text-gray-400">
               <li>
-                <Link to="/privacy-policy" className="hover:text-white cursor-pointer">
+                <Link to="/auth/privacy-policy" className="hover:text-white cursor-pointer">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/terms-of-service" className="hover:text-white cursor-pointer">
+                <Link to="/auth/terms-of-service" className="hover:text-white cursor-pointer">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/contact-us" className="hover:text-white cursor-pointer">
+                <Link to="/auth/contact-us" className="hover:text-white cursor-pointer">
                   Contact Us
                 </Link>
               </li>
