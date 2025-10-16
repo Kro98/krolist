@@ -11,12 +11,7 @@ export default function AuthContactUs() {
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/auth')}
-            className="mb-4 gap-2"
-          >
+          <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="mb-4 gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Login
           </Button>
@@ -24,9 +19,7 @@ export default function AuthContactUs() {
             <Mail className="h-8 w-8 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold">Contact Us</h1>
           </div>
-          <p className="text-lg text-muted-foreground">
-            We'd love to hear from you. Get in touch with us!
-          </p>
+          <p className="text-lg text-muted-foreground">We'd love to hear from you. Get in touch with us!</p>
         </div>
       </div>
 
@@ -41,12 +34,9 @@ export default function AuthContactUs() {
               </div>
               <h2 className="text-2xl font-semibold">Email</h2>
               <p className="text-muted-foreground">
-                Send us an email and we'll get back to you as soon as possible.
+                Facing an issue or need help ? send us an email and we'll get back to you as soon as possible.
               </p>
-              <a 
-                href="mailto:krolist.help@gmail.com"
-                className="text-primary hover:underline text-lg font-medium"
-              >
+              <a href="mailto:krolist.help@gmail.com" className="text-primary hover:underline text-lg font-medium">
                 krolist.help@gmail.com
               </a>
             </div>
@@ -61,11 +51,7 @@ export default function AuthContactUs() {
                   <Twitter className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h2 className="text-xl font-semibold">Twitter</h2>
-                <Button 
-                  variant="secondary" 
-                  disabled
-                  className="w-full"
-                >
+                <Button variant="secondary" disabled className="w-full">
                   Coming Soon
                 </Button>
               </div>
@@ -78,11 +64,7 @@ export default function AuthContactUs() {
                   <Facebook className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h2 className="text-xl font-semibold">Facebook</h2>
-                <Button 
-                  variant="secondary" 
-                  disabled
-                  className="w-full"
-                >
+                <Button variant="secondary" disabled className="w-full">
                   Coming Soon
                 </Button>
               </div>

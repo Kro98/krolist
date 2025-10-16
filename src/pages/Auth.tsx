@@ -13,20 +13,15 @@ import { Facebook, Twitter, Eye, EyeOff } from "lucide-react";
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address"),
   username: z.string().min(3, "Username must be at least 3 characters").max(20),
-  password: z.string().min(6, "Password must be at least 6 characters")
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required")
+  password: z.string().min(1, "Password is required"),
 });
 export default function Auth() {
   const navigate = useNavigate();
-  const {
-    signUp,
-    signIn,
-    signInWithGoogle,
-    user
-  } = useAuth();
+  const { signUp, signIn, signInWithGoogle, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
@@ -48,11 +43,9 @@ export default function Auth() {
       signUpSchema.parse({
         email,
         username,
-        password
+        password,
       });
-      const {
-        error
-      } = await signUp(email, password, username);
+      const { error } = await signUp(email, password, username);
       if (error) {
         if (error.message.includes("already registered")) {
           toast.error("This email is already registered. Please sign in instead.");
@@ -60,7 +53,7 @@ export default function Auth() {
           toast.error(error.message);
         }
       } else {
-        toast.success("Account created! Please check your email to verify your account.");
+        toast.success("Account created! no need to varify go ahead ,log in.");
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -79,11 +72,9 @@ export default function Auth() {
     try {
       signInSchema.parse({
         email,
-        password
+        password,
       });
-      const {
-        error
-      } = await signIn(email, password);
+      const { error } = await signIn(email, password);
       if (error) {
         if (error.message.includes("Invalid")) {
           toast.error("Invalid email or password");
@@ -105,9 +96,7 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const {
-        error
-      } = await signInWithGoogle();
+      const { error } = await signInWithGoogle();
       if (error) {
         toast.error(error.message || "Failed to sign in with Google");
       }
@@ -118,7 +107,8 @@ export default function Auth() {
     }
   };
   const [isSignUp, setIsSignUp] = useState(false);
-  return <div className="min-h-screen bg-black text-white flex flex-col">
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
       <header className="p-6 flex justify-center">
         <img src={krolistHeaderLogo} alt="Krolist" className="h-16 object-contain" />
@@ -147,36 +137,84 @@ export default function Auth() {
 
               {!isSignUp}
 
-              {!isSignUp && <div className="relative my-6">
+              {!isSignUp && (
+                <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-gray-700"></div>
                   </div>
-                  
-                </div>}
+                </div>
+              )}
 
               <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-                {isSignUp && <div className="space-y-2">
-                    <Label htmlFor="username" className="text-white">Username</Label>
-                    <Input id="username" name="username" type="text" placeholder="johndoe" className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500" required />
-                  </div>}
-                
+                {isSignUp && (
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-white">
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      name="username"
+                      type="text"
+                      placeholder="johndoe"
+                      className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500"
+                      required
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email</Label>
-                  <Input id="email" name={isSignUp ? "signup-email" : "signin-email"} type="email" placeholder="john.doe@example.com" className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500" required />
+                  <Label htmlFor="email" className="text-white">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    name={isSignUp ? "signup-email" : "signin-email"}
+                    type="email"
+                    placeholder="john.doe@example.com"
+                    className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500"
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">Password</Label>
+                  <Label htmlFor="password" className="text-white">
+                    Password
+                  </Label>
                   <div className="relative">
-                    <Input id="password" name={isSignUp ? "signup-password" : "signin-password"} type={isSignUp ? showSignUpPassword ? "text" : "password" : showSignInPassword ? "text" : "password"} placeholder="••••••••" className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500" required />
-                    <button type="button" onClick={() => isSignUp ? setShowSignUpPassword(!showSignUpPassword) : setShowSignInPassword(!showSignInPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
-                      {(isSignUp ? showSignUpPassword : showSignInPassword) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <Input
+                      id="password"
+                      name={isSignUp ? "signup-password" : "signin-password"}
+                      type={
+                        isSignUp ? (showSignUpPassword ? "text" : "password") : showSignInPassword ? "text" : "password"
+                      }
+                      placeholder="••••••••"
+                      className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        isSignUp
+                          ? setShowSignUpPassword(!showSignUpPassword)
+                          : setShowSignInPassword(!showSignInPassword)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    >
+                      {(isSignUp ? showSignUpPassword : showSignInPassword) ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-[#F5A623] hover:bg-[#E09612] text-black font-semibold" disabled={loading}>
-                  {loading ? isSignUp ? "Creating account..." : "Signing in..." : isSignUp ? "Sign Up" : "Login"}
+                <Button
+                  type="submit"
+                  className="w-full bg-[#F5A623] hover:bg-[#E09612] text-black font-semibold"
+                  disabled={loading}
+                >
+                  {loading ? (isSignUp ? "Creating account..." : "Signing in...") : isSignUp ? "Sign Up" : "Login"}
                 </Button>
               </form>
 
@@ -184,7 +222,11 @@ export default function Auth() {
                 <span className="text-gray-400">
                   {isSignUp ? "Already have an account?" : "Don't have an account?"}
                 </span>{" "}
-                <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-blue-400 hover:text-blue-300">
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-blue-400 hover:text-blue-300"
+                >
                   {isSignUp ? "Sign in" : "Create an account"}
                 </button>
               </div>
@@ -200,7 +242,7 @@ export default function Auth() {
             <Facebook className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
             <Twitter className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
           </div>
-          
+
           <div>
             <h3 className="text-white font-semibold mb-2">Resources</h3>
             <ul className="space-y-1 text-sm text-gray-400">
@@ -222,10 +264,11 @@ export default function Auth() {
             </ul>
           </div>
         </div>
-        
+
         <div className="max-w-6xl mx-auto mt-6 pt-6 border-t border-gray-800 text-center text-sm text-gray-400">
           © 2025-2030 Krolist. All rights reserved.
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 }
