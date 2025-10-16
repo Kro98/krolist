@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Megaphone, Sparkles, Shield } from "lucide-react";
+import { Calendar, Megaphone, Sparkles, Shield, FileText, Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { AdSpace } from "@/components/AdSpace";
@@ -65,15 +65,25 @@ export default function NewsUpdates() {
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-4">
             <div className="flex items-center gap-3">
               <Megaphone className="h-8 w-8 text-primary" />
               <h1 className="text-4xl md:text-5xl font-bold">News & Updates</h1>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/privacy-policy')} className="gap-2">
-              <Shield className="h-4 w-4" />
-              Privacy
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/privacy-policy')} className="gap-2">
+                <Shield className="h-4 w-4" />
+                Privacy
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/terms-of-service')} className="gap-2">
+                <FileText className="h-4 w-4" />
+                Terms
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/contact-us')} className="gap-2">
+                <Mail className="h-4 w-4" />
+                Contact
+              </Button>
+            </div>
           </div>
           <p className="text-lg text-muted-foreground">
             Stay informed about new features, announcements, and platform updates
