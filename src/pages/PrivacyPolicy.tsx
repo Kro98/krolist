@@ -1,10 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Shield } from "lucide-react";
-
 export default function PrivacyPolicy() {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
@@ -142,15 +140,8 @@ export default function PrivacyPolicy() {
             </p>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
-            <Separator className="my-4" />
-            <p className="text-muted-foreground leading-relaxed">
-              If you have any questions about this Privacy Policy or our data practices, please contact us through the settings page or reach out to our support team.
-            </p>
-          </Card>
+          
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
