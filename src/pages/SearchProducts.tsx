@@ -11,6 +11,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdSpace } from "@/components/AdSpace";
+import { getSafeErrorMessage } from "@/lib/errorHandler";
+import { z } from "zod";
 interface SearchResult {
   id: string;
   title: string;
@@ -25,6 +27,17 @@ interface SearchResult {
   }[];
   bestPrice: number;
 }
+
+// Validation schema for search result data before database insertion
+const searchResultSchema = z.object({
+  id: z.string().min(1).max(100),
+  title: z.string().min(1).max(500),
+  description: z.string().max(2000),
+  image: z.string().url().nullable(),
+  price: z.number().min(0).max(10000000),
+  store: z.string().min(1).max(100),
+  productUrl: z.string().url(),
+});
 export default function SearchProducts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -95,16 +108,7 @@ export default function SearchProducts() {
         toast.info("No products found");
       }
     } catch (error: any) {
-      console.error('Search error:', error);
-
-      // Handle different error types
-      if (error.message?.includes('429') || error.message?.includes('limit')) {
-        toast.error("Daily search limit reached. Please try again tomorrow.");
-      } else if (error.message?.includes('401') || error.message?.includes('Authentication')) {
-        toast.error("Please login to search products");
-      } else {
-        toast.error("Failed to search products. Please try again.");
-      }
+      toast.error(getSafeErrorMessage(error));
     } finally {
       setIsSearching(false);
     }
@@ -120,42 +124,51 @@ export default function SearchProducts() {
       return;
     }
     try {
+      // Validate data before inserting into database
+      const validatedData = searchResultSchema.parse({
+        id: result.id,
+        title: result.title,
+        description: result.description || '',
+        image: result.image || null,
+        price: seller.price,
+        store: seller.store,
+        productUrl: affiliateUrl,
+      });
+
       const {
         data: savedProduct,
         error
       } = await supabase.from('products').insert({
         user_id: user.id,
-        external_id: result.id,
-        title: result.title,
-        description: result.description,
-        image_url: result.image,
-        store: seller.store,
-        product_url: affiliateUrl,
-        current_price: seller.price,
+        external_id: validatedData.id,
+        title: validatedData.title,
+        description: validatedData.description,
+        image_url: validatedData.image,
+        store: validatedData.store,
+        product_url: validatedData.productUrl,
+        current_price: validatedData.price,
         currency: 'SAR',
         category: 'General'
       }).select().single();
-      if (error) {
-        if (error.code === '23505') {
-          toast.error("This product is already in your tracking list");
-        } else {
-          throw error;
-        }
-        return;
-      }
+      
+      if (error) throw error;
+
       if (savedProduct) {
         await supabase.from('price_history').insert({
           product_id: savedProduct.id,
-          price: seller.price,
-          original_price: seller.originalPrice,
+          price: validatedData.price,
+          original_price: seller.originalPrice || null,
           currency: 'SAR'
         });
       }
       window.open(affiliateUrl, '_blank');
-      toast.success(`${result.title} is now being tracked!`);
+      toast.success(`${validatedData.title} is now being tracked!`);
     } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error("Failed to add product to your list");
+      if (error instanceof z.ZodError) {
+        toast.error("Invalid product data. Please try a different product");
+      } else {
+        toast.error(getSafeErrorMessage(error));
+      }
     }
   };
   const formatResetTime = () => {

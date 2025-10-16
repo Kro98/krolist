@@ -9,6 +9,9 @@ const corsHeaders = {
 // Rate limit: Only check products not updated in the last 3 weeks (21 days)
 const RATE_LIMIT_DAYS = 21;
 
+// Rate limiting for function calls: max 10 checks per hour per user
+const MAX_CHECKS_PER_HOUR = 10;
+
 interface Product {
   id: string;
   product_url: string;
@@ -57,6 +60,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Step 2.5: Check rate limit - max 10 checks per hour
+    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+    
+    // Count how many times this user has called this function in the last hour
+    // We'll use the last_checked_at updates as a proxy for function calls
+    const { count: recentChecks } = await adminClient
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('last_checked_at', oneHourAgo);
+
+    if (recentChecks && recentChecks >= MAX_CHECKS_PER_HOUR) {
+      console.log(`Rate limit exceeded for user ${user.id}: ${recentChecks} checks in last hour`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded. You can check prices up to 10 times per hour',
+          rateLimitReset: new Date(Date.now() + 3600000).toISOString()
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Step 3: Calculate rate limit threshold (3 weeks ago)
     const rateLimitDate = new Date();

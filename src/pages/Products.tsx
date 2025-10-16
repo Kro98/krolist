@@ -8,6 +8,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getSafeErrorMessage } from "@/lib/errorHandler";
+import { z } from "zod";
 
 interface Product {
   id: string;
@@ -27,6 +29,17 @@ interface Product {
     scraped_at: string;
   }>;
 }
+
+// Validation schema for product updates
+const productUpdateSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).nullable().optional(),
+  current_price: z.number().positive().optional(),
+  currency: z.enum(['SAR', 'AED', 'USD', 'EUR', 'GBP']).optional(),
+  store: z.string().min(1).max(100).optional(),
+  category: z.string().max(100).nullable().optional(),
+  image_url: z.string().url().nullable().optional(),
+}).strict();
 
 export default function Products() {
   const { t } = useLanguage();
@@ -56,8 +69,7 @@ export default function Products() {
 
       setProducts(data || []);
     } catch (error) {
-      console.error('Error loading products:', error);
-      toast.error('Failed to load products');
+      toast.error(getSafeErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -75,27 +87,32 @@ export default function Products() {
       setProducts(products.filter(p => p.id !== id));
       toast.success('Product removed from tracking');
     } catch (error) {
-      console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
+      toast.error(getSafeErrorMessage(error));
     }
   };
 
   const handleUpdate = async (id: string, updates: Partial<Product>) => {
     try {
+      // Validate updates before sending to database
+      const validatedUpdates = productUpdateSchema.parse(updates);
+      
       const { error } = await supabase
         .from('products')
-        .update(updates)
+        .update(validatedUpdates)
         .eq('id', id);
 
       if (error) throw error;
 
       setProducts(products.map(p => 
-        p.id === id ? { ...p, ...updates } : p
+        p.id === id ? { ...p, ...validatedUpdates } : p
       ));
       toast.success('Product updated');
     } catch (error) {
-      console.error('Error updating product:', error);
-      toast.error('Failed to update product');
+      if (error instanceof z.ZodError) {
+        toast.error('Invalid update data. Please check your inputs');
+      } else {
+        toast.error(getSafeErrorMessage(error));
+      }
     }
   };
 
@@ -110,8 +127,7 @@ export default function Products() {
       await loadProducts();
       toast.success('Price updated');
     } catch (error) {
-      console.error('Error refreshing price:', error);
-      toast.error('Failed to refresh price');
+      toast.error(getSafeErrorMessage(error));
     }
   };
 

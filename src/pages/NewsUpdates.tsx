@@ -86,17 +86,7 @@ export default function NewsUpdates() {
         {/* Left Ad Spaces */}
         <div className="w-[250px] sticky top-6 hidden lg:flex flex-col gap-6">
           <AdSpace height="h-[250px]" />
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2793689855806571"
-     crossorigin="anonymous"></script>
-<!-- vertical ads - 1 -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:160px;height:750px"
-     data-ad-client="ca-pub-2793689855806571"
-     data-ad-slot="8644779020"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-          <AdSpace height="h-[250px]" className="py-[450px]" />
+          <AdSpace height="h-[600px]" />
         </div>
 
         {/* News Items */}
