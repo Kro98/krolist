@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import krolistCircleLogo from "@/assets/krolist-circle-logo.png";
@@ -266,9 +266,21 @@ export default function Auth() {
           <div>
             <h3 className="text-white font-semibold mb-2">Resources</h3>
             <ul className="space-y-1 text-sm text-gray-400">
-              <li className="hover:text-white cursor-pointer">About Us</li>
-              <li className="hover:text-white cursor-pointer">Support</li>
-              <li className="hover:text-white cursor-pointer">Help Center</li>
+              <li>
+                <Link to="/privacy-policy" className="hover:text-white cursor-pointer">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms-of-service" className="hover:text-white cursor-pointer">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact-us" className="hover:text-white cursor-pointer">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

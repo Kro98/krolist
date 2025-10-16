@@ -16,6 +16,8 @@ import Donation from "./pages/Donation";
 import Events from "./pages/Events";
 import NewsUpdates from "./pages/NewsUpdates";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import ContactUs from "./pages/ContactUs";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
@@ -44,6 +46,8 @@ const App = () => (
                   <Route path="/donation" element={<Donation />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/contact-us" element={<ContactUs />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Layout>
