@@ -5,9 +5,10 @@ import { useEffect, useRef } from "react";
 interface AdSpaceProps {
   className?: string;
   height?: string;
+  adSlot?: string;
 }
 
-export function AdSpace({ className, height = "h-[250px]" }: AdSpaceProps) {
+export function AdSpace({ className, height = "h-[250px]", adSlot = "8036385266" }: AdSpaceProps) {
   const isMobile = useIsMobile();
   const adRef = useRef<HTMLModElement>(null);
 
@@ -39,7 +40,7 @@ export function AdSpace({ className, height = "h-[250px]" }: AdSpaceProps) {
         className="adsbygoogle"
         style={{ display: "inline-block", width: "165px", height: "180px" }}
         data-ad-client="ca-pub-2793689855806571"
-        data-ad-slot="8036385266"
+        data-ad-slot={adSlot}
       />
     </div>
   );
