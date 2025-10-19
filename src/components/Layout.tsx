@@ -19,14 +19,27 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    '/auth',
+    '/auth/privacy-policy',
+    '/auth/terms-of-service',
+    '/auth/contact-us',
+    '/privacy-policy',
+    '/terms-of-service',
+    '/contact-us'
+  ];
+
+  const isPublicRoute = publicRoutes.includes(location.pathname);
+
   useEffect(() => {
-    if (!loading && !user && location.pathname !== '/auth') {
+    if (!loading && !user && !isPublicRoute) {
       navigate('/auth');
     }
-  }, [user, loading, location.pathname, navigate]);
+  }, [user, loading, location.pathname, navigate, isPublicRoute]);
 
-  // Show auth page without layout
-  if (location.pathname === '/auth') {
+  // Show auth pages and public resource pages without layout
+  if (isPublicRoute) {
     return <>{children}</>;
   }
 
