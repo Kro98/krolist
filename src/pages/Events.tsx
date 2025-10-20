@@ -399,12 +399,12 @@ export default function Events() {
         </CardHeader>
         <CardContent className="mx-0 px-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upcomingEvents.map(event => <div key={event.id} className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 px-px">
-                <div className="flex items-start gap-3">
+            {upcomingEvents.map(event => <div key={event.id} className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 py-[5px] px-[10px] mx-[10px] my-0">
+                <div className="flex items-start gap-3 px-0 py-[5px] mx-0">
                   <span className="text-2xl px-0 my-0">{event.emoji}</span>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-semibold text-sm">{event.name}</h4>
+                      <h4 className="font-semibold text-sm py-0 my-0 mx-0 px-0">{event.name}</h4>
                       {event.isUserCreated && <div className="flex gap-1">
                           <Button variant="ghost" size="sm" onClick={() => handleEditEvent(event)}>
                             <Edit className="h-3 w-3" />
