@@ -47,7 +47,7 @@ export default function HowToUseSearch() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Section 1 */}
-          <Card className="p-8">
+          <Card className="p-8 px-0 py-0">
             <h2 className="text-2xl font-semibold mb-4">Step 1: Enter Your Search Query</h2>
             <div className="space-y-4">
               <ImageWithZoom src={searchStep1} alt="Search box example" />
