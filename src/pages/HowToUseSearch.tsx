@@ -30,16 +30,16 @@ export default function HowToUseSearch() {
   return <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
-        <div className="max-w-4xl mx-auto py-0 px-[5px]">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/search-products")} className="mb-4 gap-2 mx-0 px-[80px]">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/search-products")} className="mb-4 gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Search
           </Button>
           <div className="flex items-center gap-3 mb-4">
             <HelpCircle className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-bold mx-0 px-0 my-0">How to Use Product Search</h1>
+            <h1 className="text-4xl md:text-5xl font-bold">How to Use Product Search</h1>
           </div>
-          <p className="text-lg text-muted-foreground">Learn how to find and track the best deals on your favorite products</p>
+          <p className="text-lg text-muted-foreground px-0">Learn how to find and track the best deals on your favorite products</p>
         </div>
       </div>
 
@@ -63,7 +63,7 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Step 2: Review Search Results</h2>
             <div className="space-y-4">
-              <ImageWithZoom src={searchStep2} alt="Search results example" className="mx-0" />
+              <ImageWithZoom src={searchStep2} alt="Search results example" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
                   The search feature is still under progress; as of now... the Amazon card will take you to amazon.com when you click open, using an affiliate link. It will display the results in their website, you then can copy the link of the product from Amazon, and manually add it to Krolist using the + button.
