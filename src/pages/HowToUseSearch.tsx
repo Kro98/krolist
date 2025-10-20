@@ -7,20 +7,18 @@ import searchStep2 from "@/assets/how-to-search-step2.jpg";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-
 export default function HowToUseSearch() {
   const navigate = useNavigate();
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
-  const ImageWithZoom = ({ src, alt }: { src: string; alt: string }) => (
-    <Dialog open={zoomedImage === src} onOpenChange={(open) => !open && setZoomedImage(null)}>
+  const ImageWithZoom = ({
+    src,
+    alt
+  }: {
+    src: string;
+    alt: string;
+  }) => <Dialog open={zoomedImage === src} onOpenChange={open => !open && setZoomedImage(null)}>
       <DialogTrigger asChild>
-        <img
-          src={src}
-          alt={alt}
-          className="w-full rounded-lg border border-border cursor-pointer transition-transform duration-300 hover:scale-105 md:hover:scale-110"
-          onClick={() => setZoomedImage(src)}
-        />
+        <img src={src} alt={alt} className="w-full rounded-lg border border-border cursor-pointer transition-transform duration-300 hover:scale-105 md:hover:scale-110" onClick={() => setZoomedImage(src)} />
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-full p-2" aria-describedby={undefined}>
         <VisuallyHidden>
@@ -28,25 +26,20 @@ export default function HowToUseSearch() {
         </VisuallyHidden>
         <img src={src} alt={alt} className="w-full rounded-lg" />
       </DialogContent>
-    </Dialog>
-  );
-
-  return (
-    <div className="min-h-screen bg-background">
+    </Dialog>;
+  return <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/search-products")} className="mb-4 gap-2">
+        <div className="max-w-4xl mx-auto py-0 px-[5px]">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/search-products")} className="mb-4 gap-2 mx-0 px-[80px]">
             <ArrowLeft className="h-4 w-4" />
             Back to Search
           </Button>
           <div className="flex items-center gap-3 mb-4">
             <HelpCircle className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-bold">How to Use Product Search</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mx-0 px-0 my-0">How to Use Product Search</h1>
           </div>
-          <p className="text-lg text-muted-foreground">
-            Learn how to find and track the best deals on your favorite products
-          </p>
+          <p className="text-lg text-muted-foreground">Learn how to find and track the best deals on your favorite products</p>
         </div>
       </div>
 
@@ -60,8 +53,7 @@ export default function HowToUseSearch() {
               <ImageWithZoom src={searchStep1} alt="Search box example" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  In the search box, write all the details you need about the product you are looking for,try to be
-                  specific for a greater result, and click search.
+                  In the search box, write all the details you need about the product you are looking for, and click search.
                 </p>
               </div>
             </div>
@@ -71,18 +63,10 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Step 2: Review Search Results</h2>
             <div className="space-y-4">
-              <ImageWithZoom src={searchStep2} alt="Search results example" />
+              <ImageWithZoom src={searchStep2} alt="Search results example" className="mx-0" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  NOTE * The search feature is still under progress; ... only amazon is functunal at the moment but we
-                  are working to expand and optimize our shops list . 1 - after you click search , an amazon card with
-                  our affiliate link will apear, similar to the image apove, click on "open in amazon" button. 2 - It
-                  will open a new page in amazon.com diplaying the results of what you searched for, you have more
-                  options to filter your search in the amazon website, and you can search for other things when opening
-                  any shop using our affiliat link 3 - you then can then copy the link of any of the products you want
-                  to add to your product list , and manually add it to Krolist using the + button and choosing the
-                  "manual option", (if there was an error in auto fill ignore it) and manualy add as accuratly as you
-                  can, the details from the product page.
+                  The search feature is still under progress; as of now... the Amazon card will take you to amazon.com when you click open, using an affiliate link. It will display the results in their website, you then can copy the link of the product from Amazon, and manually add it to Krolist using the + button.
                 </p>
               </div>
             </div>
@@ -99,8 +83,7 @@ export default function HowToUseSearch() {
               {/* Explanation space */}
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  Add your explanation here about how to track products, what happens when you track them, and how to
-                  view tracked products.
+                  Add your explanation here about how to track products, what happens when you track them, and how to view tracked products.
                 </p>
               </div>
             </div>
@@ -117,14 +100,12 @@ export default function HowToUseSearch() {
               {/* Explanation space */}
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  Add your explanation here about daily search limits, when they reset, and tips for making the most of
-                  your searches.
+                  Add your explanation here about daily search limits, when they reset, and tips for making the most of your searches.
                 </p>
               </div>
             </div>
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
