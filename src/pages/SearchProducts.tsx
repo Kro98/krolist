@@ -302,10 +302,20 @@ export default function SearchProducts() {
                           </Badge>}
                       </div>
                       
-                      <Button size="sm" onClick={() => handleAddToList(result, seller)} className="bg-gradient-primary">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Track
-                      </Button>
+                      {seller.store.toLowerCase().includes('amazon') ? (
+                        <Button 
+                          size="sm" 
+                          onClick={() => seller.productUrl && window.open(seller.productUrl, '_blank')}
+                          className="bg-gradient-primary"
+                        >
+                          Open on Amazon
+                        </Button>
+                      ) : (
+                        <Button size="sm" onClick={() => handleAddToList(result, seller)} className="bg-gradient-primary">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Track
+                        </Button>
+                      )}
                     </div>)}
                 </div>
               </div>
