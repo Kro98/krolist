@@ -7,18 +7,20 @@ import searchStep2 from "@/assets/how-to-search-step2.jpg";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 export default function HowToUseSearch() {
   const navigate = useNavigate();
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-  const ImageWithZoom = ({
-    src,
-    alt
-  }: {
-    src: string;
-    alt: string;
-  }) => <Dialog open={zoomedImage === src} onOpenChange={open => !open && setZoomedImage(null)}>
+
+  const ImageWithZoom = ({ src, alt }: { src: string; alt: string }) => (
+    <Dialog open={zoomedImage === src} onOpenChange={(open) => !open && setZoomedImage(null)}>
       <DialogTrigger asChild>
-        <img src={src} alt={alt} className="w-full rounded-lg border border-border cursor-pointer transition-transform duration-300 hover:scale-105 md:hover:scale-110" onClick={() => setZoomedImage(src)} />
+        <img 
+          src={src} 
+          alt={alt} 
+          className="w-full rounded-lg border border-border cursor-pointer transition-transform duration-300 hover:scale-105 md:hover:scale-110"
+          onClick={() => setZoomedImage(src)}
+        />
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-full p-2" aria-describedby={undefined}>
         <VisuallyHidden>
@@ -26,8 +28,11 @@ export default function HowToUseSearch() {
         </VisuallyHidden>
         <img src={src} alt={alt} className="w-full rounded-lg" />
       </DialogContent>
-    </Dialog>;
-  return <div className="min-h-screen bg-background">
+    </Dialog>
+  );
+
+  return (
+    <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
@@ -39,7 +44,7 @@ export default function HowToUseSearch() {
             <HelpCircle className="h-8 w-8 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold">How to Use Product Search</h1>
           </div>
-          <p className="text-lg text-muted-foreground px-0">Learn how to find and track the best deals on your favorite products</p>
+          <p className="text-lg text-muted-foreground">Learn how to find and track the best deals on your favorite products</p>
         </div>
       </div>
 
@@ -47,7 +52,7 @@ export default function HowToUseSearch() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Section 1 */}
-          <Card className="p-8 px-0 py-0">
+          <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Step 1: Enter Your Search Query</h2>
             <div className="space-y-4">
               <ImageWithZoom src={searchStep1} alt="Search box example" />
@@ -66,7 +71,12 @@ export default function HowToUseSearch() {
               <ImageWithZoom src={searchStep2} alt="Search results example" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  The search feature is still under progress; as of now... the Amazon card will take you to amazon.com when you click open, using an affiliate link. It will display the results in their website, you then can copy the link of the product from Amazon, and manually add it to Krolist using the + button.
+                  NOTE* The search feature is still under progress; currently only amazon works.
+                  <br></br>br>
+                  .
+                  1 - a result will appear similar to the image above 
+                  <br></br>br>
+                 
                 </p>
               </div>
             </div>
@@ -107,5 +117,6 @@ export default function HowToUseSearch() {
           </Card>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }
