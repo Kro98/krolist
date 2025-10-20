@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, LayoutGrid, Clock, AlertCircle } from "lucide-react";
+import { Search, Plus, LayoutGrid, Clock, AlertCircle, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AdSpace } from "@/components/AdSpace";
 import { getSafeErrorMessage } from "@/lib/errorHandler";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 interface SearchResult {
   id: string;
   title: string;
@@ -51,6 +52,7 @@ export default function SearchProducts() {
   const {
     user
   } = useAuth();
+  const navigate = useNavigate();
   const DEBOUNCE_DELAY = 1000; // 1 second debounce
 
   const handleSearch = async () => {
@@ -187,9 +189,19 @@ export default function SearchProducts() {
           <AdSpace className="w-[250px] sticky top-6 hidden lg:block" height="h-[250px]" />
           
           <div className="flex-1 max-w-7xl mx-auto px-4 py-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Find Your Perfect Product, Instantly.
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold">
+              Find Your Perfect Product, Instantly.
+            </h1>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate("/how-to-use-search")}
+              className="h-10 w-10"
+            >
+              <HelpCircle className="h-6 w-6 text-primary" />
+            </Button>
+          </div>
           
           {user && searchesRemaining > 0 && <div className="flex items-center justify-center gap-2 mb-4">
               <Badge variant="secondary" className="text-sm">
