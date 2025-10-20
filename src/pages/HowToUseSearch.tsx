@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import searchStep1 from "@/assets/how-to-search-step1.jpg";
 
 export default function HowToUseSearch() {
   const navigate = useNavigate();
@@ -30,14 +31,14 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Step 1: Enter Your Search Query</h2>
             <div className="space-y-4">
-              {/* Placeholder for screenshot */}
-              <div className="w-full h-64 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                <p className="text-muted-foreground">Screenshot placeholder - Search bar example</p>
-              </div>
-              {/* Explanation space */}
+              <img 
+                src={searchStep1} 
+                alt="Search box example" 
+                className="w-full rounded-lg border border-border"
+              />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  Add your explanation here about how to enter search queries, what to search for, and best practices.
+                  In the search box, write all the details you need about the product you are looking for, and click search.
                 </p>
               </div>
             </div>
