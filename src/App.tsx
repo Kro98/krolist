@@ -24,12 +24,10 @@ import Auth from "./pages/Auth";
 import AuthPrivacyPolicy from "./pages/auth/AuthPrivacyPolicy";
 import AuthTermsOfService from "./pages/auth/AuthTermsOfService";
 import AuthContactUs from "./pages/auth/AuthContactUs";
-
 const queryClient = new QueryClient();
 // Search products page for affiliate link system
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
@@ -49,7 +47,7 @@ const App = () => (
             <Route path="/how-to-use-search" element={<HowToUseSearch />} />
             <Route path="/analytics" element={<Analytics />} />
                   <Route path="/news" element={<NewsUpdates />} />
-                  <Route path="/events" element={<Events />} />
+                  <Route path="/events" element={<Events />} className="mx-0" />
                   <Route path="/promo-codes" element={<PromoCodes />} />
                   <Route path="/donation" element={<Donation />} />
                   <Route path="/settings" element={<Settings />} />
@@ -64,7 +62,5 @@ const App = () => (
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
-  </QueryClientProvider>
-);
-
+  </QueryClientProvider>;
 export default App;

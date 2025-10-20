@@ -397,11 +397,11 @@ export default function Events() {
         <CardHeader>
           <CardTitle>Upcoming Events</CardTitle>
         </CardHeader>
-        <CardContent className="mx-0 px-[5px]">
+        <CardContent className="mx-0 px-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcomingEvents.map(event => <div key={event.id} className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 px-px">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">{event.emoji}</span>
+                  <span className="text-2xl px-0 my-0">{event.emoji}</span>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-semibold text-sm">{event.name}</h4>
