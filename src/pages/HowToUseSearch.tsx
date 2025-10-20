@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import searchStep1 from "@/assets/how-to-search-step1.jpg";
 import searchStep2 from "@/assets/how-to-search-step2.jpg";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export default function HowToUseSearch() {
   const navigate = useNavigate();
@@ -21,7 +22,10 @@ export default function HowToUseSearch() {
           onClick={() => setZoomedImage(src)}
         />
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-full p-2">
+      <DialogContent className="max-w-4xl w-full p-2" aria-describedby={undefined}>
+        <VisuallyHidden>
+          <DialogTitle>{alt}</DialogTitle>
+        </VisuallyHidden>
         <img src={src} alt={alt} className="w-full rounded-lg" />
       </DialogContent>
     </Dialog>
