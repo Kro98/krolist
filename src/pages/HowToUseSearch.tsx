@@ -3,6 +3,7 @@ import { ArrowLeft, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import searchStep1 from "@/assets/how-to-search-step1.jpg";
+import searchStep2 from "@/assets/how-to-search-step2.jpg";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 
@@ -63,14 +64,10 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Step 2: Review Search Results</h2>
             <div className="space-y-4">
-              {/* Placeholder for screenshot */}
-              <div className="w-full h-64 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105">
-                <p className="text-muted-foreground">Screenshot placeholder - Search results example</p>
-              </div>
-              {/* Explanation space */}
+              <ImageWithZoom src={searchStep2} alt="Search results example" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  Add your explanation here about how to read search results, compare prices across sellers, and identify the best deals.
+                  The search feature is still under progress; as of now... the Amazon card will take you to amazon.com when you click open, using an affiliate link. It will display the results in their website, you then can copy the link of the product from Amazon, and manually add it to Krolist using the + button.
                 </p>
               </div>
             </div>
