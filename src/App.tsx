@@ -47,7 +47,7 @@ const App = () => <QueryClientProvider client={queryClient}>
             <Route path="/how-to-use-search" element={<HowToUseSearch />} />
             <Route path="/analytics" element={<Analytics />} />
                   <Route path="/news" element={<NewsUpdates />} />
-                  <Route path="/events" element={<Events />} className="mx-0" />
+                  <Route path="/events" element={<Events />} />
                   <Route path="/promo-codes" element={<PromoCodes />} />
                   <Route path="/donation" element={<Donation />} />
                   <Route path="/settings" element={<Settings />} />
