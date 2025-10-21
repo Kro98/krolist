@@ -75,22 +75,20 @@ export function Layout({ children }: LayoutProps) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-          <AppSidebar />
-          <div className="flex-1 flex flex-col">
-            <header className="h-16 flex items-center border-b border-border bg-card px-4">
-              <SidebarTrigger className="mr-4" />
-              <img 
-                src={krolistLogo} 
-                alt="Krolist" 
-                className="h-8 object-contain"
-              />
-            </header>
-            
-            <main className="flex-1 p-6 overflow-auto mx-0 px-[10px] py-[10px]">
-              {children}
-            </main>
-          </div>
+        <AppSidebar />
+        <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+          <header className="h-16 flex items-center border-b border-border bg-card px-4">
+            <SidebarTrigger className="mr-4" />
+            <img 
+              src={krolistLogo} 
+              alt="Krolist" 
+              className="h-8 object-contain"
+            />
+          </header>
+          
+          <main className="flex-1 p-6 overflow-auto mx-0 px-[10px] py-[10px]">
+            {children}
+          </main>
 
           {/* Floating Add Button */}
           <Button
@@ -101,6 +99,7 @@ export function Layout({ children }: LayoutProps) {
             <Plus className="h-6 w-6" />
           </Button>
         </div>
+        
         <Toaster />
         <Sonner />
         <AdBlockDialog

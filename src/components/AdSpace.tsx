@@ -22,10 +22,15 @@ export function AdSpace({ className, height = "h-[250px]", adSlot = "8036385266"
     }
   }, []);
 
-  // Only show ad spaces on desktop (not mobile or tablet)
-  if (isMobile || window.innerWidth < 1024) {
+  // Check user's ad preference
+  const adPreference = localStorage.getItem("adblock-preference");
+  
+  // If user chose to block ads, don't show them
+  if (adPreference === "block-ads") {
     return null;
   }
+  
+  // If user chose to allow ads or hasn't decided, show ads on all devices
 
   return (
     <div 
