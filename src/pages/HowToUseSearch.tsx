@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import searchStep1 from "@/assets/how-to-search-step1.jpg";
 import searchStep2 from "@/assets/how-to-search-step2.jpg";
+import searchStep3 from "@/assets/how-to-search-step3.jpg";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -86,15 +87,10 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Step 3: Track Products</h2>
             <div className="space-y-4">
-              {/* Placeholder for screenshot */}
-              <div className="w-full h-64 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105">
-                <p className="text-muted-foreground">Screenshot placeholder - Track button example</p>
-              </div>
-              {/* Explanation space */}
+              <ImageWithZoom src={searchStep3} alt="Track products example" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  Add your explanation here about how to track products, what happens when you track them, and how to
-                  view tracked products.
+                  NOTE: This function is still in early stage, add the details manually for now. Clicking the plus sign gives you the option to go to the search page and add items from there, or manually add the items using a link from the shops list in the side menu. Please consider using the affiliate link as it is a great way to support this project.
                 </p>
               </div>
             </div>
