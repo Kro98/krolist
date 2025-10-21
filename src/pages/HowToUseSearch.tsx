@@ -70,14 +70,9 @@ export default function HowToUseSearch() {
             <div className="space-y-4">
               <ImageWithZoom src={searchStep2} alt="Search results example" />
               <div className="prose prose-sm max-w-none">
-                <p className="text-muted-foreground leading-relaxed">
-                  NOTE* The search feature is still under progress; currently only amazon works.
-                  <br></br>br>
-                  .
-                  1 - a result will appear similar to the image above 
-                  <br></br>br>
-                 
-                </p>
+                <p className="text-muted-foreground leading-relaxed"
+                  The search feature is still under progress; as of now... the Amazon card will take you to amazon.com when you click open, using an affiliate link. It will display the results in their website, you then can copy the link of the product from Amazon, and manually add it to Krolist using the + button.
+                  </p>
               </div>
             </div>
           </Card>
