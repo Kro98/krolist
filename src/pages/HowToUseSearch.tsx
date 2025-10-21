@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import searchStep1 from "@/assets/how-to-search-step1.jpg";
 import searchStep2 from "@/assets/how-to-search-step2.jpg";
+import searchStep4 from "@/assets/how-to-search-step4.jpg";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -104,16 +105,10 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Search Limits & Tips</h2>
             <div className="space-y-4">
-              {/* Placeholder for screenshot */}
-              <div className="w-full h-64 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105">
-                <p className="text-muted-foreground">Screenshot placeholder - Search limits badge example</p>
-              </div>
-              {/* Explanation space */}
+              <ImageWithZoom src={searchStep4} alt="Add product options" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  as of now the search function is limited but we are working to optimize it , we will update you in the
-                  very near future, in the mean time clicking on the shops from the side menu and using the codes is
-                  fully functional and a great way to support the project .
+                  NOTE: This function is still in early stage, add the details manually for now. Clicking the plus sign gives you the option to go to the search page and add items from there, or manually add the items using a link from the shops list in the side menu. Please consider using the affiliate link as it is a great way to support this project.
                 </p>
               </div>
             </div>
