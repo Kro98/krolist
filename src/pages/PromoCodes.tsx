@@ -305,7 +305,7 @@ export default function PromoCodes() {
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={editingPromo.reusable}
-                    onCheckedChange={() => toggleReusable(editingPromo.id)}
+                    onCheckedChange={(checked) => setEditingPromo({...editingPromo, reusable: checked, used: checked ? false : editingPromo.used})}
                     id="reusable-toggle"
                   />
                   <Label htmlFor="reusable-toggle" className="flex items-center gap-2 cursor-pointer">
