@@ -259,36 +259,44 @@ async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedPr
     
     if (data.SearchResult?.Items) {
       for (const item of data.SearchResult.Items) {
-        const asin = item.ASIN;
-        const title = item.ItemInfo?.Title?.DisplayValue || '';
-        const image = item.Images?.Primary?.Large?.URL || '';
-        
-        const priceInfo = item.Offers?.Listings?.[0]?.Price;
-        const savingsBasis = item.Offers?.Listings?.[0]?.SavingBasis;
-        
-        const price = priceInfo?.Amount || 0;
-        const originalPrice = savingsBasis?.Amount;
-        
-        const affiliateUrl = `https://www.amazon.sa/dp/${asin}?tag=${affiliateTag}`;
-        
-        const isPrime = item.Offers?.Listings?.[0]?.DeliveryInfo?.IsPrimeEligible;
-        const badge = isPrime ? 'Prime' : undefined;
-        
-        if (title && price > 0) {
-          products.push({
-            id: asin,
-            title,
-            description: title,
-            image,
-            sellers: [{
-              store: 'Amazon',
-              price,
-              originalPrice,
-              badge,
-              productUrl: affiliateUrl,
-            }],
-            bestPrice: price,
-          });
+        try {
+          const asin = item.ASIN;
+          // Sanitize and validate title - limit length and strip potentially dangerous content
+          const rawTitle = String(item.ItemInfo?.Title?.DisplayValue || '').substring(0, 500).trim();
+          const rawImage = String(item.Images?.Primary?.Large?.URL || '').substring(0, 1000);
+          
+          const priceInfo = item.Offers?.Listings?.[0]?.Price;
+          const savingsBasis = item.Offers?.Listings?.[0]?.SavingBasis;
+          
+          const price = parseFloat(priceInfo?.Amount) || 0;
+          const originalPrice = savingsBasis?.Amount ? parseFloat(savingsBasis.Amount) : undefined;
+          
+          const affiliateUrl = `https://www.amazon.sa/dp/${asin}?tag=${affiliateTag}`;
+          
+          const isPrime = item.Offers?.Listings?.[0]?.DeliveryInfo?.IsPrimeEligible;
+          const badge = isPrime ? 'Prime' : undefined;
+          
+          // Only add valid products with title and positive price
+          if (rawTitle && price > 0 && asin) {
+            products.push({
+              id: asin,
+              title: rawTitle,
+              description: rawTitle, // Use title as description
+              image: rawImage,
+              sellers: [{
+                store: 'Amazon',
+                price,
+                originalPrice,
+                badge,
+                productUrl: affiliateUrl,
+              }],
+              bestPrice: price,
+            });
+          }
+        } catch (itemError) {
+          console.error('Error processing product item:', itemError);
+          // Continue to next item if one fails
+          continue;
         }
       }
     }

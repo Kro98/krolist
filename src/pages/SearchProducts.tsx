@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdSpace } from "@/components/AdSpace";
 import { getSafeErrorMessage } from "@/lib/errorHandler";
+import { sanitizeContent } from "@/lib/sanitize";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 interface SearchResult {
@@ -278,9 +279,9 @@ export default function SearchProducts() {
               </div>
               
               <div className="p-4 py-0 px-0 mx-[5px]">
-                <h3 className="font-semibold mb-2 line-clamp-2">{result.title}</h3>
+                <h3 className="font-semibold mb-2 line-clamp-2">{sanitizeContent(result.title)}</h3>
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {result.description}
+                  {sanitizeContent(result.description)}
                 </p>
 
                 <div className="space-y-2">

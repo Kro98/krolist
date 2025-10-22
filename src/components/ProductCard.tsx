@@ -14,6 +14,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } fro
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { sanitizeContent } from "@/lib/sanitize";
 interface Product {
   id: string;
   title: string;
@@ -148,7 +149,7 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 rel="noopener noreferrer"
                 className="font-semibold text-base line-clamp-1 group-hover:text-primary transition-colors hover:underline cursor-pointer"
               >
-                {product.title}
+                {sanitizeContent(product.title)}
               </a>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -173,9 +174,11 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               </DropdownMenu>
             </div>
             
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-              {t('products.description')}
-            </p>
+            {product.description && (
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                {sanitizeContent(product.description)}
+              </p>
+            )}
             
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-3">
