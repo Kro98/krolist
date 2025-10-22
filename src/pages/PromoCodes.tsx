@@ -6,57 +6,74 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { replaceWithAffiliateLink } from "@/lib/affiliateLinks";
 
 interface PromoCode {
   id: string;
   code: string;
   store: string;
   description: string;
+  store_url: string;
   expires: string;
   used: boolean;
   reusable: boolean;
 }
 
-const samplePromoCodes: PromoCode[] = [
-  {
-    id: "4",
-    code: "PALESTINE",
-    store: "NOON",
-    description: "Special discount code for NOON",
-    expires: "2025-12-31",
-    used: false,
-    reusable: true
-  },
-  {
-    id: "5",
-    code: "CLEARANCE",
-    store: "NOON",
-    description: "Special discount code for NOON",
-    expires: "2025-12-31",
-    used: false,
-    reusable: true
-  },
-  {
-    id: "6",
-    code: "KINGDOM",
-    store: "NOON",
-    description: "Special discount code for NOON",
-    expires: "2025-12-31",
-    used: false,
-    reusable: true
-  },
-];
-
 export default function PromoCodes() {
-  const [promoCodes, setPromoCodes] = useState<PromoCode[]>(samplePromoCodes);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [newCode, setNewCode] = useState("");
   const [newStore, setNewStore] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newStoreUrl, setNewStoreUrl] = useState("");
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Fetch promo codes from database
+  useEffect(() => {
+    if (user) {
+      fetchPromoCodes();
+    }
+  }, [user]);
+
+  const fetchPromoCodes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('promo_codes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      if (data) {
+        setPromoCodes(data.map(item => ({
+          id: item.id,
+          code: item.code,
+          store: item.store,
+          description: item.description,
+          store_url: item.store_url,
+          expires: item.expires,
+          used: item.used,
+          reusable: item.reusable
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching promo codes:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load promo codes",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -66,25 +83,75 @@ export default function PromoCodes() {
     });
   };
 
-  const handleAddCode = () => {
-    if (newCode && newStore && newDescription) {
-      const newPromo: PromoCode = {
-        id: Date.now().toString(),
-        code: newCode,
-        store: newStore,
-        description: newDescription,
-        expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        used: false,
-        reusable: false
-      };
-      setPromoCodes([...promoCodes, newPromo]);
+  const handleAddCode = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to add promo codes",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newCode || !newStore || !newDescription || !newStoreUrl) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check limit
+    if (promoCodes.length >= 24) {
+      toast({
+        title: "Limit Reached",
+        description: "You can only save up to 24 promo codes",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Replace with affiliate link if applicable
+      const affiliateUrl = replaceWithAffiliateLink(newStoreUrl);
+
+      const { data, error } = await supabase
+        .from('promo_codes')
+        .insert({
+          user_id: user.id,
+          code: newCode,
+          store: newStore,
+          description: newDescription,
+          store_url: affiliateUrl,
+          expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          used: false,
+          reusable: false
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
       toast({
         title: "Promo Code Added!",
         description: "Your promo code has been saved to your collection",
       });
+
       setNewCode("");
       setNewStore("");
       setNewDescription("");
+      setNewStoreUrl("");
+      
+      // Refresh the list
+      fetchPromoCodes();
+    } catch (error: any) {
+      console.error('Error adding promo code:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add promo code",
+        variant: "destructive"
+      });
     }
   };
 
@@ -93,36 +160,66 @@ export default function PromoCodes() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    if (editingPromo) {
-      setPromoCodes(promoCodes.map(p => p.id === editingPromo.id ? editingPromo : p));
+  const handleSaveEdit = async () => {
+    if (!editingPromo) return;
+
+    try {
+      const { error } = await supabase
+        .from('promo_codes')
+        .update({
+          code: editingPromo.code,
+          store: editingPromo.store,
+          description: editingPromo.description,
+          store_url: replaceWithAffiliateLink(editingPromo.store_url),
+          expires: editingPromo.expires,
+          used: editingPromo.used,
+          reusable: editingPromo.reusable
+        })
+        .eq('id', editingPromo.id);
+
+      if (error) throw error;
+
       toast({
         title: "Promo Code Updated!",
         description: "Your changes have been saved",
       });
+
       setIsEditDialogOpen(false);
       setEditingPromo(null);
+      fetchPromoCodes();
+    } catch (error: any) {
+      console.error('Error updating promo code:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update promo code",
+        variant: "destructive"
+      });
     }
   };
 
-  const toggleReusable = (id: string) => {
-    setPromoCodes(promoCodes.map(p => 
-      p.id === id ? { ...p, reusable: !p.reusable, used: p.reusable ? p.used : false } : p
-    ));
-  };
+  const handleDeletePromo = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('promo_codes')
+        .delete()
+        .eq('id', id);
 
-  const toggleUsed = (id: string) => {
-    setPromoCodes(promoCodes.map(p => 
-      p.id === id ? { ...p, used: !p.used } : p
-    ));
-  };
+      if (error) throw error;
 
-  const handleDeletePromo = (id: string) => {
-    setPromoCodes(promoCodes.filter(p => p.id !== id));
-    toast({
-      title: "Promo Code Deleted",
-      description: "The promo code has been removed from your collection",
-    });
+      toast({
+        title: "Promo Code Deleted",
+        description: "The promo code has been removed from your collection",
+      });
+
+      fetchPromoCodes();
+    } catch (error: any) {
+      console.error('Error deleting promo code:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete promo code",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -170,6 +267,15 @@ export default function PromoCodes() {
                 placeholder="20% off electronics"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="storeUrl">Store URL</Label>
+              <Input
+                id="storeUrl"
+                placeholder="noon.com or amazon.sa"
+                value={newStoreUrl}
+                onChange={(e) => setNewStoreUrl(e.target.value)}
               />
             </div>
           </div>
@@ -221,7 +327,7 @@ export default function PromoCodes() {
                     Expires: {new Date(promo.expires).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
@@ -242,8 +348,16 @@ export default function PromoCodes() {
                   <Button
                     size="sm"
                     variant="outline"
+                    onClick={() => window.open(promo.store_url, '_blank')}
+                    className="w-full"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => handleDeletePromo(promo.id)}
-                    className="text-destructive hover:bg-destructive/10 w-full col-span-2"
+                    className="text-destructive hover:bg-destructive/10 w-full col-span-3"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -290,6 +404,14 @@ export default function PromoCodes() {
                   id="edit-description"
                   value={editingPromo.description}
                   onChange={(e) => setEditingPromo({...editingPromo, description: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-url">Store URL</Label>
+                <Input
+                  id="edit-url"
+                  value={editingPromo.store_url}
+                  onChange={(e) => setEditingPromo({...editingPromo, store_url: e.target.value})}
                 />
               </div>
               <div className="space-y-2">

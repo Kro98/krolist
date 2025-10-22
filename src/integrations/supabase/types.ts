@@ -124,6 +124,48 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          expires: string
+          id: string
+          reusable: boolean
+          store: string
+          store_url: string
+          updated_at: string
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          expires: string
+          id?: string
+          reusable?: boolean
+          store: string
+          store_url: string
+          updated_at?: string
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          expires?: string
+          id?: string
+          reusable?: boolean
+          store?: string
+          store_url?: string
+          updated_at?: string
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       search_logs: {
         Row: {
           created_at: string
