@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -301,14 +302,24 @@ export default function PromoCodes() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleReusable(editingPromo.id)}
-                  className="flex items-center gap-2"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  {editingPromo.reusable ? 'Make Single Use' : 'Make Reusable'}
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={editingPromo.reusable}
+                    onCheckedChange={() => toggleReusable(editingPromo.id)}
+                    id="reusable-toggle"
+                  />
+                  <Label htmlFor="reusable-toggle" className="flex items-center gap-2 cursor-pointer">
+                    {editingPromo.reusable && (
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Reusable
+                      </Badge>
+                    )}
+                    {!editingPromo.reusable && (
+                      <span className="text-sm text-muted-foreground">Make Reusable</span>
+                    )}
+                  </Label>
+                </div>
                 <Button onClick={handleSaveEdit} className="bg-gradient-primary">
                   Save Changes
                 </Button>
