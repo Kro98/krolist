@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import searchStep1 from "@/assets/how-to-search-step1.jpg";
 import searchStep2 from "@/assets/how-to-search-step2.jpg";
 import searchStep3 from "@/assets/how-to-search-step3.jpg";
+import searchLimitsBadge from "@/assets/search-limits-badge.jpg";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -100,11 +101,7 @@ export default function HowToUseSearch() {
           <Card className="p-8">
             <h2 className="text-2xl font-semibold mb-4">Search Limits & Tips</h2>
             <div className="space-y-4">
-              {/* Placeholder for screenshot */}
-              <div className="w-full h-64 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105">
-                <p className="text-muted-foreground">Screenshot placeholder - Search limits badge example</p>
-              </div>
-              {/* Explanation space */}
+              <ImageWithZoom src={searchLimitsBadge} alt="Search limits and shops example" />
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
                   as of now the search function is limited but we are working to optimize it , we will update you in the

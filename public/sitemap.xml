@@ -19,6 +19,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://krolist.com/how-to-use-search</loc>
+    <lastmod>2025-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://krolist.com/add-product</loc>
     <lastmod>2025-10-16</lastmod>
     <changefreq>monthly</changefreq>
