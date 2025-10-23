@@ -73,12 +73,6 @@ export default function Analytics() {
 
   const statsDisplay = stats ? [
     {
-      title: "dashboard.totalProducts",
-      value: stats.total_products.toString(),
-      icon: Package,
-      color: "text-primary"
-    },
-    {
       title: "dashboard.priceDrops",
       value: stats.price_drops.toString(),
       icon: TrendingDown,
@@ -91,7 +85,13 @@ export default function Analytics() {
       color: "text-price-increase"
     },
     {
-      title: "dashboard.totalAmount",
+      title: "dashboard.totalProducts",
+      value: stats.total_products.toString(),
+      icon: Package,
+      color: "text-primary"
+    },
+    {
+      title: "dashboard.totalValue",
       value: `${stats.total_value.toFixed(2)} SAR`,
       icon: DollarSign,
       color: "text-muted-foreground"

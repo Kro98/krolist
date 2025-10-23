@@ -52,7 +52,8 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
     description: product.description || '',
     imageUrl: product.image_url || '',
     price: product.current_price.toString(),
-    category: product.category || ''
+    category: product.category || '',
+    currency: product.currency
   });
 
   // Calculate price change
@@ -105,7 +106,8 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
         description: editForm.description,
         image_url: editForm.imageUrl,
         current_price: parseFloat(editForm.price),
-        category: editForm.category
+        category: editForm.category,
+        currency: editForm.currency
       });
       toast.success(t('products.editSuccess'));
     }
@@ -158,17 +160,13 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40 bg-popover border-border z-50">
-                  <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive cursor-pointer">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    {t('products.delete')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowCurrencyDialog(true)} className="cursor-pointer">
-                    <Tag className="h-4 w-4 mr-2" />
-                    {t('products.currency')}
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowEditDialog(true)} className="cursor-pointer">
                     <Edit className="h-4 w-4 mr-2" />
                     {t('products.edit')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive cursor-pointer">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t('products.delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -377,16 +375,32 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 placeholder={t('products.enterImageUrl')}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-price">{t('products.currentPrice')}</Label>
-              <Input
-                id="edit-price"
-                type="number"
-                step="0.01"
-                value={editForm.price}
-                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                placeholder={t('products.enterPrice')}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">{t('products.currentPrice')}</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  step="0.01"
+                  value={editForm.price}
+                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                  placeholder={t('products.enterPrice')}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-currency">{t('products.currency')}</Label>
+                <Select value={editForm.currency} onValueChange={(value) => setEditForm({ ...editForm, currency: value })}>
+                  <SelectTrigger id="edit-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="$">USD ($)</SelectItem>
+                    <SelectItem value="ر.س">SAR (ر.س)</SelectItem>
+                    <SelectItem value="د.إ">AED (د.إ)</SelectItem>
+                    <SelectItem value="ج.م">EGP (ج.م)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
