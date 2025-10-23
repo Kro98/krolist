@@ -24,6 +24,40 @@ interface PromoCode {
   reusable: boolean;
 }
 
+// Static Krolist promo codes
+const KROLIST_PROMO_CODES: PromoCode[] = [
+  {
+    id: 'krolist-kingdom',
+    code: 'KINGDOM',
+    store: 'NOON',
+    description: 'use this code at checkout to get 10 rial discount and support Krolist',
+    store_url: 'https://s.noon.com/sLVK_sCBGo4',
+    expires: '2099-12-31',
+    used: false,
+    reusable: true
+  },
+  {
+    id: 'krolist-palestine',
+    code: 'PALESTINE',
+    store: 'NOON',
+    description: 'use this code at checkout to get 10 rial discount and support Krolist',
+    store_url: 'https://s.noon.com/sLVK_sCBGo4',
+    expires: '2099-12-31',
+    used: false,
+    reusable: true
+  },
+  {
+    id: 'krolist-clearance',
+    code: 'CLEARANCE',
+    store: 'NOON',
+    description: 'use this code at checkout to get 10 rial discount and support Krolist',
+    store_url: 'https://s.noon.com/sLVK_sCBGo4',
+    expires: '2099-12-31',
+    used: false,
+    reusable: true
+  }
+];
+
 export default function PromoCodes() {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [newCode, setNewCode] = useState("");
@@ -253,6 +287,7 @@ export default function PromoCodes() {
                 placeholder="SAVE20"
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
+                maxLength={20}
               />
             </div>
             <div className="space-y-2">
@@ -278,6 +313,7 @@ export default function PromoCodes() {
                   placeholder="Enter shop name"
                   value={customShopName}
                   onChange={(e) => setCustomShopName(e.target.value)}
+                  maxLength={20}
                 />
               </div>
             )}
@@ -288,6 +324,7 @@ export default function PromoCodes() {
                 placeholder="20% off electronics"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
+                maxLength={120}
               />
             </div>
             {selectedShop === 'other' && (
@@ -311,7 +348,59 @@ export default function PromoCodes() {
         </CardContent>
       </Card>
 
-      {/* Promo Codes List */}
+      {/* Krolist Promo Codes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {KROLIST_PROMO_CODES.map((promo) => (
+          <Card key={promo.id} className="shadow-card hover:shadow-hover transition-all duration-300 border-2 border-primary/30">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="bg-primary/10 px-3 py-1 rounded-lg font-mono font-bold text-primary text-sm inline-block">
+                      {promo.code}
+                    </div>
+                    <Badge variant="outline" className="bg-primary/20 text-primary border-primary/40">
+                      Krolist
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2 mb-3 flex-wrap">
+                    <Badge variant="default">
+                      {promo.store}
+                    </Badge>
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Reusable
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {promo.description}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleCopyCode(promo.code)}
+                    className="w-full"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(promo.store_url, '_blank')}
+                    className="w-full"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* User Promo Codes List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {promoCodes.map((promo) => (
           <Card key={promo.id} className={`shadow-card hover:shadow-hover transition-all duration-300 ${promo.used && !promo.reusable ? 'opacity-60' : ''}`}>
@@ -475,10 +564,10 @@ export default function PromoCodes() {
       </Dialog>
 
       {/* Empty State */}
-      {promoCodes.length === 0 && (
+      {promoCodes.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">No promo codes yet</h3>
+          <h3 className="text-lg font-medium mb-2">No personal promo codes yet</h3>
           <p className="text-muted-foreground mb-4">
             Start saving promo codes you find online for easy access when shopping
           </p>
