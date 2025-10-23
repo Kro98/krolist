@@ -1,9 +1,16 @@
 // Affiliate link replacements
-const AFFILIATE_LINKS: Record<string, string> = {
-  noon: 'https://www.noon.com/your-affiliate-link',
-  amazon: 'https://www.amazon.sa/your-affiliate-link',
-  shein: 'https://www.shein.com/your-affiliate-link',
+export const AFFILIATE_LINKS: Record<string, string> = {
+  noon: 'https://s.noon.com/sLVK_sCBGo4',
+  amazon: 'https://amzn.to/4ny9VLJ',
+  shein: 'https://onelink.shein.com/17/535mkxhsd9a6',
 };
+
+export const AVAILABLE_SHOPS = [
+  { id: 'noon', name: 'Noon' },
+  { id: 'amazon', name: 'Amazon' },
+  { id: 'shein', name: 'Shein' },
+  { id: 'other', name: 'Other' },
+];
 
 export function replaceWithAffiliateLink(url: string): string {
   const urlLower = url.toLowerCase().trim();

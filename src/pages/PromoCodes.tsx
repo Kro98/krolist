@@ -10,7 +10,8 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { replaceWithAffiliateLink } from "@/lib/affiliateLinks";
+import { replaceWithAffiliateLink, AFFILIATE_LINKS, AVAILABLE_SHOPS } from "@/lib/affiliateLinks";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PromoCode {
   id: string;
@@ -29,6 +30,8 @@ export default function PromoCodes() {
   const [newStore, setNewStore] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newStoreUrl, setNewStoreUrl] = useState("");
+  const [selectedShop, setSelectedShop] = useState<string>("");
+  const [customShopName, setCustomShopName] = useState("");
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,10 +96,13 @@ export default function PromoCodes() {
       return;
     }
 
-    if (!newCode || !newStore || !newDescription || !newStoreUrl) {
+    const storeName = selectedShop === 'other' ? customShopName : selectedShop;
+    const storeUrl = selectedShop === 'other' ? newStoreUrl : (AFFILIATE_LINKS[selectedShop] || '');
+
+    if (!newCode || !selectedShop || !newDescription || (selectedShop === 'other' && (!customShopName || !newStoreUrl))) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all fields",
+        description: "Please fill in all required fields",
         variant: "destructive"
       });
       return;
@@ -113,17 +119,14 @@ export default function PromoCodes() {
     }
 
     try {
-      // Replace with affiliate link if applicable
-      const affiliateUrl = replaceWithAffiliateLink(newStoreUrl);
-
       const { data, error } = await supabase
         .from('promo_codes')
         .insert({
           user_id: user.id,
           code: newCode,
-          store: newStore,
+          store: storeName,
           description: newDescription,
-          store_url: affiliateUrl,
+          store_url: storeUrl,
           expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           used: false,
           reusable: false
@@ -139,7 +142,8 @@ export default function PromoCodes() {
       });
 
       setNewCode("");
-      setNewStore("");
+      setSelectedShop("");
+      setCustomShopName("");
       setNewDescription("");
       setNewStoreUrl("");
       
@@ -252,14 +256,31 @@ export default function PromoCodes() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="store">Store</Label>
-              <Input
-                id="store"
-                placeholder="Amazon"
-                value={newStore}
-                onChange={(e) => setNewStore(e.target.value)}
-              />
+              <Label htmlFor="shop">Shop</Label>
+              <Select value={selectedShop} onValueChange={setSelectedShop}>
+                <SelectTrigger id="shop">
+                  <SelectValue placeholder="Select a shop" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_SHOPS.map((shop) => (
+                    <SelectItem key={shop.id} value={shop.id}>
+                      {shop.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {selectedShop === 'other' && (
+              <div className="space-y-2">
+                <Label htmlFor="customShop">Custom Shop Name</Label>
+                <Input
+                  id="customShop"
+                  placeholder="Enter shop name"
+                  value={customShopName}
+                  onChange={(e) => setCustomShopName(e.target.value)}
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Input
@@ -269,15 +290,17 @@ export default function PromoCodes() {
                 onChange={(e) => setNewDescription(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="storeUrl">Store URL</Label>
-              <Input
-                id="storeUrl"
-                placeholder="noon.com or amazon.sa"
-                value={newStoreUrl}
-                onChange={(e) => setNewStoreUrl(e.target.value)}
-              />
-            </div>
+            {selectedShop === 'other' && (
+              <div className="space-y-2">
+                <Label htmlFor="storeUrl">Store URL</Label>
+                <Input
+                  id="storeUrl"
+                  placeholder="https://example.com"
+                  value={newStoreUrl}
+                  onChange={(e) => setNewStoreUrl(e.target.value)}
+                />
+              </div>
+            )}
           </div>
           <Button
             onClick={handleAddCode}
