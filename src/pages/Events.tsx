@@ -204,6 +204,16 @@ export default function Events() {
       toast.error("Please select a date");
       return;
     }
+
+    // Check if user has reached the limit of 5 events (only for new events)
+    if (!editingEvent) {
+      const userCreatedEvents = events.filter(event => event.isUserCreated);
+      if (userCreatedEvents.length >= 5) {
+        toast.error("You can only create up to 5 events");
+        return;
+      }
+    }
+
     const newEvent: Event = {
       id: Date.now().toString(),
       name: formData.name,
@@ -270,7 +280,7 @@ export default function Events() {
                 <Input id="name" value={formData.name} onChange={e => setFormData({
                 ...formData,
                 name: e.target.value
-              })} placeholder="Enter event name" />
+              })} placeholder="Enter event name" maxLength={50} />
               </div>
               
               <div className="space-y-2">
@@ -278,25 +288,15 @@ export default function Events() {
                 <Textarea id="description" value={formData.description} onChange={e => setFormData({
                 ...formData,
                 description: e.target.value
-              })} placeholder="Event description" rows={2} />
+              })} placeholder="Event description" rows={2} maxLength={120} />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input id="location" value={formData.location} onChange={e => setFormData({
-                  ...formData,
-                  location: e.target.value
-                })} placeholder="Event location" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="emoji">Emoji</Label>
-                  <Input id="emoji" value={formData.emoji} onChange={e => setFormData({
-                  ...formData,
-                  emoji: e.target.value
-                })} placeholder="📅" maxLength={2} />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input id="location" value={formData.location} onChange={e => setFormData({
+                ...formData,
+                location: e.target.value
+              })} placeholder="Event location" maxLength={20} />
               </div>
 
               <div className="space-y-2">
