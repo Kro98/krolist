@@ -144,3 +144,34 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .rtl-mirror {
+  transform: scaleX(-1);
+}
+
+/* RTL Flexbox utilities */
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+/* RTL Float utilities */
+[dir="rtl"] .float-start {
+  float: right;
+}
+
+[dir="ltr"] .float-start {
+  float: left;
+}
+
+[dir="rtl"] .float-end {
+  float: left;
+}
+
+[dir="ltr"] .float-end {
+  float: right;
+}

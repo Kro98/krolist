@@ -78,7 +78,7 @@ export function Layout({ children }: LayoutProps) {
         <AppSidebar />
         <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
           <header className="h-16 flex items-center border-b border-border bg-card px-4">
-            <SidebarTrigger className="mr-4" />
+            <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
             <img 
               src={krolistLogo} 
               alt="Krolist" 
@@ -93,7 +93,9 @@ export function Layout({ children }: LayoutProps) {
           {/* Floating Add Button */}
           <Button
             size="icon"
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover"
+            className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${
+              language === 'ar' ? 'left-6' : 'right-6'
+            }`}
             onClick={() => navigate('/add-product')}
           >
             <Plus className="h-6 w-6" />

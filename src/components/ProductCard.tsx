@@ -42,7 +42,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: ProductCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCurrencyDialog, setShowCurrencyDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);

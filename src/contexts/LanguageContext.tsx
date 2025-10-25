@@ -170,6 +170,13 @@ const translations = {
     'shops.title': 'Shops',
     
     'settings.other': 'Other',
+    
+    // Dashboard/Analytics (continued)
+    'dashboard.title': 'Analytics',
+    'dashboard.description': 'Track your product prices and savings',
+    'dashboard.totalValue': 'Total Value of Products',
+    'dashboard.latestPriceChanges': 'Latest price changes',
+    'dashboard.keyMetrics': 'Key metrics at a glance',
   },
   ar: {
     // Navigation
@@ -323,6 +330,13 @@ const translations = {
     'shops.title': 'المتاجر',
     
     'settings.other': 'أخرى',
+    
+    // Dashboard/Analytics (continued)
+    'dashboard.title': 'التحليلات',
+    'dashboard.description': 'تتبع أسعار منتجاتك ومدخراتك',
+    'dashboard.totalValue': 'القيمة الإجمالية للمنتجات',
+    'dashboard.latestPriceChanges': 'آخر تغييرات الأسعار',
+    'dashboard.keyMetrics': 'المقاييس الرئيسية في لمحة',
   }
 };
 

@@ -195,10 +195,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_user_product_stats: {
-        Args: { user_uuid: string }
-        Returns: Json
-      }
+      get_user_product_stats: { Args: { user_uuid: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -28,7 +28,7 @@ interface RecentChange {
 }
 
 export default function Analytics() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const [showStats, setShowStats] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
