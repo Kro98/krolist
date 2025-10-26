@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Eye, EyeOff, TrendingDown, TrendingUp, DollarSign, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ interface RecentChange {
 
 export default function Analytics() {
   const { t, language } = useLanguage();
+  const { currency, convertPriceToDisplay } = useConvertedPrice();
   const { user } = useAuth();
   const [showStats, setShowStats] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
@@ -40,7 +42,7 @@ export default function Analytics() {
     if (user) {
       loadAnalytics();
     }
-  }, [user]);
+  }, [user, currency]);
 
   const loadAnalytics = async () => {
     try {
@@ -60,7 +62,26 @@ export default function Analytics() {
       if (error) throw error;
 
       if (data) {
-        setStats(data.stats);
+        // Calculate total value with currency conversion
+        const { data: products } = await supabase
+          .from('products')
+          .select('original_price, original_currency')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+        
+        let totalValueConverted = 0;
+        products?.forEach(product => {
+          const converted = convertPriceToDisplay(
+            product.original_price,
+            product.original_currency
+          );
+          totalValueConverted += converted;
+        });
+        
+        setStats({
+          ...data.stats,
+          total_value: totalValueConverted
+        });
         setRecentChanges(data.recentChanges || []);
       }
     } catch (error) {

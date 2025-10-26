@@ -21,7 +21,7 @@ const signInSchema = z.object({
 });
 export default function Auth() {
   const navigate = useNavigate();
-  const { signUp, signIn, signInWithGoogle, user } = useAuth();
+  const { signUp, signIn, signInWithGoogle, user, continueAsGuest } = useAuth();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
@@ -229,6 +229,23 @@ export default function Auth() {
                 >
                   {isSignUp ? "Sign in" : "Create an account"}
                 </button>
+              </div>
+
+              <div className="mt-4 text-center">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    continueAsGuest();
+                    navigate("/products");
+                  }}
+                  variant="outline"
+                  className="w-full border-gray-700 hover:bg-gray-800"
+                >
+                  Continue as Guest
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">
+                  Limited features available in guest mode
+                </p>
               </div>
             </div>
           </div>

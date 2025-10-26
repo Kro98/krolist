@@ -189,6 +189,8 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
           title: formData.title,
           description: formData.description,
           current_price: formData.price,
+          original_price: formData.price,
+          original_currency: formData.currency,
           currency: formData.currency,
           image_url: formData.imageUrl,
           store: formData.store,

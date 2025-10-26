@@ -13,6 +13,8 @@ import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2 } from "lucid
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { AdSpace } from "@/components/AdSpace";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 interface Event {
   id: string;
   name: string;
@@ -178,6 +180,8 @@ export default function Events() {
   const {
     t
   } = useLanguage();
+  const { isGuest } = useAuth();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>(defaultEvents);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -200,6 +204,11 @@ export default function Events() {
     setEditingEvent(null);
   };
   const handleCreateEvent = () => {
+    if (isGuest) {
+      toast.error("Please create an account to add events");
+      return;
+    }
+
     if (!selectedDate) {
       toast.error("Please select a date");
       return;
@@ -263,7 +272,7 @@ export default function Events() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} disabled={isGuest}>
               <Plus className="h-4 w-4 mr-2" />
               Add Event
             </Button>

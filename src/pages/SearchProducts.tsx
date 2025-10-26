@@ -51,14 +51,27 @@ export default function SearchProducts() {
     t
   } = useLanguage();
   const {
-    user
+    user,
+    isGuest
   } = useAuth();
   const navigate = useNavigate();
   const DEBOUNCE_DELAY = 1000; // 1 second debounce
 
   const handleSearch = async () => {
+    if (isGuest) {
+      toast.error("Please create an account to use the search feature", {
+        action: {
+          label: "Sign Up",
+          onClick: () => navigate('/auth')
+        },
+        duration: 5000
+      });
+      return;
+    }
+    
     if (!user) {
       toast.error("Please login to search products");
+      navigate('/auth');
       return;
     }
     if (!searchQuery.trim()) {
@@ -150,6 +163,8 @@ export default function SearchProducts() {
         store: validatedData.store,
         product_url: validatedData.productUrl,
         current_price: validatedData.price,
+        original_price: validatedData.price,
+        original_currency: 'SAR',
         currency: 'SAR',
         category: 'General'
       }).select().single();
@@ -235,14 +250,27 @@ export default function SearchProducts() {
             <div className="relative flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()} placeholder="Search for products, brands, or sellers..." className="pl-12 h-14 text-base bg-card border-2" disabled={!user || searchesRemaining === 0} />
+                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()} placeholder={isGuest ? "Sign up to search products..." : "Search for products, brands, or sellers..."} className="pl-12 h-14 text-base bg-card border-2" disabled={isGuest || searchesRemaining === 0} />
               </div>
-              <Button onClick={handleSearch} disabled={isSearching || !user || searchesRemaining === 0} className="h-14 px-8 bg-primary hover:bg-primary/90">
-                {isSearching ? "Searching..." : "Search"}
+              <Button onClick={handleSearch} disabled={isSearching || isGuest || searchesRemaining === 0} className="h-14 px-8 bg-primary hover:bg-primary/90">
+                {isGuest ? "Sign Up to Search" : isSearching ? "Searching..." : "Search"}
               </Button>
             </div>
 
-            {!user && <Alert className="mt-4">
+            {isGuest && <Alert className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <button 
+                    onClick={() => navigate('/auth')}
+                    className="text-primary underline hover:text-primary/80"
+                  >
+                    Create an account
+                  </button>
+                  {' '}to access the search feature and track products
+                </AlertDescription>
+              </Alert>}
+
+            {!user && !isGuest && <Alert className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   Please login to search for products

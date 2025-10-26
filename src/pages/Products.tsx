@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard, type Product } from "@/components/ProductCard";
+import { ProductCarousel } from "@/components/ProductCarousel";
 import { Plus, Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
@@ -10,25 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSafeErrorMessage } from "@/lib/errorHandler";
 import { z } from "zod";
-
-interface Product {
-  id: string;
-  title: string;
-  description: string | null;
-  image_url: string | null;
-  category: string | null;
-  store: string;
-  product_url: string;
-  current_price: number;
-  currency: string;
-  created_at: string;
-  updated_at: string;
-  last_checked_at: string;
-  price_history?: Array<{
-    price: number;
-    scraped_at: string;
-  }>;
-}
 
 // Validation schema for product updates
 const productUpdateSchema = z.object({
@@ -42,7 +24,7 @@ const productUpdateSchema = z.object({
 }).strict();
 
 export default function Products() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -159,24 +141,39 @@ export default function Products() {
       </div>
 
       {filteredProducts.length > 0 ? (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base md:text-lg font-semibold">{t('nav.products')}</h2>
-            <span className="text-sm text-muted-foreground">
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
+        <div className="space-y-8">
+          {/* My Products Carousel */}
+          <ProductCarousel
+            title={t('products.myProducts')}
+            products={filteredProducts}
+            onDelete={handleDelete}
+            onUpdate={handleUpdate}
+            onRefreshPrice={handleRefreshPrice}
+          />
+          
+          {/* Krolist Selections by Store */}
+          {(() => {
+            const productsByStore = filteredProducts.reduce((acc, product) => {
+              if (!acc[product.store]) {
+                acc[product.store] = [];
+              }
+              acc[product.store].push(product);
+              return acc;
+            }, {} as Record<string, Product[]>);
+            
+            const storeNames = Object.keys(productsByStore).filter(store => productsByStore[store].length >= 3);
+            
+            return storeNames.map(store => (
+              <ProductCarousel
+                key={store}
+                title={`${t('products.krolistSelections')}: ${store.toUpperCase()}`}
+                products={productsByStore[store]}
                 onDelete={handleDelete}
                 onUpdate={handleUpdate}
                 onRefreshPrice={handleRefreshPrice}
               />
-            ))}
-          </div>
+            ));
+          })()}
         </div>
       ) : searchQuery ? (
         <Card className="shadow-card">

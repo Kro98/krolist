@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { replaceWithAffiliateLink, AFFILIATE_LINKS, AVAILABLE_SHOPS } from "@/lib/affiliateLinks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 
 interface PromoCode {
   id: string;
@@ -70,7 +71,24 @@ export default function PromoCodes() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
+  const navigate = useNavigate();
+
+  if (isGuest) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="p-8 text-center max-w-md">
+          <h2 className="text-2xl font-bold mb-4">Feature Requires Account</h2>
+          <p className="text-muted-foreground mb-6">
+            Please create an account to save and manage promo codes
+          </p>
+          <Button onClick={() => navigate('/auth')} className="w-full">
+            Sign Up / Login
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   // Fetch promo codes from database
   useEffect(() => {

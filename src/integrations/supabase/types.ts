@@ -61,6 +61,8 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           last_checked_at: string | null
+          original_currency: string
+          original_price: number
           product_url: string
           store: string
           title: string
@@ -78,6 +80,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           last_checked_at?: string | null
+          original_currency?: string
+          original_price: number
           product_url: string
           store: string
           title: string
@@ -95,6 +99,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           last_checked_at?: string | null
+          original_currency?: string
+          original_price?: number
           product_url?: string
           store?: string
           title?: string

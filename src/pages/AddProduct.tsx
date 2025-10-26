@@ -1,9 +1,30 @@
 import { AddProductForm } from "@/components/AddProductForm";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AddProduct() {
+  const { isGuest } = useAuth();
+  const navigate = useNavigate();
+
+  if (isGuest) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="p-8 text-center max-w-md">
+          <h2 className="text-2xl font-bold mb-4">Feature Requires Account</h2>
+          <p className="text-muted-foreground mb-6">
+            Please create an account to add and track products
+          </p>
+          <Button onClick={() => navigate('/auth')} className="w-full">
+            Sign Up / Login
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with Back Button */}

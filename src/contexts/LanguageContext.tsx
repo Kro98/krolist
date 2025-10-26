@@ -138,6 +138,12 @@ const translations = {
     'analytics.avgSavings': 'Avg Savings',
     'analytics.reliability': 'Reliability',
     
+    // Products Page
+    'products.myProducts': 'MY PRODUCTS',
+    'products.krolistSelections': 'KROLIST SELECTIONS',
+    'products.expand': 'Expand',
+    'products.collapse': 'Collapse',
+    
     // UI Controls
     'ui.fontSize': 'Font Size',
     'ui.iconSize': 'Icon Size',
@@ -260,6 +266,12 @@ const translations = {
     'settings.account': 'الحساب',
     'settings.accountDesc': 'إدارة معلومات حسابك',
     'settings.email': 'البريد الإلكتروني',
+    
+    // Products Page
+    'products.myProducts': 'منتجاتي',
+    'products.krolistSelections': 'اختيارات كروليست',
+    'products.expand': 'توسيع',
+    'products.collapse': 'طي',
     'settings.displayName': 'الاسم المعروض',
     'settings.saveSettings': 'حفظ الإعدادات',
     'settings.settingsSaved': 'تم حفظ الإعدادات',
