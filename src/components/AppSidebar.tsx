@@ -7,16 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
-// Import shop brand icons
-import sheinIcon from "@/assets/shop-icons/shein-icon.png";
-import noonIcon from "@/assets/shop-icons/noon-icon.png";
-import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
-import ikeaIcon from "@/assets/shop-icons/ikea-icon.png";
-import abyatIcon from "@/assets/shop-icons/abyat-icon.png";
-import namshiIcon from "@/assets/shop-icons/namshi-icon.png";
-import trendyolIcon from "@/assets/shop-icons/trendyol-icon.png";
-import asosIcon from "@/assets/shop-icons/asos-icon.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+import { STORES, getAllStores, getStoreById } from "@/config/stores";
+
 const mainItems = [{
   title: "nav.products",
   url: "/",
@@ -26,62 +19,36 @@ const mainItems = [{
   url: "/analytics",
   icon: BarChart3
 }];
-const getShopAffiliateUrl = (shopId: string) => {
-  const affiliateUrls: Record<string, string> = {
-    shein: "https://onelink.shein.com/17/535mkxhsd9a6",
-    noon: "https://s.noon.com/sLVK_sCBGo4",
-    amazon: "https://amzn.to/4ny9VLJ",
-    ikea: "https://www.ikea.com/ref/affiliate123",
-    abyat: "https://www.abyat.com/?ref=affiliate123",
-    namshi: "https://www.namshi.com/?ref=affiliate123",
-    trendyol: "https://www.trendyol.com/?ref=affiliate123",
-    asos: "https://www.asos.com/?ref=affiliate123"
-  };
-  return affiliateUrls[shopId] || `https://${shopId}.com`;
-};
-const shopIconMap: Record<string, string> = {
-  shein: sheinIcon,
-  noon: noonIcon,
-  amazon: amazonIcon,
-  ikea: ikeaIcon,
-  abyat: abyatIcon,
-  namshi: namshiIcon,
-  trendyol: trendyolIcon,
-  asos: asosIcon
-};
-const COMING_SOON_SHOPS = ['ikea', 'abyat', 'namshi', 'trendyol', 'asos'];
 
 const getShopItems = () => {
   const saved = localStorage.getItem('shopOrder');
   if (saved) {
     const shopOrder = JSON.parse(saved);
     return shopOrder
-      .filter((shop: any) => shop.enabled && !COMING_SOON_SHOPS.includes(shop.id))
-      .map((shop: any) => ({
-        title: `shops.${shop.id}`,
-        url: getShopAffiliateUrl(shop.id),
-        icon: shopIconMap[shop.id] || Package,
-        name: shop.name,
-        isExternal: true
-      }));
+      .filter((shop: any) => {
+        const storeConfig = getStoreById(shop.id);
+        return shop.enabled && storeConfig && !storeConfig.comingSoon;
+      })
+      .map((shop: any) => {
+        const storeConfig = getStoreById(shop.id);
+        return {
+          title: `shops.${shop.id}`,
+          url: storeConfig?.affiliateUrl || `https://${shop.id}.com`,
+          icon: storeConfig?.icon || Package,
+          name: shop.name,
+          isExternal: true
+        };
+      });
   }
-  // Default active shops only
-  return [{
-    title: "shops.noon",
-    url: getShopAffiliateUrl("noon"),
-    icon: noonIcon,
+  // Default active shops only (not coming soon)
+  const defaultStores = getAllStores().filter(s => s.enabled && !s.comingSoon);
+  return defaultStores.map(store => ({
+    title: `shops.${store.id}`,
+    url: store.affiliateUrl,
+    icon: store.icon,
+    name: store.name,
     isExternal: true
-  }, {
-    title: "shops.amazon",
-    url: getShopAffiliateUrl("amazon"),
-    icon: amazonIcon,
-    isExternal: true
-  }, {
-    title: "shops.shein",
-    url: getShopAffiliateUrl("shein"),
-    icon: sheinIcon,
-    isExternal: true
-  }];
+  }));
 };
 const otherItems = [{
   title: "nav.news",
@@ -119,6 +86,7 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const [shopItems, setShopItems] = useState(getShopItems());
   const [username, setUsername] = useState("");
+  const [promotions, setPromotions] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -134,7 +102,32 @@ export function AppSidebar() {
     if (user) {
       fetchUsername();
     }
+    fetchPromotions();
   }, [user]);
+
+  const fetchPromotions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('store_promotions')
+        .select('*')
+        .eq('active', true);
+
+      if (error) throw error;
+
+      // Group promotions by store_id
+      const grouped: Record<string, any[]> = {};
+      data?.forEach((promo: any) => {
+        if (!grouped[promo.store_id]) {
+          grouped[promo.store_id] = [];
+        }
+        grouped[promo.store_id].push(promo);
+      });
+
+      setPromotions(grouped);
+    } catch (error) {
+      console.error('Error fetching promotions:', error);
+    }
+  };
 
   const fetchUsername = async () => {
     if (!user) return;
@@ -198,32 +191,24 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {shopItems.map(item => {
-              const shopId = item.title.split('.')[1]; // Extract shop id from 'shops.noon'
-              const isNoon = shopId === 'noon';
-              const isShein = shopId === 'shein';
+              const shopId = item.title.split('.')[1];
+              const shopPromotions = promotions[shopId] || [];
               const isImageIcon = typeof item.icon === 'string';
+              
               return <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-full hover:bg-sidebar-accent/50 text-sidebar-foreground" : "flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground px-[15px] py-0"}>
                           {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
                           {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                               <span className="shrink-0">{t(item.title)}</span>
-                              {isNoon && <>
-                                  <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded border border-emerald-500/30">
-                                    KINGDOME
-                                  </span>
-                                  <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-medium rounded border border-orange-500/30">
-                                    save 10 rial
-                                  </span>
-                                </>}
-                              {isShein && <>
-                                  <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium rounded border border-blue-500/30">
-                                    search for
-                                  </span>
-                                  <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-700 dark:text-purple-400 text-[10px] font-medium rounded border border-purple-500/30">
-                                    R2M6A
-                                  </span>
-                                </>}
+                              {shopPromotions.map((promo: any) => (
+                                <span 
+                                  key={promo.id}
+                                  className={`px-1.5 py-0.5 bg-${promo.badge_color}-500/20 text-${promo.badge_color}-700 dark:text-${promo.badge_color}-400 text-[10px] font-medium rounded border border-${promo.badge_color}-500/30`}
+                                >
+                                  {promo.badge_text}
+                                </span>
+                              ))}
                             </div>}
                         </button> : <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
                           {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />}

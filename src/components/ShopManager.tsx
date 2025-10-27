@@ -8,19 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { GripVertical, Package, Plus, X, Search } from "lucide-react";
+import { getAllStores } from "@/config/stores";
 
-const DEFAULT_SHOPS = [
-  { id: "shein", name: "SHEIN", enabled: true },
-  { id: "noon", name: "NOON", enabled: true },
-  { id: "amazon", name: "Amazon", enabled: true },
-  { id: "ikea", name: "IKEA", enabled: true },
-  { id: "abyat", name: "ABYAT", enabled: true },
-  { id: "namshi", name: "NAMSHI", enabled: true },
-  { id: "trendyol", name: "TRENDYOL", enabled: true },
-  { id: "asos", name: "ASOS", enabled: true },
-];
-
-const COMING_SOON_SHOPS = ["ikea", "abyat", "namshi", "trendyol", "asos"];
+const DEFAULT_SHOPS = getAllStores().map(store => ({
+  id: store.id,
+  name: store.displayName,
+  enabled: store.enabled
+}));
 
 interface Shop {
   id: string;
@@ -135,8 +129,9 @@ export function ShopManager() {
           <Droppable droppableId="shops">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                {filteredShops.map((shop, index) => {
-                  const isComingSoon = COMING_SOON_SHOPS.includes(shop.id);
+              {filteredShops.map((shop, index) => {
+                  const storeConfig = getAllStores().find(s => s.id === shop.id);
+                  const isComingSoon = storeConfig?.comingSoon || false;
                   
                   return (
                   <Draggable key={shop.id} draggableId={shop.id} index={index}>

@@ -11,6 +11,7 @@ import { Link as LinkIcon, Loader2, ArrowLeft, RefreshCw } from "lucide-react";
 import { detectStoreFromUrl, isValidProductUrl } from "@/lib/storeDetection";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { getAllStores } from "@/config/stores";
 
 const productSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -407,18 +408,15 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                     Store *
                   </Label>
                   <Select value={store} onValueChange={setStore} required>
-                    <SelectTrigger>
+                   <SelectTrigger>
                       <SelectValue placeholder="Select a store" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover z-50">
-                      <SelectItem value="SHEIN">SHEIN</SelectItem>
-                      <SelectItem value="Noon">Noon</SelectItem>
-                      <SelectItem value="Amazon">Amazon</SelectItem>
-                      <SelectItem value="IKEA">IKEA</SelectItem>
-                      <SelectItem value="Abyat">Abyat</SelectItem>
-                      <SelectItem value="Namshi">Namshi</SelectItem>
-                      <SelectItem value="Trendyol">Trendyol</SelectItem>
-                      <SelectItem value="ASOS">ASOS</SelectItem>
+                      {getAllStores().map((store) => (
+                        <SelectItem key={store.id} value={store.name}>
+                          {store.displayName}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

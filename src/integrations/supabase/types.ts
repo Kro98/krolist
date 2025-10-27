@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      exchange_rates: {
+        Row: {
+          currency: string
+          rate_to_usd: number
+          updated_at: string | null
+        }
+        Insert: {
+          currency: string
+          rate_to_usd: number
+          updated_at?: string | null
+        }
+        Update: {
+          currency?: string
+          rate_to_usd?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       price_history: {
         Row: {
           currency: string
@@ -137,6 +155,7 @@ export type Database = {
           description: string
           expires: string
           id: string
+          is_krolist: boolean | null
           reusable: boolean
           store: string
           store_url: string
@@ -150,6 +169,7 @@ export type Database = {
           description: string
           expires: string
           id?: string
+          is_krolist?: boolean | null
           reusable?: boolean
           store: string
           store_url: string
@@ -163,6 +183,7 @@ export type Database = {
           description?: string
           expires?: string
           id?: string
+          is_krolist?: boolean | null
           reusable?: boolean
           store?: string
           store_url?: string
@@ -193,6 +214,39 @@ export type Database = {
           search_query?: string
           searched_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      store_promotions: {
+        Row: {
+          active: boolean | null
+          badge_color: string
+          badge_text: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          store_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          badge_color?: string
+          badge_text: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          store_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          badge_color?: string
+          badge_text?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          store_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

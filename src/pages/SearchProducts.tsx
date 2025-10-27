@@ -15,6 +15,7 @@ import { getSafeErrorMessage } from "@/lib/errorHandler";
 import { sanitizeContent } from "@/lib/sanitize";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { detectStoreFromUrl } from "@/lib/storeDetection";
 interface SearchResult {
   id: string;
   title: string;
@@ -151,6 +152,10 @@ export default function SearchProducts() {
         productUrl: affiliateUrl,
       });
 
+      // Detect store currency from URL
+      const detectedStore = detectStoreFromUrl(validatedData.productUrl);
+      const productCurrency = detectedStore.currency;
+
       const {
         data: savedProduct,
         error
@@ -164,8 +169,8 @@ export default function SearchProducts() {
         product_url: validatedData.productUrl,
         current_price: validatedData.price,
         original_price: validatedData.price,
-        original_currency: 'SAR',
-        currency: 'SAR',
+        original_currency: productCurrency,
+        currency: productCurrency,
         category: 'General'
       }).select().single();
       
@@ -176,7 +181,7 @@ export default function SearchProducts() {
           product_id: savedProduct.id,
           price: validatedData.price,
           original_price: seller.originalPrice || null,
-          currency: 'SAR'
+          currency: productCurrency
         });
       }
       window.open(affiliateUrl, '_blank');

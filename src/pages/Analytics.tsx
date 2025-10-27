@@ -113,7 +113,7 @@ export default function Analytics() {
     },
     {
       title: "dashboard.totalValue",
-      value: `${stats.total_value.toFixed(2)} SAR`,
+      value: `${currency} ${stats.total_value.toFixed(2)}`,
       icon: DollarSign,
       color: "text-muted-foreground"
     }

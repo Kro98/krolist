@@ -1,5 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { convertPrice, Currency } from '@/lib/currencyConversion';
+import { convertPriceSync, Currency } from '@/lib/currencyConversion';
 
 export function useConvertedPrice() {
   const { currency } = useLanguage();
@@ -11,7 +11,7 @@ export function useConvertedPrice() {
     originalPrice: number,
     originalCurrency: string
   ): number => {
-    return convertPrice(originalPrice, originalCurrency as Currency, currency as Currency);
+    return convertPriceSync(originalPrice, originalCurrency as Currency, currency as Currency);
   };
   
   /**
