@@ -24,105 +24,173 @@ export interface StoreConfig {
   comingSoon: boolean;
 }
 
+/**
+ * ========================================
+ * 🏪 STORE AFFILIATE CONFIGURATIONS
+ * ========================================
+ * 
+ * To update affiliate links:
+ * 1. Find the store below
+ * 2. Update the `affiliateUrl` field
+ * 3. Save the file
+ * 
+ * For detailed instructions: see src/config/README.md
+ */
+
 export const STORES: Record<string, StoreConfig> = {
+  // ========================================
+  // 🔗 SHEIN AFFILIATE CONFIGURATION
+  // ========================================
   shein: {
     id: 'shein',
     name: 'SHEIN',
     displayName: 'SHEIN',
     domains: ['shein.com'],
     icon: sheinIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when SHEIN link changes
     affiliateUrl: 'https://onelink.shein.com/17/535mkxhsd9a6',
+    
     defaultCurrency: 'USD',
     supportedCurrencies: ['USD', 'SAR', 'AED', 'EGP'],
     brandColor: 'purple',
     enabled: true,
     comingSoon: false
   },
+  
+  // ========================================
+  // 🔗 NOON AFFILIATE CONFIGURATION
+  // ========================================
   noon: {
     id: 'noon',
     name: 'Noon',
     displayName: 'NOON',
     domains: ['noon.com'],
     icon: noonIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when Noon link changes
     affiliateUrl: 'https://s.noon.com/sLVK_sCBGo4',
+    
     defaultCurrency: 'SAR',
     supportedCurrencies: ['SAR', 'AED', 'EGP'],
     brandColor: 'orange',
     enabled: true,
     comingSoon: false
   },
+  
+  // ========================================
+  // 🔗 AMAZON AFFILIATE CONFIGURATION
+  // ========================================
   amazon: {
     id: 'amazon',
     name: 'Amazon',
     displayName: 'Amazon',
     domains: ['amazon.sa', 'amazon.ae', 'amazon.com', 'amazon.co.uk'],
     icon: amazonIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when Amazon link changes
     affiliateUrl: 'https://amzn.to/4ny9VLJ',
+    
     defaultCurrency: 'USD',
     supportedCurrencies: ['USD', 'SAR', 'AED', 'EGP'],
     brandColor: 'blue',
     enabled: true,
     comingSoon: false
   },
+  
+  // ========================================
+  // 🔗 IKEA AFFILIATE CONFIGURATION
+  // ========================================
   ikea: {
     id: 'ikea',
     name: 'IKEA',
     displayName: 'IKEA',
     domains: ['ikea.com'],
     icon: ikeaIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when IKEA link is available
     affiliateUrl: 'https://www.ikea.com/ref/affiliate123',
+    
     defaultCurrency: 'SAR',
     supportedCurrencies: ['SAR', 'AED', 'USD', 'EGP'],
     brandColor: 'yellow',
     enabled: true,
     comingSoon: true
   },
+  
+  // ========================================
+  // 🔗 ABYAT AFFILIATE CONFIGURATION
+  // ========================================
   abyat: {
     id: 'abyat',
     name: 'Abyat',
     displayName: 'ABYAT',
     domains: ['abyat.com'],
     icon: abyatIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when Abyat link is available
     affiliateUrl: 'https://www.abyat.com/?ref=affiliate123',
+    
     defaultCurrency: 'SAR',
     supportedCurrencies: ['SAR', 'AED', 'EGP'],
     brandColor: 'red',
     enabled: true,
     comingSoon: true
   },
+  
+  // ========================================
+  // 🔗 NAMSHI AFFILIATE CONFIGURATION
+  // ========================================
   namshi: {
     id: 'namshi',
     name: 'Namshi',
     displayName: 'NAMSHI',
     domains: ['namshi.com'],
     icon: namshiIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when Namshi link is available
     affiliateUrl: 'https://www.namshi.com/?ref=affiliate123',
+    
     defaultCurrency: 'SAR',
     supportedCurrencies: ['SAR', 'AED'],
     brandColor: 'pink',
     enabled: true,
     comingSoon: true
   },
+  
+  // ========================================
+  // 🔗 TRENDYOL AFFILIATE CONFIGURATION
+  // ========================================
   trendyol: {
     id: 'trendyol',
     name: 'Trendyol',
     displayName: 'TRENDYOL',
     domains: ['trendyol.com'],
     icon: trendyolIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when Trendyol link is available
     affiliateUrl: 'https://www.trendyol.com/?ref=affiliate123',
+    
     defaultCurrency: 'SAR',
     supportedCurrencies: ['SAR', 'USD'],
     brandColor: 'orange',
     enabled: true,
     comingSoon: true
   },
+  
+  // ========================================
+  // 🔗 ASOS AFFILIATE CONFIGURATION
+  // ========================================
   asos: {
     id: 'asos',
     name: 'ASOS',
     displayName: 'ASOS',
     domains: ['asos.com'],
     icon: asosIcon,
+    
+    // 💰 AFFILIATE LINK - Update here when ASOS link is available
     affiliateUrl: 'https://www.asos.com/?ref=affiliate123',
+    
     defaultCurrency: 'USD',
     supportedCurrencies: ['USD', 'SAR', 'AED', 'EGP'],
     brandColor: 'slate',

@@ -90,10 +90,13 @@ export default function PromoCodes() {
     );
   }
 
+  const [krolistPromoCodes, setKrolistPromoCodes] = useState<PromoCode[]>([]);
+
   // Fetch promo codes from database
   useEffect(() => {
     if (user) {
       fetchPromoCodes();
+      fetchKrolistPromoCodes();
     }
   }, [user]);
 
@@ -102,6 +105,7 @@ export default function PromoCodes() {
       const { data, error } = await supabase
         .from('promo_codes')
         .select('*')
+        .eq('is_krolist', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -127,6 +131,33 @@ export default function PromoCodes() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchKrolistPromoCodes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('promo_codes')
+        .select('*')
+        .eq('is_krolist', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      if (data) {
+        setKrolistPromoCodes(data.map(item => ({
+          id: item.id,
+          code: item.code,
+          store: item.store,
+          description: item.description,
+          store_url: item.store_url,
+          expires: item.expires,
+          used: item.used,
+          reusable: item.reusable
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching Krolist promo codes:', error);
     }
   };
 
@@ -368,7 +399,7 @@ export default function PromoCodes() {
 
       {/* Krolist Promo Codes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {KROLIST_PROMO_CODES.map((promo) => (
+        {krolistPromoCodes.map((promo) => (
           <Card key={promo.id} className="shadow-card hover:shadow-hover transition-all duration-300 border-2 border-primary/30">
             <CardContent className="p-6">
               <div className="space-y-4">
