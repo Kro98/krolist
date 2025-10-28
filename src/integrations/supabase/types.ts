@@ -32,6 +32,60 @@ export type Database = {
         }
         Relationships: []
       }
+      krolist_products: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          currency: string
+          current_price: number
+          description: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          last_checked_at: string | null
+          original_currency: string
+          original_price: number
+          product_url: string
+          store: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          currency?: string
+          current_price: number
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          last_checked_at?: string | null
+          original_currency?: string
+          original_price: number
+          product_url: string
+          store: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          currency?: string
+          current_price?: number
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          last_checked_at?: string | null
+          original_currency?: string
+          original_price?: number
+          product_url?: string
+          store?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       price_history: {
         Row: {
           currency: string

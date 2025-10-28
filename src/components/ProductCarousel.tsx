@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -46,15 +46,21 @@ export function ProductCarousel({
   }
   
   // Update current slide when API changes
-  useState(() => {
+  useEffect(() => {
     if (!api) return;
     
     setCurrent(api.selectedScrollSnap());
     
-    api.on("select", () => {
+    const handleSelect = () => {
       setCurrent(api.selectedScrollSnap());
-    });
-  });
+    };
+    
+    api.on("select", handleSelect);
+    
+    return () => {
+      api.off("select", handleSelect);
+    };
+  }, [api]);
 
   if (products.length === 0) return null;
 

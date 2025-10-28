@@ -26,6 +26,7 @@ const productUpdateSchema = z.object({
 export default function Products() {
   const { t, language } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
+  const [krolistProducts, setKrolistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -35,7 +36,8 @@ export default function Products() {
 
   const loadProducts = async () => {
     try {
-      const { data, error } = await supabase
+      // Load user products
+      const { data: userProducts, error: userError } = await supabase
         .from('products')
         .select(`
           *,
@@ -47,9 +49,28 @@ export default function Products() {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (userError) throw userError;
 
-      setProducts(data || []);
+      // Load Krolist curated products
+      const { data: krolistData, error: krolistError } = await supabase
+        .from('krolist_products')
+        .select('*')
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false });
+
+      if (krolistError) {
+        console.warn('Could not load Krolist products:', krolistError);
+      }
+
+      // Mark Krolist products
+      const markedKrolistProducts = (krolistData || []).map(p => ({
+        ...p,
+        isKrolistProduct: true,
+        price_history: []  // Krolist products don't have history tracking
+      }));
+
+      setProducts(userProducts || []);
+      setKrolistProducts(markedKrolistProducts);
     } catch (error) {
       toast.error(getSafeErrorMessage(error));
     } finally {
@@ -113,8 +134,14 @@ export default function Products() {
     }
   };
 
-  // Filter products based on search query
-  const filteredProducts = products.filter(product =>
+  // Filter both user products and Krolist products
+  const filteredUserProducts = products.filter(product =>
+    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const filteredKrolistProducts = krolistProducts.filter(product =>
     product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -140,20 +167,30 @@ export default function Products() {
         />
       </div>
 
-      {filteredProducts.length > 0 ? (
+      {(filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0) ? (
         <div className="space-y-8">
-          {/* My Products Carousel */}
-          <ProductCarousel
-            title={t('products.myProducts')}
-            products={filteredProducts}
-            onDelete={handleDelete}
-            onUpdate={handleUpdate}
-            onRefreshPrice={handleRefreshPrice}
-          />
+          {/* Krolist Curated Products - Read Only */}
+          {filteredKrolistProducts.length > 0 && (
+            <ProductCarousel
+              title="KROLIST SELECTIONS"
+              products={filteredKrolistProducts}
+            />
+          )}
+
+          {/* User Products Carousel */}
+          {filteredUserProducts.length > 0 && (
+            <ProductCarousel
+              title={t('products.myProducts')}
+              products={filteredUserProducts}
+              onDelete={handleDelete}
+              onUpdate={handleUpdate}
+              onRefreshPrice={handleRefreshPrice}
+            />
+          )}
           
-          {/* Krolist Selections by Store */}
+          {/* Store-based grouping for user products only */}
           {(() => {
-            const productsByStore = filteredProducts.reduce((acc, product) => {
+            const productsByStore = filteredUserProducts.reduce((acc, product) => {
               if (!acc[product.store]) {
                 acc[product.store] = [];
               }

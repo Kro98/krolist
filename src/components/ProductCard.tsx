@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, MoreVertical, Trash2, RefreshCw, Edit } from "lucide-react";
+import { MoreVertical, Trash2, RefreshCw, Edit } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export interface Product {
   created_at: string;
   updated_at: string;
   last_checked_at: string;
+  isKrolistProduct?: boolean;
   price_history?: Array<{
     price: number;
     scraped_at: string;
@@ -109,8 +110,7 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 <RefreshCw className="h-4 w-4" />
               </Button>
             )}
-            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-              <ExternalLink className="h-2.5 w-2.5" />
+            <div className="text-[10px] text-muted-foreground text-center">
               {new Date(product.last_checked_at).toLocaleDateString()}
             </div>
           </div>
@@ -127,23 +127,30 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               >
                 {sanitizeContent(product.title)}
               </a>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                  <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    {t('products.edit')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    {t('products.delete')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Only show menu if not Krolist product */}
+              {!product.isKrolistProduct && (onDelete || onUpdate) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                    {onUpdate && (
+                      <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        {t('products.edit')}
+                      </DropdownMenuItem>
+                    )}
+                    {onDelete && (
+                      <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t('products.delete')}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             
             {/* Description */}
@@ -171,17 +178,22 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               </span>
             </div>
             
-            {/* Badges */}
-            <div className={`flex gap-2 flex-wrap ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-              <Badge className="bg-orange-500 text-white hover:bg-orange-600">
-                {product.store}
-              </Badge>
-              {product.category && (
-                <Badge variant="secondary">
-                  {product.category}
-                </Badge>
-              )}
-            </div>
+        {/* Badges */}
+        <div className={`flex gap-2 flex-wrap ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+          {product.isKrolistProduct && (
+            <Badge className="bg-gradient-primary text-white">
+              Krolist
+            </Badge>
+          )}
+          <Badge className="bg-orange-500 text-white hover:bg-orange-600">
+            {product.store}
+          </Badge>
+          {product.category && (
+            <Badge variant="secondary">
+              {product.category}
+            </Badge>
+          )}
+        </div>
           </div>
         </div>
       </CardContent>
