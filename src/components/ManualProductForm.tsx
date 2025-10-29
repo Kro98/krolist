@@ -37,6 +37,8 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
   const [imageUrl, setImageUrl] = useState("");
   const [store, setStore] = useState("");
   const [category, setCategory] = useState("");
+  const [categoryType, setCategoryType] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [isFetching, setIsFetching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasAutoFilled, setHasAutoFilled] = useState(false);
@@ -157,6 +159,9 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
     e.preventDefault();
     
     try {
+      // Determine final category
+      const finalCategory = categoryType === 'Custom' ? customCategory : categoryType;
+      
       // Validate form data
       const formData = productSchema.parse({
         title,
@@ -166,7 +171,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         imageUrl: imageUrl || undefined,
         store,
         productUrl,
-        category: category || undefined,
+        category: finalCategory || undefined,
       });
 
       setIsSaving(true);
@@ -424,14 +429,42 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                   <Label htmlFor="category" className="text-sm font-medium">
                     Category
                   </Label>
-                  <Input
-                    id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g., Electronics"
-                  />
+                  <Select value={categoryType} onValueChange={setCategoryType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover z-50">
+                      <SelectItem value="Electronics">Electronics</SelectItem>
+                      <SelectItem value="Accessories">Accessories</SelectItem>
+                      <SelectItem value="Clothes">Clothes</SelectItem>
+                      <SelectItem value="Shoes">Shoes</SelectItem>
+                      <SelectItem value="Watches">Watches</SelectItem>
+                      <SelectItem value="Home and Kitchen">Home and Kitchen</SelectItem>
+                      <SelectItem value="Care products">Care Products</SelectItem>
+                      <SelectItem value="Pet products">Pet Products</SelectItem>
+                      <SelectItem value="Furniture">Furniture</SelectItem>
+                      <SelectItem value="Custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+
+              {/* Custom Category Input */}
+              {categoryType === 'Custom' && (
+                <div className="space-y-2">
+                  <Label htmlFor="customCategory" className="text-sm font-medium">
+                    Custom Category
+                  </Label>
+                  <Input
+                    id="customCategory"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Enter custom category"
+                    maxLength={16}
+                  />
+                  <p className="text-xs text-muted-foreground">Max 16 characters</p>
+                </div>
+              )}
 
               {/* Submit Button */}
               <Button

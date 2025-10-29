@@ -189,7 +189,19 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
             {product.store}
           </Badge>
           {product.category && (
-            <Badge variant="secondary">
+            <Badge 
+              variant="secondary"
+              className={(() => {
+                const predefinedCategories = [
+                  'Electronics', 'Accessories', 'Clothes', 'Shoes', 
+                  'Watches', 'Home and Kitchen', 'Care products', 
+                  'Pet products', 'Furniture'
+                ];
+                return !predefinedCategories.includes(product.category) 
+                  ? 'border-2 border-white' 
+                  : '';
+              })()}
+            >
               {product.category}
             </Badge>
           )}

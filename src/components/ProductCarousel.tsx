@@ -130,11 +130,25 @@ export function ProductCarousel({
               ))}
             </CarouselContent>
             
-            {/* Custom positioned navigation arrows */}
+            {/* Navigation arrows inside carousel */}
             {slides.length > 1 && !isMobile && (
-              <div className={`absolute ${language === 'ar' ? '-left-12' : '-right-12'} top-1/2 -translate-y-1/2 flex flex-col gap-2`}>
-                <CarouselPrevious className="relative left-0 top-0 translate-y-0" />
-                <CarouselNext className="relative right-0 bottom-0 translate-y-0" />
+              <div className={`absolute ${language === 'ar' ? 'left-4 right-auto' : 'right-4 left-auto'} top-1/2 -translate-y-1/2 flex ${language === 'ar' ? 'flex-row-reverse' : 'flex-row'} gap-2 pointer-events-none z-10`}>
+                <Button
+                  onClick={() => api?.scrollPrev()}
+                  variant="secondary"
+                  size="icon"
+                  className="pointer-events-auto bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 transition-all"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => api?.scrollNext()}
+                  variant="secondary"
+                  size="icon"
+                  className="pointer-events-auto bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 transition-all"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </Carousel>

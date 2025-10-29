@@ -21,7 +21,7 @@ const translations = {
     'nav.news': 'News & Updates',
     'nav.events': 'Events',
     'nav.promoCodes': 'Promo Codes',
-    'nav.donation': 'Support Dev',
+    'nav.donation': 'Support Krolist',
     'nav.settings': 'Settings',
     'nav.addProduct': 'Add Product',
     
@@ -365,9 +365,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
     return (localStorage.getItem('language') as Language) || 'en';
   });
-  
+
   const [currency, setCurrency] = useState<Currency>(() => {
-    return (localStorage.getItem('currency') as Currency) || 'USD';
+    return (localStorage.getItem('currency') as Currency) || 'SAR';
   });
 
   const handleSetLanguage = (lang: Language) => {

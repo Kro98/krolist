@@ -4,13 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard, type Product } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Filter } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSafeErrorMessage } from "@/lib/errorHandler";
 import { z } from "zod";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 
 // Validation schema for product updates
 const productUpdateSchema = z.object({
@@ -29,6 +34,18 @@ export default function Products() {
   const [krolistProducts, setKrolistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedStores, setSelectedStores] = useState<string[]>([]);
+
+  const categories = [
+    'Electronics', 'Accessories', 'Clothes', 'Shoes', 
+    'Watches', 'Home and Kitchen', 'Care products', 
+    'Pet products', 'Furniture'
+  ];
+
+  const stores = Array.from(new Set([...products.map(p => p.store), ...krolistProducts.map(p => p.store)])).sort();
 
   useEffect(() => {
     loadProducts();
@@ -135,17 +152,29 @@ export default function Products() {
   };
 
   // Filter both user products and Krolist products
-  const filteredUserProducts = products.filter(product =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredUserProducts = products.filter(product => {
+    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesPrice = product.current_price >= priceRange[0] && product.current_price <= priceRange[1];
+    const matchesCategory = selectedCategories.length === 0 || (product.category && selectedCategories.includes(product.category));
+    const matchesStore = selectedStores.length === 0 || selectedStores.includes(product.store);
+    
+    return matchesSearch && matchesPrice && matchesCategory && matchesStore;
+  });
 
-  const filteredKrolistProducts = krolistProducts.filter(product =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredKrolistProducts = krolistProducts.filter(product => {
+    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesPrice = product.current_price >= priceRange[0] && product.current_price <= priceRange[1];
+    const matchesCategory = selectedCategories.length === 0 || (product.category && selectedCategories.includes(product.category));
+    const matchesStore = selectedStores.length === 0 || selectedStores.includes(product.store);
+    
+    return matchesSearch && matchesPrice && matchesCategory && matchesStore;
+  });
 
   if (loading) {
     return (
@@ -157,14 +186,116 @@ export default function Products() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={t('products.searchPlaceholder')}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-card border-border"
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('products.searchPlaceholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-card border-border"
+          />
+        </div>
+        <Popover open={showFilters} onOpenChange={setShowFilters}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="icon" className="flex-shrink-0">
+              <Filter className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 bg-popover z-50" align="end">
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">Filter Products</h4>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-2">
+                <Label>Price Range (SAR)</Label>
+                <div className="pt-2">
+                  <Slider
+                    value={priceRange}
+                    onValueChange={(value) => setPriceRange(value as [number, number])}
+                    min={0}
+                    max={10000}
+                    step={100}
+                    className="mb-2"
+                  />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{priceRange[0]} SAR</span>
+                    <span>{priceRange[1]} SAR</span>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label>Categories</Label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {categories.map((cat) => (
+                    <div key={cat} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`cat-${cat}`}
+                        checked={selectedCategories.includes(cat)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedCategories([...selectedCategories, cat]);
+                          } else {
+                            setSelectedCategories(selectedCategories.filter(c => c !== cat));
+                          }
+                        }}
+                      />
+                      <label htmlFor={`cat-${cat}`} className="text-sm cursor-pointer">
+                        {cat}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label>Stores</Label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {stores.map((store) => (
+                    <div key={store} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`store-${store}`}
+                        checked={selectedStores.includes(store)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedStores([...selectedStores, store]);
+                          } else {
+                            setSelectedStores(selectedStores.filter(s => s !== store));
+                          }
+                        }}
+                      />
+                      <label htmlFor={`store-${store}`} className="text-sm cursor-pointer">
+                        {store}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setPriceRange([0, 10000]);
+                  setSelectedCategories([]);
+                  setSelectedStores([]);
+                }}
+              >
+                Clear All Filters
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {(filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0) ? (

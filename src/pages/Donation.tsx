@@ -12,6 +12,9 @@ declare global {
 }
 export default function Donation() {
   useEffect(() => {
+    // Clear session storage to allow bubble to appear again on page visit
+    sessionStorage.removeItem('kofi-dismissed');
+    
     // Load Ko-fi widget script
     const script = document.createElement('script');
     script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';
@@ -46,9 +49,9 @@ export default function Donation() {
             <Heart className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold">Support PriceTracker</h1>
+        <h1 className="text-3xl font-bold">Support Krolist</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          PriceTracker is a passion project built to help people save money on their purchases. 
+          Krolist is a passion project built to help people save money on their purchases. 
           Your support helps keep the app running and enables new features.
         </p>
       </div>
@@ -63,7 +66,7 @@ export default function Donation() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Thank you for considering supporting PriceTracker! Your generosity means the world to me and helps ensure 
+            Thank you for considering supporting Krolist! Your generosity means the world to me and helps ensure 
             that this tool remains free and continues to improve.
           </p>
           

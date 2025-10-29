@@ -18,7 +18,7 @@ interface LayoutProps {
 }
 export function Layout({ children }: LayoutProps) {
   const { language } = useLanguage();
-  const { user, loading } = useAuth();
+  const { user, loading, isGuest } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { shouldShowDialog, setPreference } = useAdBlockDetection();
@@ -38,10 +38,10 @@ export function Layout({ children }: LayoutProps) {
   const isPublicRoute = publicRoutes.includes(location.pathname);
 
   useEffect(() => {
-    if (!loading && !user && !isPublicRoute) {
+    if (!loading && !user && !isGuest && !isPublicRoute) {
       navigate('/auth');
     }
-  }, [user, loading, location.pathname, navigate, isPublicRoute]);
+  }, [user, loading, isGuest, location.pathname, navigate, isPublicRoute]);
 
   useEffect(() => {
     if (shouldShowDialog) {
