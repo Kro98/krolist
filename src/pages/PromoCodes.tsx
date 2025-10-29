@@ -74,29 +74,18 @@ export default function PromoCodes() {
   const { user, isGuest } = useAuth();
   const navigate = useNavigate();
 
-  if (isGuest) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="p-8 text-center max-w-md">
-          <h2 className="text-2xl font-bold mb-4">Feature Requires Account</h2>
-          <p className="text-muted-foreground mb-6">
-            Please create an account to save and manage promo codes
-          </p>
-          <Button onClick={() => navigate('/auth')} className="w-full">
-            Sign Up / Login
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  // Allow guests to view but show message that they can't create promo codes
 
   const [krolistPromoCodes, setKrolistPromoCodes] = useState<PromoCode[]>([]);
 
   // Fetch promo codes from database
   useEffect(() => {
+    // Guests can view Krolist promo codes
+    fetchKrolistPromoCodes();
+    
+    // Only fetch user promo codes if logged in
     if (user) {
       fetchPromoCodes();
-      fetchKrolistPromoCodes();
     }
   }, [user]);
 
@@ -316,86 +305,103 @@ export default function PromoCodes() {
         <p className="text-muted-foreground">Manage your collection of discount codes and coupons</p>
       </div>
 
-      {/* Add New Promo Code */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-primary" />
-            Add New Promo Code
-          </CardTitle>
-          <CardDescription>
-            Save promo codes you find online for easy access when shopping
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="code">Promo Code</Label>
-              <Input
-                id="code"
-                placeholder="SAVE20"
-                value={newCode}
-                onChange={(e) => setNewCode(e.target.value)}
-                maxLength={20}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="shop">Shop</Label>
-              <Select value={selectedShop} onValueChange={setSelectedShop}>
-                <SelectTrigger id="shop">
-                  <SelectValue placeholder="Select a shop" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AVAILABLE_SHOPS.map((shop) => (
-                    <SelectItem key={shop.id} value={shop.id}>
-                      {shop.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {selectedShop === 'other' && (
+      {/* Add New Promo Code - Hidden for guests */}
+      {!isGuest ? (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Add New Promo Code
+            </CardTitle>
+            <CardDescription>
+              Save promo codes you find online for easy access when shopping
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="customShop">Custom Shop Name</Label>
+                <Label htmlFor="code">Promo Code</Label>
                 <Input
-                  id="customShop"
-                  placeholder="Enter shop name"
-                  value={customShopName}
-                  onChange={(e) => setCustomShopName(e.target.value)}
+                  id="code"
+                  placeholder="SAVE20"
+                  value={newCode}
+                  onChange={(e) => setNewCode(e.target.value)}
                   maxLength={20}
                 />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                placeholder="20% off electronics"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                maxLength={120}
-              />
-            </div>
-            {selectedShop === 'other' && (
               <div className="space-y-2">
-                <Label htmlFor="storeUrl">Store URL</Label>
+                <Label htmlFor="shop">Shop</Label>
+                <Select value={selectedShop} onValueChange={setSelectedShop}>
+                  <SelectTrigger id="shop">
+                    <SelectValue placeholder="Select a shop" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_SHOPS.map((shop) => (
+                      <SelectItem key={shop.id} value={shop.id}>
+                        {shop.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedShop === 'other' && (
+                <div className="space-y-2">
+                  <Label htmlFor="customShop">Custom Shop Name</Label>
+                  <Input
+                    id="customShop"
+                    placeholder="Enter shop name"
+                    value={customShopName}
+                    onChange={(e) => setCustomShopName(e.target.value)}
+                    maxLength={20}
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
                 <Input
-                  id="storeUrl"
-                  placeholder="https://example.com"
-                  value={newStoreUrl}
-                  onChange={(e) => setNewStoreUrl(e.target.value)}
+                  id="description"
+                  placeholder="20% off electronics"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  maxLength={120}
                 />
               </div>
-            )}
-          </div>
-          <Button
-            onClick={handleAddCode}
-            className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
-          >
-            Add Code
-          </Button>
-        </CardContent>
-      </Card>
+              {selectedShop === 'other' && (
+                <div className="space-y-2">
+                  <Label htmlFor="storeUrl">Store URL</Label>
+                  <Input
+                    id="storeUrl"
+                    placeholder="https://example.com"
+                    value={newStoreUrl}
+                    onChange={(e) => setNewStoreUrl(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+            <Button
+              onClick={handleAddCode}
+              className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
+            >
+              Add Code
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-card border-2 border-primary/30">
+          <CardContent className="p-6">
+            <div className="text-center py-4">
+              <Gift className="h-12 w-12 text-primary mx-auto mb-3" />
+              <h3 className="text-lg font-semibold mb-2">Want to Save Your Own Promo Codes?</h3>
+              <p className="text-muted-foreground mb-4">
+                Create an account to save and manage your personal promo codes collection
+              </p>
+              <Button onClick={() => navigate('/auth')} className="bg-gradient-primary">
+                Sign Up / Login
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Krolist Promo Codes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
