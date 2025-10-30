@@ -86,6 +86,84 @@ export type Database = {
         }
         Relationships: []
       }
+      news_updates: {
+        Row: {
+          author_id: string | null
+          category: string
+          content_ar: string | null
+          content_en: string
+          created_at: string | null
+          id: string
+          is_published: boolean | null
+          published_at: string
+          title_ar: string | null
+          title_en: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          category: string
+          content_ar?: string | null
+          content_en: string
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string
+          title_ar?: string | null
+          title_en: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          category?: string
+          content_ar?: string | null
+          content_en?: string
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string
+          title_ar?: string | null
+          title_en?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      page_content: {
+        Row: {
+          category: string | null
+          content_ar: string | null
+          content_en: string
+          content_type: string | null
+          description: string | null
+          id: string
+          page_key: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string | null
+          content_ar?: string | null
+          content_en: string
+          content_type?: string | null
+          description?: string | null
+          id?: string
+          page_key: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string | null
+          content_ar?: string | null
+          content_en?: string
+          content_type?: string | null
+          description?: string | null
+          id?: string
+          page_key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       price_history: {
         Row: {
           currency: string

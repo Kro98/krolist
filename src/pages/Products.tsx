@@ -35,7 +35,7 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
 
@@ -205,25 +205,24 @@ export default function Products() {
           <PopoverContent className="w-80 bg-popover z-50" align="end">
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">Filter Products</h4>
+                <h4 className="font-semibold mb-2">{t('filters.title')}</h4>
               </div>
               
               <Separator />
               
               <div className="space-y-2">
-                <Label>Price Range (SAR)</Label>
+                <Label>{t('filters.priceRange')}</Label>
                 <div className="pt-2">
                   <Slider
                     value={priceRange}
                     onValueChange={(value) => setPriceRange(value as [number, number])}
                     min={0}
-                    max={10000}
+                    max={100000}
                     step={100}
                     className="mb-2"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{priceRange[0]} SAR</span>
-                    <span>{priceRange[1]} SAR</span>
+                    <span>{t('filters.upTo')} {priceRange[1].toLocaleString()} SAR</span>
                   </div>
                 </div>
               </div>
@@ -231,7 +230,7 @@ export default function Products() {
               <Separator />
 
               <div className="space-y-2">
-                <Label>Categories</Label>
+                <Label>{t('filters.categories')}</Label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {categories.map((cat) => (
                     <div key={cat} className="flex items-center space-x-2">

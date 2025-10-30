@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { toast } from "sonner";
@@ -52,6 +53,8 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
     imageUrl: product.image_url || '',
     price: product.current_price.toString(),
     category: product.category || '',
+    currency: product.currency || 'SAR',
+    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'].includes(product.category || '') ? product.category : 'Custom',
   });
 
   // Convert prices to display currency
@@ -82,9 +85,10 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
         description: editForm.description || null,
         image_url: editForm.imageUrl || null,
         current_price: parseFloat(editForm.price),
-        category: editForm.category || null,
+        category: editForm.categoryType === 'Custom' ? editForm.category : editForm.categoryType,
+        currency: editForm.currency,
       });
-      toast.success(t('products.updateSuccess'));
+      toast.success(t('products.editSuccess'));
       setShowEditDialog(false);
     }
   };
@@ -212,10 +216,10 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
       
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('products.editProduct')}</DialogTitle>
-            <DialogDescription>{t('products.editProductDesc')}</DialogDescription>
+            <DialogDescription>{t('products.editDescription')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -224,33 +228,102 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 id="edit-title"
                 value={editForm.title}
                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                placeholder={t('products.enterTitle')}
               />
             </div>
             <div>
-              <Label htmlFor="edit-description">{t('products.description')}</Label>
+              <Label htmlFor="edit-description">{t('products.productDescription')}</Label>
               <Textarea
                 id="edit-description"
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                placeholder={t('products.enterDescription')}
+                rows={3}
               />
             </div>
             <div>
-              <Label htmlFor="edit-price">{t('products.currentPrice')}</Label>
+              <Label htmlFor="edit-image">{t('products.imageUrl')}</Label>
               <Input
-                id="edit-price"
-                type="number"
-                value={editForm.price}
-                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                id="edit-image"
+                value={editForm.imageUrl || ''}
+                onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
+                placeholder={t('products.enterImageUrl')}
               />
+              {editForm.imageUrl && (
+                <img 
+                  src={editForm.imageUrl} 
+                  alt="Preview"
+                  className="mt-2 w-32 h-32 object-cover rounded-md border"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-price">{t('products.currentPrice')}</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  step="0.01"
+                  value={editForm.price}
+                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                  placeholder={t('products.enterPrice')}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-currency">{t('products.currency')}</Label>
+                <Select 
+                  value={editForm.currency || product.currency} 
+                  onValueChange={(value) => setEditForm({ ...editForm, currency: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SAR">SAR</SelectItem>
+                    <SelectItem value="AED">AED</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div>
-              <Label htmlFor="edit-category">{t('products.category')}</Label>
-              <Input
-                id="edit-category"
-                value={editForm.category}
-                onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-              />
+              <Label htmlFor="edit-category">{t('product.category')}</Label>
+              <Select 
+                value={editForm.categoryType || 'Custom'} 
+                onValueChange={(value) => setEditForm({ ...editForm, categoryType: value, category: value === 'Custom' ? editForm.category : value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Electronics">Electronics</SelectItem>
+                  <SelectItem value="Accessories">Accessories</SelectItem>
+                  <SelectItem value="Clothes">Clothes</SelectItem>
+                  <SelectItem value="Shoes">Shoes</SelectItem>
+                  <SelectItem value="Watches">Watches</SelectItem>
+                  <SelectItem value="Home and Kitchen">Home and Kitchen</SelectItem>
+                  <SelectItem value="Care products">Care products</SelectItem>
+                  <SelectItem value="Pet products">Pet products</SelectItem>
+                  <SelectItem value="Furniture">Furniture</SelectItem>
+                  <SelectItem value="Custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            {editForm.categoryType === 'Custom' && (
+              <div>
+                <Label htmlFor="edit-custom-category">{t('product.customCategory')}</Label>
+                <Input
+                  id="edit-custom-category"
+                  value={editForm.category}
+                  onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                  maxLength={16}
+                  placeholder={t('product.customCategoryPlaceholder')}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>

@@ -55,6 +55,13 @@ export default function Settings() {
   }, [user]);
 
   const fetchProfile = async () => {
+    // Check if user is in guest mode
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    if (isGuest) {
+      setUsername(t('user.guest'));
+      return;
+    }
+    
     if (!user) return;
     
     const { data, error } = await supabase
