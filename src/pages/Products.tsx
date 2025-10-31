@@ -35,7 +35,6 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
 
@@ -157,11 +156,10 @@ export default function Products() {
       product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesPrice = product.current_price >= priceRange[0] && product.current_price <= priceRange[1];
     const matchesCategory = selectedCategories.length === 0 || (product.category && selectedCategories.includes(product.category));
     const matchesStore = selectedStores.length === 0 || selectedStores.includes(product.store);
     
-    return matchesSearch && matchesPrice && matchesCategory && matchesStore;
+    return matchesSearch && matchesCategory && matchesStore;
   });
 
   const filteredKrolistProducts = krolistProducts.filter(product => {
@@ -169,11 +167,10 @@ export default function Products() {
       product.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesPrice = product.current_price >= priceRange[0] && product.current_price <= priceRange[1];
     const matchesCategory = selectedCategories.length === 0 || (product.category && selectedCategories.includes(product.category));
     const matchesStore = selectedStores.length === 0 || selectedStores.includes(product.store);
     
-    return matchesSearch && matchesPrice && matchesCategory && matchesStore;
+    return matchesSearch && matchesCategory && matchesStore;
   });
 
   if (loading) {
@@ -208,25 +205,6 @@ export default function Products() {
                 <h4 className="font-semibold mb-2">{t('filters.title')}</h4>
               </div>
               
-              <Separator />
-              
-              <div className="space-y-2">
-                <Label>{t('filters.priceRange')}</Label>
-                <div className="pt-2">
-                  <Slider
-                    value={priceRange}
-                    onValueChange={(value) => setPriceRange(value as [number, number])}
-                    min={0}
-                    max={100000}
-                    step={100}
-                    className="mb-2"
-                  />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{t('filters.upTo')} {priceRange[1].toLocaleString()} SAR</span>
-                  </div>
-                </div>
-              </div>
-
               <Separator />
 
               <div className="space-y-2">
@@ -285,12 +263,11 @@ export default function Products() {
                 variant="outline" 
                 className="w-full"
                 onClick={() => {
-                  setPriceRange([0, 10000]);
                   setSelectedCategories([]);
                   setSelectedStores([]);
                 }}
               >
-                Clear All Filters
+                {t('filters.clearAll')}
               </Button>
             </div>
           </PopoverContent>

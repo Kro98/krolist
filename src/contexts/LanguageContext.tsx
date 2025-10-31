@@ -73,8 +73,6 @@ const translations = {
     'products.enterImageUrl': 'Enter image URL',
     'products.currentPrice': 'Current Price',
     'products.enterPrice': 'Enter price',
-    'cancel': 'Cancel',
-    'save': 'Save',
     
     // Settings
     'settings.title': 'Settings',
@@ -325,8 +323,6 @@ const translations = {
     'products.enterImageUrl': 'أدخل رابط الصورة',
     'products.currentPrice': 'السعر الحالي',
     'products.enterPrice': 'أدخل السعر',
-    'cancel': 'إلغاء',
-    'save': 'حفظ',
     
     // Settings
     'settings.title': 'الإعدادات',
