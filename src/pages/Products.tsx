@@ -342,12 +342,20 @@ export default function Products() {
             <CardDescription>{t('products.startTracking')}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <NavLink to="/search-products">
-              <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
-                <Plus className="h-4 w-4 mr-2" />
-                Search Products
-              </Button>
-            </NavLink>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <NavLink to="/search-products">
+                <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('products.searchProducts')}
+                </Button>
+              </NavLink>
+              <NavLink to="/add-product">
+                <Button variant="outline" className="border-border hover:bg-accent">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('products.manualEntry')}
+                </Button>
+              </NavLink>
+            </div>
           </CardContent>
         </Card>
       )}

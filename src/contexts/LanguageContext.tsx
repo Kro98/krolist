@@ -42,6 +42,8 @@ const translations = {
     'products.subtitle': 'Track and manage your favorite products',
     'products.noProducts': 'No products tracked yet',
     'products.startTracking': 'Start tracking products to see them here',
+    'products.searchProducts': 'Search Products',
+    'products.manualEntry': 'Manual Entry',
     'products.viewDetails': 'View Details',
     'products.searchPlaceholder': 'Search products, stores, or categories...',
     'products.noResults': 'No products found',
@@ -346,6 +348,8 @@ const translations = {
     
     // Products Page
     'products.myProducts': 'منتجاتي',
+    'products.searchProducts': 'البحث عن المنتجات',
+    'products.manualEntry': 'إدخال يدوي',
     'products.krolistSelections': 'اختيارات كروليست',
     'products.expand': 'توسيع',
     'products.collapse': 'طي',
