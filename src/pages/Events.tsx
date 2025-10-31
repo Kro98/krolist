@@ -264,15 +264,15 @@ export default function Events() {
   };
   const eventsForSelectedDate = selectedDate ? events.filter(event => format(event.date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')) : [];
   const upcomingEvents = events.filter(event => event.date >= new Date()).sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
-  return <div className="space-y-6 px-[10px]">
-      <div className="flex items-center justify-between">
+  return <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t('nav.events')}</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('nav.events')}</h1>
           <p className="text-muted-foreground">Plan purchases around global sales, holidays, and national days. Create custom events for personalized shopping strategy.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} disabled={isGuest}>
+            <Button onClick={resetForm} disabled={isGuest} className="bg-gradient-primary hover:shadow-hover transition-all duration-300 h-11 px-6 flex-shrink-0">
               <Plus className="h-4 w-4 mr-2" />
               Add Event
             </Button>
@@ -334,16 +334,16 @@ export default function Events() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-[50px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 shadow-card border-border animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5" />
               Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent className="mx-0 px-[10px] flex gap-4">
+          <CardContent className="flex gap-4 flex-col lg:flex-row">
             <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{
             hasEvent: events.map(event => event.date)
           }} modifiersStyles={{
@@ -352,91 +352,93 @@ export default function Events() {
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 'bold'
             }
-          }} className="rounded-md border p-3 pointer-events-auto px-0 flex-1" />
+          }} className="rounded-md border p-3 pointer-events-auto flex-1" />
             
             {/* Ad Space next to calendar */}
-            <AdSpace className="w-[300px] hidden lg:block" height="h-[400px]" />
+            <AdSpace className="w-full lg:w-[300px]" height="h-[400px]" />
           </CardContent>
         </Card>
 
         {/* Events for Selected Date */}
-        <Card>
+        <Card className="shadow-card border-border animate-fade-in">
           <CardHeader>
             <CardTitle className="text-lg">
               {selectedDate ? format(selectedDate, 'MMM dd, yyyy') : 'Select a Date'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {eventsForSelectedDate.length > 0 ? eventsForSelectedDate.map(event => <div key={event.id} className="bg-muted/50 rounded-lg p-3">
+            {eventsForSelectedDate.length > 0 ? eventsForSelectedDate.map(event => <div key={event.id} className="bg-muted/50 rounded-lg p-4 hover:bg-muted/70 transition-all duration-200 border border-border">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-2">
-                      <span className="text-lg">{event.emoji}</span>
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">{event.emoji}</span>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-sm">{event.name}</h4>
-                        <p className="text-xs text-muted-foreground">{event.description}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <h4 className="font-semibold text-sm mb-1">{event.name}</h4>
+                        <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="outline" className="text-xs">
                             {event.type}
                           </Badge>
                           {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <MapPin className="h-2 w-2" />
+                              <MapPin className="h-3 w-3" />
                               {event.location}
                             </span>}
                         </div>
                       </div>
                     </div>
-                    {event.isUserCreated && <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditEvent(event)}>
-                          <Edit className="h-3 w-3" />
+                    {event.isUserCreated && <div className="flex gap-1 flex-shrink-0">
+                        <Button variant="ghost" size="sm" onClick={() => handleEditEvent(event)} className="h-8 w-8 p-0 hover:bg-accent transition-all">
+                          <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteEvent(event.id)}>
-                          <Trash2 className="h-3 w-3" />
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteEvent(event.id)} className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive transition-all">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>}
                   </div>
-                </div>) : <p className="text-muted-foreground text-sm text-center py-4">
-                No events for this date
-              </p>}
+                </div>) : <div className="text-center py-8">
+                <p className="text-muted-foreground text-sm">No events for this date</p>
+              </div>}
           </CardContent>
         </Card>
       </div>
 
       {/* Upcoming Events */}
-      <Card>
+      <Card className="shadow-card border-border animate-fade-in">
         <CardHeader>
           <CardTitle>Upcoming Events</CardTitle>
         </CardHeader>
-        <CardContent className="mx-0 px-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-0">
-            {upcomingEvents.map(event => <div key={event.id} className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 py-[5px] px-[10px] mx-[10px] my-0">
-                <div className="flex items-start gap-3 px-0 py-[5px] mx-0">
-                  <span className="text-2xl px-0 my-0">{event.emoji}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-semibold text-sm py-0 my-0 mx-0 px-0">{event.name}</h4>
-                      {event.isUserCreated && <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleEditEvent(event)}>
-                            <Edit className="h-3 w-3" />
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingEvents.map(event => <div key={event.id} className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 hover:shadow-md hover:border-primary/30 transition-all duration-300">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{event.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1 gap-2">
+                      <h4 className="font-semibold text-sm truncate">{event.name}</h4>
+                      {event.isUserCreated && <div className="flex gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditEvent(event)} className="h-8 w-8 p-0 hover:bg-accent transition-all">
+                            <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteEvent(event.id)}>
-                            <Trash2 className="h-3 w-3" />
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteEvent(event.id)} className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive transition-all">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>}
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <CalendarIcon className="h-3 w-3" />
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{event.description}</p>
+                    <div className="flex flex-col gap-2">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <CalendarIcon className="h-3 w-3 flex-shrink-0" />
                         {format(event.date, 'MMM dd, yyyy')}
                       </span>
-                      {event.location && <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {event.location}
-                        </span>}
-                      <Badge variant="outline" className="text-xs">
-                        <Tag className="h-2 w-2 mr-1" />
-                        {event.type}
-                      </Badge>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {event.location && <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{event.location}</span>
+                          </span>}
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          <Tag className="h-2 w-2 mr-1" />
+                          {event.type}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>
