@@ -182,20 +182,20 @@ export default function Products() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex gap-2">
+    <div className="space-y-6">
+      <div className="flex gap-3 items-center mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('products.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-card border-border"
+            className="pl-10 h-10 bg-card border-border focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
         <Popover open={showFilters} onOpenChange={setShowFilters}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="flex-shrink-0">
+            <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all">
               <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
@@ -275,7 +275,7 @@ export default function Products() {
       </div>
 
       {(filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0) ? (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-fade-in">
           {/* Krolist Curated Products - Read Only */}
           {filteredKrolistProducts.length > 0 && (
             <ProductCarousel
@@ -320,37 +320,37 @@ export default function Products() {
           })()}
         </div>
       ) : searchQuery ? (
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>{t('products.noResults')}</CardTitle>
-            <CardDescription>{t('products.noResultsDesc')}</CardDescription>
+        <Card className="shadow-card border-border animate-fade-in">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl">{t('products.noResults')}</CardTitle>
+            <CardDescription className="text-base">{t('products.noResultsDesc')}</CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
+          <CardContent className="flex justify-center pb-6">
             <Button 
               variant="outline" 
               onClick={() => setSearchQuery("")}
-              className="border-border hover:bg-accent"
+              className="border-border hover:bg-accent hover:border-primary/50 transition-all"
             >
               Clear Search
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>{t('products.noProducts')}</CardTitle>
-            <CardDescription>{t('products.startTracking')}</CardDescription>
+        <Card className="shadow-card border-border animate-fade-in max-w-2xl mx-auto">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl">{t('products.noProducts')}</CardTitle>
+            <CardDescription className="text-base">{t('products.startTracking')}</CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <div className="flex gap-2 justify-center flex-wrap">
+          <CardContent className="flex justify-center pb-6">
+            <div className="flex gap-3 justify-center flex-wrap">
               <NavLink to="/search-products">
-                <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
+                <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-300 h-11 px-6">
                   <Plus className="h-4 w-4 mr-2" />
                   {t('products.searchProducts')}
                 </Button>
               </NavLink>
               <NavLink to="/add-product">
-                <Button variant="outline" className="border-border hover:bg-accent">
+                <Button variant="outline" className="border-border hover:bg-accent hover:border-primary/50 transition-all duration-300 h-11 px-6">
                   <Plus className="h-4 w-4 mr-2" />
                   {t('products.manualEntry')}
                 </Button>

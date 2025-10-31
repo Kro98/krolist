@@ -86,8 +86,10 @@ export function Layout({ children }: LayoutProps) {
             />
           </header>
           
-          <main className="flex-1 p-6 overflow-auto mx-0 px-[10px] py-[10px]">
-            {children}
+          <main className="flex-1 overflow-auto">
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              {children}
+            </div>
           </main>
 
           {/* Floating Add Button */}
