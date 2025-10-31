@@ -105,8 +105,6 @@ const translations = {
     'error': 'Error',
     'save': 'Save',
     'cancel': 'Cancel',
-    'edit': 'Edit',
-    'delete': 'Delete',
     'success': 'Success',
     'featured': 'Featured',
     
