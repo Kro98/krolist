@@ -130,26 +130,24 @@ export function ProductCarousel({
               ))}
             </CarouselContent>
             
-            {/* Navigation arrows inside carousel */}
+            {/* Navigation arrows on opposite sides */}
             {slides.length > 1 && !isMobile && (
-              <div className={`absolute ${language === 'ar' ? 'left-4 right-auto' : 'right-4 left-auto'} top-1/2 -translate-y-1/2 flex ${language === 'ar' ? 'flex-row-reverse' : 'flex-row'} gap-2 pointer-events-none z-10`}>
+              <>
                 <Button
                   onClick={() => api?.scrollPrev()}
-                  variant="secondary"
                   size="icon"
-                  className="pointer-events-auto bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 transition-all"
+                  className={`absolute ${language === 'ar' ? 'right-2' : 'left-2'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <Button
                   onClick={() => api?.scrollNext()}
-                  variant="secondary"
                   size="icon"
-                  className="pointer-events-auto bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 transition-all"
+                  className={`absolute ${language === 'ar' ? 'left-2' : 'right-2'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </Button>
-              </div>
+              </>
             )}
           </Carousel>
           

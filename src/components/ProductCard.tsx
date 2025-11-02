@@ -147,26 +147,36 @@ export function ProductCard({
               </p>}
             
             {/* Price Display */}
-            <div className={`flex items-center gap-2 mb-3 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+            <div className={`space-y-1 mb-3 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
               {/* Current Price */}
-              <span className="text-xl md:text-2xl font-bold">
-                {currency} {displayCurrentPrice.toFixed(2)}
-              </span>
-              
-              {/* Show discount badge for Krolist products */}
-              {product.isKrolistProduct && product.current_price !== product.original_price && <>
-                  <span className="text-sm text-muted-foreground line-through">
-                    {currency} {displayOriginalPrice.toFixed(2)}
-                  </span>
-                  <Badge className={`${discountValue > 0 ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}>
+              <div className={`flex items-center gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+                <span className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+                  {currency} {displayCurrentPrice.toFixed(2)}
+                </span>
+                
+                {/* Show discount badge for Krolist products */}
+                {product.isKrolistProduct && product.current_price !== product.original_price && (
+                  <Badge className={`text-xs ${discountValue > 0 ? 'bg-success hover:bg-success text-success-foreground' : 'bg-destructive hover:bg-destructive text-destructive-foreground'}`}>
                     {discountValue > 0 ? '-' : '+'}{Math.abs(discountValue)}%
                   </Badge>
-                </>}
+                )}
+                
+                {/* Show price change for user products */}
+                {!product.isKrolistProduct && (
+                  <span className={`text-xs sm:text-sm ${priceChange < 0 ? 'text-success' : priceChange > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    {priceChange !== 0 ? `${priceChange > 0 ? '+' : ''}${priceChangePercent}%` : '0.00%'}
+                  </span>
+                )}
+              </div>
               
-              {/* Show price change for user products */}
-              {!product.isKrolistProduct && <span className={`text-sm ${priceChange < 0 ? 'text-green-500' : priceChange > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                  {priceChange !== 0 ? `${priceChange > 0 ? '+' : ''}${priceChangePercent}%` : '0.00%'}
-                </span>}
+              {/* Original Price (under current price for Krolist products) */}
+              {product.isKrolistProduct && product.current_price !== product.original_price && (
+                <div className={`flex items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+                  <span className="text-xs sm:text-sm text-muted-foreground line-through">
+                    {currency} {displayOriginalPrice.toFixed(2)}
+                  </span>
+                </div>
+              )}
             </div>
             
         {/* Badges */}
