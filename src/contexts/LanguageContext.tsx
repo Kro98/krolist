@@ -221,6 +221,7 @@ const translations = {
     
     // Products Page
     'products.myProducts': 'MY PRODUCTS',
+    'products.featuredProducts': 'FEATURED PRODUCTS',
     'products.krolistSelections': 'KROLIST SELECTIONS',
     'products.expand': 'Expand',
     'products.collapse': 'Collapse',
@@ -348,8 +349,7 @@ const translations = {
     
     // Products Page
     'products.myProducts': 'منتجاتي',
-    'products.searchProducts': 'البحث عن المنتجات',
-    'products.manualEntry': 'إدخال يدوي',
+    'products.featuredProducts': 'منتجات مميزة',
     'products.krolistSelections': 'اختيارات كروليست',
     'products.expand': 'توسيع',
     'products.collapse': 'طي',

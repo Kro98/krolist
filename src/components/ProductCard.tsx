@@ -58,9 +58,16 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
   });
 
   // Convert prices to display currency
-  const displayPrice = convertPriceToDisplay(product.original_price, product.original_currency);
+  const displayCurrentPrice = convertPriceToDisplay(product.current_price, product.original_currency);
+  const displayOriginalPrice = convertPriceToDisplay(product.original_price, product.original_currency);
   
-  // Calculate price change in display currency
+  // Calculate discount percentage (original - current) / original * 100
+  const discountPercent = product.original_price > 0 
+    ? ((product.original_price - product.current_price) / product.original_price * 100).toFixed(0)
+    : '0';
+  const discountValue = parseFloat(discountPercent);
+  
+  // Calculate price change in display currency (for user products price history)
   const priceHistory = product.price_history || [];
   const sortedHistory = [...priceHistory].sort((a, b) => 
     new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime()
@@ -68,7 +75,7 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
   const previousPriceOriginal = sortedHistory[1]?.price || product.original_price;
   const previousPriceDisplay = convertPriceToDisplay(previousPriceOriginal, product.original_currency);
   
-  const priceChange = displayPrice - previousPriceDisplay;
+  const priceChange = displayCurrentPrice - previousPriceDisplay;
   const priceChangePercent = previousPriceDisplay > 0 ? ((priceChange / previousPriceDisplay) * 100).toFixed(2) : '0';
 
   const handleDelete = () => {
@@ -164,22 +171,45 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               </p>
             )}
             
-            {/* Price with inline percentage */}
-            <div className={`flex items-baseline gap-2 mb-3 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+            {/* Price Display */}
+            <div className={`flex items-center gap-2 mb-3 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              {/* Current Price */}
               <span className="text-xl md:text-2xl font-bold">
-                {currency} {displayPrice.toFixed(2)}
+                {currency} {displayCurrentPrice.toFixed(2)}
               </span>
-              <span className={`text-sm ${
-                priceChange < 0 ? 'text-green-500' : 
-                priceChange > 0 ? 'text-red-500' : 
-                'text-muted-foreground'
-              }`}>
-                {priceChange !== 0 ? (
-                  `${priceChange > 0 ? '+' : ''}${priceChangePercent}%`
-                ) : (
-                  '0.00%'
-                )}
-              </span>
+              
+              {/* Show discount badge for Krolist products */}
+              {product.isKrolistProduct && product.current_price !== product.original_price && (
+                <>
+                  <span className="text-sm text-muted-foreground line-through">
+                    {currency} {displayOriginalPrice.toFixed(2)}
+                  </span>
+                  <Badge 
+                    className={`${
+                      discountValue > 0 
+                        ? 'bg-green-500 hover:bg-green-600 text-white' 
+                        : 'bg-red-500 hover:bg-red-600 text-white'
+                    }`}
+                  >
+                    {discountValue > 0 ? '-' : '+'}{Math.abs(discountValue)}%
+                  </Badge>
+                </>
+              )}
+              
+              {/* Show price change for user products */}
+              {!product.isKrolistProduct && (
+                <span className={`text-sm ${
+                  priceChange < 0 ? 'text-green-500' : 
+                  priceChange > 0 ? 'text-red-500' : 
+                  'text-muted-foreground'
+                }`}>
+                  {priceChange !== 0 ? (
+                    `${priceChange > 0 ? '+' : ''}${priceChangePercent}%`
+                  ) : (
+                    '0.00%'
+                  )}
+                </span>
+              )}
             </div>
             
         {/* Badges */}

@@ -276,15 +276,7 @@ export default function Products() {
 
       {(filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0) ? (
         <div className="space-y-8 animate-fade-in">
-          {/* Krolist Curated Products - Read Only */}
-          {filteredKrolistProducts.length > 0 && (
-            <ProductCarousel
-              title="KROLIST SELECTIONS"
-              products={filteredKrolistProducts}
-            />
-          )}
-
-          {/* User Products Carousel */}
+          {/* User Products Carousel - Show first */}
           {filteredUserProducts.length > 0 && (
             <ProductCarousel
               title={t('products.myProducts')}
@@ -294,30 +286,14 @@ export default function Products() {
               onRefreshPrice={handleRefreshPrice}
             />
           )}
-          
-          {/* Store-based grouping for user products only */}
-          {(() => {
-            const productsByStore = filteredUserProducts.reduce((acc, product) => {
-              if (!acc[product.store]) {
-                acc[product.store] = [];
-              }
-              acc[product.store].push(product);
-              return acc;
-            }, {} as Record<string, Product[]>);
-            
-            const storeNames = Object.keys(productsByStore).filter(store => productsByStore[store].length >= 3);
-            
-            return storeNames.map(store => (
-              <ProductCarousel
-                key={store}
-                title={`${t('products.krolistSelections')}: ${store.toUpperCase()}`}
-                products={productsByStore[store]}
-                onDelete={handleDelete}
-                onUpdate={handleUpdate}
-                onRefreshPrice={handleRefreshPrice}
-              />
-            ));
-          })()}
+
+          {/* Krolist Featured Products - Read Only */}
+          {filteredKrolistProducts.length > 0 && (
+            <ProductCarousel
+              title={t('products.featuredProducts') || 'Featured Products'}
+              products={filteredKrolistProducts}
+            />
+          )}
         </div>
       ) : searchQuery ? (
         <Card className="shadow-card border-border animate-fade-in">
