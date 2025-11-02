@@ -13,7 +13,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
-
 export interface Product {
   id: string;
   title: string;
@@ -35,17 +34,26 @@ export interface Product {
     scraped_at: string;
   }>;
 }
-
 interface ProductCardProps {
   product: Product;
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
 }
-
-export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: ProductCardProps) {
-  const { t, language } = useLanguage();
-  const { currency, convertPriceToDisplay } = useConvertedPrice();
+export function ProductCard({
+  product,
+  onDelete,
+  onUpdate,
+  onRefreshPrice
+}: ProductCardProps) {
+  const {
+    t,
+    language
+  } = useLanguage();
+  const {
+    currency,
+    convertPriceToDisplay
+  } = useConvertedPrice();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editForm, setEditForm] = useState({
     title: product.title,
@@ -54,37 +62,30 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
     price: product.current_price.toString(),
     category: product.category || '',
     currency: product.currency || 'SAR',
-    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'].includes(product.category || '') ? product.category : 'Custom',
+    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'].includes(product.category || '') ? product.category : 'Custom'
   });
 
   // Convert prices to display currency
   const displayCurrentPrice = convertPriceToDisplay(product.current_price, product.original_currency);
   const displayOriginalPrice = convertPriceToDisplay(product.original_price, product.original_currency);
-  
+
   // Calculate discount percentage (original - current) / original * 100
-  const discountPercent = product.original_price > 0 
-    ? ((product.original_price - product.current_price) / product.original_price * 100).toFixed(0)
-    : '0';
+  const discountPercent = product.original_price > 0 ? ((product.original_price - product.current_price) / product.original_price * 100).toFixed(0) : '0';
   const discountValue = parseFloat(discountPercent);
-  
+
   // Calculate price change in display currency (for user products price history)
   const priceHistory = product.price_history || [];
-  const sortedHistory = [...priceHistory].sort((a, b) => 
-    new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime()
-  );
+  const sortedHistory = [...priceHistory].sort((a, b) => new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime());
   const previousPriceOriginal = sortedHistory[1]?.price || product.original_price;
   const previousPriceDisplay = convertPriceToDisplay(previousPriceOriginal, product.original_currency);
-  
   const priceChange = displayCurrentPrice - previousPriceDisplay;
-  const priceChangePercent = previousPriceDisplay > 0 ? ((priceChange / previousPriceDisplay) * 100).toFixed(2) : '0';
-
+  const priceChangePercent = previousPriceDisplay > 0 ? (priceChange / previousPriceDisplay * 100).toFixed(2) : '0';
   const handleDelete = () => {
     if (onDelete) {
       onDelete(product.id);
       toast.success(t('products.deleteSuccess'));
     }
   };
-
   const handleEdit = () => {
     if (onUpdate) {
       onUpdate(product.id, {
@@ -93,34 +94,21 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
         image_url: editForm.imageUrl || null,
         current_price: parseFloat(editForm.price),
         category: editForm.categoryType === 'Custom' ? editForm.category : editForm.categoryType,
-        currency: editForm.currency,
+        currency: editForm.currency
       });
       toast.success(t('products.editSuccess'));
       setShowEditDialog(false);
     }
   };
-
-  return (
-    <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative">
-      <CardContent className="p-4">
+  return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative">
+      <CardContent className="p-4 px-0">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image + Refresh */}
           <div className="flex-shrink-0 space-y-2">
-            <img 
-              src={product.image_url || '/placeholder.svg'}
-              alt={product.title} 
-              className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg"
-            />
-            {onRefreshPrice && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onRefreshPrice(product.id)}
-                className="h-7 w-7 mx-auto block"
-              >
+            <img src={product.image_url || '/placeholder.svg'} alt={product.title} className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg" />
+            {onRefreshPrice && <Button variant="ghost" size="icon" onClick={() => onRefreshPrice(product.id)} className="h-7 w-7 mx-auto block">
                 <RefreshCw className="h-4 w-4" />
-              </Button>
-            )}
+              </Button>}
             <div className="text-[10px] text-muted-foreground text-center">
               {new Date(product.last_checked_at).toLocaleDateString()}
             </div>
@@ -130,46 +118,33 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
           <div className={`flex-1 min-w-0 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
             {/* Title and Menu */}
             <div className={`flex items-start justify-between mb-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-              <a 
-                href={product.product_url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline"
-              >
+              <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline">
                 {sanitizeContent(product.title)}
               </a>
               {/* Only show menu if not Krolist product */}
-              {!product.isKrolistProduct && (onDelete || onUpdate) && (
-                <DropdownMenu>
+              {!product.isKrolistProduct && (onDelete || onUpdate) && <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                    {onUpdate && (
-                      <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    {onUpdate && <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                         <Edit className="h-4 w-4 mr-2" />
                         {t('products.edit')}
-                      </DropdownMenuItem>
-                    )}
-                    {onDelete && (
-                      <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                      </DropdownMenuItem>}
+                    {onDelete && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
                         <Trash2 className="h-4 w-4 mr-2" />
                         {t('products.delete')}
-                      </DropdownMenuItem>
-                    )}
+                      </DropdownMenuItem>}
                   </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                </DropdownMenu>}
             </div>
             
             {/* Description */}
-            {product.description && (
-              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+            {product.description && <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                 {sanitizeContent(product.description)}
-              </p>
-            )}
+              </p>}
             
             {/* Price Display */}
             <div className={`flex items-center gap-2 mb-3 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
@@ -179,66 +154,35 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
               </span>
               
               {/* Show discount badge for Krolist products */}
-              {product.isKrolistProduct && product.current_price !== product.original_price && (
-                <>
+              {product.isKrolistProduct && product.current_price !== product.original_price && <>
                   <span className="text-sm text-muted-foreground line-through">
                     {currency} {displayOriginalPrice.toFixed(2)}
                   </span>
-                  <Badge 
-                    className={`${
-                      discountValue > 0 
-                        ? 'bg-green-500 hover:bg-green-600 text-white' 
-                        : 'bg-red-500 hover:bg-red-600 text-white'
-                    }`}
-                  >
+                  <Badge className={`${discountValue > 0 ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}>
                     {discountValue > 0 ? '-' : '+'}{Math.abs(discountValue)}%
                   </Badge>
-                </>
-              )}
+                </>}
               
               {/* Show price change for user products */}
-              {!product.isKrolistProduct && (
-                <span className={`text-sm ${
-                  priceChange < 0 ? 'text-green-500' : 
-                  priceChange > 0 ? 'text-red-500' : 
-                  'text-muted-foreground'
-                }`}>
-                  {priceChange !== 0 ? (
-                    `${priceChange > 0 ? '+' : ''}${priceChangePercent}%`
-                  ) : (
-                    '0.00%'
-                  )}
-                </span>
-              )}
+              {!product.isKrolistProduct && <span className={`text-sm ${priceChange < 0 ? 'text-green-500' : priceChange > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                  {priceChange !== 0 ? `${priceChange > 0 ? '+' : ''}${priceChangePercent}%` : '0.00%'}
+                </span>}
             </div>
             
         {/* Badges */}
         <div className={`flex gap-2 flex-wrap ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          {product.isKrolistProduct && (
-            <Badge className="bg-gradient-primary text-white">
+          {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white">
               Krolist
-            </Badge>
-          )}
+            </Badge>}
           <Badge className="bg-orange-500 text-white hover:bg-orange-600">
             {product.store}
           </Badge>
-          {product.category && (
-            <Badge 
-              variant="secondary"
-              className={(() => {
-                const predefinedCategories = [
-                  'Electronics', 'Accessories', 'Clothes', 'Shoes', 
-                  'Watches', 'Home and Kitchen', 'Care products', 
-                  'Pet products', 'Furniture'
-                ];
-                return !predefinedCategories.includes(product.category) 
-                  ? 'border-2 border-white' 
-                  : '';
-              })()}
-            >
+          {product.category && <Badge variant="secondary" className={(() => {
+              const predefinedCategories = ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'];
+              return !predefinedCategories.includes(product.category) ? 'border-2 border-white' : '';
+            })()}>
               {product.category}
-            </Badge>
-          )}
+            </Badge>}
         </div>
           </div>
         </div>
@@ -254,58 +198,40 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
           <div className="space-y-4">
             <div>
               <Label htmlFor="edit-title">{t('products.productTitle')}</Label>
-              <Input
-                id="edit-title"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                placeholder={t('products.enterTitle')}
-              />
+              <Input id="edit-title" value={editForm.title} onChange={e => setEditForm({
+              ...editForm,
+              title: e.target.value
+            })} placeholder={t('products.enterTitle')} />
             </div>
             <div>
               <Label htmlFor="edit-description">{t('products.productDescription')}</Label>
-              <Textarea
-                id="edit-description"
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                placeholder={t('products.enterDescription')}
-                rows={3}
-              />
+              <Textarea id="edit-description" value={editForm.description} onChange={e => setEditForm({
+              ...editForm,
+              description: e.target.value
+            })} placeholder={t('products.enterDescription')} rows={3} />
             </div>
             <div>
               <Label htmlFor="edit-image">{t('products.imageUrl')}</Label>
-              <Input
-                id="edit-image"
-                value={editForm.imageUrl || ''}
-                onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                placeholder={t('products.enterImageUrl')}
-              />
-              {editForm.imageUrl && (
-                <img 
-                  src={editForm.imageUrl} 
-                  alt="Preview"
-                  className="mt-2 w-32 h-32 object-cover rounded-md border"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-              )}
+              <Input id="edit-image" value={editForm.imageUrl || ''} onChange={e => setEditForm({
+              ...editForm,
+              imageUrl: e.target.value
+            })} placeholder={t('products.enterImageUrl')} />
+              {editForm.imageUrl && <img src={editForm.imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded-md border" onError={e => e.currentTarget.style.display = 'none'} />}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-price">{t('products.currentPrice')}</Label>
-                <Input
-                  id="edit-price"
-                  type="number"
-                  step="0.01"
-                  value={editForm.price}
-                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                  placeholder={t('products.enterPrice')}
-                />
+                <Input id="edit-price" type="number" step="0.01" value={editForm.price} onChange={e => setEditForm({
+                ...editForm,
+                price: e.target.value
+              })} placeholder={t('products.enterPrice')} />
               </div>
               <div>
                 <Label htmlFor="edit-currency">{t('products.currency')}</Label>
-                <Select 
-                  value={editForm.currency || product.currency} 
-                  onValueChange={(value) => setEditForm({ ...editForm, currency: value })}
-                >
+                <Select value={editForm.currency || product.currency} onValueChange={value => setEditForm({
+                ...editForm,
+                currency: value
+              })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -321,10 +247,11 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
             </div>
             <div>
               <Label htmlFor="edit-category">{t('product.category')}</Label>
-              <Select 
-                value={editForm.categoryType || 'Custom'} 
-                onValueChange={(value) => setEditForm({ ...editForm, categoryType: value, category: value === 'Custom' ? editForm.category : value })}
-              >
+              <Select value={editForm.categoryType || 'Custom'} onValueChange={value => setEditForm({
+              ...editForm,
+              categoryType: value,
+              category: value === 'Custom' ? editForm.category : value
+            })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -342,18 +269,13 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
                 </SelectContent>
               </Select>
             </div>
-            {editForm.categoryType === 'Custom' && (
-              <div>
+            {editForm.categoryType === 'Custom' && <div>
                 <Label htmlFor="edit-custom-category">{t('product.customCategory')}</Label>
-                <Input
-                  id="edit-custom-category"
-                  value={editForm.category}
-                  onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                  maxLength={16}
-                  placeholder={t('product.customCategoryPlaceholder')}
-                />
-              </div>
-            )}
+                <Input id="edit-custom-category" value={editForm.category} onChange={e => setEditForm({
+              ...editForm,
+              category: e.target.value
+            })} maxLength={16} placeholder={t('product.customCategoryPlaceholder')} />
+              </div>}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
@@ -363,6 +285,5 @@ export function ProductCard({ product, onDelete, onUpdate, onRefreshPrice }: Pro
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
-  );
+    </Card>;
 }

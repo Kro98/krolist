@@ -12,48 +12,45 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useAdBlockDetection } from "@/hooks/use-adblock-detection";
 import { AdBlockDialog } from "@/components/AdBlockDialog";
-
 interface LayoutProps {
   children: React.ReactNode;
 }
-export function Layout({ children }: LayoutProps) {
-  const { language } = useLanguage();
-  const { user, loading, isGuest } = useAuth();
+export function Layout({
+  children
+}: LayoutProps) {
+  const {
+    language
+  } = useLanguage();
+  const {
+    user,
+    loading,
+    isGuest
+  } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { shouldShowDialog, setPreference } = useAdBlockDetection();
+  const {
+    shouldShowDialog,
+    setPreference
+  } = useAdBlockDetection();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Public routes that don't require authentication
-  const publicRoutes = [
-    '/auth',
-    '/auth/privacy-policy',
-    '/auth/terms-of-service',
-    '/auth/contact-us',
-    '/privacy-policy',
-    '/terms-of-service',
-    '/contact-us'
-  ];
-
+  const publicRoutes = ['/auth', '/auth/privacy-policy', '/auth/terms-of-service', '/auth/contact-us', '/privacy-policy', '/terms-of-service', '/contact-us'];
   const isPublicRoute = publicRoutes.includes(location.pathname);
-
   useEffect(() => {
     if (!loading && !user && !isGuest && !isPublicRoute) {
       navigate('/auth');
     }
   }, [user, loading, isGuest, location.pathname, navigate, isPublicRoute]);
-
   useEffect(() => {
     if (shouldShowDialog) {
       setDialogOpen(true);
     }
   }, [shouldShowDialog]);
-
   const handleAllowAds = () => {
     setPreference("allow-ads");
     setDialogOpen(false);
   };
-
   const handleBlockAds = () => {
     setPreference("block-ads");
     setDialogOpen(false);
@@ -63,56 +60,35 @@ export function Layout({ children }: LayoutProps) {
   if (isPublicRoute) {
     return <>{children}</>;
   }
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <TooltipProvider>
+  return <TooltipProvider>
       <SidebarProvider>
         <AppSidebar />
         <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
           <header className="h-16 flex items-center border-b border-border bg-card px-4">
             <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
-            <img 
-              src={krolistLogo} 
-              alt="Krolist" 
-              className="h-8 object-contain"
-            />
+            <img src={krolistLogo} alt="Krolist" className="h-8 object-contain" />
           </header>
           
           <main className="flex-1 overflow-auto">
-            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="container max-w-7xl mx-auto sm:px-6 lg:px-8 py-[20px] px-[10px]">
               {children}
             </div>
           </main>
 
           {/* Floating Add Button */}
-          <Button
-            size="icon"
-            className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${
-              language === 'ar' ? 'left-6' : 'right-6'
-            }`}
-            onClick={() => navigate('/add-product')}
-          >
+          <Button size="icon" className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${language === 'ar' ? 'left-6' : 'right-6'}`} onClick={() => navigate('/add-product')}>
             <Plus className="h-6 w-6" />
           </Button>
         </div>
         
         <Toaster />
         <Sonner />
-        <AdBlockDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          onAllowAds={handleAllowAds}
-          onBlockAds={handleBlockAds}
-        />
+        <AdBlockDialog open={dialogOpen} onOpenChange={setDialogOpen} onAllowAds={handleAllowAds} onBlockAds={handleBlockAds} />
       </SidebarProvider>
-    </TooltipProvider>
-  );
+    </TooltipProvider>;
 }
