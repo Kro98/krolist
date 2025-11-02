@@ -136,14 +136,14 @@ export function ProductCarousel({
                 <Button
                   onClick={() => api?.scrollPrev()}
                   size="icon"
-                  className={`absolute ${language === 'ar' ? 'right-2' : 'left-2'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
+                  className={`absolute ${language === 'ar' ? 'right-2 lg:-right-16' : 'left-2 lg:-left-16'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <Button
                   onClick={() => api?.scrollNext()}
                   size="icon"
-                  className={`absolute ${language === 'ar' ? 'left-2' : 'right-2'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
+                  className={`absolute ${language === 'ar' ? 'left-2 lg:-left-16' : 'right-2 lg:-right-16'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
                 >
                   <ChevronRight className="h-5 w-5" />
                 </Button>

@@ -125,8 +125,8 @@ const translations = {
     'admin.krolistPromoCodesDesc': 'Manage promo codes visible to all users',
     'admin.newsUpdates': 'News & Updates',
     'admin.newsUpdatesDesc': 'Manage news and announcements',
-    'admin.contentManagement': 'Content Management',
-    'admin.contentManagementDesc': 'Edit website text and translations',
+    'admin.shopManagement': 'Shop Management',
+    'admin.shopManagementDesc': 'Manage available shops and affiliate links',
     'admin.addProduct': 'Add Product',
     'admin.editProduct': 'Edit Product',
     'admin.addPromoCode': 'Add Promo Code',
@@ -423,6 +423,21 @@ const translations = {
     'shops.title': 'المتاجر',
     
     'settings.other': 'أخرى',
+    
+    // Admin Dashboard
+    'admin.dashboard': 'لوحة تحكم المسؤول',
+    'admin.dashboardDesc': 'إدارة محتوى وإعدادات كروليست',
+    'admin.accessDenied': 'الوصول مرفوض',
+    'admin.accessDeniedDesc': 'تحتاج إلى صلاحيات المسؤول للوصول إلى هذه الصفحة',
+    'admin.krolistProducts': 'منتجات كروليست',
+    'admin.krolistProductsDesc': 'إدارة اختيارات المنتجات المنسقة لجميع المستخدمين',
+    'admin.promoCodes': 'أكواد الخصم',
+    'admin.krolistPromoCodes': 'أكواد خصم كروليست',
+    'admin.krolistPromoCodesDesc': 'إدارة أكواد الخصم المرئية لجميع المستخدمين',
+    'admin.newsUpdates': 'الأخبار والتحديثات',
+    'admin.newsUpdatesDesc': 'إدارة الأخبار والإعلانات',
+    'admin.shopManagement': 'إدارة المتاجر',
+    'admin.shopManagementDesc': 'إدارة المتاجر المتاحة وروابط الشراكة',
     
     // Dashboard/Analytics (continued)
     'dashboard.title': 'التحليلات',

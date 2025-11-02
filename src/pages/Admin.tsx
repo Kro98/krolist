@@ -7,8 +7,8 @@ import { Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import NewsUpdatesManager from "./admin/NewsUpdatesManager";
-import ContentManager from "./admin/ContentManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
+import { ShopManager } from "@/components/ShopManager";
 
 export default function Admin() {
   const { isAdmin, isLoading: roleLoading } = useAdminRole();
@@ -65,7 +65,7 @@ export default function Admin() {
           <TabsTrigger value="products">{t('admin.krolistProducts')}</TabsTrigger>
           <TabsTrigger value="promo-codes">{t('admin.promoCodes')}</TabsTrigger>
           <TabsTrigger value="news">{t('admin.newsUpdates')}</TabsTrigger>
-          <TabsTrigger value="content">{t('admin.contentManagement')}</TabsTrigger>
+          <TabsTrigger value="shops">{t('admin.shopManagement')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="mt-6">
@@ -80,8 +80,8 @@ export default function Admin() {
           <NewsUpdatesManager />
         </TabsContent>
 
-        <TabsContent value="content" className="mt-6">
-          <ContentManager />
+        <TabsContent value="shops" className="mt-6">
+          <ShopManager />
         </TabsContent>
       </Tabs>
     </div>
