@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
 import { STORES } from '@/config/stores';
 
 interface KrolistProduct {
@@ -27,6 +27,8 @@ interface KrolistProduct {
   image_url: string | null;
   category: string | null;
   is_featured: boolean;
+  collection_title: string;
+  youtube_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +44,7 @@ export default function KrolistProductsManager() {
   const { t } = useLanguage();
   const [products, setProducts] = useState<KrolistProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<KrolistProduct | null>(null);
   
@@ -57,6 +60,8 @@ export default function KrolistProductsManager() {
     image_url: '',
     category: '',
     customCategory: '',
+    collection_title: 'Featured Products',
+    youtube_url: '',
     is_featured: true,
   });
 
@@ -84,6 +89,30 @@ export default function KrolistProductsManager() {
     }
   };
 
+  const handleRefreshPrices = async () => {
+    setIsRefreshing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('refresh-product-prices');
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Prices refreshed',
+        description: `Updated ${data.updated} out of ${data.checked} products`,
+      });
+      
+      fetchProducts();
+    } catch (error: any) {
+      toast({
+        title: 'Error refreshing prices',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleOpenDialog = (product?: KrolistProduct) => {
     if (product) {
       setEditingProduct(product);
@@ -99,6 +128,8 @@ export default function KrolistProductsManager() {
         image_url: product.image_url || '',
         category: CATEGORIES.includes(product.category || '') ? product.category || '' : 'Custom',
         customCategory: CATEGORIES.includes(product.category || '') ? '' : product.category || '',
+        collection_title: product.collection_title || 'Featured Products',
+        youtube_url: product.youtube_url || '',
         is_featured: product.is_featured,
       });
     } else {
@@ -115,6 +146,8 @@ export default function KrolistProductsManager() {
         image_url: '',
         category: '',
         customCategory: '',
+        collection_title: 'Featured Products',
+        youtube_url: '',
         is_featured: true,
       });
     }
@@ -135,6 +168,8 @@ export default function KrolistProductsManager() {
       product_url: formData.product_url,
       image_url: formData.image_url || null,
       category: finalCategory || null,
+      collection_title: formData.collection_title,
+      youtube_url: formData.youtube_url || null,
       is_featured: formData.is_featured,
     };
 
@@ -199,10 +234,16 @@ export default function KrolistProductsManager() {
           <h2 className="text-2xl font-bold">{t('admin.krolistProducts')}</h2>
           <p className="text-muted-foreground">{t('admin.krolistProductsDesc')}</p>
         </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t('admin.addProduct')}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleRefreshPrices} disabled={isRefreshing} variant="outline">
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh Prices
+          </Button>
+          <Button onClick={() => handleOpenDialog()}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('admin.addProduct')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -409,6 +450,24 @@ export default function KrolistProductsManager() {
                 />
               </div>
             )}
+
+            <div>
+              <Label>Collection Title</Label>
+              <Input
+                value={formData.collection_title}
+                onChange={(e) => setFormData({ ...formData, collection_title: e.target.value })}
+                placeholder="e.g., Summer Sale, Electronics"
+              />
+            </div>
+
+            <div>
+              <Label>YouTube Review URL (Optional)</Label>
+              <Input
+                value={formData.youtube_url}
+                onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
+                placeholder="https://youtube.com/..."
+              />
+            </div>
 
             <div className="flex items-center space-x-2">
               <Switch

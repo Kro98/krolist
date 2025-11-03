@@ -4,22 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { GripVertical, Package, Plus, X, Search } from "lucide-react";
+import { GripVertical, Package, Plus, X, Search, Edit } from "lucide-react";
 import { getAllStores } from "@/config/stores";
 
 const DEFAULT_SHOPS = getAllStores().map(store => ({
   id: store.id,
   name: store.displayName,
-  enabled: store.enabled
+  enabled: store.enabled,
+  affiliateUrl: store.affiliateUrl || ''
 }));
 
 interface Shop {
   id: string;
   name: string;
   enabled: boolean;
+  affiliateUrl?: string;
 }
 
 export function ShopManager() {
@@ -31,6 +35,9 @@ export function ShopManager() {
   });
   const [newShopName, setNewShopName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingShop, setEditingShop] = useState<Shop | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', affiliateUrl: '' });
 
   useEffect(() => {
     localStorage.setItem('shopOrder', JSON.stringify(shops));
@@ -72,7 +79,8 @@ export function ShopManager() {
     const newShop: Shop = {
       id: newShopName.toLowerCase().replace(/\s+/g, '-'),
       name: newShopName.trim(),
-      enabled: true
+      enabled: true,
+      affiliateUrl: ''
     };
     
     setShops([...shops, newShop]);
@@ -81,6 +89,28 @@ export function ShopManager() {
     toast({
       title: "Shop added",
       description: `${newShop.name} has been added to your shop list`,
+    });
+  };
+
+  const handleEditShop = (shop: Shop) => {
+    setEditingShop(shop);
+    setEditForm({ name: shop.name, affiliateUrl: shop.affiliateUrl || '' });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingShop) return;
+    
+    setShops(shops.map(shop => 
+      shop.id === editingShop.id 
+        ? { ...shop, name: editForm.name, affiliateUrl: editForm.affiliateUrl }
+        : shop
+    ));
+    
+    setShowEditDialog(false);
+    toast({
+      title: "Shop updated",
+      description: `${editForm.name} has been updated`,
     });
   };
 
@@ -161,6 +191,14 @@ export function ShopManager() {
                         </div>
                         
                         <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditShop(shop)}
+                            className="text-primary hover:text-primary"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                           {!isComingSoon && (
                             <Switch
                               checked={shop.enabled}
@@ -192,6 +230,37 @@ export function ShopManager() {
           {t('settings.dragToReorder')} • {shops.filter(s => s.enabled).length} {t('status.active')}
         </div>
       </CardContent>
+      
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Shop</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Shop Name</Label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Affiliate URL</Label>
+              <Input
+                value={editForm.affiliateUrl}
+                onChange={(e) => setEditForm({ ...editForm, affiliateUrl: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

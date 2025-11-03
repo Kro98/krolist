@@ -45,14 +45,19 @@ export default function AuthContactUs() {
           {/* Social Media Cards */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Twitter Card */}
-            <Card className="p-8 opacity-60">
+            <Card className="p-8">
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                  <Twitter className="h-8 w-8 text-muted-foreground" />
+                <div className="h-16 w-16 rounded-full bg-sky-100 dark:bg-sky-950 flex items-center justify-center">
+                  <Twitter className="h-8 w-8 text-sky-500" />
                 </div>
-                <h2 className="text-xl font-semibold">Twitter</h2>
-                <Button variant="secondary" disabled className="w-full">
-                  Coming Soon
+                <h2 className="text-xl font-semibold">Twitter/X</h2>
+                <p className="text-muted-foreground text-sm">Follow us on X for updates</p>
+                <Button 
+                  variant="default" 
+                  className="w-full bg-sky-500 hover:bg-sky-600"
+                  onClick={() => window.open('https://x.com/Krolist_help?t=FORGVQQEW-wvycDY09pzKg&s=03', '_blank')}
+                >
+                  @KROLIST_HELP
                 </Button>
               </div>
             </Card>

@@ -11,3 +11,9 @@ verify_jwt = true
 
 [functions.update-exchange-rates]
 verify_jwt = false
+
+[functions.refresh-product-prices]
+verify_jwt = true
+
+[functions.ai-product-search]
+verify_jwt = false

@@ -257,7 +257,10 @@ export default function Auth() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-4">
             <Facebook className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-            <Twitter className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
+            <Twitter 
+              className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" 
+              onClick={() => window.open('https://x.com/Krolist_help?t=FORGVQQEW-wvycDY09pzKg&s=03', '_blank')}
+            />
           </div>
 
           <div>

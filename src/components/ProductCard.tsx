@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Trash2, RefreshCw, Edit } from "lucide-react";
+import { MoreVertical, Trash2, RefreshCw, Edit, Youtube } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export interface Product {
   created_at: string;
   updated_at: string;
   last_checked_at: string;
+  youtube_url?: string | null;
   isKrolistProduct?: boolean;
   price_history?: Array<{
     price: number;
@@ -179,8 +180,8 @@ export function ProductCard({
               )}
             </div>
             
-        {/* Badges */}
-        <div className={`flex gap-2 flex-wrap ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+        {/* Badges and YouTube */}
+        <div className={`flex gap-2 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white">
               Krolist
             </Badge>}
@@ -193,6 +194,17 @@ export function ProductCard({
             })()}>
               {product.category}
             </Badge>}
+          {product.youtube_url && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+              onClick={() => window.open(product.youtube_url!, '_blank')}
+            >
+              <Youtube className="h-3 w-3" />
+              <span className="text-xs">Review</span>
+            </Button>
+          )}
         </div>
           </div>
         </div>

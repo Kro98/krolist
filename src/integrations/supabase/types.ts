@@ -35,6 +35,7 @@ export type Database = {
       krolist_products: {
         Row: {
           category: string | null
+          collection_title: string | null
           created_at: string | null
           currency: string
           current_price: number
@@ -49,9 +50,11 @@ export type Database = {
           store: string
           title: string
           updated_at: string | null
+          youtube_url: string | null
         }
         Insert: {
           category?: string | null
+          collection_title?: string | null
           created_at?: string | null
           currency?: string
           current_price: number
@@ -66,9 +69,11 @@ export type Database = {
           store: string
           title: string
           updated_at?: string | null
+          youtube_url?: string | null
         }
         Update: {
           category?: string | null
+          collection_title?: string | null
           created_at?: string | null
           currency?: string
           current_price?: number
@@ -83,6 +88,7 @@ export type Database = {
           store?: string
           title?: string
           updated_at?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
