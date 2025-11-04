@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard, type Product } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,12 @@ export default function Products() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<{
+    canRefresh: boolean;
+    nextRefreshDate: string | null;
+    remainingRefreshes: number;
+  }>({ canRefresh: true, nextRefreshDate: null, remainingRefreshes: 1 });
 
   const categories = [
     'Electronics', 'Accessories', 'Clothes', 'Shoes', 
@@ -48,7 +54,44 @@ export default function Products() {
 
   useEffect(() => {
     loadProducts();
+    checkRefreshStatus();
   }, []);
+
+  const checkRefreshStatus = async () => {
+    try {
+      const now = new Date();
+      const currentDayOfWeek = now.getDay();
+      const daysToSunday = currentDayOfWeek === 0 ? 0 : -currentDayOfWeek;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() + daysToSunday);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekStartStr = weekStart.toISOString().split('T')[0];
+
+      const { data: refreshLog } = await supabase
+        .from('user_refresh_logs')
+        .select('*')
+        .eq('week_start', weekStartStr)
+        .maybeSingle();
+
+      const nextSunday = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      if (refreshLog && refreshLog.refresh_count >= 1) {
+        setRefreshStatus({
+          canRefresh: false,
+          nextRefreshDate: nextSunday.toISOString(),
+          remainingRefreshes: 0
+        });
+      } else {
+        setRefreshStatus({
+          canRefresh: true,
+          nextRefreshDate: null,
+          remainingRefreshes: 1
+        });
+      }
+    } catch (error) {
+      console.error('Error checking refresh status:', error);
+    }
+  };
 
   const loadProducts = async () => {
     try {
@@ -135,16 +178,94 @@ export default function Products() {
     }
   };
 
-  const handleRefreshPrice = async (id: string) => {
-    try {
-      toast.info('Checking price...');
-      
-      await supabase.functions.invoke('check-prices', {
-        body: { productId: id }
-      });
+  const handleRefreshAllPrices = async () => {
+    if (!refreshStatus.canRefresh) {
+      const nextDate = refreshStatus.nextRefreshDate 
+        ? new Date(refreshStatus.nextRefreshDate).toLocaleDateString() 
+        : 'next Sunday';
+      toast.error(`Weekly refresh limit reached. Next refresh available on ${nextDate}`);
+      return;
+    }
 
+    setIsRefreshingAll(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('user-refresh-prices');
+      
+      if (error) throw error;
+      
+      if (data.error) {
+        toast.error(data.message || 'Refresh limit reached');
+        setRefreshStatus({
+          canRefresh: false,
+          nextRefreshDate: data.nextRefreshDate,
+          remainingRefreshes: 0
+        });
+      } else {
+        toast.success(`Refreshed ${data.updated} of ${data.checked} products`);
+        await loadProducts();
+        await checkRefreshStatus();
+      }
+    } catch (error) {
+      toast.error(getSafeErrorMessage(error));
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
+  const handleAddToMyProducts = async (product: Product) => {
+    try {
+      // Check current product count
+      const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+
+      if (count && count >= 24) {
+        toast.error('You have reached the maximum of 24 products');
+        return;
+      }
+
+      // Check if product already exists
+      const { data: existing } = await supabase
+        .from('products')
+        .select('id')
+        .eq('product_url', product.product_url)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (existing) {
+        toast.info('This product is already in your list');
+        return;
+      }
+
+      // Add product
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('You must be logged in');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          user_id: user.id,
+          title: product.title,
+          description: product.description,
+          image_url: product.image_url,
+          category: product.category,
+          store: product.store,
+          product_url: product.product_url,
+          current_price: product.current_price,
+          original_price: product.original_price,
+          original_currency: product.original_currency,
+          currency: product.currency,
+        });
+
+      if (error) throw error;
+
+      toast.success('Product added to your list!');
       await loadProducts();
-      toast.success('Price updated');
     } catch (error) {
       toast.error(getSafeErrorMessage(error));
     }
@@ -278,20 +399,47 @@ export default function Products() {
         <div className="space-y-8 animate-fade-in">
           {/* User Products Carousel - Show first */}
           {filteredUserProducts.length > 0 && (
-            <ProductCarousel
-              title={t('products.myProducts')}
-              products={filteredUserProducts}
-              onDelete={handleDelete}
-              onUpdate={handleUpdate}
-              onRefreshPrice={handleRefreshPrice}
-            />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">{t('products.myProducts')}</h2>
+                <Button
+                  onClick={handleRefreshAllPrices}
+                  disabled={!refreshStatus.canRefresh || isRefreshingAll}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {isRefreshingAll ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Refreshing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Prices {refreshStatus.canRefresh && `(${refreshStatus.remainingRefreshes} left)`}
+                    </>
+                  )}
+                </Button>
+              </div>
+              {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
+                <p className="text-sm text-muted-foreground">
+                  Next refresh available: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
+                </p>
+              )}
+              <ProductCarousel
+                title=""
+                products={filteredUserProducts}
+                onDelete={handleDelete}
+                onUpdate={handleUpdate}
+              />
+            </div>
           )}
 
-          {/* Krolist Featured Products - Read Only */}
+          {/* Krolist Featured Products - Read Only with Add Button */}
           {filteredKrolistProducts.length > 0 && (
             <ProductCarousel
               title={t('products.featuredProducts') || 'Featured Products'}
               products={filteredKrolistProducts}
+              onAddToMyProducts={handleAddToMyProducts}
             />
           )}
         </div>

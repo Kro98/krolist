@@ -20,6 +20,7 @@ interface ProductCarouselProps {
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
+  onAddToMyProducts?: (product: Product) => void;
 }
 
 export function ProductCarousel({
@@ -27,7 +28,8 @@ export function ProductCarousel({
   products,
   onDelete,
   onUpdate,
-  onRefreshPrice
+  onRefreshPrice,
+  onAddToMyProducts
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
@@ -66,19 +68,21 @@ export function ProductCarousel({
 
   return (
     <div className="space-y-4">
-      {/* Header with title and expand button */}
-      <div className={`flex items-center justify-between ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-        <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>
-        {!isMobile && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? t('products.collapse') : t('products.expand')}
-          </Button>
-        )}
-      </div>
+      {/* Header with title and expand button (only show if title is provided) */}
+      {title && (
+        <div className={`flex items-center justify-between ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+          <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? t('products.collapse') : t('products.expand')}
+            </Button>
+          )}
+        </div>
+      )}
       
       {isExpanded && !isMobile ? (
         // Grid view for expanded state
@@ -90,6 +94,7 @@ export function ProductCarousel({
               onDelete={onDelete}
               onUpdate={onUpdate}
               onRefreshPrice={onRefreshPrice}
+              onAddToMyProducts={onAddToMyProducts}
             />
           ))}
         </div>
@@ -123,6 +128,7 @@ export function ProductCarousel({
                         onDelete={onDelete}
                         onUpdate={onUpdate}
                         onRefreshPrice={onRefreshPrice}
+                        onAddToMyProducts={onAddToMyProducts}
                       />
                     ))}
                   </div>

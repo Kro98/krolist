@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Trash2, RefreshCw, Edit, Youtube } from "lucide-react";
+import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,12 +40,14 @@ interface ProductCardProps {
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
+  onAddToMyProducts?: (product: Product) => void;
 }
 export function ProductCard({
   product,
   onDelete,
   onUpdate,
-  onRefreshPrice
+  onRefreshPrice,
+  onAddToMyProducts
 }: ProductCardProps) {
   const {
     t,
@@ -101,18 +103,28 @@ export function ProductCard({
       setShowEditDialog(false);
     }
   };
-  return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative">
+  return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative lg:max-w-md">
       <CardContent className="p-4 px-0">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          {/* Product Image + Refresh */}
-          <div className="flex-shrink-0 space-y-2">
+          {/* Product Image with Add Button for Krolist Products */}
+          <div className="flex-shrink-0 space-y-2 relative">
             <img src={product.image_url || '/placeholder.svg'} alt={product.title} className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg" />
-            {onRefreshPrice && <Button variant="ghost" size="icon" onClick={() => onRefreshPrice(product.id)} className="h-7 w-7 mx-auto block">
-                <RefreshCw className="h-4 w-4" />
-              </Button>}
-            <div className="text-[10px] text-muted-foreground text-center">
-              {new Date(product.last_checked_at).toLocaleDateString()}
-            </div>
+            {product.isKrolistProduct && onAddToMyProducts && (
+              <Button
+                variant="default"
+                size="icon"
+                onClick={() => onAddToMyProducts(product)}
+                className="h-8 w-8 rounded-full absolute top-1 right-1 bg-primary hover:bg-primary/90 shadow-lg"
+                title="Add to My Products"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
+            {!product.isKrolistProduct && (
+              <div className="text-[10px] text-muted-foreground text-center">
+                {new Date(product.last_checked_at).toLocaleDateString()}
+              </div>
+            )}
           </div>
           
           {/* Product Info */}

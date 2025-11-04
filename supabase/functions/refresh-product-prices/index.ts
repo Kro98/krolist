@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
-const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -62,46 +62,23 @@ serve(async (req) => {
     console.log(`Checking prices for ${products.length} products...`);
     
     // Create prompt for AI
+    // TODO: PLACEHOLDER - This AI approach cannot accurately scrape real-time prices
+    // OpenAI/AI models can only "guess" prices based on training data
+    // For accurate prices, integrate a web scraping service:
+    // - Firecrawl API (https://firecrawl.dev)
+    // - Bright Data (https://brightdata.com)
+    // - ScrapingBee (https://scrapingbee.com)
+    
     const urls = products.map(p => p.product_url).join('\n');
-    const prompt = `ANSWER ONLY IN NUMBERS, WHAT IS THE CURRENT PRICE AFTER ANY DISCOUNT OR NOT, OF EACH OF THE LINKS AS OF NOW. Return a JSON array with format: [{"url": "product_url", "price": 123.45}]. Links:\n${urls}`;
+    console.log('PLACEHOLDER: Would scrape prices for URLs:', urls);
     
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are a price extraction assistant. Extract current prices from product URLs and return them in the exact JSON format requested.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
+    // Mock AI response for now
+    const priceUpdates = products.map(p => ({
+      url: p.product_url,
+      price: p.current_price // Keeping same price as placeholder
+    }));
     
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Lovable AI error:', error);
-      throw new Error(`Lovable AI error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
-    console.log('AI Response:', aiResponse);
-    
-    // Parse AI response
-    let priceUpdates: Array<{ url: string; price: number }> = [];
-    try {
-      // Extract JSON from response (in case there's additional text)
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        priceUpdates = JSON.parse(jsonMatch[0]);
-      }
-    } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
-      throw new Error('Failed to parse price data from AI');
-    }
+    // In production, priceUpdates would come from actual scraping service
     
     // Update products
     let updatedCount = 0;

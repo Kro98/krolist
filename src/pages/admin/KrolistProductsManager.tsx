@@ -46,6 +46,9 @@ export default function KrolistProductsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [showNewListDialog, setShowNewListDialog] = useState(false);
+  const [newListTitle, setNewListTitle] = useState('');
+  const [selectedCollection, setSelectedCollection] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<KrolistProduct | null>(null);
   
   const [formData, setFormData] = useState({
@@ -74,6 +77,7 @@ export default function KrolistProductsManager() {
       const { data, error } = await supabase
         .from('krolist_products')
         .select('*')
+        .order('collection_title', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -88,6 +92,43 @@ export default function KrolistProductsManager() {
       setIsLoading(false);
     }
   };
+
+  const handleCreateNewList = async () => {
+    if (!newListTitle.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a collection title',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      collection_title: newListTitle.trim(),
+    });
+    setNewListTitle('');
+    setShowNewListDialog(false);
+    handleOpenDialog();
+  };
+
+  // Get unique collections
+  const collections = ['all', ...new Set(products.map(p => p.collection_title))];
+  
+  // Filter products by selected collection
+  const filteredProducts = selectedCollection === 'all' 
+    ? products 
+    : products.filter(p => p.collection_title === selectedCollection);
+
+  // Group products by collection for display
+  const productsByCollection = products.reduce((acc, product) => {
+    const collection = product.collection_title || 'Featured Products';
+    if (!acc[collection]) {
+      acc[collection] = [];
+    }
+    acc[collection].push(product);
+    return acc;
+  }, {} as Record<string, KrolistProduct[]>);
 
   const handleRefreshPrices = async () => {
     setIsRefreshing(true);
@@ -239,6 +280,10 @@ export default function KrolistProductsManager() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh Prices
           </Button>
+          <Button onClick={() => setShowNewListDialog(true)} variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            New List
+          </Button>
           <Button onClick={() => handleOpenDialog()}>
             <Plus className="h-4 w-4 mr-2" />
             {t('admin.addProduct')}
@@ -246,9 +291,36 @@ export default function KrolistProductsManager() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {products.map((product) => (
-          <Card key={product.id}>
+      {/* Collection filter */}
+      <div className="flex gap-2 flex-wrap mb-4">
+        {collections.map((collection) => (
+          <Button
+            key={collection}
+            variant={selectedCollection === collection ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCollection(collection)}
+          >
+            {collection}
+            {collection !== 'all' && (
+              <Badge variant="secondary" className="ml-2">
+                {products.filter(p => p.collection_title === collection).length}
+              </Badge>
+            )}
+          </Button>
+        ))}
+      </div>
+
+      {/* Products grouped by collection */}
+      {selectedCollection === 'all' ? (
+        Object.entries(productsByCollection).map(([collectionTitle, collectionProducts]) => (
+          <div key={collectionTitle} className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              {collectionTitle}
+              <Badge variant="secondary">{collectionProducts.length}</Badge>
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {collectionProducts.map((product) => (
+                <Card key={product.id}>
             <CardHeader>
               {product.image_url && (
                 <img 
@@ -303,9 +375,73 @@ export default function KrolistProductsManager() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
-      </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredProducts.map((product) => (
+            <Card key={product.id}>
+              <CardHeader>
+                {product.image_url && (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.title}
+                    className="w-full h-48 object-cover rounded-md mb-4"
+                  />
+                )}
+                <CardTitle className="line-clamp-2">{product.title}</CardTitle>
+                <CardDescription className="line-clamp-2">{product.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold">
+                      {product.current_price} {product.currency}
+                    </span>
+                    {product.is_featured && (
+                      <Badge variant="secondary">{t('featured')}</Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="outline">{product.store}</Badge>
+                    {product.category && (
+                      <Badge variant="outline">{product.category}</Badge>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => window.open(product.product_url, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleOpenDialog(product)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleDelete(product.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -483,6 +619,31 @@ export default function KrolistProductsManager() {
               {t('cancel')}
             </Button>
             <Button onClick={handleSave}>{t('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New List Dialog */}
+      <Dialog open={showNewListDialog} onOpenChange={setShowNewListDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Product List</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Collection Title</Label>
+              <Input
+                value={newListTitle}
+                onChange={(e) => setNewListTitle(e.target.value)}
+                placeholder="e.g., Summer Sale, Electronics Deals"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewListDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateNewList}>Create & Add Product</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

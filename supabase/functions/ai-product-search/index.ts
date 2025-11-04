@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,45 +42,17 @@ Return a JSON array with this exact format:
 
 Limit to 10 results maximum.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are a product search assistant. Find products from Noon and Amazon based on user queries and return structured data in the exact JSON format requested.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Lovable AI error:', error);
-      throw new Error(`Lovable AI error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
-    console.log('AI Response:', aiResponse);
-
-    // Parse AI response
-    let products: Array<any> = [];
-    try {
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        products = JSON.parse(jsonMatch[0]);
-      }
-    } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
-      throw new Error('Failed to parse product data from AI');
-    }
-
+    // TODO: PLACEHOLDER - This AI approach cannot accurately search/scrape products
+    // AI models can only generate mock data based on training
+    // For accurate product search, integrate a web scraping service
+    
+    console.log('PLACEHOLDER: Would search for:', query);
+    
+    // Return mock empty response for now
+    const mockProducts = [];
+    
     return new Response(
-      JSON.stringify({ products }),
+      JSON.stringify({ products: mockProducts }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

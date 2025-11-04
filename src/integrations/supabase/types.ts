@@ -388,6 +388,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_refresh_logs: {
+        Row: {
+          created_at: string
+          id: string
+          last_refresh_date: string
+          refresh_count: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_refresh_date?: string
+          refresh_count?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_refresh_date?: string
+          refresh_count?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
