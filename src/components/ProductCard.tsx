@@ -103,7 +103,7 @@ export function ProductCard({
       setShowEditDialog(false);
     }
   };
-  return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative lg:max-w-md">
+  return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative lg:max-w-lg">
       <CardContent className="p-4 px-0">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image with Add Button for Krolist Products */}
