@@ -37,7 +37,7 @@ export function ShopManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', affiliateUrl: '' });
+  const [editForm, setEditForm] = useState({ name: '', affiliateUrl: '', enabled: true });
 
   useEffect(() => {
     localStorage.setItem('shopOrder', JSON.stringify(shops));
@@ -94,23 +94,27 @@ export function ShopManager() {
 
   const handleEditShop = (shop: Shop) => {
     setEditingShop(shop);
-    setEditForm({ name: shop.name, affiliateUrl: shop.affiliateUrl || '' });
+    setEditForm({ name: shop.name, affiliateUrl: shop.affiliateUrl || '', enabled: shop.enabled });
     setShowEditDialog(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingShop) return;
     
+    // Update local state
     setShops(shops.map(shop => 
       shop.id === editingShop.id 
-        ? { ...shop, name: editForm.name, affiliateUrl: editForm.affiliateUrl }
+        ? { ...shop, name: editForm.name, affiliateUrl: editForm.affiliateUrl, enabled: editForm.enabled }
         : shop
     ));
+    
+    // Trigger storage event to update sidebar and all users
+    window.dispatchEvent(new Event('storage'));
     
     setShowEditDialog(false);
     toast({
       title: "Shop updated",
-      description: `${editForm.name} has been updated`,
+      description: `${editForm.name} has been updated and changes applied to all users`,
     });
   };
 
@@ -251,6 +255,13 @@ export function ShopManager() {
                 onChange={(e) => setEditForm({ ...editForm, affiliateUrl: e.target.value })}
                 placeholder="https://..."
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={editForm.enabled}
+                onCheckedChange={(checked) => setEditForm({ ...editForm, enabled: checked })}
+              />
+              <Label>Shop Enabled (affects all users)</Label>
             </div>
           </div>
           <DialogFooter>

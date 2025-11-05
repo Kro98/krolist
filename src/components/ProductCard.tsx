@@ -106,20 +106,9 @@ export function ProductCard({
   return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative lg:max-w-lg">
       <CardContent className="p-4 px-0">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          {/* Product Image with Add Button for Krolist Products */}
+          {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 relative">
             <img src={product.image_url || '/placeholder.svg'} alt={product.title} className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg" />
-            {product.isKrolistProduct && onAddToMyProducts && (
-              <Button
-                variant="default"
-                size="icon"
-                onClick={() => onAddToMyProducts(product)}
-                className="h-8 w-8 rounded-full absolute top-1 right-1 bg-primary hover:bg-primary/90 shadow-lg"
-                title="Add to My Products"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
             {!product.isKrolistProduct && (
               <div className="text-[10px] text-muted-foreground text-center">
                 {new Date(product.last_checked_at).toLocaleDateString()}
@@ -134,19 +123,23 @@ export function ProductCard({
               <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline">
                 {sanitizeContent(product.title)}
               </a>
-              {/* Only show menu if not Krolist product */}
-              {!product.isKrolistProduct && (onDelete || onUpdate) && <DropdownMenu>
+              {/* Show menu for both Krolist and user products */}
+              {(onDelete || onUpdate || onAddToMyProducts) && <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                    {onUpdate && <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    {onUpdate && !product.isKrolistProduct && <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                         <Edit className="h-4 w-4 mr-2" />
                         {t('products.edit')}
                       </DropdownMenuItem>}
-                    {onDelete && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                    {product.isKrolistProduct && onAddToMyProducts && <DropdownMenuItem onClick={() => onAddToMyProducts(product)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add to My List
+                      </DropdownMenuItem>}
+                    {onDelete && !product.isKrolistProduct && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
                         <Trash2 className="h-4 w-4 mr-2" />
                         {t('products.delete')}
                       </DropdownMenuItem>}

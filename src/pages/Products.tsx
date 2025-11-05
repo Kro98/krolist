@@ -42,7 +42,7 @@ export default function Products() {
     canRefresh: boolean;
     nextRefreshDate: string | null;
     remainingRefreshes: number;
-  }>({ canRefresh: true, nextRefreshDate: null, remainingRefreshes: 1 });
+  }>({ canRefresh: true, nextRefreshDate: null, remainingRefreshes: 4 });
 
   const categories = [
     'Electronics', 'Accessories', 'Clothes', 'Shoes', 
@@ -74,8 +74,10 @@ export default function Products() {
         .maybeSingle();
 
       const nextSunday = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const currentCount = refreshLog?.refresh_count || 0;
+      const maxRefreshes = 4; // 4 times per month, 1 each Sunday
       
-      if (refreshLog && refreshLog.refresh_count >= 1) {
+      if (currentCount >= maxRefreshes) {
         setRefreshStatus({
           canRefresh: false,
           nextRefreshDate: nextSunday.toISOString(),
@@ -85,7 +87,7 @@ export default function Products() {
         setRefreshStatus({
           canRefresh: true,
           nextRefreshDate: null,
-          remainingRefreshes: 1
+          remainingRefreshes: maxRefreshes - currentCount
         });
       }
     } catch (error) {
@@ -314,6 +316,16 @@ export default function Products() {
             className="pl-10 h-10 bg-card border-border focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleRefreshAllPrices}
+          disabled={!refreshStatus.canRefresh || isRefreshingAll}
+          className="h-10 w-10 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+          title={refreshStatus.canRefresh ? `Refresh all products (${refreshStatus.remainingRefreshes} left)` : `Next refresh: ${refreshStatus.nextRefreshDate ? new Date(refreshStatus.nextRefreshDate).toLocaleDateString() : 'N/A'}`}
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshingAll ? 'animate-spin' : ''}`} />
+        </Button>
         <Popover open={showFilters} onOpenChange={setShowFilters}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all">
@@ -402,29 +414,12 @@ export default function Products() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">{t('products.myProducts')}</h2>
-                <Button
-                  onClick={handleRefreshAllPrices}
-                  disabled={!refreshStatus.canRefresh || isRefreshingAll}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  {isRefreshingAll ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh Prices {refreshStatus.canRefresh && `(${refreshStatus.remainingRefreshes} left)`}
-                    </>
-                  )}
-                </Button>
+                {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
+                  <p className="text-sm text-muted-foreground">
+                    Next refresh: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
+                  </p>
+                )}
               </div>
-              {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
-                <p className="text-sm text-muted-foreground">
-                  Next refresh available: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
-                </p>
-              )}
               <ProductCarousel
                 title=""
                 products={filteredUserProducts}

@@ -72,6 +72,8 @@ export default function KrolistProductsManager() {
     fetchProducts();
   }, []);
 
+  // No need for this useEffect, we already have collections defined
+
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase

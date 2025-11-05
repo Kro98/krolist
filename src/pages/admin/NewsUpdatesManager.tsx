@@ -233,9 +233,18 @@ export default function NewsUpdatesManager() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground line-clamp-3">
-                {language === 'ar' && news.content_ar ? news.content_ar : news.content_en}
-              </p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">English Content:</p>
+                  <p className="text-sm line-clamp-3">{news.content_en}</p>
+                </div>
+                {news.content_ar && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Arabic Content:</p>
+                    <p className="text-sm line-clamp-3" dir="rtl">{news.content_ar}</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}

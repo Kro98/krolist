@@ -291,18 +291,20 @@ export default function PromoCodesManager() {
             </div>
 
             <div>
-              <Label>{t('promoCodes.description')}</Label>
+              <Label>Description</Label>
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter promo code description"
               />
             </div>
 
             <div>
-              <Label>{t('promoCodes.storeUrl')}</Label>
+              <Label>Store URL</Label>
               <Input
                 value={formData.store_url}
                 onChange={(e) => setFormData({ ...formData, store_url: e.target.value })}
+                placeholder="https://..."
               />
             </div>
 
