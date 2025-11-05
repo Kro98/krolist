@@ -148,9 +148,24 @@ export function ProductCard({
             </div>
             
             {/* Description */}
-            {product.description && <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+            {product.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                 {sanitizeContent(product.description)}
               </p>}
+
+            {/* Review button under image for Krolist products */}
+            {product.isKrolistProduct && product.youtube_url && (
+              <div className="mb-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-3 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                  onClick={() => window.open(product.youtube_url!, '_blank')}
+                >
+                  <Youtube className="h-3.5 w-3.5" />
+                  <span className="text-xs">Review</span>
+                </Button>
+              </div>
+            )}
             
             {/* Price Display */}
             <div className={`space-y-1 mb-3 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
@@ -185,7 +200,7 @@ export function ProductCard({
               )}
             </div>
             
-        {/* Badges and YouTube */}
+        {/* Badges (YouTube review button moved above for Krolist products) */}
         <div className={`flex gap-2 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white">
               Krolist
@@ -199,7 +214,8 @@ export function ProductCard({
             })()}>
               {product.category}
             </Badge>}
-          {product.youtube_url && (
+          {/* Show YouTube button for user products only */}
+          {!product.isKrolistProduct && product.youtube_url && (
             <Button
               size="sm"
               variant="outline"

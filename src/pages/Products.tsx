@@ -42,7 +42,7 @@ export default function Products() {
     canRefresh: boolean;
     nextRefreshDate: string | null;
     remainingRefreshes: number;
-  }>({ canRefresh: true, nextRefreshDate: null, remainingRefreshes: 4 });
+  }>({ canRefresh: true, nextRefreshDate: null, remainingRefreshes: 1 });
 
   const categories = [
     'Electronics', 'Accessories', 'Clothes', 'Shoes', 
@@ -75,9 +75,8 @@ export default function Products() {
 
       const nextSunday = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
       const currentCount = refreshLog?.refresh_count || 0;
-      const maxRefreshes = 4; // 4 times per month, 1 each Sunday
       
-      if (currentCount >= maxRefreshes) {
+      if (currentCount >= 1) {
         setRefreshStatus({
           canRefresh: false,
           nextRefreshDate: nextSunday.toISOString(),
@@ -87,7 +86,7 @@ export default function Products() {
         setRefreshStatus({
           canRefresh: true,
           nextRefreshDate: null,
-          remainingRefreshes: maxRefreshes - currentCount
+          remainingRefreshes: 1
         });
       }
     } catch (error) {

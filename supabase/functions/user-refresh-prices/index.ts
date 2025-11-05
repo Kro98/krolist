@@ -58,15 +58,14 @@ serve(async (req) => {
       throw logError;
     }
 
-    // Check if user has already refreshed (4 times per month, 1 per week/Sunday)
-    const maxRefreshes = 4;
+    // Check if user has already refreshed this week (1 per week, non-accumulating)
     const currentCount = refreshLog?.refresh_count || 0;
     
-    if (currentCount >= maxRefreshes) {
+    if (currentCount >= 1) {
       return new Response(
         JSON.stringify({ 
-          error: 'Monthly limit reached',
-          message: 'You have used all 4 monthly refreshes (1 per Sunday). Next refresh available on Sunday.',
+          error: 'Weekly limit reached',
+          message: 'You have already refreshed this week. Next refresh available on Sunday.',
           nextRefreshDate: new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           remainingRefreshes: 0
         }),
@@ -174,17 +173,14 @@ serve(async (req) => {
 
     console.log(`Successfully refreshed ${updatedCount} products`);
 
-    const maxRefreshes = 4;
-    const newCount = (refreshLog?.refresh_count || 0) + 1;
-    
     return new Response(
       JSON.stringify({
         success: true,
         checked: products.length,
         updated: updatedCount,
         message: 'Prices refreshed successfully',
-        remainingRefreshes: maxRefreshes - newCount,
-        nextRefreshDate: newCount >= maxRefreshes ? new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
+        remainingRefreshes: 0,
+        nextRefreshDate: new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
