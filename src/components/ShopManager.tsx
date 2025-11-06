@@ -16,7 +16,9 @@ const DEFAULT_SHOPS = getAllStores().map(store => ({
   id: store.id,
   name: store.displayName,
   enabled: store.enabled,
-  affiliateUrl: store.affiliateUrl || ''
+  affiliateUrl: store.affiliateUrl || '',
+  adminEnabled: store.enabled,
+  status: store.comingSoon ? 'coming_soon' as ShopStatus : 'active' as ShopStatus
 }));
 
 type ShopStatus = 'active' | 'deactivated_admin' | 'coming_soon' | 'maintenance' | 'custom';
@@ -28,11 +30,14 @@ interface Shop {
   affiliateUrl?: string;
   status?: ShopStatus;
   customStatusText?: string;
+  adminEnabled?: boolean;
 }
 
 export function ShopManager() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [isAdminView] = useState(() => window.location.pathname.includes('/admin'));
+  
   const [shops, setShops] = useState<Shop[]>(() => {
     const saved = localStorage.getItem('shopOrder');
     return saved ? JSON.parse(saved) : DEFAULT_SHOPS;
@@ -45,6 +50,7 @@ export function ShopManager() {
     name: '', 
     affiliateUrl: '', 
     enabled: true,
+    adminEnabled: true,
     status: 'active' as ShopStatus,
     customStatusText: ''
   });
@@ -108,6 +114,7 @@ export function ShopManager() {
       name: shop.name, 
       affiliateUrl: shop.affiliateUrl || '', 
       enabled: shop.enabled,
+      adminEnabled: shop.adminEnabled !== undefined ? shop.adminEnabled : true,
       status: shop.status || 'active',
       customStatusText: shop.customStatusText || ''
     });
@@ -124,7 +131,8 @@ export function ShopManager() {
             ...shop, 
             name: editForm.name, 
             affiliateUrl: editForm.affiliateUrl, 
-            enabled: editForm.enabled,
+            enabled: editForm.adminEnabled ? editForm.enabled : false,
+            adminEnabled: editForm.adminEnabled,
             status: editForm.status,
             customStatusText: editForm.customStatusText
           }
@@ -136,14 +144,19 @@ export function ShopManager() {
     
     setShowEditDialog(false);
     toast({
-      title: "Shop updated",
-      description: `${editForm.name} has been updated and changes applied to all users`,
+      title: "Shop updated globally",
+      description: `${editForm.name} settings applied to all users`,
     });
   };
 
-  const filteredShops = shops.filter(shop =>
-    shop.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredShops = shops.filter(shop => {
+    const matchesSearch = shop.name.toLowerCase().includes(searchTerm.toLowerCase());
+    // In user view, only show shops that admin has enabled
+    if (!isAdminView && shop.adminEnabled === false) {
+      return false;
+    }
+    return matchesSearch;
+  });
 
   return (
     <Card className="shadow-card">
@@ -153,7 +166,9 @@ export function ShopManager() {
           {t('settings.shopManagement')}
         </CardTitle>
         <CardDescription>
-          {t('settings.shopManagementDesc')}
+          {isAdminView 
+            ? "Manage shop availability for all users globally" 
+            : t('settings.shopManagementDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -188,7 +203,7 @@ export function ShopManager() {
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
               {filteredShops.map((shop, index) => {
                   const getStatusBadge = () => {
-                    if (!shop.enabled && shop.status === 'deactivated_admin') {
+                    if (shop.adminEnabled === false || shop.status === 'deactivated_admin') {
                       return <Badge variant="destructive" className="text-xs">Deactivated by Admin</Badge>;
                     }
                     if (shop.status === 'coming_soon') {
@@ -200,8 +215,8 @@ export function ShopManager() {
                     if (shop.status === 'custom' && shop.customStatusText) {
                       return <Badge variant="outline" className="text-xs">{shop.customStatusText}</Badge>;
                     }
-                    if (shop.enabled) {
-                      return <Badge variant="secondary" className="text-xs">{t('status.active')}</Badge>;
+                    if (shop.adminEnabled) {
+                      return <Badge variant="secondary" className="text-xs">Available to Users</Badge>;
                     }
                     return null;
                   };
@@ -226,18 +241,22 @@ export function ShopManager() {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditShop(shop)}
-                            className="text-primary hover:text-primary"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Switch
-                            checked={shop.enabled}
-                            onCheckedChange={() => toggleShop(shop.id)}
-                          />
+                          {isAdminView ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditShop(shop)}
+                              className="text-primary hover:text-primary"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Switch
+                              checked={shop.enabled}
+                              onCheckedChange={() => toggleShop(shop.id)}
+                              disabled={shop.adminEnabled === false}
+                            />
+                          )}
                           {!DEFAULT_SHOPS.find(s => s.id === shop.id) && (
                             <Button
                               variant="ghost"
@@ -313,11 +332,15 @@ export function ShopManager() {
 
             <div className="flex items-center space-x-2">
               <Switch
-                checked={editForm.enabled}
-                onCheckedChange={(checked) => setEditForm({ ...editForm, enabled: checked })}
+                checked={editForm.adminEnabled}
+                onCheckedChange={(checked) => setEditForm({ ...editForm, adminEnabled: checked })}
               />
-              <Label>Shop Enabled (affects all users)</Label>
+              <Label>Admin: Enable Shop Globally (visible to all users)</Label>
             </div>
+            
+            <p className="text-sm text-muted-foreground">
+              When enabled globally, users can toggle it on/off in their settings. When disabled globally, shop is hidden from all users.
+            </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>

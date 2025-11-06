@@ -224,13 +224,13 @@ export default function PromoCodesManager() {
                 
                 <div className="flex flex-wrap gap-2">
                   {promoCode.reusable && (
-                    <Badge variant="secondary">{t('promoCodes.reusable')}</Badge>
+                    <Badge variant="secondary">Reusable</Badge>
                   )}
                   {isExpired(promoCode.expires) ? (
-                    <Badge variant="destructive">{t('promoCodes.expired')}</Badge>
+                    <Badge variant="destructive">Expired</Badge>
                   ) : (
                     <Badge variant="outline">
-                      {t('promoCodes.expires')}: {new Date(promoCode.expires).toLocaleDateString()}
+                      Expires: {new Date(promoCode.expires).toLocaleDateString()}
                     </Badge>
                   )}
                 </div>
@@ -309,7 +309,7 @@ export default function PromoCodesManager() {
             </div>
 
             <div>
-              <Label>{t('promoCodes.expiryDate')}</Label>
+              <Label>Expiry Date</Label>
               <Input
                 type="date"
                 value={formData.expires}
@@ -322,7 +322,7 @@ export default function PromoCodesManager() {
                 checked={formData.reusable}
                 onCheckedChange={(checked) => setFormData({ ...formData, reusable: checked })}
               />
-              <Label>{t('promoCodes.reusable')}</Label>
+              <Label>Reusable</Label>
             </div>
           </div>
 
