@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import NewsUpdatesManager from "./admin/NewsUpdatesManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
+import CategoryManager from "./admin/CategoryManager";
 import { ShopManager } from "@/components/ShopManager";
 
 export default function Admin() {
@@ -61,8 +62,9 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
           <TabsTrigger value="products">{t('admin.krolistProducts')}</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="promo-codes">{t('admin.promoCodes')}</TabsTrigger>
           <TabsTrigger value="news">{t('admin.newsUpdates')}</TabsTrigger>
           <TabsTrigger value="shops">{t('admin.shopManagement')}</TabsTrigger>
@@ -70,6 +72,10 @@ export default function Admin() {
 
         <TabsContent value="products" className="mt-6">
           <KrolistProductsManager />
+        </TabsContent>
+
+        <TabsContent value="categories" className="mt-6">
+          <CategoryManager />
         </TabsContent>
 
         <TabsContent value="promo-codes" className="mt-6">

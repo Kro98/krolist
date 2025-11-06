@@ -19,11 +19,15 @@ const DEFAULT_SHOPS = getAllStores().map(store => ({
   affiliateUrl: store.affiliateUrl || ''
 }));
 
+type ShopStatus = 'active' | 'deactivated_admin' | 'coming_soon' | 'maintenance' | 'custom';
+
 interface Shop {
   id: string;
   name: string;
   enabled: boolean;
   affiliateUrl?: string;
+  status?: ShopStatus;
+  customStatusText?: string;
 }
 
 export function ShopManager() {
@@ -37,7 +41,13 @@ export function ShopManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', affiliateUrl: '', enabled: true });
+  const [editForm, setEditForm] = useState({ 
+    name: '', 
+    affiliateUrl: '', 
+    enabled: true,
+    status: 'active' as ShopStatus,
+    customStatusText: ''
+  });
 
   useEffect(() => {
     localStorage.setItem('shopOrder', JSON.stringify(shops));
@@ -94,7 +104,13 @@ export function ShopManager() {
 
   const handleEditShop = (shop: Shop) => {
     setEditingShop(shop);
-    setEditForm({ name: shop.name, affiliateUrl: shop.affiliateUrl || '', enabled: shop.enabled });
+    setEditForm({ 
+      name: shop.name, 
+      affiliateUrl: shop.affiliateUrl || '', 
+      enabled: shop.enabled,
+      status: shop.status || 'active',
+      customStatusText: shop.customStatusText || ''
+    });
     setShowEditDialog(true);
   };
 
@@ -104,7 +120,14 @@ export function ShopManager() {
     // Update local state
     setShops(shops.map(shop => 
       shop.id === editingShop.id 
-        ? { ...shop, name: editForm.name, affiliateUrl: editForm.affiliateUrl, enabled: editForm.enabled }
+        ? { 
+            ...shop, 
+            name: editForm.name, 
+            affiliateUrl: editForm.affiliateUrl, 
+            enabled: editForm.enabled,
+            status: editForm.status,
+            customStatusText: editForm.customStatusText
+          }
         : shop
     ));
     
@@ -164,8 +187,24 @@ export function ShopManager() {
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
               {filteredShops.map((shop, index) => {
-                  const storeConfig = getAllStores().find(s => s.id === shop.id);
-                  const isComingSoon = storeConfig?.comingSoon || false;
+                  const getStatusBadge = () => {
+                    if (!shop.enabled && shop.status === 'deactivated_admin') {
+                      return <Badge variant="destructive" className="text-xs">Deactivated by Admin</Badge>;
+                    }
+                    if (shop.status === 'coming_soon') {
+                      return <Badge variant="outline" className="text-xs bg-muted">Coming Soon</Badge>;
+                    }
+                    if (shop.status === 'maintenance') {
+                      return <Badge variant="outline" className="text-xs bg-yellow-500/20">Maintenance</Badge>;
+                    }
+                    if (shop.status === 'custom' && shop.customStatusText) {
+                      return <Badge variant="outline" className="text-xs">{shop.customStatusText}</Badge>;
+                    }
+                    if (shop.enabled) {
+                      return <Badge variant="secondary" className="text-xs">{t('status.active')}</Badge>;
+                    }
+                    return null;
+                  };
                   
                   return (
                   <Draggable key={shop.id} draggableId={shop.id} index={index}>
@@ -183,15 +222,7 @@ export function ShopManager() {
                           </div>
                           <Package className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{shop.name}</span>
-                          {isComingSoon ? (
-                            <Badge variant="outline" className="text-xs bg-muted">
-                              Coming Soon
-                            </Badge>
-                          ) : shop.enabled && (
-                            <Badge variant="secondary" className="text-xs">
-                              {t('status.active')}
-                            </Badge>
-                          )}
+                          {getStatusBadge()}
                         </div>
                         
                         <div className="flex items-center gap-2">
@@ -203,12 +234,10 @@ export function ShopManager() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {!isComingSoon && (
-                            <Switch
-                              checked={shop.enabled}
-                              onCheckedChange={() => toggleShop(shop.id)}
-                            />
-                          )}
+                          <Switch
+                            checked={shop.enabled}
+                            onCheckedChange={() => toggleShop(shop.id)}
+                          />
                           {!DEFAULT_SHOPS.find(s => s.id === shop.id) && (
                             <Button
                               variant="ghost"
@@ -256,6 +285,32 @@ export function ShopManager() {
                 placeholder="https://..."
               />
             </div>
+            <div>
+              <Label>Status</Label>
+              <select 
+                className="w-full p-2 border rounded-md"
+                value={editForm.status}
+                onChange={(e) => setEditForm({ ...editForm, status: e.target.value as ShopStatus })}
+              >
+                <option value="active">Active</option>
+                <option value="deactivated_admin">Deactivated by Admin</option>
+                <option value="coming_soon">Coming Soon</option>
+                <option value="maintenance">Deactivated for Maintenance</option>
+                <option value="custom">Custom Tag</option>
+              </select>
+            </div>
+            
+            {editForm.status === 'custom' && (
+              <div>
+                <Label>Custom Status Text</Label>
+                <Input
+                  value={editForm.customStatusText}
+                  onChange={(e) => setEditForm({ ...editForm, customStatusText: e.target.value })}
+                  placeholder="Enter custom status text"
+                />
+              </div>
+            )}
+
             <div className="flex items-center space-x-2">
               <Switch
                 checked={editForm.enabled}
