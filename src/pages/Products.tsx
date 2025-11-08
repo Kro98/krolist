@@ -434,6 +434,7 @@ export default function Products() {
               title={t('products.featuredProducts') || 'Featured Products'}
               products={filteredKrolistProducts}
               onAddToMyProducts={handleAddToMyProducts}
+              userProductCount={products.length}
             />
           )}
         </div>

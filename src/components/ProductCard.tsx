@@ -41,13 +41,15 @@ interface ProductCardProps {
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
+  userProductCount?: number;
 }
 export function ProductCard({
   product,
   onDelete,
   onUpdate,
   onRefreshPrice,
-  onAddToMyProducts
+  onAddToMyProducts,
+  userProductCount = 0
 }: ProductCardProps) {
   const {
     t,
@@ -103,6 +105,16 @@ export function ProductCard({
       setShowEditDialog(false);
     }
   };
+
+  const handleAddToMyProducts = () => {
+    if (userProductCount >= 24) {
+      toast.error("Max products reached. Remove older products or contact us for an upgrade.");
+      return;
+    }
+    if (onAddToMyProducts) {
+      onAddToMyProducts(product);
+    }
+  };
   return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative lg:max-w-lg">
       <CardContent className="p-4 px-0">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
@@ -118,33 +130,49 @@ export function ProductCard({
           
           {/* Product Info */}
           <div className={`flex-1 min-w-0 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
-            {/* Title and Menu */}
-            <div className={`flex items-start justify-between mb-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-              <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline">
+            {/* Title and Menu/Add Button */}
+            <div className={`flex items-start justify-between mb-2 gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline flex-1">
                 {sanitizeContent(product.title)}
               </a>
-              {/* Show menu for both Krolist and user products */}
-              {(onDelete || onUpdate || onAddToMyProducts) && <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                    {onUpdate && !product.isKrolistProduct && <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t('products.edit')}
-                      </DropdownMenuItem>}
-                    {product.isKrolistProduct && onAddToMyProducts && <DropdownMenuItem onClick={() => onAddToMyProducts(product)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add to My List
-                      </DropdownMenuItem>}
-                    {onDelete && !product.isKrolistProduct && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t('products.delete')}
-                      </DropdownMenuItem>}
-                  </DropdownMenuContent>
-                </DropdownMenu>}
+              
+              {/* Show + icon for Krolist products */}
+              {product.isKrolistProduct && onAddToMyProducts ? (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 hover:bg-primary/10"
+                  onClick={handleAddToMyProducts}
+                  title={userProductCount >= 24 ? "Product limit reached" : "Add to my list"}
+                >
+                  <Plus className="h-5 w-5 text-primary" />
+                </Button>
+              ) : (
+                /* Show menu for user products only */
+                (onDelete || onUpdate) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background z-50">
+                      {onUpdate && (
+                        <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          {t('products.edit')}
+                        </DropdownMenuItem>
+                      )}
+                      {onDelete && (
+                        <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {t('products.delete')}
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              )}
             </div>
             
             {/* Description */}

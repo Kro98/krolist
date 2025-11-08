@@ -21,6 +21,7 @@ interface ProductCarouselProps {
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
+  userProductCount?: number;
 }
 
 export function ProductCarousel({
@@ -29,7 +30,8 @@ export function ProductCarousel({
   onDelete,
   onUpdate,
   onRefreshPrice,
-  onAddToMyProducts
+  onAddToMyProducts,
+  userProductCount = 0
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
@@ -95,6 +97,7 @@ export function ProductCarousel({
               onUpdate={onUpdate}
               onRefreshPrice={onRefreshPrice}
               onAddToMyProducts={onAddToMyProducts}
+              userProductCount={userProductCount}
             />
           ))}
         </div>
@@ -129,6 +132,7 @@ export function ProductCarousel({
                         onUpdate={onUpdate}
                         onRefreshPrice={onRefreshPrice}
                         onAddToMyProducts={onAddToMyProducts}
+                        userProductCount={userProductCount}
                       />
                     ))}
                   </div>
