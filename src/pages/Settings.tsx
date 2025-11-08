@@ -15,7 +15,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast as sonner } from "sonner";
-import { AdSpace } from "@/components/AdSpace";
 export default function Settings() {
   const {
     language,
@@ -303,9 +302,6 @@ export default function Settings() {
           </div>
         </div>
       </div>
-      
-      {/* Right Ad Space */}
-      <AdSpace className="w-[350px] sticky top-6 hidden lg:block" height="h-[600px]" />
     </div>
   );
 }

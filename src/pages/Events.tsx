@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
-import { AdSpace } from "@/components/AdSpace";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 interface Event {
@@ -353,9 +352,6 @@ export default function Events() {
               fontWeight: 'bold'
             }
           }} className="rounded-md border p-3 pointer-events-auto flex-1" />
-            
-            {/* Ad Space next to calendar */}
-            <AdSpace className="w-full lg:w-[300px]" height="h-[400px]" />
           </CardContent>
         </Card>
 

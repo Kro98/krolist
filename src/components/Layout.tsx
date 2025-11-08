@@ -7,11 +7,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useAdBlockDetection } from "@/hooks/use-adblock-detection";
-import { AdBlockDialog } from "@/components/AdBlockDialog";
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -28,11 +26,6 @@ export function Layout({
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    shouldShowDialog,
-    setPreference
-  } = useAdBlockDetection();
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Public routes that don't require authentication
   const publicRoutes = ['/auth', '/auth/privacy-policy', '/auth/terms-of-service', '/auth/contact-us', '/privacy-policy', '/terms-of-service', '/contact-us'];
@@ -42,19 +35,6 @@ export function Layout({
       navigate('/auth');
     }
   }, [user, loading, isGuest, location.pathname, navigate, isPublicRoute]);
-  useEffect(() => {
-    if (shouldShowDialog) {
-      setDialogOpen(true);
-    }
-  }, [shouldShowDialog]);
-  const handleAllowAds = () => {
-    setPreference("allow-ads");
-    setDialogOpen(false);
-  };
-  const handleBlockAds = () => {
-    setPreference("block-ads");
-    setDialogOpen(false);
-  };
 
   // Show auth pages and public resource pages without layout
   if (isPublicRoute) {
@@ -88,7 +68,6 @@ export function Layout({
         
         <Toaster />
         <Sonner />
-        <AdBlockDialog open={dialogOpen} onOpenChange={setDialogOpen} onAllowAds={handleAllowAds} onBlockAds={handleBlockAds} />
       </SidebarProvider>
     </TooltipProvider>;
 }
