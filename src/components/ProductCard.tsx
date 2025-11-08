@@ -115,12 +115,32 @@ export function ProductCard({
       onAddToMyProducts(product);
     }
   };
-  return <Card className="bg-card border-border shadow-card hover:shadow-hover transition-all duration-300 group relative lg:max-w-lg">
-      <CardContent className="p-4 px-0">
+  return <Card className="bg-card border-2 border-border shadow-card hover:shadow-hover transition-all duration-300 group relative overflow-hidden">
+      <CardContent className="p-4">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
-          <div className="flex-shrink-0 space-y-2 relative">
-            <img src={product.image_url || '/placeholder.svg'} alt={product.title} className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg" />
+          <div className="flex-shrink-0 space-y-2">
+            <div className="relative">
+              <img 
+                src={product.image_url || '/placeholder.svg'} 
+                alt={product.title} 
+                className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border border-border" 
+              />
+            </div>
+            
+            {/* Review button under image for Krolist products */}
+            {product.isKrolistProduct && product.youtube_url && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-7 px-2 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                onClick={() => window.open(product.youtube_url!, '_blank')}
+              >
+                <Youtube className="h-3.5 w-3.5" />
+                <span className="text-xs">Review</span>
+              </Button>
+            )}
+            
             {!product.isKrolistProduct && (
               <div className="text-[10px] text-muted-foreground text-center">
                 {new Date(product.last_checked_at).toLocaleDateString()}
@@ -129,7 +149,7 @@ export function ProductCard({
           </div>
           
           {/* Product Info */}
-          <div className={`flex-1 min-w-0 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+          <div className={`flex-1 min-w-0 flex flex-col ${language === 'ar' ? 'text-right' : 'text-left'}`}>
             {/* Title and Menu/Add Button */}
             <div className={`flex items-start justify-between mb-2 gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
               <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline flex-1">
@@ -141,7 +161,7 @@ export function ProductCard({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-8 w-8 p-0 hover:bg-primary/10"
+                  className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0"
                   onClick={handleAddToMyProducts}
                   title={userProductCount >= 24 ? "Product limit reached" : "Add to my list"}
                 >
@@ -152,11 +172,11 @@ export function ProductCard({
                 (onDelete || onUpdate) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background z-50">
+                    <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background border-2 border-border z-50">
                       {onUpdate && (
                         <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                           <Edit className="h-4 w-4 mr-2" />
@@ -179,21 +199,6 @@ export function ProductCard({
             {product.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                 {sanitizeContent(product.description)}
               </p>}
-
-            {/* Review button under image for Krolist products */}
-            {product.isKrolistProduct && product.youtube_url && (
-              <div className="mb-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-3 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                  onClick={() => window.open(product.youtube_url!, '_blank')}
-                >
-                  <Youtube className="h-3.5 w-3.5" />
-                  <span className="text-xs">Review</span>
-                </Button>
-              </div>
-            )}
             
             {/* Price Display */}
             <div className={`space-y-1 mb-3 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
@@ -228,33 +233,33 @@ export function ProductCard({
               )}
             </div>
             
-        {/* Badges (YouTube review button moved above for Krolist products) */}
-        <div className={`flex gap-2 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white">
-              Krolist
-            </Badge>}
-          <Badge className="bg-orange-500 text-white hover:bg-orange-600">
-            {product.store}
-          </Badge>
-          {product.category && <Badge variant="secondary" className={(() => {
-              const predefinedCategories = ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'];
-              return !predefinedCategories.includes(product.category) ? 'border-2 border-white' : '';
-            })()}>
-              {product.category}
-            </Badge>}
-          {/* Show YouTube button for user products only */}
-          {!product.isKrolistProduct && product.youtube_url && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-              onClick={() => window.open(product.youtube_url!, '_blank')}
-            >
-              <Youtube className="h-3 w-3" />
-              <span className="text-xs">Review</span>
-            </Button>
-          )}
-        </div>
+            {/* Badges */}
+            <div className={`flex gap-2 flex-wrap items-center mt-auto ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white border-0">
+                  Krolist
+                </Badge>}
+              <Badge className="bg-orange-500 text-white hover:bg-orange-600 border-0">
+                {product.store}
+              </Badge>
+              {product.category && <Badge variant="secondary" className={`border ${(() => {
+                  const predefinedCategories = ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'];
+                  return !predefinedCategories.includes(product.category) ? 'border-2 border-primary' : 'border-border';
+                })()}`}>
+                  {product.category}
+                </Badge>}
+              {/* Show YouTube button for user products only */}
+              {!product.isKrolistProduct && product.youtube_url && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                  onClick={() => window.open(product.youtube_url!, '_blank')}
+                >
+                  <Youtube className="h-3 w-3" />
+                  <span className="text-xs">Review</span>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
