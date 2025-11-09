@@ -64,10 +64,10 @@ export default function Admin() {
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
           <TabsTrigger value="products">{t('admin.krolistProducts')}</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="categories">{t('admin.categories')}</TabsTrigger>
           <TabsTrigger value="promo-codes">{t('admin.promoCodes')}</TabsTrigger>
           <TabsTrigger value="shops">{t('admin.shopManagement')}</TabsTrigger>
-          <TabsTrigger value="login-messages">Login Messages</TabsTrigger>
+          <TabsTrigger value="login-messages">{t('admin.loginMessages')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="mt-6">

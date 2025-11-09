@@ -265,6 +265,30 @@ const translations = {
     'dashboard.totalValue': 'Total Value of Products',
     'dashboard.latestPriceChanges': 'Latest price changes',
     'dashboard.keyMetrics': 'Key metrics at a glance',
+    
+    // Analytics Extended
+    'analytics.addProductsPrompt': 'Add products to view their analytics',
+    'analytics.noRecentChanges': 'No recent price changes',
+    'analytics.savings': 'Savings',
+    'analytics.avgPerProduct': 'Avg/Product',
+    'analytics.bestDeal': 'Best Deal',
+    'analytics.efficiency': 'Efficiency',
+    'analytics.deepInsights': 'Deep insights into your price tracking performance',
+    'analytics.storeAnalysis': 'Store Analysis',
+    'analytics.priceMovement': 'Price Movement Analysis',
+    'analytics.priceMovementDesc': 'Track how prices have changed over different time periods',
+    'analytics.increases': 'increases',
+    'analytics.decreases': 'decreases',
+    'analytics.stable': 'stable',
+    'analytics.products': 'products',
+    
+    // User roles
+    'user.admin': 'ADMIN',
+    'user.user': 'USER',
+    
+    // Admin categories
+    'admin.categories': 'Categories',
+    'admin.loginMessages': 'Login Messages',
   },
   ar: {
     // Navigation
@@ -445,6 +469,30 @@ const translations = {
     'dashboard.totalValue': 'القيمة الإجمالية للمنتجات',
     'dashboard.latestPriceChanges': 'آخر تغييرات الأسعار',
     'dashboard.keyMetrics': 'المقاييس الرئيسية في لمحة',
+    
+    // Analytics Extended
+    'analytics.addProductsPrompt': 'أضف منتجات لعرض تحليلاتها',
+    'analytics.noRecentChanges': 'لا توجد تغييرات حديثة في الأسعار',
+    'analytics.savings': 'التوفير',
+    'analytics.avgPerProduct': 'المتوسط/منتج',
+    'analytics.bestDeal': 'أفضل صفقة',
+    'analytics.efficiency': 'الكفاءة',
+    'analytics.deepInsights': 'رؤى عميقة حول أداء تتبع الأسعار',
+    'analytics.storeAnalysis': 'تحليل المتاجر',
+    'analytics.priceMovement': 'تحليل حركة الأسعار',
+    'analytics.priceMovementDesc': 'تتبع كيف تغيرت الأسعار عبر فترات زمنية مختلفة',
+    'analytics.increases': 'زيادات',
+    'analytics.decreases': 'انخفاضات',
+    'analytics.stable': 'مستقر',
+    'analytics.products': 'منتجات',
+    
+    // User roles
+    'user.admin': 'مسؤول',
+    'user.user': 'مستخدم',
+    
+    // Admin categories
+    'admin.categories': 'الفئات',
+    'admin.loginMessages': 'رسائل تسجيل الدخول',
   }
 };
 

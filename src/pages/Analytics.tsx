@@ -122,7 +122,7 @@ export default function Analytics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">Loading analytics...</div>
+        <div className="text-muted-foreground">{t('common.loading')}</div>
       </div>
     );
   }
@@ -130,9 +130,9 @@ export default function Analytics() {
   if (stats && stats.total_products === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <img src={emptyStateIcon} alt="No products" className="h-24 w-24 opacity-70" />
-        <h3 className="text-xl font-medium">No Products Yet</h3>
-        <p className="text-muted-foreground">Add products to view their analytics</p>
+        <img src={emptyStateIcon} alt={t('products.noProducts')} className="h-24 w-24 opacity-70" />
+        <h3 className="text-xl font-medium">{t('products.noProducts')}</h3>
+        <p className="text-muted-foreground">{t('analytics.addProductsPrompt')}</p>
       </div>
     );
   }
@@ -195,7 +195,7 @@ export default function Analytics() {
                   })
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No recent price changes
+                    {t('analytics.noRecentChanges')}
                   </div>
                 )}
               </div>

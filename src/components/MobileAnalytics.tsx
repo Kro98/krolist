@@ -207,46 +207,46 @@ export function MobileAnalytics() {
   const isMobile = useIsMobile();
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const quickStats = [{
-    title: "Savings",
+    title: t('analytics.savings'),
     value: `${getCurrencySymbol()}${analyticsData.overview.totalSavings}`,
     change: `+${getCurrencySymbol()}245`,
     icon: DollarSign,
     color: "text-price-decrease"
   }, {
-    title: "Avg/Product",
+    title: t('analytics.avgPerProduct'),
     value: `${getCurrencySymbol()}${analyticsData.overview.avgSavingsPerProduct}`,
     icon: Target,
     color: "text-primary"
   }, {
-    title: "Best Deal",
+    title: t('analytics.bestDeal'),
     value: `${analyticsData.overview.bestDeal.percentage}%`,
     icon: TrendingDown,
     color: "text-price-decrease"
   }, {
-    title: "Efficiency",
+    title: t('analytics.efficiency'),
     value: `${analyticsData.overview.trackingEfficiency}%`,
     icon: Eye,
     color: "text-success"
   }];
   const sections = [{
     id: "trends",
-    title: "Price Trends",
+    title: t('analytics.trends'),
     icon: TrendingUp,
     data: analyticsData.priceChanges,
-    description: "Track price movements over time"
+    description: t('analytics.trendsDesc')
   }, {
     id: "stores",
-    title: "Store Performance",
+    title: t('analytics.stores'),
     icon: Store,
     data: analyticsData.storePerformance,
-    description: "Compare store savings and reliability"
+    description: t('analytics.storesDesc')
   }];
   if (!isMobile) {
     // Desktop view - return full analytics
     return <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">{t('nav.analytics')}</h1>
-          <p className="text-muted-foreground">Deep insights into your price tracking performance</p>
+          <p className="text-muted-foreground">{t('analytics.deepInsights')}</p>
         </div>
 
         {/* Key Metrics */}
@@ -272,10 +272,10 @@ export function MobileAnalytics() {
         {/* Desktop Analytics Tabs */}
         <Tabs defaultValue="price-trends" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="price-trends">Price Trends</TabsTrigger>
-            <TabsTrigger value="stores">Store Analysis</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="patterns">Patterns</TabsTrigger>
+            <TabsTrigger value="price-trends">{t('analytics.trends')}</TabsTrigger>
+            <TabsTrigger value="stores">{t('analytics.storeAnalysis')}</TabsTrigger>
+            <TabsTrigger value="categories">{t('analytics.categories')}</TabsTrigger>
+            <TabsTrigger value="patterns">{t('analytics.patterns')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="price-trends" className="space-y-6">
@@ -283,27 +283,27 @@ export function MobileAnalytics() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  Price Movement Analysis
+                  {t('analytics.priceMovement')}
                 </CardTitle>
                 <CardDescription>
-                  Track how prices have changed over different time periods
+                  {t('analytics.priceMovementDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {analyticsData.priceChanges.map((period, index) => <div key={index} className="space-y-3">
-                    <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between">
                       <h4 className="font-medium">{period.period}</h4>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="flex items-center gap-1 text-price-increase">
                           <TrendingUp className="h-3 w-3" />
-                          {period.increases} increases
+                          {period.increases} {t('analytics.increases')}
                         </span>
                         <span className="flex items-center gap-1 text-price-decrease">
                           <TrendingDown className="h-3 w-3" />
-                          {period.decreases} decreases
+                          {period.decreases} {t('analytics.decreases')}
                         </span>
                         <span className="text-muted-foreground">
-                          {period.stable} stable
+                          {period.stable} {t('analytics.stable')}
                         </span>
                       </div>
                     </div>
@@ -380,9 +380,9 @@ export function MobileAnalytics() {
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
                   <section.icon className="h-5 w-5 text-primary" />
-                  {section.title}
+                  {t(`analytics.${section.id}`)}
                 </SheetTitle>
-                <SheetDescription>{section.description}</SheetDescription>
+                <SheetDescription>{t(`analytics.${section.id}Desc`)}</SheetDescription>
               </SheetHeader>
               
               <div className="mt-6 space-y-4 overflow-y-auto h-full pb-6">
@@ -393,15 +393,15 @@ export function MobileAnalytics() {
                           <div className="grid grid-cols-3 gap-3 text-center">
                             <div className="p-2 rounded bg-price-increase/10">
                               <div className="text-price-increase font-bold">{period.increases}</div>
-                              <div className="text-xs text-muted-foreground">Increases</div>
+                              <div className="text-xs text-muted-foreground">{t('analytics.increases')}</div>
                             </div>
                             <div className="p-2 rounded bg-price-decrease/10">
                               <div className="text-price-decrease font-bold">{period.decreases}</div>
-                              <div className="text-xs text-muted-foreground">Decreases</div>
+                              <div className="text-xs text-muted-foreground">{t('analytics.decreases')}</div>
                             </div>
                             <div className="p-2 rounded bg-muted/20">
                               <div className="font-bold">{period.stable}</div>
-                              <div className="text-xs text-muted-foreground">Stable</div>
+                              <div className="text-xs text-muted-foreground">{t('analytics.stable')}</div>
                             </div>
                           </div>
                         </div>
@@ -410,11 +410,11 @@ export function MobileAnalytics() {
                 
                  {section.id === "stores" && <div className="space-y-3">
                      {analyticsData.storePerformance.map((store, index) => <Card key={index} className="p-3">
-                         <div className="space-y-3">
+                          <div className="space-y-3">
                            <div className="flex items-center justify-between">
-                             <h4 className="font-medium text-sm">{store.store}</h4>
-                             <Badge variant="secondary" className="text-xs">{store.products} products</Badge>
-                           </div>
+                              <h4 className="font-medium text-sm">{store.store}</h4>
+                              <Badge variant="secondary" className="text-xs">{store.products} {t('analytics.products')}</Badge>
+                            </div>
                            <div className="grid grid-cols-2 gap-3 text-sm">
                              <div className="space-y-1">
                                <span className="text-muted-foreground text-xs">{t('analytics.avgSavings')}:</span>

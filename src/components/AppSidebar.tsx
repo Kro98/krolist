@@ -189,13 +189,13 @@ export function AppSidebar() {
           <NavLink to="/search-products" onClick={handleNavClick}>
             <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 mx-0 my-[20px] py-[10px] px-[10px]">
               <PlusCircle className="h-4 w-4" />
-              {!collapsed && <span className="font-medium">Search Products</span>}
+              {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
             </div>
           </NavLink>
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard') || 'Main'}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map(item => <SidebarMenuItem key={item.title}>
@@ -211,7 +211,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mx-0 px-0">
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('shops.title') || 'Shops'}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('shops.title')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {shopItems.map(item => {
@@ -246,7 +246,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('settings.other') || 'Other'}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('settings.other')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {otherItems.map(item => <SidebarMenuItem key={item.title}>
@@ -269,7 +269,7 @@ export function AppSidebar() {
               {user && (
                 <div className="mb-2">
                   <Badge variant={isAdmin ? "default" : "secondary"} className="text-xs">
-                    {isAdmin ? "ADMIN" : "USER"}
+                    {isAdmin ? t('user.admin') : t('user.user')}
                   </Badge>
                 </div>
               )}
