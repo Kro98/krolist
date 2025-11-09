@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { GripVertical, Package, Plus, X, Search, Edit } from "lucide-react";
+import { GripVertical, Package, Plus, X, Search, Edit, Trash2 } from "lucide-react";
 import { getAllStores } from "@/config/stores";
 
 const DEFAULT_SHOPS = getAllStores().map(store => ({
@@ -242,30 +242,45 @@ export function ShopManager() {
                         
                         <div className="flex items-center gap-2">
                           {isAdminView ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditShop(shop)}
-                              className="text-primary hover:text-primary"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <>
+                              <Switch
+                                checked={shop.adminEnabled !== false}
+                                onCheckedChange={async (checked) => {
+                                  setShops(shops.map(s => 
+                                    s.id === shop.id 
+                                      ? { ...s, adminEnabled: checked, enabled: checked ? s.enabled : false }
+                                      : s
+                                  ));
+                                  window.dispatchEvent(new Event('storage'));
+                                  toast({
+                                    title: checked ? "Shop enabled globally" : "Shop hidden from users",
+                                    description: checked ? "All users can now see this shop" : "This shop is now hidden from all users",
+                                  });
+                                }}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditShop(shop)}
+                                className="text-primary hover:text-primary"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeShop(shop.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
                           ) : (
                             <Switch
                               checked={shop.enabled}
                               onCheckedChange={() => toggleShop(shop.id)}
                               disabled={shop.adminEnabled === false}
                             />
-                          )}
-                          {!DEFAULT_SHOPS.find(s => s.id === shop.id) && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeShop(shop.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
                           )}
                         </div>
                       </div>

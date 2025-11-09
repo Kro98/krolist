@@ -1,4 +1,5 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -86,6 +87,7 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const [shopItems, setShopItems] = useState(getShopItems());
   const [username, setUsername] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [promotions, setPromotions] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
@@ -101,7 +103,24 @@ export function AppSidebar() {
   useEffect(() => {
     fetchUsername();
     fetchPromotions();
+    checkAdminRole();
   }, [user, t]);
+
+  const checkAdminRole = async () => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    setIsAdmin(!!data);
+  };
 
   const fetchPromotions = async () => {
     try {
@@ -247,6 +266,13 @@ export function AppSidebar() {
           <>
             <Separator className="my-2" />
             <div className="p-4 space-y-2">
+              {user && (
+                <div className="mb-2">
+                  <Badge variant={isAdmin ? "default" : "secondary"} className="text-xs">
+                    {isAdmin ? "ADMIN" : "USER"}
+                  </Badge>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sidebar-foreground truncate">{username || user?.email}</span>

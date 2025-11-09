@@ -122,6 +122,42 @@ export type Database = {
         }
         Relationships: []
       }
+      login_messages: {
+        Row: {
+          created_at: string | null
+          description_ar: string | null
+          description_en: string
+          display_times: number
+          id: string
+          is_active: boolean | null
+          title_ar: string | null
+          title_en: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description_ar?: string | null
+          description_en: string
+          display_times?: number
+          id?: string
+          is_active?: boolean | null
+          title_ar?: string | null
+          title_en: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description_ar?: string | null
+          description_en?: string
+          display_times?: number
+          id?: string
+          is_active?: boolean | null
+          title_ar?: string | null
+          title_en?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       news_updates: {
         Row: {
           author_id: string | null
@@ -417,6 +453,41 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      user_message_views: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_viewed_at: string | null
+          message_id: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          message_id: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          message_id?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_message_views_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "login_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_refresh_logs: {
         Row: {

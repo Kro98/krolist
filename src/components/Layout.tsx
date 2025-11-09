@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
+import { LoginMessageDialog } from "@/components/LoginMessageDialog";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,6 +48,7 @@ export function Layout({
   }
   return <TooltipProvider>
       <SidebarProvider>
+        <LoginMessageDialog />
         <AppSidebar />
         <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
           <header className="h-16 flex items-center border-b border-border bg-card px-4">

@@ -224,15 +224,36 @@ export default function CategoryManager() {
             </div>
 
             <div>
-              <Label>Icon/Logo URL</Label>
-              <Input
-                value={formData.icon_url}
-                onChange={(e) => setFormData({ ...formData, icon_url: e.target.value })}
-                placeholder="https://..."
-              />
+              <Label>Icon/Logo Image</Label>
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ ...formData, icon_url: reader.result as string });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <Input
+                  value={formData.icon_url}
+                  onChange={(e) => setFormData({ ...formData, icon_url: e.target.value })}
+                  placeholder="Or paste image URL: https://..."
+                />
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Upload your custom artwork to represent this category
+                Upload from your computer or paste an image URL
               </p>
+              {formData.icon_url && (
+                <div className="mt-2">
+                  <img src={formData.icon_url} alt="Preview" className="w-20 h-20 rounded-full object-cover" />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
