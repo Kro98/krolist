@@ -14,13 +14,6 @@ interface LanguageContextType {
 
 const translations = {
   en: {
-    // Common
-    'common.edit': 'Edit',
-    'common.save': 'Save',
-    'common.cancel': 'Cancel',
-    'common.success': 'Success',
-    'common.error': 'Error',
-    
     // Navigation
     'nav.dashboard': 'Dashboard',
     'nav.products': 'Products',
@@ -31,16 +24,6 @@ const translations = {
     'nav.donation': 'Support Krolist',
     'nav.settings': 'Settings',
     'nav.addProduct': 'Add Product',
-    
-    // News
-    'news.editNews': 'Edit News',
-    'news.titleEnglish': 'Title (English)',
-    'news.titleArabic': 'Title (Arabic)',
-    'news.contentEnglish': 'Content (English)',
-    'news.contentArabic': 'Content (Arabic)',
-    'news.category': 'Category',
-    'news.updateSuccess': 'News updated successfully',
-    'news.updateError': 'Failed to update news',
     
     // Dashboard
     'dashboard.welcome': 'Welcome to PriceTracker',
@@ -308,23 +291,6 @@ const translations = {
     'admin.loginMessages': 'Login Messages',
   },
   ar: {
-    // Common
-    'common.edit': 'تعديل',
-    'common.save': 'حفظ',
-    'common.cancel': 'إلغاء',
-    'common.success': 'نجح',
-    'common.error': 'خطأ',
-    
-    // News
-    'news.editNews': 'تعديل الخبر',
-    'news.titleEnglish': 'العنوان (إنجليزي)',
-    'news.titleArabic': 'العنوان (عربي)',
-    'news.contentEnglish': 'المحتوى (إنجليزي)',
-    'news.contentArabic': 'المحتوى (عربي)',
-    'news.category': 'الفئة',
-    'news.updateSuccess': 'تم تحديث الخبر بنجاح',
-    'news.updateError': 'فشل تحديث الخبر',
-    
     // Navigation
     'nav.dashboard': 'لوحة التحكم',
     'nav.products': 'المنتجات',
@@ -416,6 +382,14 @@ const translations = {
     'settings.settingsSaved': 'تم حفظ الإعدادات',
     'settings.settingsSavedDesc': 'تم تحديث تفضيلاتك بنجاح.',
     
+    // Common
+    'common.save': 'حفظ',
+    'common.cancel': 'إلغاء',
+    'common.delete': 'حذف',
+    'common.edit': 'تعديل',
+    'common.loading': 'جارٍ التحميل...',
+    'common.error': 'خطأ',
+    'common.success': 'نجح',
     
     // Theme options
     'theme.light': 'فاتح',
