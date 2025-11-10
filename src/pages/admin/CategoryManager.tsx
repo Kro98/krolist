@@ -4,11 +4,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Image as ImageIcon, Package } from 'lucide-react';
 
 interface CategoryCollection {
   id: string;
@@ -23,9 +24,13 @@ interface CategoryCollection {
 export default function CategoryManager() {
   const { t } = useLanguage();
   const [categories, setCategories] = useState<CategoryCollection[]>([]);
+  const [krolistProducts, setKrolistProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [showProductsDialog, setShowProductsDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryCollection | null>(null);
+  const [selectedCategoryForProducts, setSelectedCategoryForProducts] = useState<string | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -35,6 +40,7 @@ export default function CategoryManager() {
 
   useEffect(() => {
     fetchCategories();
+    fetchKrolistProducts();
   }, []);
 
   const fetchCategories = async () => {
@@ -54,6 +60,35 @@ export default function CategoryManager() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchKrolistProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('krolist_products')
+        .select('*')
+        .order('title');
+
+      if (error) throw error;
+      setKrolistProducts(data || []);
+    } catch (error: any) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  const fetchCategoryProducts = async (categoryId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('category_products')
+        .select('product_id')
+        .eq('category_id', categoryId);
+
+      if (error) throw error;
+      return (data || []).map(cp => cp.product_id);
+    } catch (error: any) {
+      console.error('Error fetching category products:', error);
+      return [];
     }
   };
 
@@ -134,6 +169,51 @@ export default function CategoryManager() {
     }
   };
 
+  const handleManageProducts = async (category: CategoryCollection) => {
+    setSelectedCategoryForProducts(category.id);
+    const productIds = await fetchCategoryProducts(category.id);
+    setSelectedProducts(productIds);
+    setShowProductsDialog(true);
+  };
+
+  const handleSaveCategoryProducts = async () => {
+    if (!selectedCategoryForProducts) return;
+
+    try {
+      // Delete existing associations
+      await supabase
+        .from('category_products')
+        .delete()
+        .eq('category_id', selectedCategoryForProducts);
+
+      // Insert new associations
+      if (selectedProducts.length > 0) {
+        const inserts = selectedProducts.map((productId, index) => ({
+          category_id: selectedCategoryForProducts,
+          product_id: productId,
+          display_order: index
+        }));
+
+        const { error } = await supabase
+          .from('category_products')
+          .insert(inserts);
+
+        if (error) throw error;
+      }
+
+      toast({ title: 'Category products updated' });
+      setShowProductsDialog(false);
+      setSelectedCategoryForProducts(null);
+      setSelectedProducts([]);
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return <div>{t('loading')}</div>;
   }
@@ -172,7 +252,7 @@ export default function CategoryManager() {
               )}
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2 justify-between items-center">
+              <div className="flex gap-2 justify-between items-center mb-3">
                 <div className="flex gap-2">
                   <Button 
                     size="sm" 
@@ -200,6 +280,15 @@ export default function CategoryManager() {
                   }}
                 />
               </div>
+              <Button 
+                size="sm" 
+                variant="secondary"
+                onClick={() => handleManageProducts(category)}
+                className="w-full"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Manage Products
+              </Button>
             </CardContent>
           </Card>
         ))}
@@ -211,6 +300,9 @@ export default function CategoryManager() {
             <DialogTitle>
               {editingCategory ? 'Edit Category' : 'Add Category'}
             </DialogTitle>
+            <DialogDescription>
+              Create category buttons that organize featured products
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -271,6 +363,48 @@ export default function CategoryManager() {
             </Button>
             <Button onClick={handleSave}>
               {editingCategory ? 'Update' : 'Add'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showProductsDialog} onOpenChange={setShowProductsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Assign Products to Category</DialogTitle>
+            <DialogDescription>
+              Select which Krolist products should appear in this category
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-96 space-y-2">
+            {krolistProducts.map((product) => (
+              <div key={product.id} className="flex items-center space-x-2 p-2 border rounded">
+                <Checkbox
+                  checked={selectedProducts.includes(product.id)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedProducts([...selectedProducts, product.id]);
+                    } else {
+                      setSelectedProducts(selectedProducts.filter(id => id !== product.id));
+                    }
+                  }}
+                />
+                <div className="flex-1">
+                  <p className="font-medium">{product.title}</p>
+                  <p className="text-xs text-muted-foreground">{product.store}</p>
+                </div>
+                {product.image_url && (
+                  <img src={product.image_url} alt="" className="w-12 h-12 object-cover rounded" />
+                )}
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProductsDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveCategoryProducts}>
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -9,6 +9,7 @@ import KrolistProductsManager from "./admin/KrolistProductsManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
 import CategoryManager from "./admin/CategoryManager";
 import LoginMessagesManager from "./admin/LoginMessagesManager";
+import OrdersManager from "./admin/OrdersManager";
 import { ShopManager } from "@/components/ShopManager";
 
 export default function Admin() {
@@ -62,12 +63,13 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
           <TabsTrigger value="products">{t('admin.krolistProducts')}</TabsTrigger>
           <TabsTrigger value="categories">{t('admin.categories')}</TabsTrigger>
           <TabsTrigger value="promo-codes">{t('admin.promoCodes')}</TabsTrigger>
           <TabsTrigger value="shops">{t('admin.shopManagement')}</TabsTrigger>
           <TabsTrigger value="login-messages">{t('admin.loginMessages')}</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="mt-6">
@@ -89,6 +91,10 @@ export default function Admin() {
 
         <TabsContent value="login-messages" className="mt-6">
           <LoginMessagesManager />
+        </TabsContent>
+
+        <TabsContent value="orders" className="mt-6">
+          <OrdersManager />
         </TabsContent>
       </Tabs>
     </div>

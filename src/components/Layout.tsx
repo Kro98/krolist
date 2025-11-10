@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
+import { ShoppingCart } from "@/components/ShoppingCart";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -51,9 +52,12 @@ export function Layout({
         <LoginMessageDialog />
         <AppSidebar />
         <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-          <header className="h-16 flex items-center border-b border-border bg-card px-4">
-            <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
-            <img src={krolistLogo} alt="Krolist" className="h-8 object-contain" />
+          <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
+            <div className="flex items-center">
+              <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
+              <img src={krolistLogo} alt="Krolist" className="h-8 object-contain" />
+            </div>
+            <ShoppingCart />
           </header>
           
           <main className="flex-1 overflow-auto">

@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      category_products: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          display_order: number | null
+          id: string
+          product_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          product_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "category_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "krolist_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_rates: {
         Row: {
           currency: string
@@ -197,6 +236,48 @@ export type Database = {
           title_ar?: string | null
           title_en?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          currency: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          notes: string | null
+          products: Json
+          status: string
+          total_amount: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          notes?: string | null
+          products: Json
+          status?: string
+          total_amount: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          notes?: string | null
+          products?: Json
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
