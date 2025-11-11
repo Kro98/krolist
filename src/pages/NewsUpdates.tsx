@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { toast } from "sonner";
-
 interface NewsItem {
   id: string;
   title_en: string;
@@ -23,7 +22,6 @@ interface NewsItem {
   published_at: string;
   category: "announcement" | "update" | "feature";
 }
-
 const getCategoryIcon = (category: string) => {
   switch (category) {
     case "announcement":
@@ -36,7 +34,6 @@ const getCategoryIcon = (category: string) => {
       return <Calendar className="h-4 w-4" />;
   }
 };
-
 const getCategoryColor = (category: string) => {
   switch (category) {
     case "announcement":
@@ -49,11 +46,15 @@ const getCategoryColor = (category: string) => {
       return "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/30";
   }
 };
-
 export default function NewsUpdates() {
-  const { t, language } = useLanguage();
+  const {
+    t,
+    language
+  } = useLanguage();
   const navigate = useNavigate();
-  const { isAdmin } = useAdminRole();
+  const {
+    isAdmin
+  } = useAdminRole();
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
@@ -65,19 +66,17 @@ export default function NewsUpdates() {
     content_ar: '',
     category: 'announcement' as 'announcement' | 'update' | 'feature'
   });
-
   useEffect(() => {
     fetchNews();
   }, []);
-
   const fetchNews = async () => {
     try {
-      const { data, error } = await supabase
-        .from('news_updates')
-        .select('*')
-        .eq('is_published', true)
-        .order('published_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('news_updates').select('*').eq('is_published', true).order('published_at', {
+        ascending: false
+      });
       if (error) throw error;
       setNewsItems((data || []) as NewsItem[]);
     } catch (error: any) {
@@ -86,7 +85,6 @@ export default function NewsUpdates() {
       setIsLoading(false);
     }
   };
-
   const handleEditClick = (item: NewsItem) => {
     setEditingNews(item);
     setEditForm({
@@ -98,24 +96,19 @@ export default function NewsUpdates() {
     });
     setShowEditDialog(true);
   };
-
   const handleSaveEdit = async () => {
     if (!editingNews) return;
-
     try {
-      const { error } = await supabase
-        .from('news_updates')
-        .update({
-          title_en: editForm.title_en,
-          title_ar: editForm.title_ar || null,
-          content_en: editForm.content_en,
-          content_ar: editForm.content_ar || null,
-          category: editForm.category
-        })
-        .eq('id', editingNews.id);
-
+      const {
+        error
+      } = await supabase.from('news_updates').update({
+        title_en: editForm.title_en,
+        title_ar: editForm.title_ar || null,
+        content_en: editForm.content_en,
+        content_ar: editForm.content_ar || null,
+        category: editForm.category
+      }).eq('id', editingNews.id);
       if (error) throw error;
-      
       toast.success('News updated successfully');
       setShowEditDialog(false);
       fetchNews();
@@ -123,13 +116,10 @@ export default function NewsUpdates() {
       toast.error(error.message || 'Failed to update news');
     }
   };
-
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
@@ -162,8 +152,7 @@ export default function NewsUpdates() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="space-y-6">
-          {newsItems.map((item) => (
-            <Card key={item.id} className="p-6 hover:shadow-lg transition-all relative">
+          {newsItems.map(item => <Card key={item.id} className="p-6 hover:shadow-lg transition-all relative">
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -179,21 +168,14 @@ export default function NewsUpdates() {
                     <div className="text-sm text-muted-foreground flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       <span>{new Date(item.published_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}</span>
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}</span>
                     </div>
-                    {isAdmin && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditClick(item)}
-                        className="h-8 w-8 p-0"
-                      >
+                    {isAdmin && <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0">
                         <Edit2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                      </Button>}
                   </div>
                 </div>
 
@@ -209,8 +191,7 @@ export default function NewsUpdates() {
                   {language === 'ar' && item.content_ar ? item.content_ar : item.content_en}
                 </p>
               </div>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Future Plans Section */}
@@ -224,7 +205,7 @@ export default function NewsUpdates() {
             <ul className="space-y-3 text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
-                <span>Integration with more Saudi stores (Shein, IKEA, Namshi, Trendyol, ASOS)</span>
+                <span>Integration with more Saudi stores (Iherp, Namshi, Trendyol, ASOS)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
@@ -232,7 +213,7 @@ export default function NewsUpdates() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
-                <span>User accounts and saved product lists</span>
+                <span>refresh buttons to update prices</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
@@ -256,41 +237,38 @@ export default function NewsUpdates() {
           <div className="space-y-4">
             <div>
               <Label>Title (English)</Label>
-              <Input
-                value={editForm.title_en}
-                onChange={(e) => setEditForm({ ...editForm, title_en: e.target.value })}
-              />
+              <Input value={editForm.title_en} onChange={e => setEditForm({
+              ...editForm,
+              title_en: e.target.value
+            })} />
             </div>
             <div>
               <Label>Title (Arabic)</Label>
-              <Input
-                value={editForm.title_ar}
-                onChange={(e) => setEditForm({ ...editForm, title_ar: e.target.value })}
-              />
+              <Input value={editForm.title_ar} onChange={e => setEditForm({
+              ...editForm,
+              title_ar: e.target.value
+            })} />
             </div>
             <div>
               <Label>Content (English)</Label>
-              <Textarea
-                value={editForm.content_en}
-                onChange={(e) => setEditForm({ ...editForm, content_en: e.target.value })}
-                rows={6}
-              />
+              <Textarea value={editForm.content_en} onChange={e => setEditForm({
+              ...editForm,
+              content_en: e.target.value
+            })} rows={6} />
             </div>
             <div>
               <Label>Content (Arabic)</Label>
-              <Textarea
-                value={editForm.content_ar}
-                onChange={(e) => setEditForm({ ...editForm, content_ar: e.target.value })}
-                rows={6}
-              />
+              <Textarea value={editForm.content_ar} onChange={e => setEditForm({
+              ...editForm,
+              content_ar: e.target.value
+            })} rows={6} />
             </div>
             <div>
               <Label>Category</Label>
-              <select
-                className="w-full p-2 border rounded-md"
-                value={editForm.category}
-                onChange={(e) => setEditForm({ ...editForm, category: e.target.value as any })}
-              >
+              <select className="w-full p-2 border rounded-md" value={editForm.category} onChange={e => setEditForm({
+              ...editForm,
+              category: e.target.value as any
+            })}>
                 <option value="announcement">Announcement</option>
                 <option value="feature">Feature</option>
                 <option value="update">Update</option>
@@ -305,6 +283,5 @@ export default function NewsUpdates() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 }
