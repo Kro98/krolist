@@ -38,6 +38,9 @@ export default function Products() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [refreshStatus, setRefreshStatus] = useState<{
     canRefresh: boolean;
     nextRefreshDate: string | null;
@@ -303,6 +306,34 @@ export default function Products() {
     );
   }
 
+  const handleToggleSelect = (productId: string, store: string) => {
+    const newSelected = new Set(selectedProducts);
+    
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+      if (newSelected.size === 0) {
+        setSelectedStore(null);
+      }
+    } else {
+      if (selectedStore && selectedStore !== store) {
+        toast.error(`You can only select products from ${selectedStore}. Deselect them first.`);
+        return;
+      }
+      newSelected.add(productId);
+      setSelectedStore(store);
+    }
+    
+    setSelectedProducts(newSelected);
+  };
+
+  const handleAddSelectedToCart = async () => {
+    // This will be implemented with shopping cart feature
+    toast.success(`Added ${selectedProducts.size} products to cart`);
+    setSelectedProducts(new Set());
+    setSelectedStore(null);
+    setIsSelectMode(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex gap-3 items-center mb-6">
@@ -315,6 +346,17 @@ export default function Products() {
             className="pl-10 h-10 bg-card border-border focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
+        <Button
+          variant={isSelectMode ? "default" : "outline"}
+          onClick={() => {
+            setIsSelectMode(!isSelectMode);
+            setSelectedProducts(new Set());
+            setSelectedStore(null);
+          }}
+          className="h-10 whitespace-nowrap"
+        >
+          {isSelectMode ? 'Cancel Select' : 'Select'}
+        </Button>
         <Button
           variant="outline"
           size="icon"

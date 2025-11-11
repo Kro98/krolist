@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus } from "lucide-react";
+import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus, ShoppingCart as ShoppingCartIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
+import { useCart } from "@/contexts/CartContext";
+import { useImageZoom } from "@/hooks/useImageZoom";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
 export interface Product {
@@ -42,6 +45,9 @@ interface ProductCardProps {
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
   userProductCount?: number;
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string, store: string) => void;
 }
 export function ProductCard({
   product,
@@ -49,7 +55,10 @@ export function ProductCard({
   onUpdate,
   onRefreshPrice,
   onAddToMyProducts,
-  userProductCount = 0
+  userProductCount = 0,
+  isSelectMode = false,
+  isSelected = false,
+  onToggleSelect
 }: ProductCardProps) {
   const {
     t,
@@ -59,6 +68,8 @@ export function ProductCard({
     currency,
     convertPriceToDisplay
   } = useConvertedPrice();
+  const { addToCart } = useCart();
+  const { isZoomEnabled } = useImageZoom();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editForm, setEditForm] = useState({
     title: product.title,

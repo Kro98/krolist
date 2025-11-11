@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield } from "lucide-react";
+import { Save, Globe, Bell, Palette, User, Shield, ZoomIn } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ShopManager } from "@/components/ShopManager";
@@ -15,6 +15,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast as sonner } from "sonner";
+import { useImageZoom } from "@/hooks/useImageZoom";
 export default function Settings() {
   const {
     language,
@@ -30,6 +31,7 @@ export default function Settings() {
     setUndertone
   } = useTheme();
   const { user } = useAuth();
+  const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
   const [notifications, setNotifications] = useState(true);
   const [priceDropAlerts, setPriceDropAlerts] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(false);
@@ -210,6 +212,22 @@ export default function Settings() {
                     <SelectItem value="red">Red</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="image-zoom">Image Zoom on Hover</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable zoom effect when hovering over product images
+                  </p>
+                </div>
+                <Switch
+                  id="image-zoom"
+                  checked={isZoomEnabled}
+                  onCheckedChange={setIsZoomEnabled}
+                />
               </div>
             </CardContent>
           </Card>

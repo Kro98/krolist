@@ -1,38 +1,28 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Megaphone, Sparkles, Shield, FileText, Mail } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar, Megaphone, Sparkles, Shield, FileText, Mail, Edit2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAdminRole } from "@/hooks/useAdminRole";
+import { toast } from "sonner";
 
 interface NewsItem {
   id: string;
-  title: string;
-  date: string;
+  title_en: string;
+  title_ar: string | null;
+  content_en: string;
+  content_ar: string | null;
+  published_at: string;
   category: "announcement" | "update" | "feature";
-  content: string;
 }
-
-const newsItems: NewsItem[] = [{
-  id: "1",
-  title: "Welcome to Our Price Comparison Platform!",
-  date: "2025-10-12",
-  category: "announcement",
-  content: "We're excited to launch our affiliate price comparison platform. Search for products across multiple Saudi stores including Noon, Amazon, and more. Get the best deals with our real-time price tracking."
-}, {
-  id: "2",
-  title: "New Feature: Product Search",
-  date: "2025-10-12",
-  category: "feature",
-  content: "Introducing our powerful product search feature! Search across Noon and Amazon to find the best prices. Our affiliate links help support the platform while you save money."
-}, {
-  id: "3",
-  title: "Coming Soon: More Stores",
-  date: "2025-10-12",
-  category: "update",
-  content: "We're working on adding support for Shein, IKEA, Namshi, Trendyol, ASOS, and more Saudi retailers. Stay tuned!"
-}];
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -61,8 +51,82 @@ const getCategoryColor = (category: string) => {
 };
 
 export default function NewsUpdates() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const { isAdmin } = useAdminRole();
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title_en: '',
+    title_ar: '',
+    content_en: '',
+    content_ar: '',
+    category: 'announcement' as 'announcement' | 'update' | 'feature'
+  });
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news_updates')
+        .select('*')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+      setNewsItems((data || []) as NewsItem[]);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to load news');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditClick = (item: NewsItem) => {
+    setEditingNews(item);
+    setEditForm({
+      title_en: item.title_en,
+      title_ar: item.title_ar || '',
+      content_en: item.content_en,
+      content_ar: item.content_ar || '',
+      category: item.category
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingNews) return;
+
+    try {
+      const { error } = await supabase
+        .from('news_updates')
+        .update({
+          title_en: editForm.title_en,
+          title_ar: editForm.title_ar || null,
+          content_en: editForm.content_en,
+          content_ar: editForm.content_ar || null,
+          category: editForm.category
+        })
+        .eq('id', editingNews.id);
+
+      if (error) throw error;
+      
+      toast.success('News updated successfully');
+      setShowEditDialog(false);
+      fetchNews();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update news');
+    }
+  };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +163,7 @@ export default function NewsUpdates() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="space-y-6">
           {newsItems.map((item) => (
-            <Card key={item.id} className="p-6 hover:shadow-lg transition-all">
+            <Card key={item.id} className="p-6 hover:shadow-lg transition-all relative">
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -111,24 +175,38 @@ export default function NewsUpdates() {
                       </span>
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(item.date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(item.published_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</span>
+                    </div>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditClick(item)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
                 {/* Title */}
-                <h2 className="text-2xl font-semibold">{item.title}</h2>
+                <h2 className="text-2xl font-semibold">
+                  {language === 'ar' && item.title_ar ? item.title_ar : item.title_en}
+                </h2>
 
                 <Separator />
 
                 {/* Content */}
                 <p className="text-muted-foreground leading-relaxed">
-                  {item.content}
+                  {language === 'ar' && item.content_ar ? item.content_ar : item.content_en}
                 </p>
               </div>
             </Card>
@@ -168,6 +246,65 @@ export default function NewsUpdates() {
           </div>
         </Card>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit News</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Title (English)</Label>
+              <Input
+                value={editForm.title_en}
+                onChange={(e) => setEditForm({ ...editForm, title_en: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Title (Arabic)</Label>
+              <Input
+                value={editForm.title_ar}
+                onChange={(e) => setEditForm({ ...editForm, title_ar: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Content (English)</Label>
+              <Textarea
+                value={editForm.content_en}
+                onChange={(e) => setEditForm({ ...editForm, content_en: e.target.value })}
+                rows={6}
+              />
+            </div>
+            <div>
+              <Label>Content (Arabic)</Label>
+              <Textarea
+                value={editForm.content_ar}
+                onChange={(e) => setEditForm({ ...editForm, content_ar: e.target.value })}
+                rows={6}
+              />
+            </div>
+            <div>
+              <Label>Category</Label>
+              <select
+                className="w-full p-2 border rounded-md"
+                value={editForm.category}
+                onChange={(e) => setEditForm({ ...editForm, category: e.target.value as any })}
+              >
+                <option value="announcement">Announcement</option>
+                <option value="feature">Feature</option>
+                <option value="update">Update</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

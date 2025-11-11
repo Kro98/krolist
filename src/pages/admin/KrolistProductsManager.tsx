@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
 import { STORES } from '@/config/stores';
+import { ProductCarousel } from '@/components/ProductCarousel';
 
 interface KrolistProduct {
   id: string;
@@ -31,6 +32,7 @@ interface KrolistProduct {
   youtube_url: string | null;
   created_at: string;
   updated_at: string;
+  last_checked_at?: string;
 }
 
 const CATEGORIES = [
@@ -316,70 +318,20 @@ export default function KrolistProductsManager() {
       {selectedCollection === 'all' ? (
         Object.entries(productsByCollection).map(([collectionTitle, collectionProducts]) => (
           <div key={collectionTitle} className="mb-8">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              {collectionTitle}
-              <Badge variant="secondary">{collectionProducts.length}</Badge>
-            </h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {collectionProducts.map((product) => (
-                <Card key={product.id}>
-            <CardHeader>
-              {product.image_url && (
-                <img 
-                  src={product.image_url} 
-                  alt={product.title}
-                  className="w-full h-48 object-cover rounded-md mb-4"
-                />
-              )}
-              <CardTitle className="line-clamp-2">{product.title}</CardTitle>
-              <CardDescription className="line-clamp-2">{product.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold">
-                    {product.current_price} {product.currency}
-                  </span>
-                  {product.is_featured && (
-                    <Badge variant="secondary">{t('featured')}</Badge>
-                  )}
-                </div>
-                
-                <div className="flex gap-2 flex-wrap">
-                  <Badge variant="outline">{product.store}</Badge>
-                  {product.category && (
-                    <Badge variant="outline">{product.category}</Badge>
-                  )}
-                </div>
-
-                <div className="flex gap-2 mt-4">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => window.open(product.product_url, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleOpenDialog(product)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => handleDelete(product.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ProductCarousel
+              title={collectionTitle}
+              products={collectionProducts.map(p => ({
+                ...p,
+                isKrolistProduct: true,
+                price_history: [],
+                last_checked_at: p.last_checked_at || p.updated_at
+              }))}
+              onDelete={handleDelete}
+              onUpdate={(id, updates) => {
+                const product = collectionProducts.find(p => p.id === id);
+                if (product) handleOpenDialog(product);
+              }}
+            />
           </div>
         ))
       ) : (
