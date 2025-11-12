@@ -45,6 +45,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                   <Route path="/auth/terms-of-service" element={<AuthTermsOfService />} />
                   <Route path="/auth/contact-us" element={<AuthContactUs />} />
                   <Route path="/" element={<Products />} />
+                  <Route path="/products" element={<Products />} />
             <Route path="/add-product" element={<AddProduct />} />
             <Route path="/search-products" element={<SearchProducts />} />
             <Route path="/how-to-use-search" element={<HowToUseSearch />} />
