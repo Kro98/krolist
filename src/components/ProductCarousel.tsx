@@ -22,7 +22,7 @@ interface ProductCarouselProps {
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
   userProductCount?: number;
-  isSelectMode?: boolean;
+  isSelectionMode?: boolean;
   onToggleSelect?: (product: Product) => void;
   selectedProductIds?: Set<string>;
 }
@@ -35,7 +35,7 @@ export function ProductCarousel({
   onRefreshPrice,
   onAddToMyProducts,
   userProductCount = 0,
-  isSelectMode = false,
+  isSelectionMode = false,
   onToggleSelect,
   selectedProductIds = new Set()
 }: ProductCarouselProps) {
@@ -104,7 +104,7 @@ export function ProductCarousel({
               onRefreshPrice={onRefreshPrice}
               onAddToMyProducts={onAddToMyProducts}
               userProductCount={userProductCount}
-              isSelectMode={isSelectMode}
+              isSelectionMode={isSelectionMode}
               isSelected={selectedProductIds.has(product.id)}
               onToggleSelect={onToggleSelect}
             />
@@ -142,7 +142,7 @@ export function ProductCarousel({
                         onRefreshPrice={onRefreshPrice}
                         onAddToMyProducts={onAddToMyProducts}
                         userProductCount={userProductCount}
-                        isSelectMode={isSelectMode}
+                        isSelectionMode={isSelectionMode}
                         isSelected={selectedProductIds.has(product.id)}
                         onToggleSelect={onToggleSelect}
                       />

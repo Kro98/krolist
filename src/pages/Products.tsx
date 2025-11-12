@@ -504,7 +504,7 @@ export default function Products() {
                 products={filteredUserProducts}
                 onDelete={handleDelete}
                 onUpdate={handleUpdate}
-                isSelectMode={isSelectMode}
+                isSelectionMode={isSelectMode}
                 onToggleSelect={handleToggleSelect}
                 selectedProductIds={selectedProducts}
               />
@@ -518,7 +518,7 @@ export default function Products() {
               products={filteredKrolistProducts}
               onAddToMyProducts={handleAddToMyProducts}
               userProductCount={products.length}
-              isSelectMode={isSelectMode}
+              isSelectionMode={isSelectMode}
               onToggleSelect={handleToggleSelect}
               selectedProductIds={selectedProducts}
             />
@@ -563,6 +563,37 @@ export default function Products() {
             </div>
           </CardContent>
         </Card>
+      )}
+      
+      {/* Floating action bar for selection mode */}
+      {showSelectionActions && selectedProducts.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5">
+          <Card className="shadow-2xl border-2 border-primary bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">
+                  {selectedProducts.size} {selectedProducts.size === 1 ? 'product' : 'products'} selected
+                </span>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleCancelSelection}
+                  >
+                    {t('products.cancelSelection')}
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={handleAddSelectedToCart}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Add to Cart
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
