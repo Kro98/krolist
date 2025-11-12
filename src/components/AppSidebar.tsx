@@ -12,8 +12,12 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { STORES, getAllStores, getStoreById } from "@/config/stores";
 
 const mainItems = [{
-  title: "nav.products",
+  title: "nav.home",
   url: "/",
+  icon: Home
+}, {
+  title: "nav.products",
+  url: "/products",
   icon: Package
 }, {
   title: "nav.analytics",

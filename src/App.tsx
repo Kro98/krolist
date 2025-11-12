@@ -6,6 +6,7 @@ import { Layout } from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import Home from "./pages/Home";
 import Products from "./pages/Products";
 import SearchProducts from "./pages/SearchProducts";
 import HowToUseSearch from "./pages/HowToUseSearch";
@@ -41,7 +42,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                   <Route path="/auth/privacy-policy" element={<AuthPrivacyPolicy />} />
                   <Route path="/auth/terms-of-service" element={<AuthTermsOfService />} />
                   <Route path="/auth/contact-us" element={<AuthContactUs />} />
-                  <Route path="/" element={<Products />} />
+                  <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/add-product" element={<AddProduct />} />
             <Route path="/search-products" element={<SearchProducts />} />

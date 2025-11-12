@@ -15,6 +15,7 @@ interface LanguageContextType {
 const translations = {
   en: {
     // Navigation
+    'nav.home': 'Home',
     'nav.dashboard': 'Dashboard',
     'nav.products': 'Products',
     'nav.analytics': 'Analytics',
@@ -24,6 +25,16 @@ const translations = {
     'nav.donation': 'Support Krolist',
     'nav.settings': 'Settings',
     'nav.addProduct': 'Add Product',
+    
+    // Home
+    'home.welcome': 'Welcome to Krolist',
+    'home.subtitle': 'Discover the best deals across all your favorite stores',
+    'home.startShopping': 'Start Shopping',
+    'home.myProducts': 'My Products',
+    'home.featured': 'Featured Products',
+    'home.categories': 'Shop by Category',
+    'home.viewAll': 'View All',
+    'home.noCategoryProducts': 'No products in this category yet',
     
     // Dashboard
     'dashboard.welcome': 'Welcome to PriceTracker',
@@ -66,6 +77,11 @@ const translations = {
     'products.changeCurrency': 'Change Currency',
     'products.selectCurrency': 'Select the currency for this product',
     'products.editProduct': 'Edit Product',
+    'products.select': 'Select',
+    'products.cancelSelection': 'Cancel',
+    'products.addToCart': 'Add to Cart',
+    'products.selectedItems': 'items selected',
+    'products.selectSameStore': 'Please select products from the same store only',
     'products.editDescription': 'Update the product details below',
     'products.productTitle': 'Product Title',
     'products.enterTitle': 'Enter product title',
