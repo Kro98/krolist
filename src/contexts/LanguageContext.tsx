@@ -24,6 +24,7 @@ const translations = {
     'nav.promoCodes': 'Promo Codes',
     'nav.donation': 'Support Krolist',
     'nav.settings': 'Settings',
+    'nav.categories': 'Categories',
     'nav.addProduct': 'Add Product',
     
     // Home
@@ -317,6 +318,7 @@ const translations = {
     'nav.promoCodes': 'أكواد الخصم',
     'nav.donation': 'دعم المطور',
     'nav.settings': 'الإعدادات',
+    'nav.categories': 'الفئات',
     'nav.addProduct': 'إضافة منتج',
     
     // Dashboard

@@ -1,4 +1,4 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User, Shield } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User, Shield, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -52,6 +52,10 @@ const getShopItems = () => {
   }));
 };
 const otherItems = [{
+  title: "nav.categories",
+  url: "/categories",
+  icon: Tag
+}, {
   title: "nav.news",
   url: "/news",
   icon: Newspaper
@@ -280,11 +284,11 @@ export function AppSidebar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={signOut}
+                onClick={() => signOut()}
                 className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-4 w-4" />
-                Sign Out
+                {t('auth.signOut') || 'Sign Out'}
               </Button>
             </div>
           </>

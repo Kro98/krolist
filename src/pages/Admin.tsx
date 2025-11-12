@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { Shield } from "lucide-react";
+import { Shield, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
@@ -17,6 +18,27 @@ export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const [orderCount, setOrderCount] = useState(0);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchOrderCount();
+    }
+  }, [isAdmin]);
+
+  const fetchOrderCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
+      
+      if (!error && count !== null) {
+        setOrderCount(count);
+      }
+    } catch (error) {
+      console.error('Error fetching order count:', error);
+    }
+  };
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -69,7 +91,15 @@ export default function Admin() {
           <TabsTrigger value="promo-codes">{t('admin.promoCodes')}</TabsTrigger>
           <TabsTrigger value="shops">{t('admin.shopManagement')}</TabsTrigger>
           <TabsTrigger value="login-messages">{t('admin.loginMessages')}</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="orders" className="relative">
+            <Package className="h-4 w-4 mr-2" />
+            Orders
+            {orderCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                {orderCount}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="mt-6">

@@ -3,31 +3,31 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
 import { ShoppingCart } from "@/components/ShoppingCart";
+import { useNavigate, useLocation } from "react-router-dom";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+
 interface LayoutProps {
   children: React.ReactNode;
 }
-export function Layout({
-  children
-}: LayoutProps) {
-  const {
-    language
-  } = useLanguage();
-  const {
-    user,
-    loading,
-    isGuest
-  } = useAuth();
+
+export function Layout({ children }: LayoutProps) {
+  const { language } = useLanguage();
+  const { user, loading, isGuest } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleAddClick = () => {
+    navigate('/');
+    // Trigger select mode on Products page
+    window.dispatchEvent(new CustomEvent('triggerSelectMode'));
+  };
 
   // Public routes that don't require authentication
   const publicRoutes = ['/auth', '/auth/privacy-policy', '/auth/terms-of-service', '/auth/contact-us', '/privacy-policy', '/terms-of-service', '/contact-us'];
@@ -57,7 +57,7 @@ export function Layout({
               <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
               <img src={krolistLogo} alt="Krolist" className="h-8 object-contain" />
             </div>
-            <ShoppingCart />
+            <ShoppingCart onAddClick={handleAddClick} />
           </header>
           
           <main className="flex-1 overflow-auto">

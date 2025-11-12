@@ -63,6 +63,17 @@ export default function Products() {
     checkRefreshStatus();
   }, []);
 
+  useEffect(() => {
+    const handleTriggerSelectMode = () => {
+      setIsSelectMode(true);
+    };
+    
+    window.addEventListener('triggerSelectMode', handleTriggerSelectMode);
+    return () => {
+      window.removeEventListener('triggerSelectMode', handleTriggerSelectMode);
+    };
+  }, []);
+
   const checkRefreshStatus = async () => {
     try {
       const now = new Date();

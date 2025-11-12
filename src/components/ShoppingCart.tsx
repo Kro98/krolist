@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ShoppingCart as CartIcon, Trash2, ExternalLink } from 'lucide-react';
+import { ShoppingCart as CartIcon, Trash2, ExternalLink, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { replaceWithAffiliateLink } from '@/lib/affiliateLinks';
@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function ShoppingCart() {
+export function ShoppingCart({ onAddClick }: { onAddClick?: () => void }) {
   const { cartItems, removeFromCart, clearCart, getCartItemsByStore, totalItems } = useCart();
   const { t, currency } = useLanguage();
   const { user } = useAuth();
@@ -102,10 +102,25 @@ export function ShoppingCart() {
         </SheetTrigger>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{t('cart.title') || 'Shopping Cart'}</SheetTitle>
-            <SheetDescription>
-              {totalItems} {totalItems === 1 ? 'item' : 'items'} in cart
-            </SheetDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <SheetTitle>{t('cart.title') || 'Shopping Cart'}</SheetTitle>
+                <SheetDescription>
+                  {totalItems} {totalItems === 1 ? 'item' : 'items'} in cart
+                </SheetDescription>
+              </div>
+              {onAddClick && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onAddClick}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {t('cart.add') || 'Add'}
+                </Button>
+              )}
+            </div>
           </SheetHeader>
 
           <div className="mt-6 space-y-6">
