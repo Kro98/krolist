@@ -47,7 +47,7 @@ interface ProductCardProps {
   userProductCount?: number;
   isSelectMode?: boolean;
   isSelected?: boolean;
-  onToggleSelect?: (id: string, store: string) => void;
+  onToggleSelect?: (product: Product) => void;
 }
 export function ProductCard({
   product,
@@ -126,16 +126,23 @@ export function ProductCard({
       onAddToMyProducts(product);
     }
   };
-  return <Card className="bg-card border-2 border-border shadow-card hover:shadow-hover transition-all duration-300 group relative overflow-hidden">
+
+  const handleCardClick = () => {
+    if (isSelectMode && onToggleSelect) {
+      onToggleSelect(product);
+    }
+  };
+
+  return <Card className={`bg-card border-2 ${isSelected ? 'border-primary ring-2 ring-primary' : 'border-border'} shadow-card hover:shadow-hover transition-all duration-300 group relative overflow-hidden ${isSelectMode ? 'cursor-pointer' : ''}`} onClick={handleCardClick}>
       <CardContent className="p-4">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2">
-            <div className="relative">
+            <div className="relative overflow-hidden rounded-lg">
               <img 
                 src={product.image_url || '/placeholder.svg'} 
                 alt={product.title} 
-                className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border border-border" 
+                className={`w-24 h-24 md:w-28 md:h-28 object-cover border border-border ${isZoomEnabled ? 'transition-transform duration-300 hover:scale-125' : ''}`}
               />
             </div>
             

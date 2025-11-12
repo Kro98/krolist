@@ -22,6 +22,9 @@ interface ProductCarouselProps {
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
   userProductCount?: number;
+  isSelectMode?: boolean;
+  onToggleSelect?: (product: Product) => void;
+  selectedProductIds?: Set<string>;
 }
 
 export function ProductCarousel({
@@ -31,7 +34,10 @@ export function ProductCarousel({
   onUpdate,
   onRefreshPrice,
   onAddToMyProducts,
-  userProductCount = 0
+  userProductCount = 0,
+  isSelectMode = false,
+  onToggleSelect,
+  selectedProductIds = new Set()
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
@@ -98,6 +104,9 @@ export function ProductCarousel({
               onRefreshPrice={onRefreshPrice}
               onAddToMyProducts={onAddToMyProducts}
               userProductCount={userProductCount}
+              isSelectMode={isSelectMode}
+              isSelected={selectedProductIds.has(product.id)}
+              onToggleSelect={onToggleSelect}
             />
           ))}
         </div>
@@ -133,6 +142,9 @@ export function ProductCarousel({
                         onRefreshPrice={onRefreshPrice}
                         onAddToMyProducts={onAddToMyProducts}
                         userProductCount={userProductCount}
+                        isSelectMode={isSelectMode}
+                        isSelected={selectedProductIds.has(product.id)}
+                        onToggleSelect={onToggleSelect}
                       />
                     ))}
                   </div>

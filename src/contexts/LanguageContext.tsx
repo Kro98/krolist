@@ -305,6 +305,9 @@ const translations = {
     // Admin categories
     'admin.categories': 'Categories',
     'admin.loginMessages': 'Login Messages',
+    
+    // Shopping Cart
+    'cart.itemsAdded': '{count} item(s) added to cart',
   },
   ar: {
     // Navigation
@@ -509,6 +512,9 @@ const translations = {
     // Admin categories
     'admin.categories': 'الفئات',
     'admin.loginMessages': 'رسائل تسجيل الدخول',
+    
+    // Shopping Cart
+    'cart.itemsAdded': 'تمت إضافة {count} منتج إلى السلة',
   }
 };
 

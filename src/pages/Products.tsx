@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard, type Product } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
+import { useCart } from "@/contexts/CartContext";
 import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
@@ -30,6 +31,7 @@ const productUpdateSchema = z.object({
 
 export default function Products() {
   const { t, language } = useLanguage();
+  const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [krolistProducts, setKrolistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,7 @@ export default function Products() {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
+  const [showSelectionActions, setShowSelectionActions] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<{
     canRefresh: boolean;
     nextRefreshDate: string | null;
@@ -155,6 +158,55 @@ export default function Products() {
     } catch (error) {
       toast.error(getSafeErrorMessage(error));
     }
+  };
+
+  const handleToggleSelect = (product: Product) => {
+    const newSelected = new Set(selectedProducts);
+    
+    // If this is the first product, set the store
+    if (selectedProducts.size === 0) {
+      setSelectedStore(product.store);
+      newSelected.add(product.id);
+      setShowSelectionActions(true);
+    } 
+    // If selecting from same store
+    else if (product.store === selectedStore) {
+      if (newSelected.has(product.id)) {
+        newSelected.delete(product.id);
+        // If no products left, clear the store and hide actions
+        if (newSelected.size === 0) {
+          setSelectedStore(null);
+          setShowSelectionActions(false);
+        }
+      } else {
+        newSelected.add(product.id);
+      }
+    } 
+    // If trying to select from different store
+    else {
+      toast.error(t('products.selectSameStore'));
+      return;
+    }
+    
+    setSelectedProducts(newSelected);
+  };
+
+  const handleCancelSelection = () => {
+    setSelectedProducts(new Set());
+    setSelectedStore(null);
+    setIsSelectMode(false);
+    setShowSelectionActions(false);
+  };
+
+
+  const handleAddSelectedToCart = () => {
+    const productsToAdd = [...filteredUserProducts, ...filteredKrolistProducts]
+      .filter(p => selectedProducts.has(p.id));
+    
+    productsToAdd.forEach(product => addToCart(product));
+    
+    toast.success(t('cart.itemsAdded').replace('{count}', productsToAdd.length.toString()));
+    handleCancelSelection();
   };
 
   const handleUpdate = async (id: string, updates: Partial<Product>) => {
@@ -306,33 +358,6 @@ export default function Products() {
     );
   }
 
-  const handleToggleSelect = (productId: string, store: string) => {
-    const newSelected = new Set(selectedProducts);
-    
-    if (newSelected.has(productId)) {
-      newSelected.delete(productId);
-      if (newSelected.size === 0) {
-        setSelectedStore(null);
-      }
-    } else {
-      if (selectedStore && selectedStore !== store) {
-        toast.error(`You can only select products from ${selectedStore}. Deselect them first.`);
-        return;
-      }
-      newSelected.add(productId);
-      setSelectedStore(store);
-    }
-    
-    setSelectedProducts(newSelected);
-  };
-
-  const handleAddSelectedToCart = async () => {
-    // This will be implemented with shopping cart feature
-    toast.success(`Added ${selectedProducts.size} products to cart`);
-    setSelectedProducts(new Set());
-    setSelectedStore(null);
-    setIsSelectMode(false);
-  };
 
   return (
     <div className="space-y-6">
@@ -346,17 +371,19 @@ export default function Products() {
             className="pl-10 h-10 bg-card border-border focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
-        <Button
-          variant={isSelectMode ? "default" : "outline"}
-          onClick={() => {
-            setIsSelectMode(!isSelectMode);
-            setSelectedProducts(new Set());
-            setSelectedStore(null);
-          }}
-          className="h-10 whitespace-nowrap"
-        >
-          {isSelectMode ? 'Cancel Select' : 'Select'}
-        </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (isSelectMode) {
+                handleCancelSelection();
+              } else {
+                setIsSelectMode(true);
+              }
+            }}
+            className="gap-2"
+          >
+            {isSelectMode ? t('products.cancelSelection') : t('products.select')}
+          </Button>
         <Button
           variant="outline"
           size="icon"
@@ -466,6 +493,9 @@ export default function Products() {
                 products={filteredUserProducts}
                 onDelete={handleDelete}
                 onUpdate={handleUpdate}
+                isSelectMode={isSelectMode}
+                onToggleSelect={handleToggleSelect}
+                selectedProductIds={selectedProducts}
               />
             </div>
           )}
@@ -477,6 +507,9 @@ export default function Products() {
               products={filteredKrolistProducts}
               onAddToMyProducts={handleAddToMyProducts}
               userProductCount={products.length}
+              isSelectMode={isSelectMode}
+              onToggleSelect={handleToggleSelect}
+              selectedProductIds={selectedProducts}
             />
           )}
         </div>
