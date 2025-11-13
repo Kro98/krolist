@@ -121,7 +121,7 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   return <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <header className="p-6 flex justify-center">
+      <header className="p-6 hidden md:flex justify-center">
         <img src={krolistHeaderLogo} alt="Krolist" className="h-16 object-contain hidden md:block" />
       </header>
 
