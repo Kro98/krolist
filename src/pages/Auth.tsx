@@ -121,8 +121,8 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   return <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <header className="p-6 hidden md:flex justify-center">
-        <img src={krolistHeaderLogo} alt="Krolist" className="h-16 object-contain hidden md:block" />
+      <header className="p-6 flex justify-center">
+        <img src={krolistHeaderLogo} alt="Krolist" className="h-16 object-contain" />
       </header>
 
       {/* Main Content */}
@@ -187,7 +187,7 @@ export default function Auth() {
               </form>
 
               <div className="mt-6 text-center text-sm">
-                <span className="text-gray-400">
+                <span className="text-gray-400 mx-0 my-0 py-0 px-0">
                   {isSignUp ? "Already have an account?" : "Don't have an account?"}
                 </span>{" "}
                 <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-blue-400 hover:text-blue-300">
@@ -212,7 +212,7 @@ export default function Auth() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 px-6 py-0 my-[10px] mx-0">
+      <footer className="border-t border-gray-800 py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-4">
             <Facebook className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
