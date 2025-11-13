@@ -13,6 +13,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { toast } from "sonner";
+
+interface PageContent {
+  content_en: string;
+  content_ar: string | null;
+}
 interface NewsItem {
   id: string;
   title_en: string;
@@ -56,6 +61,7 @@ export default function NewsUpdates() {
     isAdmin
   } = useAdminRole();
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [whatsNewContent, setWhatsNewContent] = useState<PageContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -68,7 +74,9 @@ export default function NewsUpdates() {
   });
   useEffect(() => {
     fetchNews();
+    fetchWhatsNewContent();
   }, []);
+
   const fetchNews = async () => {
     try {
       const {
@@ -83,6 +91,21 @@ export default function NewsUpdates() {
       toast.error(error.message || 'Failed to load news');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchWhatsNewContent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('content_en, content_ar')
+        .eq('page_key', 'news_whats_new')
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      setWhatsNewContent(data);
+    } catch (error: any) {
+      console.error('Failed to load What\'s New content:', error);
     }
   };
   const handleEditClick = (item: NewsItem) => {
@@ -194,38 +217,23 @@ export default function NewsUpdates() {
             </Card>)}
         </div>
 
-        {/* Future Plans Section */}
-        <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">What's Next?</h2>
+        {/* What's New Section */}
+        {whatsNewContent && (
+          <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold">What's New?</h2>
+              </div>
+              <Separator />
+              <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                {language === 'ar' && whatsNewContent.content_ar 
+                  ? whatsNewContent.content_ar 
+                  : whatsNewContent.content_en}
+              </div>
             </div>
-            <Separator />
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Integration with more Saudi stores (Iherp, Namshi, Trendyol, ASOS)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Price history tracking and alerts</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>refresh buttons to update prices</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Advanced filtering and sorting options</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Mobile app for iOS and Android</span>
-              </li>
-            </ul>
-          </div>
-        </Card>
+          </Card>
+        )}
       </div>
 
       {/* Edit Dialog */}
