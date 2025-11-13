@@ -170,9 +170,7 @@ export function ShoppingCart({
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleDirectBuy} className="bg-gradient-to-r from-[hsl(31,98%,51%)] to-[hsl(38,90%,55%)] hover:from-[hsl(31,98%,45%)] hover:to-[hsl(38,90%,50%)] text-white font-bold">
-                  BUY IN SHOP
-                </Button>
+                
                 <Button onClick={() => setShowKrolistOrder(true)} className="bg-gradient-to-r from-[hsl(45,100%,60%)] to-[hsl(45,100%,65%)] hover:from-[hsl(45,100%,55%)] hover:to-[hsl(45,100%,60%)] text-foreground font-bold">
                   BUY WITH KROLIST
                 </Button>
