@@ -16,7 +16,7 @@ import krolistCartLogo from '@/assets/krolist-circle-logo.png';
 export function ShoppingCart({
   onAddClick
 }: {
-  onAddClick?: () => void;
+  onAddClick?: React.ReactNode;
 }) {
   const {
     cartItems,
@@ -101,7 +101,7 @@ export function ShoppingCart({
           <SheetHeader className="bg-gradient-to-r from-[hsl(31,98%,51%)] to-[hsl(38,90%,55%)] p-6 pb-8 relative">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src={krolistCartLogo} alt="Krolist" className="h-12 w-12" />
+                <img src={krolistCartLogo} alt="Krolist" className="h-24 w-24" />
                 <div>
                   <SheetTitle className="text-white text-2xl font-bold">
                     {t('cart.title') || 'Shopping cart'}
