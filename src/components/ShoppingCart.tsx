@@ -117,7 +117,7 @@ export function ShoppingCart({
             {cartItems.length === 0 ? <div className="text-center py-12 text-muted-foreground">
                 Your cart is empty
               </div> : <>
-                {cartItems.map(item => <div key={item.id} className="bg-gradient-to-r from-[hsl(45,100%,85%)] to-[hsl(45,100%,88%)] dark:from-[hsl(45,80%,35%)] dark:to-[hsl(45,80%,38%)] rounded-lg p-3 flex items-center gap-3 relative">
+                {cartItems.map(item => <div key={item.id} className="bg-primary/10 dark:bg-primary/20 rounded-lg p-3 flex items-center gap-3 relative border border-primary/20">
                     {/* Product Image */}
                     {item.image_url && <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                         <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
