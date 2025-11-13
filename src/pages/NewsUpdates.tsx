@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Megaphone, Sparkles, Shield, FileText, Mail, Edit2 } from "lucide-react";
+import { Calendar, Megaphone, Sparkles, Shield, FileText, Mail, Edit2, Edit } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,14 +63,20 @@ export default function NewsUpdates() {
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [whatsNewContent, setWhatsNewContent] = useState<PageContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
-  const [showEditDialog, setShowEditDialog] = useState(false);
+  
+  // Inline editing states
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingWhatsNew, setEditingWhatsNew] = useState(false);
   const [editForm, setEditForm] = useState({
     title_en: '',
     title_ar: '',
     content_en: '',
     content_ar: '',
     category: 'announcement' as 'announcement' | 'update' | 'feature'
+  });
+  const [whatsNewForm, setWhatsNewForm] = useState({
+    content_en: '',
+    content_ar: ''
   });
   useEffect(() => {
     fetchNews();
@@ -109,7 +115,7 @@ export default function NewsUpdates() {
     }
   };
   const handleEditClick = (item: NewsItem) => {
-    setEditingNews(item);
+    setEditingItemId(item.id);
     setEditForm({
       title_en: item.title_en,
       title_ar: item.title_ar || '',
@@ -117,27 +123,65 @@ export default function NewsUpdates() {
       content_ar: item.content_ar || '',
       category: item.category
     });
-    setShowEditDialog(true);
   };
+
   const handleSaveEdit = async () => {
-    if (!editingNews) return;
+    if (!editingItemId) return;
     try {
-      const {
-        error
-      } = await supabase.from('news_updates').update({
-        title_en: editForm.title_en,
-        title_ar: editForm.title_ar || null,
-        content_en: editForm.content_en,
-        content_ar: editForm.content_ar || null,
-        category: editForm.category
-      }).eq('id', editingNews.id);
+      const { error } = await supabase
+        .from('news_updates')
+        .update({
+          title_en: editForm.title_en,
+          title_ar: editForm.title_ar || null,
+          content_en: editForm.content_en,
+          content_ar: editForm.content_ar || null,
+          category: editForm.category
+        })
+        .eq('id', editingItemId);
+
       if (error) throw error;
       toast.success('News updated successfully');
-      setShowEditDialog(false);
+      setEditingItemId(null);
       fetchNews();
     } catch (error: any) {
       toast.error(error.message || 'Failed to update news');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItemId(null);
+  };
+
+  const handleEditWhatsNew = () => {
+    setEditingWhatsNew(true);
+    setWhatsNewForm({
+      content_en: whatsNewContent?.content_en || '',
+      content_ar: whatsNewContent?.content_ar || ''
+    });
+  };
+
+  const handleSaveWhatsNew = async () => {
+    try {
+      const { error } = await supabase
+        .from('page_content')
+        .update({
+          content_en: whatsNewForm.content_en,
+          content_ar: whatsNewForm.content_ar || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('page_key', 'news_whats_new');
+
+      if (error) throw error;
+      toast.success('What\'s New updated successfully');
+      setEditingWhatsNew(false);
+      fetchWhatsNewContent();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update What\'s New');
+    }
+  };
+
+  const handleCancelWhatsNew = () => {
+    setEditingWhatsNew(false);
   };
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -175,121 +219,161 @@ export default function NewsUpdates() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="space-y-6">
-          {newsItems.map(item => <Card key={item.id} className="p-6 hover:shadow-lg transition-all relative">
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Badge className={`${getCategoryColor(item.category)} border`}>
-                      <span className="flex items-center gap-1.5">
-                        {getCategoryIcon(item.category)}
-                        <span className="capitalize">{item.category}</span>
-                      </span>
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{new Date(item.published_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</span>
+          {newsItems.map(item => {
+            const isEditing = editingItemId === item.id;
+            
+            return (
+              <Card key={item.id} className="p-6 hover:shadow-lg transition-all relative">
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${getCategoryColor(item.category)} border`}>
+                        <span className="flex items-center gap-1.5">
+                          {getCategoryIcon(item.category)}
+                          <span className="capitalize">{item.category}</span>
+                        </span>
+                      </Badge>
                     </div>
-                    {isAdmin && <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0">
-                        <Edit2 className="h-4 w-4" />
-                      </Button>}
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>{new Date(item.published_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}</span>
+                      </div>
+                      {isAdmin && !isEditing && (
+                        <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0">
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  <Separator />
+
+                  {/* Content - Editable or View Mode */}
+                  {isEditing ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Title (English)</Label>
+                        <Input
+                          value={editForm.title_en}
+                          onChange={(e) => setEditForm({ ...editForm, title_en: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Title (Arabic)</Label>
+                        <Input
+                          value={editForm.title_ar}
+                          onChange={(e) => setEditForm({ ...editForm, title_ar: e.target.value })}
+                          dir="rtl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Content (English)</Label>
+                        <Textarea
+                          value={editForm.content_en}
+                          onChange={(e) => setEditForm({ ...editForm, content_en: e.target.value })}
+                          className="min-h-[120px] resize-y"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Content (Arabic)</Label>
+                        <Textarea
+                          value={editForm.content_ar}
+                          onChange={(e) => setEditForm({ ...editForm, content_ar: e.target.value })}
+                          className="min-h-[120px] resize-y"
+                          dir="rtl"
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button onClick={handleSaveEdit} size="sm" className="flex-1">
+                          Save
+                        </Button>
+                        <Button onClick={handleCancelEdit} variant="outline" size="sm" className="flex-1">
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <h2 className="text-2xl font-semibold">
+                        {language === 'ar' && item.title_ar ? item.title_ar : item.title_en}
+                      </h2>
+                      <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                        {language === 'ar' && item.content_ar ? item.content_ar : item.content_en}
+                      </p>
+                    </>
+                  )}
                 </div>
-
-                {/* Title */}
-                <h2 className="text-2xl font-semibold">
-                  {language === 'ar' && item.title_ar ? item.title_ar : item.title_en}
-                </h2>
-
-                <Separator />
-
-                {/* Content */}
-                <p className="text-muted-foreground leading-relaxed">
-                  {language === 'ar' && item.content_ar ? item.content_ar : item.content_en}
-                </p>
-              </div>
-            </Card>)}
+              </Card>
+            );
+          })}
         </div>
 
         {/* What's New Section */}
         {whatsNewContent && (
-          <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
+          <Card className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20 hover:shadow-lg transition-all duration-200">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold">What's New?</h2>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                  <h2 className="text-2xl font-bold">
+                    {language === 'ar' ? 'ما الجديد؟' : "What's New?"}
+                  </h2>
+                </div>
+                {isAdmin && !editingWhatsNew && (
+                  <Button variant="ghost" size="sm" onClick={handleEditWhatsNew}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               <Separator />
-              <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                {language === 'ar' && whatsNewContent.content_ar 
-                  ? whatsNewContent.content_ar 
-                  : whatsNewContent.content_en}
-              </div>
+              
+              {editingWhatsNew ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Content (English)</label>
+                    <Textarea
+                      value={whatsNewForm.content_en}
+                      onChange={(e) => setWhatsNewForm({ ...whatsNewForm, content_en: e.target.value })}
+                      className="mt-1 min-h-[120px] resize-y"
+                      placeholder="Enter what's new content in English..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Content (Arabic)</label>
+                    <Textarea
+                      value={whatsNewForm.content_ar}
+                      onChange={(e) => setWhatsNewForm({ ...whatsNewForm, content_ar: e.target.value })}
+                      className="mt-1 min-h-[120px] resize-y"
+                      dir="rtl"
+                      placeholder="أدخل محتوى ما الجديد بالعربية..."
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button onClick={handleSaveWhatsNew} size="sm" className="flex-1">
+                      Save
+                    </Button>
+                    <Button onClick={handleCancelWhatsNew} variant="outline" size="sm" className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {language === 'ar' && whatsNewContent.content_ar 
+                    ? whatsNewContent.content_ar 
+                    : whatsNewContent.content_en}
+                </div>
+              )}
             </div>
           </Card>
         )}
       </div>
 
-      {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit News</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Title (English)</Label>
-              <Input value={editForm.title_en} onChange={e => setEditForm({
-              ...editForm,
-              title_en: e.target.value
-            })} />
-            </div>
-            <div>
-              <Label>Title (Arabic)</Label>
-              <Input value={editForm.title_ar} onChange={e => setEditForm({
-              ...editForm,
-              title_ar: e.target.value
-            })} />
-            </div>
-            <div>
-              <Label>Content (English)</Label>
-              <Textarea value={editForm.content_en} onChange={e => setEditForm({
-              ...editForm,
-              content_en: e.target.value
-            })} rows={6} />
-            </div>
-            <div>
-              <Label>Content (Arabic)</Label>
-              <Textarea value={editForm.content_ar} onChange={e => setEditForm({
-              ...editForm,
-              content_ar: e.target.value
-            })} rows={6} />
-            </div>
-            <div>
-              <Label>Category</Label>
-              <select className="w-full p-2 border rounded-md" value={editForm.category} onChange={e => setEditForm({
-              ...editForm,
-              category: e.target.value as any
-            })}>
-                <option value="announcement">Announcement</option>
-                <option value="feature">Feature</option>
-                <option value="update">Update</option>
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveEdit}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>;
 }
