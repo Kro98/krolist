@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Trash2, Eye, Package } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -30,6 +31,7 @@ export default function OrdersManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     fetchOrders();
@@ -63,8 +65,16 @@ export default function OrdersManager() {
         .eq('id', orderId);
 
       if (error) throw error;
-      toast({ title: 'Order status updated' });
+      
+      toast({ 
+        title: newStatus === 'dismissed' ? 'Order dismissed' : 'Order status updated' 
+      });
+      
       fetchOrders();
+      
+      if (showDialog && selectedOrder?.id === orderId) {
+        setShowDialog(false);
+      }
     } catch (error: any) {
       toast({
         title: t('error'),
@@ -101,9 +111,22 @@ export default function OrdersManager() {
       case 'pending': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400';
       case 'processing': return 'bg-blue-500/10 text-blue-700 dark:text-blue-400';
       case 'completed': return 'bg-green-500/10 text-green-700 dark:text-green-400';
+      case 'dismissed':
       case 'cancelled': return 'bg-red-500/10 text-red-700 dark:text-red-400';
       default: return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
+  };
+
+  const filteredOrders = statusFilter === "all" 
+    ? orders 
+    : orders.filter(order => order.status === statusFilter);
+
+  const orderCounts = {
+    all: orders.length,
+    pending: orders.filter(o => o.status === 'pending').length,
+    processing: orders.filter(o => o.status === 'processing').length,
+    completed: orders.filter(o => o.status === 'completed').length,
+    dismissed: orders.filter(o => o.status === 'dismissed').length,
   };
 
   if (isLoading) {
@@ -124,8 +147,50 @@ export default function OrdersManager() {
         </div>
       </div>
 
+      <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="all" className="relative">
+            All
+            {orderCounts.all > 0 && (
+              <Badge variant="secondary" className="ml-2">{orderCounts.all}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="pending" className="relative">
+            Pending
+            {orderCounts.pending > 0 && (
+              <Badge variant="secondary" className="ml-2">{orderCounts.pending}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="processing" className="relative">
+            Processing
+            {orderCounts.processing > 0 && (
+              <Badge variant="secondary" className="ml-2">{orderCounts.processing}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="relative">
+            Completed
+            {orderCounts.completed > 0 && (
+              <Badge variant="secondary" className="ml-2">{orderCounts.completed}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="dismissed" className="relative">
+            Dismissed
+            {orderCounts.dismissed > 0 && (
+              <Badge variant="secondary" className="ml-2">{orderCounts.dismissed}</Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="grid gap-4">
-        {orders.map((order) => (
+        {filteredOrders.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+              No {statusFilter !== 'all' ? statusFilter : ''} orders found
+            </CardContent>
+          </Card>
+        ) : (
+          filteredOrders.map((order) => (
           <Card key={order.id}>
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -170,7 +235,7 @@ export default function OrdersManager() {
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="processing">Processing</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="dismissed">Dismissed</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -178,7 +243,8 @@ export default function OrdersManager() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -232,7 +298,14 @@ export default function OrdersManager() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
+              onClick={() => selectedOrder && handleUpdateStatus(selectedOrder.id, 'dismissed')}
+            >
+              Dismiss Order
+            </Button>
             <Button
               variant="destructive"
               onClick={() => selectedOrder && handleDelete(selectedOrder.id)}
