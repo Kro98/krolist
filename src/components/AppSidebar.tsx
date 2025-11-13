@@ -1,4 +1,4 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User, Shield, Tag } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User, Shield, Tag, ShoppingBag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -71,6 +71,10 @@ const otherItems = [{
   title: "nav.donation",
   url: "/donation",
   icon: Heart
+}, {
+  title: "nav.myOrders",
+  url: "/my-orders",
+  icon: ShoppingBag
 }, {
   title: "nav.settings",
   url: "/settings",
