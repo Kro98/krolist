@@ -168,13 +168,13 @@ export function ShoppingCart({
                 </span>
               </div>
 
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-2">
-                
-                <Button onClick={() => setShowKrolistOrder(true)} className="bg-gradient-to-r from-[hsl(45,100%,60%)] to-[hsl(45,100%,65%)] hover:from-[hsl(45,100%,55%)] hover:to-[hsl(45,100%,60%)] text-foreground font-bold">
-                  BUY WITH KROLIST
-                </Button>
-              </div>
+              {/* Action Button */}
+              <Button 
+                onClick={() => setShowKrolistOrder(true)} 
+                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold"
+              >
+                Send order to Krolist
+              </Button>
             </div>}
         </SheetContent>
       </Sheet>
