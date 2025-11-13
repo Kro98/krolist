@@ -68,8 +68,12 @@ export function ProductCard({
     currency,
     convertPriceToDisplay
   } = useConvertedPrice();
-  const { addToCart } = useCart();
-  const { isZoomEnabled } = useImageZoom();
+  const {
+    addToCart
+  } = useCart();
+  const {
+    isZoomEnabled
+  } = useImageZoom();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editForm, setEditForm] = useState({
     title: product.title,
@@ -116,7 +120,6 @@ export function ProductCard({
       setShowEditDialog(false);
     }
   };
-
   const handleAddToMyProducts = () => {
     if (userProductCount >= 24) {
       toast.error("Max products reached. Remove older products or contact us for an upgrade.");
@@ -126,44 +129,29 @@ export function ProductCard({
       onAddToMyProducts(product);
     }
   };
-
   const handleCardClick = () => {
     if (isSelectionMode && onToggleSelect) {
       onToggleSelect(product);
     }
   };
-
   return <Card className={`bg-card border-2 ${isSelected ? 'border-primary ring-2 ring-primary' : 'border-border'} shadow-card hover:shadow-hover transition-all duration-300 group relative overflow-hidden ${isSelectionMode ? 'cursor-pointer' : ''}`} onClick={handleCardClick}>
-      <CardContent className="p-4">
+      <CardContent className="p-4 mx-0">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2">
             <div className="relative overflow-hidden rounded-lg">
-              <img 
-                src={product.image_url || '/placeholder.svg'} 
-                alt={product.title} 
-                className={`w-24 h-24 md:w-28 md:h-28 object-cover border border-border transition-transform duration-300 hover:scale-125`}
-              />
+              <img src={product.image_url || '/placeholder.svg'} alt={product.title} className={`w-24 h-24 md:w-28 md:h-28 object-cover border border-border transition-transform duration-300 hover:scale-125`} />
             </div>
             
             {/* Review button under image for Krolist products */}
-            {product.isKrolistProduct && product.youtube_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full h-7 px-2 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                onClick={() => window.open(product.youtube_url!, '_blank')}
-              >
+            {product.isKrolistProduct && product.youtube_url && <Button size="sm" variant="outline" className="w-full h-7 px-2 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')}>
                 <Youtube className="h-3.5 w-3.5" />
                 <span className="text-xs">Review</span>
-              </Button>
-            )}
+              </Button>}
             
-            {!product.isKrolistProduct && (
-              <div className="text-[10px] text-muted-foreground text-center">
+            {!product.isKrolistProduct && <div className="text-[10px] text-muted-foreground text-center">
                 {new Date(product.last_checked_at).toLocaleDateString()}
-              </div>
-            )}
+              </div>}
           </div>
           
           {/* Product Info */}
@@ -175,42 +163,26 @@ export function ProductCard({
               </a>
               
               {/* Show + icon for Krolist products */}
-              {product.isKrolistProduct && onAddToMyProducts ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0"
-                  onClick={handleAddToMyProducts}
-                  title={userProductCount >= 24 ? "Product limit reached" : "Add to my list"}
-                >
+              {product.isKrolistProduct && onAddToMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0" onClick={handleAddToMyProducts} title={userProductCount >= 24 ? "Product limit reached" : "Add to my list"}>
                   <Plus className="h-5 w-5 text-primary" />
-                </Button>
-              ) : (
-                /* Show menu for user products only */
-                (onDelete || onUpdate) && (
-                  <DropdownMenu>
+                </Button> : (/* Show menu for user products only */
+            (onDelete || onUpdate) && <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background border-2 border-border z-50">
-                      {onUpdate && (
-                        <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                      {onUpdate && <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                           <Edit className="h-4 w-4 mr-2" />
                           {t('products.edit')}
-                        </DropdownMenuItem>
-                      )}
-                      {onDelete && (
-                        <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                        </DropdownMenuItem>}
+                      {onDelete && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
                           {t('products.delete')}
-                        </DropdownMenuItem>
-                      )}
+                        </DropdownMenuItem>}
                     </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              )}
+                  </DropdownMenu>)}
             </div>
             
             {/* Description */}
@@ -227,28 +199,22 @@ export function ProductCard({
                 </span>
                 
                 {/* Show discount badge for Krolist products */}
-                {product.isKrolistProduct && product.current_price !== product.original_price && (
-                  <Badge className={`text-xs ${discountValue > 0 ? 'bg-success hover:bg-success text-success-foreground' : 'bg-destructive hover:bg-destructive text-destructive-foreground'}`}>
+                {product.isKrolistProduct && product.current_price !== product.original_price && <Badge className={`text-xs ${discountValue > 0 ? 'bg-success hover:bg-success text-success-foreground' : 'bg-destructive hover:bg-destructive text-destructive-foreground'}`}>
                     {discountValue > 0 ? '-' : '+'}{Math.abs(discountValue)}%
-                  </Badge>
-                )}
+                  </Badge>}
                 
                 {/* Show price change for user products */}
-                {!product.isKrolistProduct && (
-                  <span className={`text-xs sm:text-sm ${priceChange < 0 ? 'text-success' : priceChange > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {!product.isKrolistProduct && <span className={`text-xs sm:text-sm ${priceChange < 0 ? 'text-success' : priceChange > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                     {priceChange !== 0 ? `${priceChange > 0 ? '+' : ''}${priceChangePercent}%` : '0.00%'}
-                  </span>
-                )}
+                  </span>}
               </div>
               
               {/* Original Price (under current price for Krolist products) */}
-              {product.isKrolistProduct && product.current_price !== product.original_price && (
-                <div className={`flex items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              {product.isKrolistProduct && product.current_price !== product.original_price && <div className={`flex items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
                   <span className="text-xs sm:text-sm text-muted-foreground line-through">
                     {currency} {displayOriginalPrice.toFixed(2)}
                   </span>
-                </div>
-              )}
+                </div>}
             </div>
             
             {/* Badges */}
@@ -260,23 +226,16 @@ export function ProductCard({
                 {product.store}
               </Badge>
               {product.category && <Badge variant="secondary" className={`border ${(() => {
-                  const predefinedCategories = ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'];
-                  return !predefinedCategories.includes(product.category) ? 'border-2 border-primary' : 'border-border';
-                })()}`}>
+              const predefinedCategories = ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'];
+              return !predefinedCategories.includes(product.category) ? 'border-2 border-primary' : 'border-border';
+            })()}`}>
                   {product.category}
                 </Badge>}
               {/* Show YouTube button for user products only */}
-              {!product.isKrolistProduct && product.youtube_url && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                  onClick={() => window.open(product.youtube_url!, '_blank')}
-                >
+              {!product.isKrolistProduct && product.youtube_url && <Button size="sm" variant="outline" className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')}>
                   <Youtube className="h-3 w-3" />
                   <span className="text-xs">Review</span>
-                </Button>
-              )}
+                </Button>}
             </div>
           </div>
         </div>
