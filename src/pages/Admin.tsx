@@ -35,10 +35,14 @@ export default function Admin() {
       const {
         count,
         error
-      } = await supabase.from('orders').select('*', {
-        count: 'exact',
-        head: true
-      });
+      } = await supabase
+        .from('orders')
+        .select('*', {
+          count: 'exact',
+          head: true
+        })
+        .eq('status', 'pending');
+      
       if (!error && count !== null) {
         setOrderCount(count);
       }
