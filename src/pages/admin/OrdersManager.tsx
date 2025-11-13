@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Trash2, Eye, Package } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Order {
   id: string;
@@ -25,11 +26,15 @@ interface Order {
   updated_at: string;
 }
 
+interface OrderWithEmail extends Order {
+  user_email?: string;
+}
+
 export default function OrdersManager() {
   const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithEmail | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -72,7 +77,8 @@ export default function OrdersManager() {
       
       fetchOrders();
       
-      if (showDialog && selectedOrder?.id === orderId) {
+      // Always close dialog when dismissing
+      if (newStatus === 'dismissed' || (showDialog && selectedOrder?.id === orderId)) {
         setShowDialog(false);
       }
     } catch (error: any) {
@@ -81,6 +87,52 @@ export default function OrdersManager() {
         description: error.message,
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleProductCheck = async (orderId: string, productIndex: number, checked: boolean) => {
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order || !Array.isArray(order.products)) return;
+
+      const updatedProducts = [...order.products];
+      updatedProducts[productIndex] = {
+        ...updatedProducts[productIndex],
+        completed: checked
+      };
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ products: updatedProducts })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Update local state
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, products: updatedProducts } : o
+      ));
+
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, products: updatedProducts });
+      }
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchUserEmail = async (userId: string | null) => {
+    if (!userId) return null;
+    try {
+      const { data, error } = await supabase.auth.admin.getUserById(userId);
+      if (error) throw error;
+      return data.user?.email || null;
+    } catch {
+      return null;
     }
   };
 
@@ -216,8 +268,9 @@ export default function OrdersManager() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        setSelectedOrder(order);
+                      onClick={async () => {
+                        const email = await fetchUserEmail(order.user_id);
+                        setSelectedOrder({ ...order, user_email: email || undefined });
                         setShowDialog(true);
                       }}
                     >
@@ -258,6 +311,9 @@ export default function OrdersManager() {
                 <h3 className="font-semibold mb-2">Customer Information</h3>
                 <p><strong>Name:</strong> {selectedOrder.customer_name}</p>
                 <p><strong>Phone:</strong> {selectedOrder.customer_phone}</p>
+                {selectedOrder.user_email && (
+                  <p><strong>Email:</strong> {selectedOrder.user_email}</p>
+                )}
                 <p><strong>Order Date:</strong> {new Date(selectedOrder.created_at).toLocaleString()}</p>
               </div>
               
@@ -267,21 +323,32 @@ export default function OrdersManager() {
                 <h3 className="font-semibold mb-2">Products</h3>
                 <div className="space-y-2">
                   {(Array.isArray(selectedOrder.products) ? selectedOrder.products : []).map((product: any, index: number) => (
-                    <div key={index} className="p-3 border rounded-lg">
-                      <p className="font-medium">{product.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {product.store} • {product.price} {product.currency} × {product.quantity}
-                      </p>
-                      {product.product_url && (
-                        <a 
-                          href={product.product_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline"
-                        >
-                          View Product
-                        </a>
-                      )}
+                    <div key={index} className="p-3 border rounded-lg flex items-start gap-3">
+                      <Checkbox
+                        checked={product.completed || false}
+                        onCheckedChange={(checked) => 
+                          handleProductCheck(selectedOrder.id, index, checked as boolean)
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className={`font-medium ${product.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {product.title}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {product.store} • {product.price} {product.currency} × {product.quantity}
+                        </p>
+                        {product.product_url && (
+                          <a 
+                            href={product.product_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            View Product
+                          </a>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
