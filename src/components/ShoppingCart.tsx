@@ -98,7 +98,7 @@ export function ShoppingCart({
         </SheetTrigger>
         <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
           {/* Header with gradient background */}
-          <SheetHeader className="bg-gradient-to-r from-[hsl(31,98%,51%)] to-[hsl(38,90%,55%)] p-6 pb-8 relative">
+          <SheetHeader className="bg-gradient-to-r from-[hsl(31,98%,51%)] to-[hsl(38,90%,55%)] p-6 pb-8 relative py-[15px]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img src={krolistCartLogo} alt="Krolist" className="h-24 w-24" />
