@@ -36,18 +36,15 @@ export function ShoppingCart({
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const totalAmount = cartItems.reduce((sum, item) => sum + item.current_price * item.quantity, 0);
   const handleDirectBuy = () => {
     // Group products by store
     const stores = [...new Set(cartItems.map(item => item.store))];
-    
     stores.forEach(store => {
       const storeProducts = cartItems.filter(item => item.store === store);
       const storeUrl = replaceWithAffiliateLink(`https://${store.toLowerCase()}.com`);
       window.open(storeUrl, '_blank');
     });
-    
     toast.success(`Opening stores in new tabs`);
   };
   const handleKrolistOrder = async () => {
@@ -111,42 +108,20 @@ export function ShoppingCart({
                   </SheetTitle>
                 </div>
               </div>
-              {onAddClick && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={onAddClick}
-                  className="text-white hover:bg-white/20"
-                >
-                  <Plus className="h-5 w-5" />
-                </Button>
-              )}
+              {onAddClick}
             </div>
           </SheetHeader>
 
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {cartItems.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+            {cartItems.length === 0 ? <div className="text-center py-12 text-muted-foreground">
                 Your cart is empty
-              </div>
-            ) : (
-              <>
-                {cartItems.map(item => (
-                  <div 
-                    key={item.id} 
-                    className="bg-gradient-to-r from-[hsl(45,100%,85%)] to-[hsl(45,100%,88%)] dark:from-[hsl(45,80%,35%)] dark:to-[hsl(45,80%,38%)] rounded-lg p-3 flex items-center gap-3 relative"
-                  >
+              </div> : <>
+                {cartItems.map(item => <div key={item.id} className="bg-gradient-to-r from-[hsl(45,100%,85%)] to-[hsl(45,100%,88%)] dark:from-[hsl(45,80%,35%)] dark:to-[hsl(45,80%,38%)] rounded-lg p-3 flex items-center gap-3 relative">
                     {/* Product Image */}
-                    {item.image_url && (
-                      <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
-                        <img 
-                          src={item.image_url} 
-                          alt={item.title} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
+                    {item.image_url && <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                      </div>}
                     
                     {/* Product Info */}
                     <div className="flex-1 min-w-0">
@@ -160,43 +135,31 @@ export function ShoppingCart({
 
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2 bg-foreground/90 rounded-full px-2 py-1">
-                      <button
-                        onClick={() => {
-                          if (item.quantity > 1) {
-                            updateQuantity(item.id, item.quantity - 1);
-                          }
-                        }}
-                        className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center hover:bg-background/80 transition-colors"
-                      >
+                      <button onClick={() => {
+                  if (item.quantity > 1) {
+                    updateQuantity(item.id, item.quantity - 1);
+                  }
+                }} className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center hover:bg-background/80 transition-colors">
                         <Minus className="h-3 w-3" />
                       </button>
                       <span className="text-background font-bold min-w-[20px] text-center">
                         {item.quantity}
                       </span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center hover:bg-background/80 transition-colors"
-                      >
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center hover:bg-background/80 transition-colors">
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
 
                     {/* Remove Button */}
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors"
-                    >
+                    <button onClick={() => removeFromCart(item.id)} className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors">
                       <X className="h-4 w-4" />
                     </button>
-                  </div>
-                ))}
-              </>
-            )}
+                  </div>)}
+              </>}
           </div>
 
           {/* Footer with Total and Buttons */}
-          {cartItems.length > 0 && (
-            <div className="border-t border-border p-4 space-y-3 bg-card">
+          {cartItems.length > 0 && <div className="border-t border-border p-4 space-y-3 bg-card">
               {/* Total */}
               <div className="flex items-center justify-between px-2">
                 <span className="text-xl font-bold text-foreground">TOTAL</span>
@@ -207,21 +170,14 @@ export function ShoppingCart({
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-2">
-                <Button
-                  onClick={handleDirectBuy}
-                  className="bg-gradient-to-r from-[hsl(31,98%,51%)] to-[hsl(38,90%,55%)] hover:from-[hsl(31,98%,45%)] hover:to-[hsl(38,90%,50%)] text-white font-bold"
-                >
+                <Button onClick={handleDirectBuy} className="bg-gradient-to-r from-[hsl(31,98%,51%)] to-[hsl(38,90%,55%)] hover:from-[hsl(31,98%,45%)] hover:to-[hsl(38,90%,50%)] text-white font-bold">
                   BUY IN SHOP
                 </Button>
-                <Button
-                  onClick={() => setShowKrolistOrder(true)}
-                  className="bg-gradient-to-r from-[hsl(45,100%,60%)] to-[hsl(45,100%,65%)] hover:from-[hsl(45,100%,55%)] hover:to-[hsl(45,100%,60%)] text-foreground font-bold"
-                >
+                <Button onClick={() => setShowKrolistOrder(true)} className="bg-gradient-to-r from-[hsl(45,100%,60%)] to-[hsl(45,100%,65%)] hover:from-[hsl(45,100%,55%)] hover:to-[hsl(45,100%,60%)] text-foreground font-bold">
                   BUY WITH KROLIST
                 </Button>
               </div>
-            </div>
-          )}
+            </div>}
         </SheetContent>
       </Sheet>
 
