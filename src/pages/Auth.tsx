@@ -119,7 +119,7 @@ export default function Auth() {
         <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Logo */}
           <div className="hidden lg:flex flex-col items-center justify-center">
-            <img src={krolistCircleLogo} alt="Krolist Logo" className="w-80 h-80 object-contain mb-8" />
+            <img src={krolistCircleLogo} alt="Krolist Logo" className="w-[640px] h-[640px] object-contain mb-8" />
             <p className="text-xl text-gray-400">Your ultimate shopping manager.</p>
           </div>
 
