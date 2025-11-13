@@ -37,6 +37,8 @@ export default function OrdersManager() {
   const [selectedOrder, setSelectedOrder] = useState<OrderWithEmail | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState("");
 
   useEffect(() => {
     fetchOrders();
@@ -160,12 +162,40 @@ export default function OrdersManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400';
-      case 'processing': return 'bg-blue-500/10 text-blue-700 dark:text-blue-400';
-      case 'completed': return 'bg-green-500/10 text-green-700 dark:text-green-400';
+      case 'pending': return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-500 border border-yellow-500/30';
+      case 'processing': return 'bg-blue-500/20 text-blue-600 dark:text-blue-500 border border-blue-500/30';
+      case 'completed': return 'bg-green-500/20 text-green-600 dark:text-green-500 border border-green-500/30';
       case 'dismissed':
-      case 'cancelled': return 'bg-red-500/10 text-red-700 dark:text-red-400';
-      default: return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
+      case 'cancelled': return 'bg-destructive/20 text-destructive border border-destructive/30';
+      default: return 'bg-muted text-muted-foreground border border-border';
+    }
+  };
+
+  const handleNotesUpdate = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ notes: notesValue })
+        .eq('id', selectedOrder.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Notes updated successfully' });
+      
+      setOrders(prev => prev.map(o => 
+        o.id === selectedOrder.id ? { ...o, notes: notesValue } : o
+      ));
+      
+      setSelectedOrder({ ...selectedOrder, notes: notesValue });
+      setEditingNotes(false);
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -271,6 +301,7 @@ export default function OrdersManager() {
                       onClick={async () => {
                         const email = await fetchUserEmail(order.user_id);
                         setSelectedOrder({ ...order, user_email: email || undefined });
+                        setNotesValue(order.notes || "");
                         setShowDialog(true);
                       }}
                     >
@@ -300,7 +331,13 @@ export default function OrdersManager() {
         )}
       </div>
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog open={showDialog} onOpenChange={(open) => {
+        setShowDialog(open);
+        if (!open) {
+          setEditingNotes(false);
+          setNotesValue("");
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
@@ -354,6 +391,57 @@ export default function OrdersManager() {
                 </div>
               </div>
               
+              <Separator />
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Admin Notes</h3>
+                  {!editingNotes && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setEditingNotes(true);
+                        setNotesValue(selectedOrder.notes || "");
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
+                {editingNotes ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={notesValue}
+                      onChange={(e) => setNotesValue(e.target.value)}
+                      className="w-full min-h-[100px] p-3 border rounded-md resize-y bg-background text-foreground"
+                      placeholder="Add internal notes or tracking information..."
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleNotesUpdate}>
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingNotes(false);
+                          setNotesValue(selectedOrder.notes || "");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-muted/30 rounded-md min-h-[60px]">
+                    {selectedOrder.notes || (
+                      <span className="text-muted-foreground text-sm">No notes added yet</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <Separator />
               
               <div className="flex justify-between items-center">
