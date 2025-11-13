@@ -3,7 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
 import { ShoppingCart } from "@/components/ShoppingCart";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -55,13 +56,16 @@ export function Layout({ children }: LayoutProps) {
           <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
             <div className="flex items-center">
               <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
-              <img src={krolistLogo} alt="Krolist" className="h-8 object-contain" />
+              <Link to="/products">
+                <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+              </Link>
             </div>
             <ShoppingCart onAddClick={handleAddClick} />
           </header>
           
           <main className="flex-1 overflow-auto">
             <div className="container max-w-7xl mx-auto sm:px-6 lg:px-8 py-[20px] px-[10px]">
+              <PageBreadcrumbs />
               {children}
             </div>
           </main>
