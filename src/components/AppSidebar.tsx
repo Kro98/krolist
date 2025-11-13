@@ -19,6 +19,10 @@ const mainItems = [{
   title: "nav.analytics",
   url: "/analytics",
   icon: BarChart3
+}, {
+  title: "nav.myOrders",
+  url: "/my-orders",
+  icon: ShoppingBag
 }];
 
 const getShopItems = () => {
@@ -71,10 +75,6 @@ const otherItems = [{
   title: "nav.donation",
   url: "/donation",
   icon: Heart
-}, {
-  title: "nav.myOrders",
-  url: "/my-orders",
-  icon: ShoppingBag
 }, {
   title: "nav.settings",
   url: "/settings",
