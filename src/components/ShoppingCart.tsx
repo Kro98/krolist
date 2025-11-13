@@ -45,11 +45,11 @@ export function ShoppingCart({
       const storeUrl = replaceWithAffiliateLink(`https://${store.toLowerCase()}.com`);
       window.open(storeUrl, '_blank');
     });
-    toast.success(`Opening stores in new tabs`);
+    toast.success(t('cart.toast.openingStores'));
   };
   const handleKrolistOrder = async () => {
     if (!customerName || !customerPhone) {
-      toast.error('Please provide your name and phone number');
+      toast.error(t('cart.orderDialog.namePhoneRequired'));
       return;
     }
     setIsSubmitting(true);
@@ -75,13 +75,13 @@ export function ShoppingCart({
         error
       } = await supabase.from('orders').insert([orderData]);
       if (error) throw error;
-      toast.success('Order submitted successfully! Admins will contact you soon.');
+      toast.success(t('cart.orderDialog.success'));
       clearCart();
       setShowKrolistOrder(false);
       setCustomerName('');
       setCustomerPhone('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to submit order');
+      toast.error(error.message || t('cart.orderDialog.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -104,7 +104,7 @@ export function ShoppingCart({
                 <img src={krolistCartLogo} alt="Krolist" className="h-24 w-24" />
                 <div>
                   <SheetTitle className="text-white text-2xl font-bold">
-                    {t('cart.title') || 'Shopping cart'}
+                    {t('cart.title')}
                   </SheetTitle>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export function ShoppingCart({
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {cartItems.length === 0 ? <div className="text-center py-12 text-muted-foreground">
-                Your cart is empty
+                {t('cart.emptyCart')}
               </div> : <>
                 {cartItems.map(item => <div key={item.id} className="bg-primary/10 dark:bg-primary/20 rounded-lg p-3 flex items-center gap-3 relative border border-primary/20">
                     {/* Product Image */}
@@ -162,7 +162,7 @@ export function ShoppingCart({
           {cartItems.length > 0 && <div className="border-t border-border p-4 space-y-3 bg-card">
               {/* Total */}
               <div className="flex items-center justify-between px-2">
-                <span className="text-xl font-bold text-foreground">TOTAL</span>
+                <span className="text-xl font-bold text-foreground">{t('cart.total')}</span>
                 <span className="text-2xl font-bold text-foreground">
                   {totalAmount.toFixed(2)} {currency}
                 </span>
@@ -170,7 +170,7 @@ export function ShoppingCart({
 
               {/* Action Button */}
               <Button onClick={() => setShowKrolistOrder(true)} className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold">
-                Send order to Krolist
+                {t('cart.sendOrder')}
               </Button>
             </div>}
         </SheetContent>
@@ -179,28 +179,28 @@ export function ShoppingCart({
       <Dialog open={showKrolistOrder} onOpenChange={setShowKrolistOrder}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Order through Krolist</DialogTitle>
+            <DialogTitle>{t('cart.orderDialog.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Full Name *</Label>
-              <Input id="name" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Enter your full name" />
+              <Label htmlFor="name">{t('cart.orderDialog.fullName')} *</Label>
+              <Input id="name" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder={t('cart.orderDialog.fullNamePlaceholder')} />
             </div>
             <div>
-              <Label htmlFor="phone">Phone Number *</Label>
-              <Input id="phone" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="+966 XX XXX XXXX" />
+              <Label htmlFor="phone">{t('cart.orderDialog.phone')} *</Label>
+              <Input id="phone" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder={t('cart.orderDialog.phonePlaceholder')} />
             </div>
             <div className="text-sm text-muted-foreground">
-              <p>Total Items: {totalItems}</p>
-              <p>Admins will review your order and contact you shortly.</p>
+              <p>{t('cart.orderDialog.totalItems')}: {totalItems}</p>
+              <p>{t('cart.orderDialog.description')}</p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowKrolistOrder(false)}>
-              Cancel
+              {t('cart.orderDialog.cancel')}
             </Button>
             <Button onClick={handleKrolistOrder} disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Submit Order'}
+              {isSubmitting ? t('cart.orderDialog.submitting') : t('cart.orderDialog.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
