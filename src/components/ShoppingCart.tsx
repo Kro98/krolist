@@ -12,7 +12,7 @@ import { replaceWithAffiliateLink } from '@/lib/affiliateLinks';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import krolistCartLogo from '@/assets/krolist-circle-logo.png';
+import krolistCartLogo from '@/assets/krolist-cart-custom.png';
 export function ShoppingCart({
   onAddClick
 }: {
