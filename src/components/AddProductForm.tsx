@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, PenLine } from "lucide-react";
 import { ManualProductForm } from "./ManualProductForm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Mode = 'select' | 'search' | 'manual';
 
 export function AddProductForm() {
   const [mode, setMode] = useState<Mode>('select');
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleSearchClick = () => {
     navigate('/search-products');
@@ -30,9 +32,9 @@ export function AddProductForm() {
   return (
     <Card className="max-w-2xl mx-auto shadow-card">
       <CardHeader className="text-center">
-        <CardTitle>Add a Product</CardTitle>
+        <CardTitle>{t('products.addProduct')}</CardTitle>
         <CardDescription>
-          Choose how you'd like to add a product to track
+          {t('products.addProductDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -47,15 +49,15 @@ export function AddProductForm() {
                 <Search className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Search for Products</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('products.searchForProducts')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Search across multiple stores and compare prices from different sellers
+                  {t('products.searchProductsDesc')}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
                 <span className="text-xs bg-muted px-2 py-1 rounded">Amazon</span>
                 <span className="text-xs bg-muted px-2 py-1 rounded">Noon</span>
-                <span className="text-xs bg-muted px-2 py-1 rounded">More...</span>
+                <span className="text-xs bg-muted px-2 py-1 rounded">{t('products.more')}</span>
               </div>
             </div>
           </button>
@@ -70,14 +72,14 @@ export function AddProductForm() {
                 <PenLine className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Add Manually</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('products.addManually')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Paste a product URL and we'll auto-fill the details, or enter everything manually
+                  {t('products.addManuallyDesc')}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
-                <span className="text-xs bg-muted px-2 py-1 rounded">Any URL</span>
-                <span className="text-xs bg-muted px-2 py-1 rounded">Full Control</span>
+                <span className="text-xs bg-muted px-2 py-1 rounded">{t('products.anyURL')}</span>
+                <span className="text-xs bg-muted px-2 py-1 rounded">{t('products.fullControl')}</span>
               </div>
             </div>
           </button>
