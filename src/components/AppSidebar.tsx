@@ -288,8 +288,10 @@ export function AppSidebar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => signOut()}
-                className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={signOut}
+                className={`w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 ${
+                  language === 'ar' ? 'justify-start flex-row-reverse' : 'justify-start'
+                }`}
               >
                 <LogOut className="h-4 w-4" />
                 {t('auth.signOut') || 'Sign Out'}

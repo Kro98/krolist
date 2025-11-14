@@ -92,6 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setIsGuest(false);
     localStorage.removeItem('isGuest');
+    // Redirect to auth page after logout
+    window.location.href = '/auth';
   };
 
   const continueAsGuest = () => {
