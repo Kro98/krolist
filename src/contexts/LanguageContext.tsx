@@ -131,6 +131,9 @@ const translations = {
     // User
     'user.guest': 'Guest',
     
+    // Auth
+    'auth.signOut': 'Sign Out',
+    
     // Admin Dashboard
     'admin.dashboard': 'Admin Dashboard',
     'admin.dashboardDesc': 'Manage Krolist content and settings',
@@ -532,6 +535,10 @@ const translations = {
     // User roles
     'user.admin': 'مسؤول',
     'user.user': 'مستخدم',
+    'user.guest': 'ضيف',
+    
+    // Auth
+    'auth.signOut': 'تسجيل الخروج',
     
     // Admin categories
     'admin.categories': 'الفئات',
