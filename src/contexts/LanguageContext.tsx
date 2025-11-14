@@ -334,6 +334,8 @@ const translations = {
     'nav.dashboard': 'لوحة التحكم',
     'nav.products': 'المنتجات',
     'nav.analytics': 'التحليلات',
+    'nav.news': 'الأخبار والتحديثات',
+    'nav.events': 'الفعاليات',
     'nav.promoCodes': 'أكواد الخصم',
     'nav.donation': 'دعم المطور',
     'nav.myOrders': 'طلباتي',
