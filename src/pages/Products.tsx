@@ -292,20 +292,54 @@ export default function Products() {
         return;
       }
 
-      // Check if product already exists
-      const { data: existing } = await supabase
+      // Check if product already exists (active)
+      const { data: existingActive } = await supabase
         .from('products')
         .select('id')
         .eq('product_url', product.product_url)
         .eq('is_active', true)
         .maybeSingle();
 
-      if (existing) {
+      if (existingActive) {
         toast.info('This product is already in your list');
         return;
       }
 
-      // Add product
+      // Check if there's an inactive product with the same URL
+      const { data: existingInactive } = await supabase
+        .from('products')
+        .select('id')
+        .eq('product_url', product.product_url)
+        .eq('is_active', false)
+        .maybeSingle();
+
+      if (existingInactive) {
+        // Reactivate the existing product with updated data
+        const { error } = await supabase
+          .from('products')
+          .update({
+            is_active: true,
+            title: product.title,
+            description: product.description,
+            image_url: product.image_url,
+            category: product.category,
+            current_price: product.current_price,
+            original_price: product.original_price,
+            currency: product.currency,
+            original_currency: product.original_currency,
+            updated_at: new Date().toISOString(),
+            last_checked_at: new Date().toISOString()
+          })
+          .eq('id', existingInactive.id);
+
+        if (error) throw error;
+
+        toast.success('Product re-added to your list!');
+        await loadProducts();
+        return;
+      }
+
+      // Add new product
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
