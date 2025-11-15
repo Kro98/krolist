@@ -38,15 +38,9 @@ export default function Settings() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-  const [adPreference, setAdPreference] = useState<string>("");
   const {
     toast
   } = useToast();
-
-  useEffect(() => {
-    const storedPreference = localStorage.getItem("adblock-preference") || "not-set";
-    setAdPreference(storedPreference);
-  }, []);
 
   useEffect(() => {
     if (user) {
@@ -115,18 +109,6 @@ export default function Settings() {
     }
   };
 
-  const handleAdPreferenceChange = (value: string) => {
-    localStorage.setItem("adblock-preference", value);
-    setAdPreference(value);
-    toast({
-      title: "Ad Preference Updated",
-      description: value === "allow-ads" 
-        ? "Ads will be shown to support the project" 
-        : value === "block-ads"
-        ? "Ads are blocked for this website"
-        : "Ad preference reset",
-    });
-  };
 
   return (
     <div className="flex gap-6 items-start">
@@ -236,36 +218,6 @@ export default function Settings() {
         {/* Shop Management */}
         <ShopManager />
 
-        {/* Ad Preferences */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Ad Preferences
-            </CardTitle>
-            <CardDescription>
-              Manage your ad blocker settings for this website
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="ad-preference">Ad Block Preference</Label>
-              <Select value={adPreference} onValueChange={handleAdPreferenceChange}>
-                <SelectTrigger id="ad-preference">
-                  <SelectValue placeholder="Select your preference" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="allow-ads">Allow Ads (Support the project)</SelectItem>
-                  <SelectItem value="block-ads">Block Ads</SelectItem>
-                  <SelectItem value="not-set">Not Set (Will ask again)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground mt-2">
-                Allowing ads helps us keep the project running and add more features. Thank you for your support!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Account */}
         <Card className="shadow-card">
