@@ -1,19 +1,33 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText } from "lucide-react";
+import { FileText, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 export default function TermsOfService() {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-12">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('common.back')}
+          </Button>
           <div className="flex items-center gap-3 mb-4">
             <FileText className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-bold">Terms of Service</h1>
+            <h1 className="text-4xl md:text-5xl font-bold">{t('terms.title')}</h1>
           </div>
           <p className="text-lg text-muted-foreground">
-            Last updated: October 13, 2025
+            {t('terms.lastUpdated')}
           </p>
         </div>
       </div>
