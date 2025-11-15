@@ -40,9 +40,9 @@ export default function ContactUs() {
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <Mail className="h-8 w-8 text-primary" />
               </div>
-              <h2 className="text-2xl font-semibold">Email</h2>
+              <h2 className="text-2xl font-semibold">{t('contact.email.title')}</h2>
               <p className="text-muted-foreground">
-                Send us an email and we'll get back to you as soon as possible.
+                {t('contact.email.content')}
               </p>
               <a 
                 href="mailto:krolist.help@gmail.com"
@@ -61,8 +61,8 @@ export default function ContactUs() {
                 <div className="h-16 w-16 rounded-full bg-sky-100 dark:bg-sky-950 flex items-center justify-center">
                   <Twitter className="h-8 w-8 text-sky-500" />
                 </div>
-                <h2 className="text-xl font-semibold">Twitter/X</h2>
-                <p className="text-muted-foreground text-sm">Follow us on X for updates</p>
+                <h2 className="text-xl font-semibold">{t('contact.twitter.title')}</h2>
+                <p className="text-muted-foreground text-sm">{t('contact.twitter.content')}</p>
                 <Button 
                   variant="default" 
                   className="w-full bg-sky-500 hover:bg-sky-600"
@@ -79,13 +79,13 @@ export default function ContactUs() {
                 <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
                   <Facebook className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h2 className="text-xl font-semibold">Facebook</h2>
+                <h2 className="text-xl font-semibold">{t('contact.facebook.title')}</h2>
                 <Button 
                   variant="secondary" 
                   disabled
                   className="w-full"
                 >
-                  Coming Soon
+                  {t('contact.comingSoon')}
                 </Button>
               </div>
             </Card>
