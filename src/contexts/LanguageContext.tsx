@@ -456,6 +456,11 @@ const translations = {
     // Shopping Cart
     'cart.title': 'Shopping Cart',
     'cart.emptyCart': 'Your cart is empty',
+    'cart.emptyGuide.description': 'Follow these simple steps to place your order:',
+    'cart.emptyGuide.step1': 'Use the select button in the products page',
+    'cart.emptyGuide.step2': 'Highlight the products you want',
+    'cart.emptyGuide.step3': 'Add them to the cart and send the request to us',
+    'cart.emptyGuide.step4': 'We will communicate with you between 1-3 days to arrange the shipping and payment',
     'cart.total': 'TOTAL',
     'cart.sendOrder': 'Send order to Krolist',
     'cart.orderDialog.title': 'Order through Krolist',
@@ -836,6 +841,11 @@ const translations = {
     // Shopping Cart
     'cart.title': 'عربة التسوق',
     'cart.emptyCart': 'عربة التسوق فارغة',
+    'cart.emptyGuide.description': 'اتبع هذه الخطوات البسيطة لتقديم طلبك:',
+    'cart.emptyGuide.step1': 'استخدم زر التحديد في صفحة المنتجات',
+    'cart.emptyGuide.step2': 'حدد المنتجات التي تريدها',
+    'cart.emptyGuide.step3': 'أضفها إلى السلة وأرسل الطلب إلينا',
+    'cart.emptyGuide.step4': 'سنتواصل معك خلال 1-3 أيام لترتيب الشحن والدفع',
     'cart.total': 'الإجمالي',
     'cart.sendOrder': 'إرسال الطلب إلى كروليست',
     'cart.orderDialog.title': 'الطلب عبر كروليست',
