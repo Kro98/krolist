@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Trash2, Eye, Package } from 'lucide-react';
+import { Trash2, Eye, Package, List, Clock, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -232,31 +232,36 @@ export default function OrdersManager() {
       <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all" className="relative">
-            All
+            <List className="h-4 w-4 md:hidden" />
+            <span className="hidden md:inline">All</span>
             {orderCounts.all > 0 && (
               <Badge variant="secondary" className="ml-2">{orderCounts.all}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="pending" className="relative">
-            Pending
+            <Clock className="h-4 w-4 md:hidden" />
+            <span className="hidden md:inline">Pending</span>
             {orderCounts.pending > 0 && (
               <Badge variant="secondary" className="ml-2">{orderCounts.pending}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="processing" className="relative">
-            Processing
+            <Loader2 className="h-4 w-4 md:hidden" />
+            <span className="hidden md:inline">Processing</span>
             {orderCounts.processing > 0 && (
               <Badge variant="secondary" className="ml-2">{orderCounts.processing}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="completed" className="relative">
-            Completed
+            <CheckCircle2 className="h-4 w-4 md:hidden" />
+            <span className="hidden md:inline">Completed</span>
             {orderCounts.completed > 0 && (
               <Badge variant="secondary" className="ml-2">{orderCounts.completed}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="dismissed" className="relative">
-            Dismissed
+            <XCircle className="h-4 w-4 md:hidden" />
+            <span className="hidden md:inline">Dismissed</span>
             {orderCounts.dismissed > 0 && (
               <Badge variant="secondary" className="ml-2">{orderCounts.dismissed}</Badge>
             )}
