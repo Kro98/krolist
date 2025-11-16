@@ -272,7 +272,11 @@ export function AppSidebar() {
             <div className="p-4 space-y-2">
               {user && (
                 <div className="mb-2">
-                  <Badge variant={isAdmin ? "default" : "secondary"} className="text-xs">
+                  <Badge 
+                    variant={isAdmin ? "default" : "secondary"} 
+                    className={`text-xs ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    onClick={isAdmin ? () => window.location.href = '/admin' : undefined}
+                  >
                     {isAdmin ? t('user.admin') : t('user.user')}
                   </Badge>
                 </div>
