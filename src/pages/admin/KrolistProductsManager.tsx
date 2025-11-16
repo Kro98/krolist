@@ -274,12 +274,12 @@ export default function KrolistProductsManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div>
+        <div className="mb-4">
           <h2 className="text-2xl font-bold">{t('admin.krolistProducts')}</h2>
           <p className="text-muted-foreground">{t('admin.krolistProductsDesc')}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button onClick={handleRefreshPrices} disabled={isRefreshing} variant="outline">
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh Prices
