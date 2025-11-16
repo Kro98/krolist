@@ -89,12 +89,12 @@ export default function Admin() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6 gap-2 lg:w-auto lg:inline-flex">
+        <TabsList className="inline-flex w-full lg:w-auto gap-2 flex-wrap">
           <TabsTrigger 
             value="products" 
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "products" ? "w-auto" : "w-12 p-2"
+              activeTab === "products" ? "w-auto px-4" : "w-12 p-2 min-w-12"
             )}
           >
             <Package className="h-4 w-4 flex-shrink-0" />
@@ -110,7 +110,7 @@ export default function Admin() {
             value="categories"
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "categories" ? "w-auto" : "w-12 p-2"
+              activeTab === "categories" ? "w-auto px-4" : "w-12 p-2 min-w-12"
             )}
           >
             <Layers className="h-4 w-4 flex-shrink-0" />
@@ -126,7 +126,7 @@ export default function Admin() {
             value="promo-codes"
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "promo-codes" ? "w-auto" : "w-12 p-2"
+              activeTab === "promo-codes" ? "w-auto px-4" : "w-12 p-2 min-w-12"
             )}
           >
             <Tag className="h-4 w-4 flex-shrink-0" />
@@ -142,7 +142,7 @@ export default function Admin() {
             value="shops"
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "shops" ? "w-auto" : "w-12 p-2"
+              activeTab === "shops" ? "w-auto px-4" : "w-12 p-2 min-w-12"
             )}
           >
             <Store className="h-4 w-4 flex-shrink-0" />
@@ -158,7 +158,7 @@ export default function Admin() {
             value="login-messages"
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "login-messages" ? "w-auto" : "w-12 p-2"
+              activeTab === "login-messages" ? "w-auto px-4" : "w-12 p-2 min-w-12"
             )}
           >
             <MessageSquare className="h-4 w-4 flex-shrink-0" />
@@ -174,7 +174,7 @@ export default function Admin() {
             value="orders" 
             className={cn(
               "relative transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "orders" ? "w-auto" : "w-12 p-2"
+              activeTab === "orders" ? "w-auto px-4" : "w-12 p-2 min-w-12"
             )}
           >
             <Package className="h-4 w-4 flex-shrink-0" />
