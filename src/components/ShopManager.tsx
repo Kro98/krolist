@@ -37,6 +37,7 @@ export function ShopManager() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [isAdminView] = useState(() => window.location.pathname.includes('/admin'));
+  const [highlightedShop, setHighlightedShop] = useState<string | null>(null);
   
   const [shops, setShops] = useState<Shop[]>(() => {
     const saved = localStorage.getItem('shopOrder');
@@ -72,9 +73,22 @@ export function ShopManager() {
   };
 
   const toggleShop = (id: string) => {
+    const shop = shops.find(s => s.id === id);
+    if (!shop) return;
+
     setShops(shops.map(shop => 
       shop.id === id ? { ...shop, enabled: !shop.enabled } : shop
     ));
+
+    // Highlight animation
+    setHighlightedShop(id);
+    setTimeout(() => setHighlightedShop(null), 600);
+
+    toast({
+      title: shop.enabled ? "Shop Disabled" : "Shop Enabled",
+      description: `${shop.name} has been ${shop.enabled ? 'disabled' : 'enabled'}`,
+      duration: 2000,
+    });
   };
 
   const removeShop = (id: string) => {
@@ -227,8 +241,10 @@ export function ShopManager() {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex items-center justify-between p-3 border rounded-lg bg-card ${
+                        className={`flex items-center justify-between p-3 border rounded-lg bg-card transition-all duration-300 ${
                           snapshot.isDragging ? 'shadow-lg' : ''
+                        } ${
+                          highlightedShop === shop.id ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : ''
                         }`}
                       >
                         <div className="flex items-center gap-3">
