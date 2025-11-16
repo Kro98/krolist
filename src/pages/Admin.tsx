@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Package, Layers, Tag, Store, MessageSquare } from "lucide-react";
+import { Shield, Package, Layers, Tag, Store, MessageSquare, Menu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
@@ -27,6 +29,16 @@ export default function Admin() {
   } = useLanguage();
   const [orderCount, setOrderCount] = useState(0);
   const [activeTab, setActiveTab] = useState("products");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const tabs = [
+    { value: "products", label: t('admin.krolistProducts'), icon: Package },
+    { value: "categories", label: t('admin.categories'), icon: Layers },
+    { value: "promo-codes", label: t('admin.promoCodes'), icon: Tag },
+    { value: "shops", label: t('admin.shopManagement'), icon: Store },
+    { value: "login-messages", label: t('admin.loginMessages'), icon: MessageSquare },
+    { value: "orders", label: "Orders", icon: Package, badge: orderCount },
+  ];
   useEffect(() => {
     if (isAdmin) {
       fetchOrderCount();
@@ -79,143 +91,158 @@ export default function Admin() {
         </div>
       </div>;
   }
-  return <div className="container mx-auto py-6 px-4 max-w-7xl">
-      <div className="flex items-center gap-3 mb-8">
-        <Shield className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold mx-0">{t('admin.dashboard')}</h1>
-          <p className="text-muted-foreground">{t('admin.dashboardDesc')}</p>
+  return <div className="min-h-screen pb-20 md:pb-6">
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            <h1 className="text-lg font-bold">{t('admin.dashboard')}</h1>
+          </div>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px]">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  {t('admin.dashboard')}
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 space-y-1">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <Button
+                      key={tab.value}
+                      variant={activeTab === tab.value ? "secondary" : "ghost"}
+                      className="w-full justify-start relative"
+                      onClick={() => {
+                        setActiveTab(tab.value);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <Icon className="h-4 w-4 mr-2" />
+                      {tab.label}
+                      {tab.badge && tab.badge > 0 && (
+                        <span className="ml-auto h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                          {tab.badge}
+                        </span>
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="inline-flex w-full lg:w-auto gap-2 flex-wrap">
-          <TabsTrigger 
-            value="products" 
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "products" ? "w-auto px-4" : "w-12 p-2 min-w-12"
-            )}
-          >
-            <Package className="h-4 w-4 flex-shrink-0" />
-            <span className={cn(
-              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-              activeTab === "products" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-            )}>
-              {t('admin.krolistProducts')}
-            </span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="categories"
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "categories" ? "w-auto px-4" : "w-12 p-2 min-w-12"
-            )}
-          >
-            <Layers className="h-4 w-4 flex-shrink-0" />
-            <span className={cn(
-              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-              activeTab === "categories" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-            )}>
-              {t('admin.categories')}
-            </span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="promo-codes"
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "promo-codes" ? "w-auto px-4" : "w-12 p-2 min-w-12"
-            )}
-          >
-            <Tag className="h-4 w-4 flex-shrink-0" />
-            <span className={cn(
-              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-              activeTab === "promo-codes" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-            )}>
-              {t('admin.promoCodes')}
-            </span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="shops"
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "shops" ? "w-auto px-4" : "w-12 p-2 min-w-12"
-            )}
-          >
-            <Store className="h-4 w-4 flex-shrink-0" />
-            <span className={cn(
-              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-              activeTab === "shops" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-            )}>
-              {t('admin.shopManagement')}
-            </span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="login-messages"
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "login-messages" ? "w-auto px-4" : "w-12 p-2 min-w-12"
-            )}
-          >
-            <MessageSquare className="h-4 w-4 flex-shrink-0" />
-            <span className={cn(
-              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-              activeTab === "login-messages" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-            )}>
-              {t('admin.loginMessages')}
-            </span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="orders" 
-            className={cn(
-              "relative transition-all duration-300 ease-in-out overflow-hidden",
-              activeTab === "orders" ? "w-auto px-4" : "w-12 p-2 min-w-12"
-            )}
-          >
-            <Package className="h-4 w-4 flex-shrink-0" />
-            <span className={cn(
-              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-              activeTab === "orders" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-            )}>
-              Orders
-            </span>
-            {orderCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center z-10">
-                {orderCount}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      {/* Desktop Header */}
+      <div className="hidden md:block container mx-auto py-6 px-4 max-w-7xl">
+        <div className="flex items-center gap-3 mb-8">
+          <Shield className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold mx-0">{t('admin.dashboard')}</h1>
+            <p className="text-muted-foreground">{t('admin.dashboardDesc')}</p>
+          </div>
+        </div>
+      </div>
 
-        <TabsContent value="products" className="mt-6">
-          <KrolistProductsManager />
-        </TabsContent>
+      <div className="container mx-auto px-4 max-w-7xl">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          {/* Desktop Tabs */}
+          <TabsList className="hidden md:inline-flex w-full lg:w-auto gap-2 flex-wrap mb-6">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={cn(
+                    "transition-all duration-300 ease-in-out overflow-hidden relative",
+                    activeTab === tab.value ? "w-auto px-4" : "w-12 p-2 min-w-12"
+                  )}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span className={cn(
+                    "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+                    activeTab === tab.value ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+                  )}>
+                    {tab.label}
+                  </span>
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center z-10">
+                      {tab.badge}
+                    </span>
+                  )}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-        <TabsContent value="categories" className="mt-6">
-          <CategoryManager />
-        </TabsContent>
+          <TabsContent value="products" className="mt-0 md:mt-6">
+            <KrolistProductsManager />
+          </TabsContent>
 
-        <TabsContent value="promo-codes" className="mt-6">
-          <PromoCodesManager />
-        </TabsContent>
+          <TabsContent value="categories" className="mt-0 md:mt-6">
+            <CategoryManager />
+          </TabsContent>
 
+          <TabsContent value="promo-codes" className="mt-0 md:mt-6">
+            <PromoCodesManager />
+          </TabsContent>
 
-        <TabsContent value="shops" className="mt-6">
-          <ShopManager />
-        </TabsContent>
+          <TabsContent value="shops" className="mt-0 md:mt-6">
+            <ShopManager />
+          </TabsContent>
 
-        <TabsContent value="login-messages" className="mt-6">
-          <LoginMessagesManager />
-        </TabsContent>
+          <TabsContent value="login-messages" className="mt-0 md:mt-6">
+            <LoginMessagesManager />
+          </TabsContent>
 
-        <TabsContent value="orders" className="mt-6">
-          <OrdersManager />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="orders" className="mt-0 md:mt-6">
+            <OrdersManager />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
+        <div className="grid grid-cols-6 gap-1 p-2">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.value;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
+                className={cn(
+                  "relative flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200",
+                  isActive 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <Icon className={cn("h-5 w-5", isActive && "animate-scale-in")} />
+                <span className={cn(
+                  "text-[10px] mt-1 font-medium truncate max-w-full",
+                  isActive && "font-semibold"
+                )}>
+                  {tab.label.split(' ')[0]}
+                </span>
+                {tab.badge && tab.badge > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold">
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>;
 }
