@@ -81,16 +81,7 @@ function LayoutContent({ children }: LayoutProps) {
               <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
             </Link>
           </div>
-          <ShoppingCart onAddClick={
-            <Button 
-              onClick={handleAddClick}
-              size="icon" 
-              variant="ghost"
-              className="text-white hover:bg-white/20"
-            >
-              <Plus className="h-5 w-5" />
-            </Button>
-          } />
+          <ShoppingCart />
         </header>
         
         <main className="flex-1 overflow-auto">
