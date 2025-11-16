@@ -114,8 +114,45 @@ export function ShoppingCart({
 
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {cartItems.length === 0 ? <div className="text-center py-12 text-muted-foreground">
-                {t('cart.emptyCart')}
+            {cartItems.length === 0 ? <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="w-24 h-24 mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CartIcon className="w-12 h-12 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{t('cart.emptyCart')}</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md">
+                  {t('cart.emptyGuide.description')}
+                </p>
+                
+                {/* Step-by-step guide */}
+                <div className="w-full max-w-md space-y-3 text-left">
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                      1
+                    </div>
+                    <p className="text-sm">{t('cart.emptyGuide.step1')}</p>
+                  </div>
+                  
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                      2
+                    </div>
+                    <p className="text-sm">{t('cart.emptyGuide.step2')}</p>
+                  </div>
+                  
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                      3
+                    </div>
+                    <p className="text-sm">{t('cart.emptyGuide.step3')}</p>
+                  </div>
+                  
+                  <div className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                      4
+                    </div>
+                    <p className="text-sm">{t('cart.emptyGuide.step4')}</p>
+                  </div>
+                </div>
               </div> : <>
                 {cartItems.map(item => <div key={item.id} className="bg-primary/10 dark:bg-primary/20 rounded-lg p-3 flex items-center gap-3 relative border border-primary/20">
                     {/* Product Image */}
