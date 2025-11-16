@@ -25,6 +25,7 @@ interface ProductCarouselProps {
   isSelectionMode?: boolean;
   onToggleSelect?: (product: Product) => void;
   selectedProductIds?: Set<string>;
+  enableExpand?: boolean;
 }
 
 export function ProductCarousel({
@@ -37,13 +38,15 @@ export function ProductCarousel({
   userProductCount = 0,
   isSelectionMode = false,
   onToggleSelect,
-  selectedProductIds = new Set()
+  selectedProductIds = new Set(),
+  enableExpand = false
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1024px)");
+  const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
   
   // Calculate items per slide based on device
@@ -76,13 +79,13 @@ export function ProductCarousel({
 
   return (
     <div className="space-y-4">
-      {/* Header with title and expand button (only show if title is provided) */}
-      {title && (
+      {/* Header with title and expand button */}
+      {(title || enableExpand) && (
         <div className={`flex items-center justify-between ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>
-          {!isMobile && (
+          {title && <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>}
+          {enableExpand && isTabletOrAbove && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
             >
@@ -92,7 +95,7 @@ export function ProductCarousel({
         </div>
       )}
       
-      {isExpanded && !isMobile ? (
+      {isExpanded && isTabletOrAbove ? (
         // Grid view for expanded state
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map(product => (
