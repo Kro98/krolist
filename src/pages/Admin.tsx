@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Package } from "lucide-react";
+import { Shield, Package, Layers, Tag, Store, MessageSquare } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
 import CategoryManager from "./admin/CategoryManager";
@@ -25,6 +26,7 @@ export default function Admin() {
     t
   } = useLanguage();
   const [orderCount, setOrderCount] = useState(0);
+  const [activeTab, setActiveTab] = useState("products");
   useEffect(() => {
     if (isAdmin) {
       fetchOrderCount();
@@ -86,19 +88,107 @@ export default function Admin() {
         </div>
       </div>
 
-      <Tabs defaultValue="products" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="products">{t('admin.krolistProducts')}</TabsTrigger>
-          <TabsTrigger value="categories">{t('admin.categories')}</TabsTrigger>
-          <TabsTrigger value="promo-codes">{t('admin.promoCodes')}</TabsTrigger>
-          <TabsTrigger value="shops">{t('admin.shopManagement')}</TabsTrigger>
-          <TabsTrigger value="login-messages">{t('admin.loginMessages')}</TabsTrigger>
-          <TabsTrigger value="orders" className="relative">
-            <Package className="h-4 w-4 mr-2" />
-            Orders
-            {orderCount > 0 && <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-6 gap-2 lg:w-auto lg:inline-flex">
+          <TabsTrigger 
+            value="products" 
+            className={cn(
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              activeTab === "products" ? "w-auto" : "w-12 p-2"
+            )}
+          >
+            <Package className="h-4 w-4 flex-shrink-0" />
+            <span className={cn(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+              activeTab === "products" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+            )}>
+              {t('admin.krolistProducts')}
+            </span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="categories"
+            className={cn(
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              activeTab === "categories" ? "w-auto" : "w-12 p-2"
+            )}
+          >
+            <Layers className="h-4 w-4 flex-shrink-0" />
+            <span className={cn(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+              activeTab === "categories" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+            )}>
+              {t('admin.categories')}
+            </span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="promo-codes"
+            className={cn(
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              activeTab === "promo-codes" ? "w-auto" : "w-12 p-2"
+            )}
+          >
+            <Tag className="h-4 w-4 flex-shrink-0" />
+            <span className={cn(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+              activeTab === "promo-codes" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+            )}>
+              {t('admin.promoCodes')}
+            </span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="shops"
+            className={cn(
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              activeTab === "shops" ? "w-auto" : "w-12 p-2"
+            )}
+          >
+            <Store className="h-4 w-4 flex-shrink-0" />
+            <span className={cn(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+              activeTab === "shops" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+            )}>
+              {t('admin.shopManagement')}
+            </span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="login-messages"
+            className={cn(
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              activeTab === "login-messages" ? "w-auto" : "w-12 p-2"
+            )}
+          >
+            <MessageSquare className="h-4 w-4 flex-shrink-0" />
+            <span className={cn(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+              activeTab === "login-messages" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+            )}>
+              {t('admin.loginMessages')}
+            </span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="orders" 
+            className={cn(
+              "relative transition-all duration-300 ease-in-out overflow-hidden",
+              activeTab === "orders" ? "w-auto" : "w-12 p-2"
+            )}
+          >
+            <Package className="h-4 w-4 flex-shrink-0" />
+            <span className={cn(
+              "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
+              activeTab === "orders" ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
+            )}>
+              Orders
+            </span>
+            {orderCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center z-10">
                 {orderCount}
-              </span>}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
