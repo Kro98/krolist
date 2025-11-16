@@ -279,24 +279,51 @@ export default function KrolistProductsManager() {
           <h2 className="text-2xl font-bold">{t('admin.krolistProducts')}</h2>
           <p className="text-muted-foreground">{t('admin.krolistProductsDesc')}</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button onClick={handleRefreshPrices} disabled={isRefreshing} variant="outline">
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh Prices
+        <div className="flex gap-2">
+          <Button onClick={handleRefreshPrices} disabled={isRefreshing} variant="outline" className="flex-1 md:flex-none">
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden md:inline md:ml-2">Refresh Prices</span>
           </Button>
-          <Button onClick={() => setShowNewListDialog(true)} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            New List
+          <Button onClick={() => setShowNewListDialog(true)} variant="outline" className="flex-1 md:flex-none">
+            <Plus className="h-4 w-4" />
+            <span className="hidden md:inline md:ml-2">New List</span>
           </Button>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('admin.addProduct')}
+          <Button onClick={() => handleOpenDialog()} className="flex-1 md:flex-none">
+            <Plus className="h-4 w-4" />
+            <span className="hidden md:inline md:ml-2">{t('admin.addProduct')}</span>
           </Button>
         </div>
       </div>
 
-      {/* Collection filter */}
-      <div className="flex gap-2 flex-wrap mb-4">
+      {/* Collection filter - Collapsible on mobile */}
+      <details className="md:hidden group mb-4">
+        <summary className="flex items-center justify-between p-3 border rounded-md cursor-pointer list-none bg-background hover:bg-accent">
+          <span className="font-medium">
+            {selectedCollection === 'all' ? 'All Collections' : selectedCollection}
+          </span>
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="flex gap-2 flex-wrap mt-2 p-2">
+          {collections.map((collection) => (
+            <Button
+              key={collection}
+              variant={selectedCollection === collection ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCollection(collection)}
+            >
+              {collection}
+              {collection !== 'all' && (
+                <Badge variant="secondary" className="ml-2">
+                  {products.filter(p => p.collection_title === collection).length}
+                </Badge>
+              )}
+            </Button>
+          ))}
+        </div>
+      </details>
+      
+      {/* Collection filter - Always visible on desktop */}
+      <div className="hidden md:flex gap-2 flex-wrap mb-4">
         {collections.map((collection) => (
           <Button
             key={collection}
