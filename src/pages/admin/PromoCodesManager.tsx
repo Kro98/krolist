@@ -180,8 +180,8 @@ export default function PromoCodesManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div>
+        <div className="mb-4">
           <h2 className="text-2xl font-bold">{t('admin.krolistPromoCodes')}</h2>
           <p className="text-muted-foreground">{t('admin.krolistPromoCodesDesc')}</p>
         </div>
