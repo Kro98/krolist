@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard, type Product } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
+import { CategoriesCarousel } from "@/components/CategoriesCarousel";
 import { useCart } from "@/contexts/CartContext";
 import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -519,6 +520,9 @@ export default function Products() {
           </PopoverContent>
         </Popover>
       </div>
+
+      {/* Categories Section */}
+      <CategoriesCarousel />
 
       {(filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0) ? (
         <div className="space-y-8 animate-fade-in">

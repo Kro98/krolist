@@ -56,10 +56,6 @@ const getShopItems = () => {
   }));
 };
 const otherItems = [{
-  title: "nav.categories",
-  url: "/categories",
-  icon: Tag
-}, {
   title: "nav.news",
   url: "/news",
   icon: Newspaper

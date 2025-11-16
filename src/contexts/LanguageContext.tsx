@@ -155,6 +155,13 @@ const translations = {
     'reset': 'Reset',
     'clear': 'Clear',
     
+    // Categories
+    'categories.title': 'Categories',
+    'categories.subtitle': 'Browse products by category',
+    'categories.empty': 'No categories available yet',
+    'categories.viewAll': 'View All',
+    'categories.items': 'items',
+    
     
     // Admin Dashboard
     'admin.dashboard': 'Admin Dashboard',
@@ -597,6 +604,13 @@ const translations = {
     'settings.saveSettings': 'حفظ الإعدادات',
     'settings.settingsSaved': 'تم حفظ الإعدادات',
     'settings.settingsSavedDesc': 'تم تحديث تفضيلاتك بنجاح.',
+    
+    // Categories
+    'categories.title': 'الفئات',
+    'categories.subtitle': 'تصفح المنتجات حسب الفئة',
+    'categories.empty': 'لا توجد فئات متاحة حتى الآن',
+    'categories.viewAll': 'عرض الكل',
+    'categories.items': 'عناصر',
     
     // Common
     'common.save': 'حفظ',
