@@ -217,16 +217,16 @@ export default function OrdersManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="mb-4">
+        <div className="flex items-center gap-3 mb-2">
           <Package className="h-6 w-6 text-primary" />
           <div>
             <h2 className="text-2xl font-bold">Orders Management</h2>
-            <p className="text-muted-foreground">
-              {orders.length} total orders
-            </p>
           </div>
         </div>
+        <p className="text-muted-foreground">
+          {orders.length} total orders
+        </p>
       </div>
 
       <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">

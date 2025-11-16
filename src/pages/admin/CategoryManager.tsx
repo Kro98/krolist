@@ -220,8 +220,8 @@ export default function CategoryManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div>
+        <div className="mb-4">
           <h2 className="text-2xl font-bold">Category Collections</h2>
           <p className="text-muted-foreground">Manage category buttons that link to product collections</p>
         </div>
