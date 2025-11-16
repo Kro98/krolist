@@ -98,9 +98,16 @@ export function AppSidebar() {
     const handleStorageChange = () => {
       setShopItems(getShopItems());
     };
+    const handleShopUpdate = () => {
+      setShopItems(getShopItems());
+    };
+    
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('shopOrderUpdated', handleShopUpdate);
+    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('shopOrderUpdated', handleShopUpdate);
     };
   }, []);
 
@@ -274,9 +281,10 @@ export function AppSidebar() {
                 <div className="mb-2">
                   <Badge 
                     variant={isAdmin ? "default" : "secondary"} 
-                    className={`text-xs ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    className={`text-xs flex items-center gap-1 ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
                     onClick={isAdmin ? () => window.location.href = '/admin' : undefined}
                   >
+                    {isAdmin && <Shield className="h-3 w-3" />}
                     {isAdmin ? t('user.admin') : t('user.user')}
                   </Badge>
                 </div>
