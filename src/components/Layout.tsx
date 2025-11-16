@@ -79,10 +79,12 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </main>
 
-          {/* Floating Add Button */}
-          <Button size="icon" className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${language === 'ar' ? 'left-6' : 'right-6'}`} onClick={() => navigate('/add-product')}>
-            <Plus className="h-6 w-6" />
-          </Button>
+          {/* Floating Add Button - Hidden on admin page */}
+          {!location.pathname.startsWith('/admin') && (
+            <Button size="icon" className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${language === 'ar' ? 'left-6' : 'right-6'}`} onClick={() => navigate('/add-product')}>
+              <Plus className="h-6 w-6" />
+            </Button>
+          )}
         </div>
         
         <Toaster />
