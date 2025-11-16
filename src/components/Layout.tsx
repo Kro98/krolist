@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
@@ -13,16 +13,36 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-export function Layout({ children }: LayoutProps) {
+function LayoutContent({ children }: LayoutProps) {
   const { language } = useLanguage();
   const { user, loading, isGuest } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { open, setOpen } = useSidebar();
+  const isMobile = useIsMobile();
+
+  // Add swipe gesture support for mobile/tablet
+  useSwipeGesture({
+    onSwipeRight: () => {
+      if (isMobile && !open) {
+        setOpen(true);
+      }
+    },
+    onSwipeLeft: () => {
+      if (isMobile && open) {
+        setOpen(false);
+      }
+    },
+    threshold: 100,
+    edgeThreshold: 50,
+  });
 
   const handleAddClick = () => {
     navigate('/');
@@ -48,47 +68,58 @@ export function Layout({ children }: LayoutProps) {
         <div className="text-muted-foreground">Loading...</div>
       </div>;
   }
-  return <TooltipProvider>
-      <SidebarProvider>
-        <LoginMessageDialog />
-        <AppSidebar />
-        <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-          <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
-            <div className="flex items-center">
-              <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
-              <Link to="/products">
-                <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-              </Link>
-            </div>
-            <ShoppingCart onAddClick={
-              <Button 
-                onClick={handleAddClick}
-                size="icon" 
-                variant="ghost"
-                className="text-white hover:bg-white/20"
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-            } />
-          </header>
-          
-          <main className="flex-1 overflow-auto">
-            <div className="container max-w-7xl mx-auto sm:px-6 lg:px-8 py-[20px] px-[10px]">
-              <PageBreadcrumbs />
-              {children}
-            </div>
-          </main>
-
-          {/* Floating Add Button - Hidden on admin page */}
-          {!location.pathname.startsWith('/admin') && (
-            <Button size="icon" className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${language === 'ar' ? 'left-6' : 'right-6'}`} onClick={() => navigate('/add-product')}>
-              <Plus className="h-6 w-6" />
+  
+  return (
+    <>
+      <LoginMessageDialog />
+      <AppSidebar />
+      <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
+          <div className="flex items-center">
+            <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
+            <Link to="/products">
+              <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+            </Link>
+          </div>
+          <ShoppingCart onAddClick={
+            <Button 
+              onClick={handleAddClick}
+              size="icon" 
+              variant="ghost"
+              className="text-white hover:bg-white/20"
+            >
+              <Plus className="h-5 w-5" />
             </Button>
-          )}
-        </div>
+          } />
+        </header>
         
-        <Toaster />
-        <Sonner />
+        <main className="flex-1 overflow-auto">
+          <div className="container max-w-7xl mx-auto sm:px-6 lg:px-8 py-[20px] px-[10px]">
+            <PageBreadcrumbs />
+            {children}
+          </div>
+        </main>
+
+        {/* Floating Add Button - Hidden on admin page */}
+        {!location.pathname.startsWith('/admin') && (
+          <Button size="icon" className={`fixed bottom-6 h-14 w-14 rounded-full shadow-lg z-40 bg-gradient-primary hover:shadow-hover ${language === 'ar' ? 'left-6' : 'right-6'}`} onClick={() => navigate('/add-product')}>
+            <Plus className="h-6 w-6" />
+          </Button>
+        )}
+      </div>
+      
+      <Toaster />
+      <Sonner />
+    </>
+  );
+}
+
+export function Layout({ children }: LayoutProps) {
+  return (
+    <TooltipProvider>
+      <SidebarProvider>
+        <LayoutContent>{children}</LayoutContent>
       </SidebarProvider>
-    </TooltipProvider>;
+    </TooltipProvider>
+  );
 }
