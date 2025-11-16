@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { STORES } from '@/config/stores';
 import { ProductCarousel } from '@/components/ProductCarousel';
 
@@ -360,34 +360,56 @@ export default function KrolistProductsManager() {
                     )}
                   </div>
                   
-                  <div className="flex gap-2 flex-wrap">
+                  {/* Tags - Collapsible on mobile */}
+                  <details className="md:hidden group">
+                    <summary className="flex items-center gap-2 cursor-pointer py-2 text-sm font-medium list-none">
+                      <span>Tags</span>
+                      <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="flex gap-2 flex-wrap pt-2">
+                      <Badge variant="outline">{product.store}</Badge>
+                      {product.category && (
+                        <Badge variant="outline">{product.category}</Badge>
+                      )}
+                    </div>
+                  </details>
+                  
+                  {/* Tags - Always visible on desktop */}
+                  <div className="hidden md:flex gap-2 flex-wrap">
                     <Badge variant="outline">{product.store}</Badge>
                     {product.category && (
                       <Badge variant="outline">{product.category}</Badge>
                     )}
                   </div>
 
-                  <div className="flex gap-2 mt-4">
+                  {/* Action Buttons - Icon only on mobile, with text on desktop */}
+                  <div className="flex gap-2 mt-4 justify-between md:justify-start">
                     <Button 
                       size="sm" 
                       variant="outline"
                       onClick={() => window.open(product.product_url, '_blank')}
+                      className="flex-1 md:flex-none"
                     >
                       <ExternalLink className="h-4 w-4" />
+                      <span className="hidden md:inline md:ml-2">View</span>
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline"
                       onClick={() => handleOpenDialog(product)}
+                      className="flex-1 md:flex-none"
                     >
                       <Edit className="h-4 w-4" />
+                      <span className="hidden md:inline md:ml-2">Edit</span>
                     </Button>
                     <Button 
                       size="sm" 
                       variant="destructive"
                       onClick={() => handleDelete(product.id)}
+                      className="flex-1 md:flex-none"
                     >
                       <Trash2 className="h-4 w-4" />
+                      <span className="hidden md:inline md:ml-2">Delete</span>
                     </Button>
                   </div>
                 </div>
