@@ -57,8 +57,8 @@ export function ShopManager() {
 
   useEffect(() => {
     localStorage.setItem('shopOrder', JSON.stringify(shops));
-    // Trigger storage event for sidebar update
-    window.dispatchEvent(new Event('storage'));
+    // Trigger custom event for sidebar update
+    window.dispatchEvent(new Event('shopOrderUpdated'));
   }, [shops]);
 
   const handleDragEnd = (result: any) => {
