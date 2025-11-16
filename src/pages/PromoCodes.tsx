@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { replaceWithAffiliateLink, AFFILIATE_LINKS, AVAILABLE_SHOPS } from "@/lib/affiliateLinks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 interface PromoCode {
   id: string;
@@ -73,6 +75,10 @@ export default function PromoCodes() {
   const { toast } = useToast();
   const { user, isGuest } = useAuth();
   const navigate = useNavigate();
+  
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
+  );
 
   // Allow guests to view but show message that they can't create promo codes
 
@@ -125,10 +131,13 @@ export default function PromoCodes() {
 
   const fetchKrolistPromoCodes = async () => {
     try {
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('promo_codes')
         .select('*')
         .eq('is_krolist', true)
+        .gte('expires', today) // Only fetch non-expired codes
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -403,57 +412,74 @@ export default function PromoCodes() {
         </Card>
       )}
 
-      {/* Krolist Promo Codes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {krolistPromoCodes.map((promo) => (
-          <Card key={promo.id} className="shadow-card hover:shadow-hover transition-all duration-300 border-2 border-primary/30">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-3">
-                    <div className="bg-primary/10 px-6 py-2 rounded-lg font-mono font-bold text-primary text-2xl inline-block">
-                      {promo.code}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mb-3 flex-wrap">
-                    <Badge variant="default">
-                      {promo.store}
-                    </Badge>
-                    <Badge variant="outline" className="bg-primary/20 text-primary border-primary/40">
-                      Krolist
-                    </Badge>
-                    <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                      <RotateCcw className="h-3 w-3 mr-1" />
-                      Reusable
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {promo.description}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopyCode(promo.code)}
-                    className="w-full"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => window.open(promo.store_url, '_blank')}
-                    className="w-full"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Krolist Promo Codes Carousel */}
+      {krolistPromoCodes.length > 0 && (
+        <div className="mb-8">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            plugins={[autoplayPlugin.current]}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {krolistPromoCodes.map((promo) => (
+                <CarouselItem key={promo.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                  <Card className="shadow-card hover:shadow-hover transition-all duration-300 border-2 border-primary/30 h-full">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div>
+                          <div className="mb-3">
+                            <div className="bg-primary/10 px-6 py-2 rounded-lg font-mono font-bold text-primary text-2xl inline-block">
+                              {promo.code}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mb-3 flex-wrap">
+                            <Badge variant="default">
+                              {promo.store}
+                            </Badge>
+                            <Badge variant="outline" className="bg-primary/20 text-primary border-primary/40">
+                              Krolist
+                            </Badge>
+                            <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              Reusable
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {promo.description}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyCode(promo.code)}
+                            className="w-full"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(promo.store_url, '_blank')}
+                            className="w-full"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
+          </Carousel>
+        </div>
+      )}
 
       {/* User Promo Codes List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
