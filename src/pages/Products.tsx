@@ -43,7 +43,6 @@ export default function Products() {
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
-  const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [showSelectionActions, setShowSelectionActions] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<{
     canRefresh: boolean;
@@ -175,29 +174,15 @@ export default function Products() {
   const handleToggleSelect = (product: Product) => {
     const newSelected = new Set(selectedProducts);
     
-    // If this is the first product, set the store
-    if (selectedProducts.size === 0) {
-      setSelectedStore(product.store);
+    if (newSelected.has(product.id)) {
+      newSelected.delete(product.id);
+      // If no products left, hide actions
+      if (newSelected.size === 0) {
+        setShowSelectionActions(false);
+      }
+    } else {
       newSelected.add(product.id);
       setShowSelectionActions(true);
-    } 
-    // If selecting from same store
-    else if (product.store === selectedStore) {
-      if (newSelected.has(product.id)) {
-        newSelected.delete(product.id);
-        // If no products left, clear the store and hide actions
-        if (newSelected.size === 0) {
-          setSelectedStore(null);
-          setShowSelectionActions(false);
-        }
-      } else {
-        newSelected.add(product.id);
-      }
-    } 
-    // If trying to select from different store
-    else {
-      toast.error(t('products.selectSameStore'));
-      return;
     }
     
     setSelectedProducts(newSelected);
@@ -205,7 +190,6 @@ export default function Products() {
 
   const handleCancelSelection = () => {
     setSelectedProducts(new Set());
-    setSelectedStore(null);
     setIsSelectMode(false);
     setShowSelectionActions(false);
   };
