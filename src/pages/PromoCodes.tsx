@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2 } from "lucide-react";
+import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2, Clock, Calendar } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { formatDistanceToNow, format } from "date-fns";
 
 interface PromoCode {
   id: string;
@@ -156,6 +157,24 @@ export default function PromoCodes() {
       }
     } catch (error) {
       console.error('Error fetching Krolist promo codes:', error);
+    }
+  };
+
+  const getTimeUntilExpiration = (expiresDate: string) => {
+    try {
+      const expiry = new Date(expiresDate);
+      const now = new Date();
+      const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysLeft < 0) return { text: 'Expired', variant: 'destructive' as const };
+      if (daysLeft === 0) return { text: 'Expires today', variant: 'destructive' as const };
+      if (daysLeft === 1) return { text: '1 day left', variant: 'secondary' as const };
+      if (daysLeft <= 7) return { text: `${daysLeft} days left`, variant: 'secondary' as const };
+      if (daysLeft <= 30) return { text: `${daysLeft} days left`, variant: 'default' as const };
+      
+      return { text: formatDistanceToNow(expiry, { addSuffix: true }), variant: 'default' as const };
+    } catch {
+      return { text: 'Unknown', variant: 'secondary' as const };
     }
   };
 
@@ -450,6 +469,19 @@ export default function PromoCodes() {
                           <p className="text-sm text-muted-foreground mb-2">
                             {promo.description}
                           </p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                            <Calendar className="h-3 w-3" />
+                            <span>Expires: {format(new Date(promo.expires), 'MMM dd, yyyy')}</span>
+                          </div>
+                          <div className="mb-2">
+                            <Badge 
+                              variant={getTimeUntilExpiration(promo.expires).variant}
+                              className="text-xs"
+                            >
+                              <Clock className="h-3 w-3 mr-1" />
+                              {getTimeUntilExpiration(promo.expires).text}
+                            </Badge>
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <Button
