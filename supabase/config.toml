@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.user-refresh-prices]
 verify_jwt = true
+
+[functions.delete-expired-promo-codes]
+verify_jwt = false
