@@ -80,7 +80,12 @@ export function CategoriesCarousel() {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
+        <h2 
+          className="text-2xl font-bold cursor-pointer hover:text-primary transition-colors"
+          onClick={() => navigate('/categories')}
+        >
+          {t('categories.title')}
+        </h2>
         {isTabletOrAbove && (
           <Button
             variant="ghost"
