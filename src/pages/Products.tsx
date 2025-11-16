@@ -521,8 +521,6 @@ export default function Products() {
         </Popover>
       </div>
 
-      {/* Categories Section */}
-      <CategoriesCarousel />
 
       {(filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0) ? (
         <div className="space-y-8 animate-fade-in">
@@ -545,6 +543,7 @@ export default function Products() {
                 isSelectionMode={isSelectMode}
                 onToggleSelect={handleToggleSelect}
                 selectedProductIds={selectedProducts}
+                enableExpand
               />
             </div>
           )}
@@ -561,6 +560,9 @@ export default function Products() {
               selectedProductIds={selectedProducts}
             />
           )}
+
+          {/* Categories Section */}
+          <CategoriesCarousel />
         </div>
       ) : searchQuery ? (
         <Card className="shadow-card border-border animate-fade-in">

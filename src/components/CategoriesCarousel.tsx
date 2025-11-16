@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Tag, ChevronRight } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 interface CategoryCollection {
   id: string;
@@ -22,11 +22,11 @@ export function CategoriesCarousel() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const [categories, setCategories] = useState<CategoryCollection[]>([]);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     fetchCategories();
@@ -78,15 +78,10 @@ export function CategoriesCarousel() {
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-8">
+    <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-2 p-0 h-auto hover:bg-transparent">
-            <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
-            <ChevronRight className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-          </Button>
-        </CollapsibleTrigger>
-        {!isMobile && (
+        <h2 className="text-2xl font-bold">{t('categories.title')}</h2>
+        {isTabletOrAbove && (
           <Button
             variant="ghost"
             size="sm"
@@ -98,8 +93,7 @@ export function CategoriesCarousel() {
         )}
       </div>
 
-      <CollapsibleContent>
-        {isExpanded && !isMobile ? (
+      {isExpanded && isTabletOrAbove ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {categories.map((category) => (
               <Card
@@ -184,7 +178,6 @@ export function CategoriesCarousel() {
             <CarouselNext />
           </Carousel>
         )}
-      </CollapsibleContent>
-    </Collapsible>
+    </div>
   );
 }
