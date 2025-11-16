@@ -28,7 +28,9 @@ export default function Settings() {
     theme,
     setTheme,
     undertone,
-    setUndertone
+    setUndertone,
+    customHue,
+    setCustomHue
   } = useTheme();
   const { user } = useAuth();
   const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
@@ -192,9 +194,45 @@ export default function Settings() {
                     <SelectItem value="green">Green</SelectItem>
                     <SelectItem value="purple">Purple</SelectItem>
                     <SelectItem value="red">Red</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* Custom Hue Picker */}
+              {undertone === 'custom' && (
+                <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                  <Label htmlFor="hue-picker" className="flex items-center justify-between">
+                    <span>Custom Hue ({customHue}°)</span>
+                    <div 
+                      className="w-6 h-6 rounded-full border-2 border-background shadow-sm"
+                      style={{ backgroundColor: `hsl(${customHue}, 85%, 55%)` }}
+                    />
+                  </Label>
+                  <div className="space-y-2">
+                    <input
+                      id="hue-picker"
+                      type="range"
+                      min="0"
+                      max="360"
+                      value={customHue}
+                      onChange={(e) => setCustomHue(parseInt(e.target.value))}
+                      className="w-full hue-slider"
+                      style={{
+                        background: `linear-gradient(to right, 
+                          hsl(0, 85%, 55%), 
+                          hsl(60, 85%, 55%), 
+                          hsl(120, 85%, 55%), 
+                          hsl(180, 85%, 55%), 
+                          hsl(240, 85%, 55%), 
+                          hsl(300, 85%, 55%), 
+                          hsl(360, 85%, 55%)
+                        )`
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
               
               <Separator />
               
