@@ -79,11 +79,12 @@ const otherItems = [{
 export function AppSidebar() {
   const {
     state,
-    setOpenMobile
+    setOpenMobile,
+    isMobile
   } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const collapsed = state === "collapsed";
+  const collapsed = isMobile ? false : state === "collapsed";
   const {
     t,
     language
