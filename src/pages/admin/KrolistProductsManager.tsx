@@ -119,15 +119,13 @@ export default function KrolistProductsManager() {
       return;
     }
 
-    // Just create the empty collection without opening the add product dialog
-    toast({
-      title: 'Success',
-      description: `Collection "${newListTitle.trim()}" created. You can now add products through the 3-dot menu.`,
+    setFormData({
+      ...formData,
+      collection_title: newListTitle.trim(),
     });
-    
     setNewListTitle('');
     setShowNewListDialog(false);
-    setSelectedCollection(newListTitle.trim());
+    handleOpenDialog();
   };
 
   // Get unique collections
@@ -583,6 +581,36 @@ export default function KrolistProductsManager() {
                     )}
                   </div>
 
+                  {/* Action Buttons - Icon only on mobile, with text on desktop */}
+                  <div className="flex gap-2 mt-4 justify-between md:justify-start">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => window.open(product.product_url, '_blank')}
+                      className="flex-1 md:flex-none"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span className="hidden md:inline md:ml-2">View</span>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleOpenDialog(product)}
+                      className="flex-1 md:flex-none"
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span className="hidden md:inline md:ml-2">Edit</span>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleDelete(product.id)}
+                      className="flex-1 md:flex-none"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden md:inline md:ml-2">Delete</span>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -815,7 +843,7 @@ export default function KrolistProductsManager() {
             <Button variant="outline" onClick={() => setShowNewListDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateNewList}>Create</Button>
+            <Button onClick={handleCreateNewList}>Create & Add Product</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
