@@ -32,6 +32,7 @@ export interface Product {
   updated_at: string;
   last_checked_at: string;
   youtube_url?: string | null;
+  collection_title?: string | null;
   isKrolistProduct?: boolean;
   price_history?: Array<{
     price: number;

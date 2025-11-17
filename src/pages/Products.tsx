@@ -380,6 +380,16 @@ export default function Products() {
     return matchesSearch && matchesCategory && matchesStore;
   });
 
+  // Group Krolist products by collection_title
+  const krolistProductsByCollection = filteredKrolistProducts.reduce((acc, product) => {
+    const collection = product.collection_title || 'Featured Products';
+    if (!acc[collection]) {
+      acc[collection] = [];
+    }
+    acc[collection].push(product);
+    return acc;
+  }, {} as Record<string, typeof filteredKrolistProducts>);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -532,18 +542,19 @@ export default function Products() {
             </div>
           )}
 
-          {/* Krolist Featured Products - Read Only with Add Button */}
-          {filteredKrolistProducts.length > 0 && (
+          {/* Krolist Products - Grouped by Collection */}
+          {Object.entries(krolistProductsByCollection).map(([collectionTitle, collectionProducts]) => (
             <ProductCarousel
-              title={t('products.featuredProducts') || 'Featured Products'}
-              products={filteredKrolistProducts}
+              key={collectionTitle}
+              title={collectionTitle}
+              products={collectionProducts}
               onAddToMyProducts={handleAddToMyProducts}
               userProductCount={products.length}
               isSelectionMode={isSelectMode}
               onToggleSelect={handleToggleSelect}
               selectedProductIds={selectedProducts}
             />
-          )}
+          ))}
 
           {/* Categories Section */}
           <CategoriesCarousel />
