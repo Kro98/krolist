@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { GripVertical, Package, Plus, X, Search, Edit, Trash2 } from "lucide-react";
+import { GripVertical, Package, Plus, X, Search, Edit, Trash2, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { getAllStores } from "@/config/stores";
 
 const DEFAULT_SHOPS = getAllStores().map(store => ({
@@ -251,7 +252,7 @@ export function ShopManager() {
                           <div {...provided.dragHandleProps}>
                             <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                           </div>
-                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <Package className="h-4 w-4 text-muted-foreground hidden md:block" />
                           <span className="font-medium">{shop.name}</span>
                           {getStatusBadge()}
                         </div>
@@ -274,11 +275,12 @@ export function ShopManager() {
                                   });
                                 }}
                               />
+                              {/* Desktop buttons */}
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleEditShop(shop)}
-                                className="text-primary hover:text-primary"
+                                className="hidden md:flex text-primary hover:text-primary"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -286,10 +288,36 @@ export function ShopManager() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeShop(shop.id)}
-                                className="text-destructive hover:text-destructive"
+                                className="hidden md:flex text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
+                              
+                              {/* Mobile dropdown */}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="md:hidden"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                  <DropdownMenuItem onClick={() => handleEditShop(shop)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => removeShop(shop.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </>
                           ) : (
                             <Switch
