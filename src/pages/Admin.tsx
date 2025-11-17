@@ -162,20 +162,12 @@ export default function Admin() {
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className={cn(
-                    "transition-all duration-300 ease-in-out overflow-hidden relative",
-                    activeTab === tab.value ? "w-auto px-4" : "w-12 p-2 min-w-12"
-                  )}
+                  className="relative"
                 >
-                  <Icon className="h-4 w-4 flex-shrink-0" />
-                  <span className={cn(
-                    "transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden",
-                    activeTab === tab.value ? "ml-2 opacity-100 max-w-[200px]" : "ml-0 opacity-0 max-w-0"
-                  )}>
-                    {tab.label}
-                  </span>
+                  <Icon className="h-4 w-4 mr-2" />
+                  <span>{tab.label}</span>
                   {tab.badge && tab.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center z-10">
+                    <span className="ml-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
                       {tab.badge}
                     </span>
                   )}
