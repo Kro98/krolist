@@ -69,7 +69,8 @@ export function CategoriesCarousel() {
   };
 
   const handleCategoryClick = (categoryId: string, title: string) => {
-    navigate(`/category/${categoryId}`, { state: { categoryTitle: title } });
+    // Category clicks are now disabled - categories show on homepage only
+    return;
   };
 
   if (isLoading || categories.length === 0) {
