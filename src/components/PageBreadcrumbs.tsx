@@ -57,7 +57,17 @@ export function PageBreadcrumbs() {
         {pathSegments.map((segment, index) => {
           const path = `/${pathSegments.slice(0, index + 1).join('/')}`;
           const isLast = index === pathSegments.length - 1;
-          const label = breadcrumbMapping[segment] || segment;
+          
+          // For category pages, use the title from location.state if available
+          let label = breadcrumbMapping[segment] || segment;
+          if (segment === 'category' && pathSegments[index + 1]) {
+            // This is the "category" segment, skip it and use the next segment (the ID)
+            return null;
+          }
+          if (pathSegments[index - 1] === 'category' && location.state?.categoryTitle) {
+            // This is the category ID segment, replace with the title from state
+            label = location.state.categoryTitle;
+          }
 
           return (
             <span key={path} className="contents">
