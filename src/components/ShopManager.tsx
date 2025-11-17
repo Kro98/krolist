@@ -253,8 +253,10 @@ export function ShopManager() {
                             <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                           </div>
                           <Package className="h-4 w-4 text-muted-foreground hidden md:block" />
-                          <span className="font-medium">{shop.name}</span>
-                          {getStatusBadge()}
+                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                            <span className="font-medium">{shop.name}</span>
+                            {getStatusBadge()}
+                          </div>
                         </div>
                         
                         <div className="flex items-center gap-2">
