@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
 import { STORES } from '@/config/stores';
@@ -48,6 +49,8 @@ export default function KrolistProductsManager() {
   const [products, setProducts] = useState<KrolistProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshProgress, setRefreshProgress] = useState<number>(0);
+  const [showRefreshProgress, setShowRefreshProgress] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [showNewListDialog, setShowNewListDialog] = useState(false);
   const [newListTitle, setNewListTitle] = useState('');
@@ -143,16 +146,23 @@ export default function KrolistProductsManager() {
     return acc;
   }, {} as Record<string, KrolistProduct[]>);
 
-  const handleRefreshPrices = async () => {
+  const handleRefreshPrices = async (collectionTitle?: string) => {
     setIsRefreshing(true);
+    setShowRefreshProgress(true);
+    setRefreshProgress(0);
+    
     try {
-      const { data, error } = await supabase.functions.invoke('refresh-product-prices');
+      const { data, error } = await supabase.functions.invoke('admin-refresh-krolist-prices', {
+        body: { collection_title: collectionTitle === 'all' ? undefined : collectionTitle }
+      });
       
       if (error) throw error;
       
+      setRefreshProgress(100);
+      
       toast({
-        title: 'Prices refreshed',
-        description: `Updated ${data.updated} out of ${data.checked} products`,
+        title: 'Prices refreshed successfully',
+        description: `Updated ${data.updated} products${collectionTitle && collectionTitle !== 'all' ? ` in ${collectionTitle}` : ''}. Failed: ${data.failed}`,
       });
       
       fetchProducts();
@@ -164,6 +174,7 @@ export default function KrolistProductsManager() {
       });
     } finally {
       setIsRefreshing(false);
+      setTimeout(() => setShowRefreshProgress(false), 2000);
     }
   };
 
@@ -394,10 +405,29 @@ export default function KrolistProductsManager() {
           <p className="text-muted-foreground">{t('admin.krolistProductsDesc')}</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleRefreshPrices} disabled={isRefreshing} variant="outline" className="flex-1 md:flex-none">
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden md:inline md:ml-2">Refresh Prices</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button disabled={isRefreshing} variant="outline" className="flex-1 md:flex-none">
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden md:inline md:ml-2">Refresh Prices</span>
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleRefreshPrices('all')}>
+                Refresh All Collections
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {Object.keys(productsByCollection).map(collection => (
+                <DropdownMenuItem 
+                  key={collection} 
+                  onClick={() => handleRefreshPrices(collection)}
+                >
+                  Refresh {collection}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button onClick={() => setShowNewListDialog(true)} variant="outline" className="flex-1 md:flex-none">
             <Plus className="h-4 w-4" />
             <span className="hidden md:inline md:ml-2">New List</span>
@@ -889,6 +919,18 @@ export default function KrolistProductsManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Progress indicator for refresh */}
+      {showRefreshProgress && (
+        <div className="fixed bottom-4 right-4 z-50 bg-background border rounded-lg shadow-lg p-4 w-80">
+          <div className="flex items-center gap-3 mb-2">
+            <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+            <span className="font-medium">Refreshing prices...</span>
+          </div>
+          <Progress value={refreshProgress} className="h-2" />
+          <p className="text-xs text-muted-foreground mt-2">{refreshProgress}% complete</p>
+        </div>
+      )}
     </div>
   );
 }
