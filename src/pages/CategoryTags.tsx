@@ -77,34 +77,52 @@ export default function CategoryTags() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {categories.map((category) => (
           <Card
             key={category.id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="cursor-pointer group overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
             onClick={() => handleCategoryClick(category.id, category.title)}
           >
-            <div className="p-6 flex flex-col items-center justify-center gap-3">
+            <div className="relative h-[240px] md:h-[260px] lg:h-[280px] overflow-hidden">
               {category.icon_url ? (
-                <div className="w-20 h-20 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-muted">
-                  <img
-                    src={category.icon_url}
+                <>
+                  {/* Background Image */}
+                  <img 
+                    src={category.icon_url} 
                     alt={category.title}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                </div>
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                </>
               ) : (
-                <div className="w-20 h-20 rounded-full border-2 border-primary flex items-center justify-center bg-muted">
-                  <Tag className="h-10 w-10 text-primary" />
-                </div>
+                <>
+                  {/* Fallback Gradient Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/60" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Tag className="w-20 h-20 text-white/40" />
+                  </div>
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                </>
               )}
-              <div className="text-center">
-                <p className="font-semibold text-sm">{category.title}</p>
-                {productCounts[category.id] > 0 && (
-                  <Badge variant="secondary" className="mt-1 text-xs">
-                    {productCounts[category.id]} {t('products.items') || 'items'}
+              
+              {/* Content Layer */}
+              <div className="relative h-full flex flex-col justify-between p-4 md:p-6">
+                {/* Top: Item Count Badge */}
+                <div className="self-start">
+                  <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 font-semibold">
+                    {productCounts[category.id] || 0} {t('categories.items')}
                   </Badge>
-                )}
+                </div>
+                
+                {/* Bottom: Category Title */}
+                <div>
+                  <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg">
+                    {category.title}
+                  </h3>
+                </div>
               </div>
             </div>
           </Card>
