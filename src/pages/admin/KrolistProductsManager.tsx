@@ -11,9 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
 import { STORES } from '@/config/stores';
 import { ProductCarousel } from '@/components/ProductCarousel';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 interface KrolistProduct {
   id: string;
@@ -53,6 +54,13 @@ export default function KrolistProductsManager() {
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<KrolistProduct | null>(null);
   
+  // Collection management state
+  const [showCollectionDialog, setShowCollectionDialog] = useState(false);
+  const [collectionAction, setCollectionAction] = useState<'rename' | 'migrate' | 'delete' | null>(null);
+  const [selectedCollectionTitle, setSelectedCollectionTitle] = useState<string>('');
+  const [newCollectionName, setNewCollectionName] = useState('');
+  const [targetCollection, setTargetCollection] = useState<string>('');
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -68,6 +76,7 @@ export default function KrolistProductsManager() {
     collection_title: 'Featured Products',
     youtube_url: '',
     is_featured: true,
+    copyToCollection: '',
   });
 
   useEffect(() => {
@@ -158,6 +167,89 @@ export default function KrolistProductsManager() {
     }
   };
 
+  const handleCollectionAction = (action: 'rename' | 'migrate' | 'delete', collectionTitle: string) => {
+    setCollectionAction(action);
+    setSelectedCollectionTitle(collectionTitle);
+    setNewCollectionName('');
+    setTargetCollection('');
+    setShowCollectionDialog(true);
+  };
+
+  const handleRenameCollection = async () => {
+    if (!newCollectionName.trim()) {
+      toast({ title: 'Error', description: 'Please enter a new collection name', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('krolist_products')
+        .update({ collection_title: newCollectionName.trim() })
+        .eq('collection_title', selectedCollectionTitle);
+
+      if (error) throw error;
+      
+      toast({ title: 'Success', description: 'Collection renamed successfully' });
+      setShowCollectionDialog(false);
+      fetchProducts();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleMigrateCollection = async () => {
+    if (!targetCollection) {
+      toast({ title: 'Error', description: 'Please select a target collection', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('krolist_products')
+        .update({ collection_title: targetCollection })
+        .eq('collection_title', selectedCollectionTitle);
+
+      if (error) throw error;
+      
+      toast({ 
+        title: 'Success', 
+        description: `All products migrated to ${targetCollection}` 
+      });
+      setShowCollectionDialog(false);
+      fetchProducts();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteCollection = async () => {
+    const productsInCollection = products.filter(p => p.collection_title === selectedCollectionTitle);
+    
+    if (!confirm(`Are you sure you want to delete "${selectedCollectionTitle}" and all ${productsInCollection.length} products in it? This action cannot be undone.`)) {
+      setShowCollectionDialog(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('krolist_products')
+        .delete()
+        .eq('collection_title', selectedCollectionTitle);
+
+      if (error) throw error;
+      
+      toast({ 
+        title: 'Success', 
+        description: `Collection "${selectedCollectionTitle}" deleted` 
+      });
+      setShowCollectionDialog(false);
+      setSelectedCollection('all');
+      fetchProducts();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
   const handleOpenDialog = (product?: KrolistProduct) => {
     if (product) {
       setEditingProduct(product);
@@ -176,6 +268,7 @@ export default function KrolistProductsManager() {
         collection_title: product.collection_title || 'Featured Products',
         youtube_url: product.youtube_url || '',
         is_featured: product.is_featured,
+        copyToCollection: '',
       });
     } else {
       setEditingProduct(null);
@@ -191,9 +284,10 @@ export default function KrolistProductsManager() {
         image_url: '',
         category: '',
         customCategory: '',
-        collection_title: 'Featured Products',
+        collection_title: selectedCollection === 'all' ? 'Featured Products' : selectedCollection,
         youtube_url: '',
         is_featured: true,
+        copyToCollection: '',
       });
     }
     setShowDialog(true);
@@ -226,7 +320,27 @@ export default function KrolistProductsManager() {
           .eq('id', editingProduct.id);
 
         if (error) throw error;
-        toast({ title: t('admin.productUpdated') });
+        
+        // If copyToCollection is selected, create a copy
+        if (formData.copyToCollection && formData.copyToCollection !== 'none') {
+          const copyData = {
+            ...productData,
+            collection_title: formData.copyToCollection,
+          };
+          
+          const { error: copyError } = await supabase
+            .from('krolist_products')
+            .insert([copyData]);
+            
+          if (copyError) throw copyError;
+          
+          toast({ 
+            title: 'Success', 
+            description: `Product updated and copied to ${formData.copyToCollection}` 
+          });
+        } else {
+          toast({ title: t('admin.productUpdated') });
+        }
       } else {
         const { error } = await supabase
           .from('krolist_products')
@@ -345,8 +459,36 @@ export default function KrolistProductsManager() {
       {selectedCollection === 'all' ? (
         Object.entries(productsByCollection).map(([collectionTitle, collectionProducts]) => (
           <div key={collectionTitle} className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <span className="text-xl font-bold">{collectionTitle}</span>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => handleCollectionAction('rename', collectionTitle)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Rename Collection
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCollectionAction('migrate', collectionTitle)}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Migrate to Another Collection
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-destructive"
+                    onClick={() => handleCollectionAction('delete', collectionTitle)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Collection
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <ProductCarousel
-              title={collectionTitle}
+              title=""
               products={collectionProducts.map(p => ({
                 ...p,
                 isKrolistProduct: true,
@@ -608,6 +750,31 @@ export default function KrolistProductsManager() {
               />
             </div>
 
+            {editingProduct && (
+              <div>
+                <Label>Copy to Collection (Optional)</Label>
+                <Select 
+                  value={formData.copyToCollection || 'none'} 
+                  onValueChange={(value) => setFormData({ ...formData, copyToCollection: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select collection to copy to..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Don't copy</SelectItem>
+                    {collections
+                      .filter(c => c !== 'all' && c !== formData.collection_title)
+                      .map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This will create a duplicate of this product in the selected collection
+                </p>
+              </div>
+            )}
+
             <div className="flex items-center space-x-2">
               <Switch
                 checked={formData.is_featured}
@@ -647,6 +814,78 @@ export default function KrolistProductsManager() {
               Cancel
             </Button>
             <Button onClick={handleCreateNewList}>Create & Add Product</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Collection Management Dialog */}
+      <Dialog open={showCollectionDialog} onOpenChange={setShowCollectionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {collectionAction === 'rename' && 'Rename Collection'}
+              {collectionAction === 'migrate' && 'Migrate Collection'}
+              {collectionAction === 'delete' && 'Delete Collection'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {collectionAction === 'rename' && (
+            <div className="space-y-4">
+              <p>Current name: <strong>{selectedCollectionTitle}</strong></p>
+              <div>
+                <Label>New Collection Name</Label>
+                <Input
+                  value={newCollectionName}
+                  onChange={(e) => setNewCollectionName(e.target.value)}
+                  placeholder="Enter new collection name"
+                />
+              </div>
+            </div>
+          )}
+          
+          {collectionAction === 'migrate' && (
+            <div className="space-y-4">
+              <p>Move all products from <strong>{selectedCollectionTitle}</strong> to:</p>
+              <div>
+                <Label>Target Collection</Label>
+                <Select value={targetCollection} onValueChange={setTargetCollection}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select target collection" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {collections
+                      .filter(c => c !== 'all' && c !== selectedCollectionTitle)
+                      .map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          
+          {collectionAction === 'delete' && (
+            <div className="space-y-4">
+              <p className="text-destructive font-semibold">
+                Warning: This will delete all products in "{selectedCollectionTitle}"
+              </p>
+              <p>
+                Products to be deleted: {products.filter(p => p.collection_title === selectedCollectionTitle).length}
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCollectionDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              if (collectionAction === 'rename') handleRenameCollection();
+              if (collectionAction === 'migrate') handleMigrateCollection();
+              if (collectionAction === 'delete') handleDeleteCollection();
+            }}>
+              Confirm
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
