@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import CategoryTags from "@/pages/CategoryTags";
+import CategoryProducts from "@/pages/CategoryProducts";
 import MyOrders from "./pages/MyOrders";
 import AuthPrivacyPolicy from "./pages/auth/AuthPrivacyPolicy";
 import AuthTermsOfService from "./pages/auth/AuthTermsOfService";
@@ -56,6 +57,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                   <Route path="/donation" element={<Donation />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/categories" element={<CategoryTags />} />
+            <Route path="/category/:categoryId" element={<CategoryProducts />} />
             <Route path="/my-orders" element={<MyOrders />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />

@@ -57,8 +57,7 @@ export default function CategoryTags() {
   };
 
   const handleCategoryClick = (categoryId: string, title: string) => {
-    // Category clicks are now disabled - categories show on /categories page only
-    return;
+    navigate(`/category/${categoryId}`, { state: { categoryTitle: title } });
   };
 
   if (isLoading) {
