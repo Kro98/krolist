@@ -215,7 +215,7 @@ export function ShopManager() {
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="shops">
             {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 w-full">
               {filteredShops.map((shop, index) => {
                   const getStatusBadge = () => {
                     if (shop.adminEnabled === false || shop.status === 'deactivated_admin') {
@@ -242,7 +242,7 @@ export function ShopManager() {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex flex-col gap-2 p-3 border rounded-lg bg-card transition-all duration-300 ${
+                        className={`flex flex-col gap-2 p-3 border rounded-lg bg-card transition-all duration-300 w-full ${
                           snapshot.isDragging ? 'shadow-lg' : ''
                         } ${
                           highlightedShop === shop.id ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : ''
