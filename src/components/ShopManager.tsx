@@ -242,24 +242,23 @@ export function ShopManager() {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex items-center justify-between p-3 border rounded-lg bg-card transition-all duration-300 ${
+                        className={`flex flex-col gap-2 p-3 border rounded-lg bg-card transition-all duration-300 ${
                           snapshot.isDragging ? 'shadow-lg' : ''
                         } ${
                           highlightedShop === shop.id ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : ''
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div {...provided.dragHandleProps}>
-                            <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+                        {/* Top row: Grip, Icon, Name, Switch, Actions */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div {...provided.dragHandleProps}>
+                              <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab flex-shrink-0" />
+                            </div>
+                            <Package className="h-4 w-4 text-muted-foreground hidden md:block flex-shrink-0" />
+                            <span className="font-medium truncate">{shop.name}</span>
                           </div>
-                          <Package className="h-4 w-4 text-muted-foreground hidden md:block" />
-                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
-                            <span className="font-medium">{shop.name}</span>
-                            {getStatusBadge()}
-                          </div>
-                        </div>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {isAdminView ? (
                             <>
                               <Switch
@@ -328,6 +327,12 @@ export function ShopManager() {
                               disabled={shop.adminEnabled === false}
                             />
                           )}
+                          </div>
+                        </div>
+                        
+                        {/* Bottom row: Status badge */}
+                        <div className="pl-10 md:pl-11">
+                          {getStatusBadge()}
                         </div>
                       </div>
                     )}
