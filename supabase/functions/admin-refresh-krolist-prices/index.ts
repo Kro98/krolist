@@ -93,67 +93,104 @@ serve(async (req) => {
     let updated = 0;
     let failed = 0;
 
-    console.log(`Starting batch scrape for ${products.length} products`);
-
-    // Start batch scrape job with all product URLs
-    const startTime = Date.now();
-    const job = await firecrawl.batchScrape(
-      products.map(p => p.product_url),
-      {
-        options: {
-          formats: [{
-            type: 'json',
-            schema: { 
-              type: 'object', 
-              properties: { 
-                price: { 
-                  type: 'string',
-                  description: 'The current price of the product. Return the numeric value with or without currency symbols.'
-                } 
-              }, 
-              required: ['price'] 
-            }
-          }]
+    // Define schema for price extraction (flexible to handle both number and string)
+    const priceSchema = {
+      type: 'object',
+      properties: {
+        price: { 
+          type: ['number', 'string'],
+          description: 'The current price of the product. Can be a number or string with numeric value.'
         }
-      }
-    );
+      },
+      required: ['price']
+    } as const;
 
-    if (!job.success || !job.data) {
-      throw new Error('Batch scrape job failed');
+    console.log(`Starting bulk extraction job for ${products.length} products`);
+
+    // Start bulk extraction job with all product URLs
+    const startTime = Date.now();
+    const extractionJob = await firecrawl.startExtract({
+      urls: products.map(p => p.product_url),
+      prompt: 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.',
+      schema: priceSchema,
+      scrapeOptions: {
+        formats: ['extract'],
+        waitFor: 2000,  // Wait for page to load fully
+        timeout: 30000  // 30 second timeout per page
+      }
+    });
+
+    if (!extractionJob?.success || !extractionJob?.id) {
+      console.error('Failed to start extraction job. Response:', extractionJob);
+      throw new Error('Failed to start extraction job');
+    }
+
+    console.log(`Extraction job started: ${extractionJob.id}`);
+
+    // Poll for job completion
+    let jobComplete = false;
+    const maxAttempts = 60; // 3 minutes max (60 attempts × 3 seconds)
+    let attempts = 0;
+    let jobStatus: any;
+
+    while (!jobComplete && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+      attempts++;
+
+      jobStatus = await firecrawl.getExtractStatus(extractionJob.id);
+      console.log(`Job status check ${attempts}: ${jobStatus?.status} (completed: ${jobStatus?.completed || 0}/${jobStatus?.total || products.length})`);
+
+      if (jobStatus?.status === 'completed') {
+        jobComplete = true;
+      } else if (jobStatus?.status === 'failed') {
+        console.error('Extraction job failed. Status payload:', jobStatus);
+        throw new Error(`Extraction job failed: ${jobStatus.error || 'Unknown error'}`);
+      }
+    }
+
+    if (!jobComplete) {
+      console.error('Extraction job timed out. Last status payload:', jobStatus);
+      throw new Error(`Extraction job timed out after ${attempts * 3} seconds`);
     }
 
     const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`Batch scrape completed in ${extractionTime}s. Processing ${job.data.length} results...`);
+    console.log(`Extraction completed in ${extractionTime}s. Processing results...`);
 
     // Process results and update database
+    const results = jobStatus?.data || jobStatus?.results || jobStatus?.items || [];
+
+    // Helper to normalize numeric price from various shapes
+    const toNumber = (raw: unknown): number | null => {
+      if (raw === null || raw === undefined) return null;
+      if (typeof raw === 'number') return isFinite(raw) ? raw : null;
+      if (typeof raw === 'string') {
+        const m = raw.match(/[\d,]+\.?\d*/);
+        if (!m) return null;
+        const n = parseFloat(m[0].replace(/,/g, ''));
+        return isNaN(n) ? null : n;
+      }
+      return null;
+    };
+
     for (let i = 0; i < products.length; i++) {
       const product = products[i];
-      const scrapedData = job.data[i];
+      const extractedData = results[i];
 
       try {
         console.log(`Product ${i + 1}/${products.length}: ${product.title}`);
         console.log(`  URL: ${product.product_url}`);
-        console.log(`  Scraped data:`, scrapedData);
-        
-        let newPrice: number | null = null;
-        
-        // Extract price from JSON data
-        if (scrapedData?.json?.price) {
-          const priceData = scrapedData.json.price;
-          // Handle both number and string prices
-          if (typeof priceData === 'number') {
-            newPrice = priceData;
-          } else if (typeof priceData === 'string') {
-            // Extract numeric value from string (e.g., "178.00 SAR" -> 178)
-            const priceMatch = priceData.match(/[\d,]+\.?\d*/);
-            if (priceMatch) {
-              newPrice = parseFloat(priceMatch[0].replace(/,/g, ''));
-            }
-          }
-        }
-        
+        console.log(`  Raw extracted data:`, extractedData);
+
+        // Try multiple known shapes: { price }, { data: { price } }, { json: { price } }, { extract: { price } }, { result: { price } }
+        const rawPrice = extractedData?.price
+          ?? extractedData?.data?.price
+          ?? extractedData?.json?.price
+          ?? extractedData?.extract?.price
+          ?? extractedData?.result?.price;
+
+        const newPrice = toNumber(rawPrice);
         console.log(`  Parsed price: ${newPrice}`);
-        
+
         if (newPrice && newPrice > 0) {
           const { error: updateError } = await supabase
             .from('krolist_products')
@@ -171,7 +208,7 @@ serve(async (req) => {
             updated++;
           }
         } else {
-          console.error(`Invalid or missing price for ${product.title}:`, scrapedData?.json?.price);
+          console.error(`Invalid or missing price for ${product.title}:`, rawPrice);
           failed++;
         }
       } catch (error) {
@@ -193,10 +230,10 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in admin-refresh-krolist-prices:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error?.message || 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
