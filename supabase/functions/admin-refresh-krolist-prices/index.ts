@@ -121,59 +121,36 @@ serve(async (req) => {
     const prompt = 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.';
 
     let useFallback = false;
-    let jobStatus: any = null;
 
-    console.log(`Starting bulk extraction job for ${products.length} products`);
+    console.log(`Starting bulk extraction for ${products.length} products`);
     const startTime = Date.now();
+    let extractionResults: any = null;
+
     try {
-      const extractionJob = await firecrawl.startExtract({
+      const result = await firecrawl.extract({
         urls: products.map(p => p.product_url),
         prompt,
-        schema: priceSchema,
+        schema: priceSchema
       });
 
-      if (!extractionJob?.success || !extractionJob?.id) {
-        console.error('Failed to start extraction job. Response:', extractionJob);
+      const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.log(`Firecrawl extraction complete in ${extractionTime}s. Processing results...`);
+      console.log('Raw result structure:', JSON.stringify(result, null, 2));
+
+      if (!result.data || !Array.isArray(result.data)) {
+        console.error('Invalid result structure:', result);
         useFallback = true;
       } else {
-        console.log(`Extraction job started: ${extractionJob.id}`);
-        // Poll for job completion
-        let jobComplete = false;
-        const maxAttempts = 60; // 3 minutes max (60 attempts × 3 seconds)
-        let attempts = 0;
-
-        while (!jobComplete && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-          attempts++;
-
-          jobStatus = await firecrawl.getExtractStatus(extractionJob.id);
-          console.log(`Job status check ${attempts}: ${jobStatus?.status} (completed: ${jobStatus?.completed || 0}/${jobStatus?.total || products.length})`);
-
-          if (jobStatus?.status === 'completed') {
-            jobComplete = true;
-          } else if (jobStatus?.status === 'failed') {
-            console.error('Extraction job failed. Status payload:', jobStatus);
-            useFallback = true;
-            break;
-          }
-        }
-
-        if (!jobComplete) {
-          console.error('Extraction job timed out. Last status payload:', jobStatus);
-          useFallback = true;
-        } else {
-          const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
-          console.log(`Extraction completed in ${extractionTime}s. Processing results...`);
-        }
+        extractionResults = result.data;
       }
     } catch (e) {
-      console.error('startExtract threw, switching to fallback. Error:', e);
+      console.error('Bulk extraction failed. Error:', e);
       useFallback = true;
     }
 
-    if (!useFallback) {
-      // Process results from bulk job
-      const results = jobStatus?.data || jobStatus?.results || jobStatus?.items || [];
+    if (!useFallback && extractionResults) {
+      // Process results from bulk extraction
+      const results = extractionResults;
 
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
