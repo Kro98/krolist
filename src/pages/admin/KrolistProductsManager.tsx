@@ -54,6 +54,7 @@ export default function KrolistProductsManager() {
   const [showDialog, setShowDialog] = useState(false);
   const [showNewListDialog, setShowNewListDialog] = useState(false);
   const [newListTitle, setNewListTitle] = useState('');
+  const [selectedProductsToCopy, setSelectedProductsToCopy] = useState<string[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<KrolistProduct | null>(null);
   
@@ -119,15 +120,44 @@ export default function KrolistProductsManager() {
       return;
     }
 
-    // Just create the empty collection without opening the add product dialog
-    toast({
-      title: 'Success',
-      description: `Collection "${newListTitle.trim()}" created. You can now add products through the 3-dot menu.`,
-    });
-    
-    setNewListTitle('');
-    setShowNewListDialog(false);
-    setSelectedCollection(newListTitle.trim());
+    try {
+      // If products are selected to copy, create copies in the new collection
+      if (selectedProductsToCopy.length > 0) {
+        const productsToCopy = products.filter(p => selectedProductsToCopy.includes(p.id));
+        const copiedProducts = productsToCopy.map(({ id, created_at, updated_at, ...rest }) => ({
+          ...rest,
+          collection_title: newListTitle.trim(),
+        }));
+
+        const { error } = await supabase
+          .from('krolist_products')
+          .insert(copiedProducts);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Success',
+          description: `Collection "${newListTitle.trim()}" created with ${selectedProductsToCopy.length} products copied.`,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: `Collection "${newListTitle.trim()}" created. You can now add products through the 3-dot menu.`,
+        });
+      }
+      
+      setNewListTitle('');
+      setSelectedProductsToCopy([]);
+      setShowNewListDialog(false);
+      setSelectedCollection(newListTitle.trim());
+      await fetchProducts();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   // Get unique collections
@@ -797,11 +827,11 @@ export default function KrolistProductsManager() {
 
       {/* New List Dialog */}
       <Dialog open={showNewListDialog} onOpenChange={setShowNewListDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Create New Product List</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1 overflow-y-auto">
             <div>
               <Label>Collection Title</Label>
               <Input
@@ -810,9 +840,79 @@ export default function KrolistProductsManager() {
                 placeholder="e.g., Summer Sale, Electronics Deals"
               />
             </div>
+            
+            <div>
+              <Label className="text-base font-semibold mb-3 block">
+                Select Products to Copy (Optional)
+              </Label>
+              <p className="text-sm text-muted-foreground mb-4">
+                Select products from existing collections to add them to your new list as copies.
+              </p>
+              
+              <div className="border rounded-lg max-h-96 overflow-y-auto">
+                {Object.entries(productsByCollection).map(([collectionTitle, collectionProducts]) => (
+                  <div key={collectionTitle} className="border-b last:border-b-0">
+                    <div className="bg-muted/50 px-4 py-2 font-medium sticky top-0">
+                      {collectionTitle}
+                    </div>
+                    <div className="divide-y">
+                      {collectionProducts.map((product) => (
+                        <label
+                          key={product.id}
+                          className="flex items-start gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={selectedProductsToCopy.includes(product.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProductsToCopy([...selectedProductsToCopy, product.id]);
+                              } else {
+                                setSelectedProductsToCopy(selectedProductsToCopy.filter(id => id !== product.id));
+                              }
+                            }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-3">
+                              {product.image_url && (
+                                <img
+                                  src={product.image_url}
+                                  alt={product.title}
+                                  className="w-16 h-16 object-cover rounded flex-shrink-0"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm line-clamp-2">{product.title}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="outline" className="text-xs">{product.store}</Badge>
+                                  <span className="text-sm font-semibold text-primary">
+                                    {product.current_price} {product.currency}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {selectedProductsToCopy.length > 0 && (
+                <p className="text-sm text-primary font-medium mt-2">
+                  {selectedProductsToCopy.length} product{selectedProductsToCopy.length !== 1 ? 's' : ''} selected
+                </p>
+              )}
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewListDialog(false)}>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => {
+              setShowNewListDialog(false);
+              setSelectedProductsToCopy([]);
+              setNewListTitle('');
+            }}>
               Cancel
             </Button>
             <Button onClick={handleCreateNewList}>Create</Button>
