@@ -137,72 +137,72 @@ export default function Auth() {
           {/* Right Side - Auth Form */}
           <div className="w-full max-w-md mx-auto">
             <div className="bg-[#1a1a1a] rounded-lg p-8">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold mb-2">
-                  Welcome to <img src={krolistWelcomeLogo} alt="Krolist" className="inline h-8 mb-1" />
+              <div className="text-center mb-10">
+                <h1 className="text-4xl font-bold mb-3 text-foreground">
+                  Welcome to <img src={krolistWelcomeLogo} alt="Krolist" className="inline h-10 mb-1" />
                 </h1>
-                <p className="text-gray-400">
+                <p className="text-muted-foreground text-lg">
                   {isSignUp ? "Create an account to get started" : "Sign in to your account to continue"}
                 </p>
               </div>
 
               {!isSignUp}
 
-              {!isSignUp && <div className="relative my-6">
+              {!isSignUp && <div className="relative my-8">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-700"></div>
+                    <div className="w-full border-t border-border"></div>
                   </div>
                 </div>}
 
-              <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-                {isSignUp && <div className="space-y-2">
-                    <Label htmlFor="username" className="text-white">
+              <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
+                {isSignUp && <div className="space-y-3">
+                    <Label htmlFor="username" className="text-foreground text-sm font-medium">
                       Username
                     </Label>
-                    <Input id="username" name="username" type="text" placeholder="johndoe" className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500" required />
+                    <Input id="username" name="username" type="text" placeholder="johndoe" className="h-12 bg-background border-input text-foreground placeholder:text-muted-foreground" required />
                   </div>}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-foreground text-sm font-medium">
                     Email
                   </Label>
-                  <Input id="email" name={isSignUp ? "signup-email" : "signin-email"} type="email" placeholder="john.doe@example.com" className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500" required />
+                  <Input id="email" name={isSignUp ? "signup-email" : "signin-email"} type="email" placeholder="john.doe@example.com" className="h-12 bg-background border-input text-foreground placeholder:text-muted-foreground" required />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">
+                <div className="space-y-3">
+                  <Label htmlFor="password" className="text-foreground text-sm font-medium">
                     Password
                   </Label>
                   <div className="relative">
-                    <Input id="password" name={isSignUp ? "signup-password" : "signin-password"} type={isSignUp ? showSignUpPassword ? "text" : "password" : showSignInPassword ? "text" : "password"} placeholder="••••••••" className="bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500" required />
-                    <button type="button" onClick={() => isSignUp ? setShowSignUpPassword(!showSignUpPassword) : setShowSignInPassword(!showSignInPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
-                      {(isSignUp ? showSignUpPassword : showSignInPassword) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <Input id="password" name={isSignUp ? "signup-password" : "signin-password"} type={isSignUp ? showSignUpPassword ? "text" : "password" : showSignInPassword ? "text" : "password"} placeholder="••••••••" className="h-12 bg-background border-input text-foreground placeholder:text-muted-foreground pr-12" required />
+                    <button type="button" onClick={() => isSignUp ? setShowSignUpPassword(!showSignUpPassword) : setShowSignInPassword(!showSignInPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                      {(isSignUp ? showSignUpPassword : showSignInPassword) ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-[#F5A623] hover:bg-[#E09612] text-black font-semibold" disabled={loading}>
+                <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base" disabled={loading}>
                   {loading ? isSignUp ? "Creating account..." : "Signing in..." : isSignUp ? "Sign Up" : "Login"}
                 </Button>
               </form>
 
-              <div className="mt-6 text-center text-sm">
-                <span className="text-gray-400 mx-0 my-0 py-0 px-0">
+              <div className="mt-8 text-center">
+                <span className="text-muted-foreground">
                   {isSignUp ? "Already have an account?" : "Don't have an account?"}
                 </span>{" "}
-                <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-blue-400 hover:text-blue-300">
+                <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:text-primary/80 font-medium transition-colors">
                   {isSignUp ? "Sign in" : "Create an account"}
                 </button>
               </div>
 
-              <div className="mt-4 text-center">
+              <div className="mt-6 text-center">
                 <Button type="button" onClick={() => {
                 continueAsGuest();
                 navigate("/products");
-              }} variant="outline" className="w-full border-gray-700 hover:bg-gray-800">
+              }} variant="outline" className="w-full h-12 border-border text-foreground hover:bg-accent hover:text-accent-foreground">
                   Continue as Guest
                 </Button>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-3">
                   Limited features available in guest mode
                 </p>
               </div>
@@ -212,28 +212,28 @@ export default function Auth() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex items-center gap-4">
-            <Facebook className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-            <Twitter className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" onClick={() => window.open('https://x.com/Krolist_help?t=FORGVQQEW-wvycDY09pzKg&s=03', '_blank')} />
+      <footer className="border-t border-border/50 bg-card/30 py-10 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="flex items-center gap-6">
+            <Facebook className="w-6 h-6 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+            <Twitter className="w-6 h-6 text-muted-foreground hover:text-primary cursor-pointer transition-colors" onClick={() => window.open('https://x.com/Krolist_help?t=FORGVQQEW-wvycDY09pzKg&s=03', '_blank')} />
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-2">Resources</h3>
-            <ul className="space-y-1 text-sm text-gray-400">
+            <h3 className="text-foreground font-semibold mb-3 text-lg">Resources</h3>
+            <ul className="space-y-2 text-muted-foreground">
               <li>
-                <Link to="/auth/privacy-policy" className="hover:text-white cursor-pointer">
+                <Link to="/auth/privacy-policy" className="hover:text-primary cursor-pointer transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/auth/terms-of-service" className="hover:text-white cursor-pointer">
+                <Link to="/auth/terms-of-service" className="hover:text-primary cursor-pointer transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/auth/contact-us" className="hover:text-white cursor-pointer">
+                <Link to="/auth/contact-us" className="hover:text-primary cursor-pointer transition-colors">
                   Contact Us
                 </Link>
               </li>
@@ -241,7 +241,7 @@ export default function Auth() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto mt-6 pt-6 border-t border-gray-800 text-center text-sm text-gray-400">
+        <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-border/50 text-center text-muted-foreground">
           © 2025-2030 Krolist. All rights reserved.
         </div>
       </footer>

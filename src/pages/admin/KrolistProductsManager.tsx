@@ -198,7 +198,7 @@ export default function KrolistProductsManager() {
       const { error } = await supabase
         .from('krolist_products')
         .update({ collection_title: newCollectionName.trim() })
-        .eq('collection_title', selectedCollectionTitle);
+        .eq('collection_title', selectedCollectionTitle.toString());
 
       if (error) throw error;
       
@@ -220,7 +220,7 @@ export default function KrolistProductsManager() {
       const { error } = await supabase
         .from('krolist_products')
         .update({ collection_title: targetCollection })
-        .eq('collection_title', selectedCollectionTitle);
+        .eq('collection_title', selectedCollectionTitle.toString());
 
       if (error) throw error;
       
@@ -247,7 +247,7 @@ export default function KrolistProductsManager() {
       const { error } = await supabase
         .from('krolist_products')
         .delete()
-        .eq('collection_title', selectedCollectionTitle);
+        .eq('collection_title', selectedCollectionTitle.toString());
 
       if (error) throw error;
       
