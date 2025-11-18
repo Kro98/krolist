@@ -105,55 +105,6 @@ serve(async (req) => {
       required: ['price']
     } as const;
 
-    console.log(`Starting bulk extraction job for ${products.length} products`);
-
-    // Start bulk extraction job with all product URLs
-    const startTime = Date.now();
-    const extractionJob = await firecrawl.startExtract({
-      urls: products.map(p => p.product_url),
-      prompt: 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.',
-      schema: priceSchema
-    });
-
-    if (!extractionJob?.success || !extractionJob?.id) {
-      console.error('Failed to start extraction job. Response:', extractionJob);
-      throw new Error('Failed to start extraction job');
-    }
-
-    console.log(`Extraction job started: ${extractionJob.id}`);
-
-    // Poll for job completion
-    let jobComplete = false;
-    const maxAttempts = 60; // 3 minutes max (60 attempts × 3 seconds)
-    let attempts = 0;
-    let jobStatus: any;
-
-    while (!jobComplete && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-      attempts++;
-
-      jobStatus = await firecrawl.getExtractStatus(extractionJob.id);
-      console.log(`Job status check ${attempts}: ${jobStatus?.status} (completed: ${jobStatus?.completed || 0}/${jobStatus?.total || products.length})`);
-
-      if (jobStatus?.status === 'completed') {
-        jobComplete = true;
-      } else if (jobStatus?.status === 'failed') {
-        console.error('Extraction job failed. Status payload:', jobStatus);
-        throw new Error(`Extraction job failed: ${jobStatus.error || 'Unknown error'}`);
-      }
-    }
-
-    if (!jobComplete) {
-      console.error('Extraction job timed out. Last status payload:', jobStatus);
-      throw new Error(`Extraction job timed out after ${attempts * 3} seconds`);
-    }
-
-    const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`Extraction completed in ${extractionTime}s. Processing results...`);
-
-    // Process results and update database
-    const results = jobStatus?.data || jobStatus?.results || jobStatus?.items || [];
-
     // Helper to normalize numeric price from various shapes
     const toNumber = (raw: unknown): number | null => {
       if (raw === null || raw === undefined) return null;
@@ -167,48 +118,154 @@ serve(async (req) => {
       return null;
     };
 
-    for (let i = 0; i < products.length; i++) {
-      const product = products[i];
-      const extractedData = results[i];
+    const prompt = 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.';
 
-      try {
-        console.log(`Product ${i + 1}/${products.length}: ${product.title}`);
-        console.log(`  URL: ${product.product_url}`);
-        console.log(`  Raw extracted data:`, extractedData);
+    let useFallback = false;
+    let jobStatus: any = null;
 
-        // Try multiple known shapes: { price }, { data: { price } }, { json: { price } }, { extract: { price } }, { result: { price } }
-        const rawPrice = extractedData?.price
-          ?? extractedData?.data?.price
-          ?? extractedData?.json?.price
-          ?? extractedData?.extract?.price
-          ?? extractedData?.result?.price;
+    console.log(`Starting bulk extraction job for ${products.length} products`);
+    const startTime = Date.now();
+    try {
+      const extractionJob = await firecrawl.startExtract({
+        urls: products.map(p => p.product_url),
+        prompt,
+        schema: priceSchema,
+      });
 
-        const newPrice = toNumber(rawPrice);
-        console.log(`  Parsed price: ${newPrice}`);
+      if (!extractionJob?.success || !extractionJob?.id) {
+        console.error('Failed to start extraction job. Response:', extractionJob);
+        useFallback = true;
+      } else {
+        console.log(`Extraction job started: ${extractionJob.id}`);
+        // Poll for job completion
+        let jobComplete = false;
+        const maxAttempts = 60; // 3 minutes max (60 attempts × 3 seconds)
+        let attempts = 0;
 
-        if (newPrice && newPrice > 0) {
-          const { error: updateError } = await supabase
-            .from('krolist_products')
-            .update({
-              current_price: newPrice,
-              last_checked_at: new Date().toISOString(),
-            })
-            .eq('id', product.id);
+        while (!jobComplete && attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+          attempts++;
 
-          if (updateError) {
-            console.error(`Failed to update ${product.title}:`, updateError);
-            failed++;
-          } else {
-            console.log(`Updated ${product.title}: ${product.current_price} → ${newPrice}`);
-            updated++;
+          jobStatus = await firecrawl.getExtractStatus(extractionJob.id);
+          console.log(`Job status check ${attempts}: ${jobStatus?.status} (completed: ${jobStatus?.completed || 0}/${jobStatus?.total || products.length})`);
+
+          if (jobStatus?.status === 'completed') {
+            jobComplete = true;
+          } else if (jobStatus?.status === 'failed') {
+            console.error('Extraction job failed. Status payload:', jobStatus);
+            useFallback = true;
+            break;
           }
+        }
+
+        if (!jobComplete) {
+          console.error('Extraction job timed out. Last status payload:', jobStatus);
+          useFallback = true;
         } else {
-          console.error(`Invalid or missing price for ${product.title}:`, rawPrice);
+          const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+          console.log(`Extraction completed in ${extractionTime}s. Processing results...`);
+        }
+      }
+    } catch (e) {
+      console.error('startExtract threw, switching to fallback. Error:', e);
+      useFallback = true;
+    }
+
+    if (!useFallback) {
+      // Process results from bulk job
+      const results = jobStatus?.data || jobStatus?.results || jobStatus?.items || [];
+
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        const extractedData = results[i];
+
+        try {
+          console.log(`Product ${i + 1}/${products.length}: ${product.title}`);
+          console.log(`  URL: ${product.product_url}`);
+          console.log(`  Raw extracted data:`, extractedData);
+
+          // Try multiple known shapes: { price }, { data: { price } }, { json: { price } }, { extract: { price } }, { result: { price } }
+          const rawPrice = extractedData?.price
+            ?? extractedData?.data?.price
+            ?? extractedData?.json?.price
+            ?? extractedData?.extract?.price
+            ?? extractedData?.result?.price;
+
+          const newPrice = toNumber(rawPrice);
+          console.log(`  Parsed price: ${newPrice}`);
+
+          if (newPrice && newPrice > 0) {
+            const { error: updateError } = await supabase
+              .from('krolist_products')
+              .update({
+                current_price: newPrice,
+                last_checked_at: new Date().toISOString(),
+              })
+              .eq('id', product.id);
+
+            if (updateError) {
+              console.error(`Failed to update ${product.title}:`, updateError);
+              failed++;
+            } else {
+              console.log(`Updated ${product.title}: ${product.current_price} → ${newPrice}`);
+              updated++;
+            }
+          } else {
+            console.error(`Invalid or missing price for ${product.title}:`, rawPrice);
+            failed++;
+          }
+        } catch (error) {
+          console.error(`Error updating ${product.title}:`, error);
           failed++;
         }
-      } catch (error) {
-        console.error(`Error updating ${product.title}:`, error);
-        failed++;
+      }
+    } else {
+      // Fallback path: extract each URL individually
+      console.log('Using fallback: per-item extract');
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        try {
+          console.log(`Fallback extracting ${i + 1}/${products.length}: ${product.title}`);
+          const extractResult: any = await firecrawl.extract({
+            urls: [product.product_url],
+            prompt,
+            schema: priceSchema,
+          });
+
+          console.log('Fallback raw result:', extractResult);
+          const data = extractResult?.data || extractResult?.result || extractResult?.json || extractResult;
+          // Prefer object with price, but handle array shape too
+          const candidate = Array.isArray(data) ? data[0] : data;
+          const rawPrice = candidate?.price
+            ?? candidate?.data?.price
+            ?? candidate?.json?.price
+            ?? candidate?.extract?.price;
+          const newPrice = toNumber(rawPrice);
+
+          if (newPrice && newPrice > 0) {
+            const { error: updateError } = await supabase
+              .from('krolist_products')
+              .update({
+                current_price: newPrice,
+                last_checked_at: new Date().toISOString(),
+              })
+              .eq('id', product.id);
+
+            if (updateError) {
+              console.error(`Failed to update ${product.title}:`, updateError);
+              failed++;
+            } else {
+              console.log(`Updated ${product.title}: ${product.current_price} → ${newPrice}`);
+              updated++;
+            }
+          } else {
+            console.error(`Invalid or missing price (fallback) for ${product.title}:`, rawPrice);
+            failed++;
+          }
+        } catch (error) {
+          console.error(`Fallback error for ${product.title}:`, error);
+          failed++;
+        }
       }
     }
 
