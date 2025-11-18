@@ -39,7 +39,7 @@ interface KrolistProduct {
 
 const CATEGORIES = [
   'Electronics', 'Fashion', 'Home & Garden', 'Sports', 
-  'Beauty', 'Toys', 'Books', 'Automotive', 'Custom'
+  'Beauty', 'Toys', 'Books', 'Automotive', 'Watches', 'Custom'
 ];
 
 const CURRENCIES = ['SAR', 'AED', 'USD', 'EUR', 'GBP'];
