@@ -83,7 +83,7 @@ export function ProductCard({
     price: product.current_price.toString(),
     category: product.category || '',
     currency: product.currency || 'SAR',
-    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'].includes(product.category || '') ? product.category : 'Custom'
+    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture', 'EDC'].includes(product.category || '') ? product.category : 'Custom'
   });
 
   // Convert prices to display currency
@@ -180,7 +180,14 @@ export function ProductCard({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background border-2 border-border z-50">
-                      {onUpdate && <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                      {onUpdate && <DropdownMenuItem onClick={() => {
+                        // For Krolist products, trigger parent's dialog instead
+                        if (product.isKrolistProduct) {
+                          onUpdate(product.id, {});
+                        } else {
+                          setShowEditDialog(true);
+                        }
+                      }}>
                           <Edit className="h-4 w-4 mr-2" />
                           {t('products.edit')}
                         </DropdownMenuItem>}
@@ -325,6 +332,7 @@ export function ProductCard({
                   <SelectItem value="Care products">Care products</SelectItem>
                   <SelectItem value="Pet products">Pet products</SelectItem>
                   <SelectItem value="Furniture">Furniture</SelectItem>
+                  <SelectItem value="EDC">EDC</SelectItem>
                   <SelectItem value="Custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
