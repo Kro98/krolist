@@ -102,29 +102,60 @@ serve(async (req) => {
       required: ['price']
     };
 
-    // Process each product
-    for (const product of products) {
+    console.log(`Starting bulk extraction job for ${products.length} products`);
+
+    // Start bulk extraction job with all product URLs
+    const startTime = Date.now();
+    const extractionJob = await firecrawl.startExtract({
+      urls: products.map(p => p.product_url),
+      prompt: 'Extract only the current price of the product. Return just the numeric price value without currency symbols.',
+      schema: priceSchema,
+    });
+
+    if (!extractionJob.success || !extractionJob.id) {
+      throw new Error('Failed to start extraction job');
+    }
+
+    console.log(`Extraction job started: ${extractionJob.id}`);
+
+    // Poll for job completion
+    let jobComplete = false;
+    const maxAttempts = 60; // 3 minutes max (60 attempts × 3 seconds)
+    let attempts = 0;
+    let jobStatus: any;
+
+    while (!jobComplete && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+      attempts++;
+
+      jobStatus = await firecrawl.getExtractStatus(extractionJob.id);
+      console.log(`Job status check ${attempts}: ${jobStatus.status} (completed: ${jobStatus.completed || 0}/${jobStatus.total || products.length})`);
+
+      if (jobStatus.status === 'completed') {
+        jobComplete = true;
+      } else if (jobStatus.status === 'failed') {
+        throw new Error(`Extraction job failed: ${jobStatus.error || 'Unknown error'}`);
+      }
+    }
+
+    if (!jobComplete) {
+      throw new Error(`Extraction job timed out after ${attempts * 3} seconds`);
+    }
+
+    const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`Extraction completed in ${extractionTime}s. Processing results...`);
+
+    // Process results and update database
+    const results = jobStatus.data || [];
+    
+    for (let i = 0; i < products.length; i++) {
+      const product = products[i];
+      const extractedData = results[i];
+
       try {
-        console.log(`Extracting price for: ${product.title} (${product.product_url})`);
-
-        // Extract price using Firecrawl's extract method
-        const extractResult = await firecrawl.extract({
-          urls: [product.product_url],
-          prompt: 'Extract only the current price of the product. Return just the numeric price value without currency symbols.',
-          schema: priceSchema,
-        });
-
-        if (!extractResult.success || !extractResult.data || !extractResult.data.price) {
-          console.error(`Failed to extract price for ${product.title}`);
-          failed++;
-          continue;
-        }
-
-        const newPrice = extractResult.data.price;
-        console.log(`Extracted price: ${newPrice}`);
-
-        // Update price if different and valid
-        if (newPrice > 0) {
+        if (extractedData?.price && extractedData.price > 0) {
+          const newPrice = extractedData.price;
+          
           const { error: updateError } = await supabase
             .from('krolist_products')
             .update({
@@ -141,15 +172,11 @@ serve(async (req) => {
             updated++;
           }
         } else {
-          console.error(`Invalid price for ${product.title}: ${newPrice}`);
+          console.error(`Invalid or missing price for ${product.title}:`, extractedData?.price);
           failed++;
         }
-
-        // Small delay to avoid overwhelming Firecrawl
-        await new Promise(resolve => setTimeout(resolve, 150));
-
       } catch (error) {
-        console.error(`Error processing ${product.title}:`, error);
+        console.error(`Error updating ${product.title}:`, error);
         failed++;
       }
     }
