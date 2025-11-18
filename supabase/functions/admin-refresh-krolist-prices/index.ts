@@ -93,87 +93,59 @@ serve(async (req) => {
     let updated = 0;
     let failed = 0;
 
-    // Define schema for price extraction (flexible to handle both number and string)
-    const priceSchema = {
-      type: 'object',
-      properties: {
-        price: { 
-          type: ['number', 'string'],
-          description: 'The current price of the product. Can be a number or string with numeric value.'
-        }
-      },
-      required: ['price']
-    };
+    console.log(`Starting batch scrape for ${products.length} products`);
 
-    console.log(`Starting bulk extraction job for ${products.length} products`);
-
-    // Start bulk extraction job with all product URLs
+    // Start batch scrape job with all product URLs
     const startTime = Date.now();
-    const extractionJob = await firecrawl.startExtract({
-      urls: products.map(p => p.product_url),
-      prompt: 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.',
-      schema: priceSchema,
-      scrapeOptions: {
-        formats: ['extract'],
-        waitFor: 2000,  // Wait for page to load fully
-        timeout: 30000  // 30 second timeout per page
+    const job = await firecrawl.batchScrape(
+      products.map(p => p.product_url),
+      {
+        options: {
+          formats: [{
+            type: 'json',
+            schema: { 
+              type: 'object', 
+              properties: { 
+                price: { 
+                  type: 'string',
+                  description: 'The current price of the product. Return the numeric value with or without currency symbols.'
+                } 
+              }, 
+              required: ['price'] 
+            }
+          }]
+        }
       }
-    });
+    );
 
-    if (!extractionJob.success || !extractionJob.id) {
-      throw new Error('Failed to start extraction job');
-    }
-
-    console.log(`Extraction job started: ${extractionJob.id}`);
-
-    // Poll for job completion
-    let jobComplete = false;
-    const maxAttempts = 60; // 3 minutes max (60 attempts × 3 seconds)
-    let attempts = 0;
-    let jobStatus: any;
-
-    while (!jobComplete && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-      attempts++;
-
-      jobStatus = await firecrawl.getExtractStatus(extractionJob.id);
-      console.log(`Job status check ${attempts}: ${jobStatus.status} (completed: ${jobStatus.completed || 0}/${jobStatus.total || products.length})`);
-
-      if (jobStatus.status === 'completed') {
-        jobComplete = true;
-      } else if (jobStatus.status === 'failed') {
-        throw new Error(`Extraction job failed: ${jobStatus.error || 'Unknown error'}`);
-      }
-    }
-
-    if (!jobComplete) {
-      throw new Error(`Extraction job timed out after ${attempts * 3} seconds`);
+    if (!job.success || !job.data) {
+      throw new Error('Batch scrape job failed');
     }
 
     const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`Extraction completed in ${extractionTime}s. Processing results...`);
+    console.log(`Batch scrape completed in ${extractionTime}s. Processing ${job.data.length} results...`);
 
     // Process results and update database
-    const results = jobStatus.data || [];
-    
     for (let i = 0; i < products.length; i++) {
       const product = products[i];
-      const extractedData = results[i];
+      const scrapedData = job.data[i];
 
       try {
         console.log(`Product ${i + 1}/${products.length}: ${product.title}`);
         console.log(`  URL: ${product.product_url}`);
-        console.log(`  Extracted data:`, extractedData);
+        console.log(`  Scraped data:`, scrapedData);
         
         let newPrice: number | null = null;
         
-        if (extractedData?.price) {
+        // Extract price from JSON data
+        if (scrapedData?.json?.price) {
+          const priceData = scrapedData.json.price;
           // Handle both number and string prices
-          if (typeof extractedData.price === 'number') {
-            newPrice = extractedData.price;
-          } else if (typeof extractedData.price === 'string') {
+          if (typeof priceData === 'number') {
+            newPrice = priceData;
+          } else if (typeof priceData === 'string') {
             // Extract numeric value from string (e.g., "178.00 SAR" -> 178)
-            const priceMatch = extractedData.price.match(/[\d,]+\.?\d*/);
+            const priceMatch = priceData.match(/[\d,]+\.?\d*/);
             if (priceMatch) {
               newPrice = parseFloat(priceMatch[0].replace(/,/g, ''));
             }
@@ -199,7 +171,7 @@ serve(async (req) => {
             updated++;
           }
         } else {
-          console.error(`Invalid or missing price for ${product.title}:`, extractedData?.price);
+          console.error(`Invalid or missing price for ${product.title}:`, scrapedData?.json?.price);
           failed++;
         }
       } catch (error) {
