@@ -93,80 +93,38 @@ serve(async (req) => {
     let updated = 0;
     let failed = 0;
 
+    // Define schema for price extraction
+    const priceSchema = {
+      type: 'object',
+      properties: {
+        price: { type: 'number', description: 'The current price of the product as a number' }
+      },
+      required: ['price']
+    };
+
     // Process each product
     for (const product of products) {
       try {
-        console.log(`Scraping: ${product.title} (${product.product_url})`);
+        console.log(`Extracting price for: ${product.title} (${product.product_url})`);
 
-        // Scrape the product page
-        const scrapeResult = await firecrawl.scrape(product.product_url, {
-          formats: ['html'],
-          onlyMainContent: true,
+        // Extract price using Firecrawl's extract method
+        const extractResult = await firecrawl.extract({
+          urls: [product.product_url],
+          prompt: 'Extract only the current price of the product. Return just the numeric price value without currency symbols.',
+          schema: priceSchema,
         });
 
-        if (!scrapeResult.success || !scrapeResult.html) {
-          console.error(`Failed to scrape ${product.title}`);
+        if (!extractResult.success || !extractResult.data || !extractResult.data.price) {
+          console.error(`Failed to extract price for ${product.title}`);
           failed++;
           continue;
         }
 
-        const html = scrapeResult.html;
-        let newPrice: number | null = null;
+        const newPrice = extractResult.data.price;
+        console.log(`Extracted price: ${newPrice}`);
 
-        // Extract price based on store patterns
-        if (product.store.toLowerCase().includes('amazon')) {
-          // Amazon price patterns
-          const patterns = [
-            /<span class="a-price-whole">([0-9,]+)/,
-            /id="priceblock_ourprice"[^>]*>([^<]*\d+[.,]\d+)/,
-            /<span class="a-offscreen">SAR&nbsp;([0-9,]+\.\d+)/,
-            /class="a-price"[^>]*>.*?<span[^>]*>([0-9,]+\.\d+)/s,
-          ];
-          
-          for (const pattern of patterns) {
-            const match = html.match(pattern);
-            if (match) {
-              const priceStr = match[1].replace(/,/g, '');
-              newPrice = parseFloat(priceStr);
-              if (!isNaN(newPrice)) break;
-            }
-          }
-        } else if (product.store.toLowerCase().includes('noon')) {
-          // Noon price patterns
-          const patterns = [
-            /data-price="([0-9.]+)"/,
-            /class="sellingPrice"[^>]*>([^<]*\d+[.,]\d+)/,
-            /"price":([0-9.]+)/,
-          ];
-          
-          for (const pattern of patterns) {
-            const match = html.match(pattern);
-            if (match) {
-              newPrice = parseFloat(match[1]);
-              if (!isNaN(newPrice)) break;
-            }
-          }
-        } else {
-          // Generic e-commerce patterns
-          const patterns = [
-            /<meta property="og:price:amount" content="([0-9.]+)"/,
-            /<meta property="product:price:amount" content="([0-9.]+)"/,
-            /class="[^"]*price[^"]*"[^>]*>.*?([0-9,]+\.\d+)/i,
-            /"price"\s*:\s*"?([0-9.]+)"?/,
-          ];
-          
-          for (const pattern of patterns) {
-            const match = html.match(pattern);
-            if (match) {
-              const priceStr = match[1].replace(/,/g, '');
-              newPrice = parseFloat(priceStr);
-              if (!isNaN(newPrice)) break;
-            }
-          }
-        }
-
-        if (newPrice && newPrice > 0) {
-          // Update only current_price and last_checked_at
+        // Update price if different and valid
+        if (newPrice > 0) {
           const { error: updateError } = await supabase
             .from('krolist_products')
             .update({
@@ -183,7 +141,7 @@ serve(async (req) => {
             updated++;
           }
         } else {
-          console.error(`Could not extract price for ${product.title}`);
+          console.error(`Invalid price for ${product.title}: ${newPrice}`);
           failed++;
         }
 
