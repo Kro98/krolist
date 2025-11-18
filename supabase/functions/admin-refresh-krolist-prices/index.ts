@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import FirecrawlApp from "npm:@mendable/firecrawl-js@latest";
+import Firecrawl from "npm:@mendable/firecrawl-js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -88,7 +88,7 @@ serve(async (req) => {
     }
 
     // Initialize Firecrawl
-    const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
+    const firecrawl = new Firecrawl({ apiKey: firecrawlApiKey });
 
     let updated = 0;
     let failed = 0;
@@ -99,7 +99,7 @@ serve(async (req) => {
         console.log(`Scraping: ${product.title} (${product.product_url})`);
 
         // Scrape the product page
-        const scrapeResult = await firecrawl.scrapeUrl(product.product_url, {
+        const scrapeResult = await firecrawl.scrape(product.product_url, {
           formats: ['html'],
           onlyMainContent: true,
         });
