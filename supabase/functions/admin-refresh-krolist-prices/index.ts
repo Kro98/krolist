@@ -93,7 +93,7 @@ serve(async (req) => {
     let updated = 0;
     let failed = 0;
 
-    // Define schema for price extraction (flexible to handle both number and string)
+    // Define schema for price extraction
     const priceSchema = {
       type: 'object',
       properties: {
@@ -105,7 +105,7 @@ serve(async (req) => {
       required: ['price']
     } as const;
 
-    // Helper to normalize numeric price from various shapes
+    // Helper to normalize numeric price
     const toNumber = (raw: unknown): number | null => {
       if (raw === null || raw === undefined) return null;
       if (typeof raw === 'number') return isFinite(raw) ? raw : null;
@@ -120,149 +120,155 @@ serve(async (req) => {
 
     const prompt = 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.';
 
-    let useFallback = false;
+    // Start background task for price extraction
+    const backgroundTask = async () => {
+      let useFallback = false;
+      let extractionResults: any = null;
 
-    console.log(`Starting bulk extraction for ${products.length} products`);
-    const startTime = Date.now();
-    let extractionResults: any = null;
+      console.log(`[Background] Starting bulk extraction for ${products.length} products`);
+      const startTime = Date.now();
 
-    try {
-      const result = await firecrawl.extract({
-        urls: products.map(p => p.product_url),
-        prompt,
-        schema: priceSchema
-      });
+      try {
+        const result = await firecrawl.extract({
+          urls: products.map(p => p.product_url),
+          prompt,
+          schema: priceSchema
+        });
 
-      const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
-      console.log(`Firecrawl extraction complete in ${extractionTime}s. Processing results...`);
-      console.log('Raw result structure:', JSON.stringify(result, null, 2));
+        const extractionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`[Background] Firecrawl extraction complete in ${extractionTime}s`);
+        console.log('[Background] Raw result structure:', JSON.stringify(result, null, 2));
 
-      if (!result.data || !Array.isArray(result.data)) {
-        console.error('Invalid result structure:', result);
+        if (!result.data || !Array.isArray(result.data)) {
+          console.error('[Background] Invalid result structure:', result);
+          useFallback = true;
+        } else {
+          extractionResults = result.data;
+        }
+      } catch (e) {
+        console.error('[Background] Bulk extraction failed. Error:', e);
         useFallback = true;
-      } else {
-        extractionResults = result.data;
       }
-    } catch (e) {
-      console.error('Bulk extraction failed. Error:', e);
-      useFallback = true;
-    }
 
-    if (!useFallback && extractionResults) {
-      // Process results from bulk extraction
-      const results = extractionResults;
+      if (!useFallback && extractionResults) {
+        // Process results from bulk extraction
+        const results = extractionResults;
 
-      for (let i = 0; i < products.length; i++) {
-        const product = products[i];
-        const extractedData = results[i];
+        for (let i = 0; i < products.length; i++) {
+          const product = products[i];
+          const extractedData = results[i];
 
-        try {
-          console.log(`Product ${i + 1}/${products.length}: ${product.title}`);
-          console.log(`  URL: ${product.product_url}`);
-          console.log(`  Raw extracted data:`, extractedData);
+          try {
+            console.log(`[Background] Product ${i + 1}/${products.length}: ${product.title}`);
+            console.log(`[Background]   URL: ${product.product_url}`);
+            console.log(`[Background]   Raw extracted data:`, extractedData);
 
-          // Try multiple known shapes: { price }, { data: { price } }, { json: { price } }, { extract: { price } }, { result: { price } }
-          const rawPrice = extractedData?.price
-            ?? extractedData?.data?.price
-            ?? extractedData?.json?.price
-            ?? extractedData?.extract?.price
-            ?? extractedData?.result?.price;
+            const rawPrice = extractedData?.price
+              ?? extractedData?.data?.price
+              ?? extractedData?.json?.price
+              ?? extractedData?.extract?.price
+              ?? extractedData?.result?.price;
 
-          const newPrice = toNumber(rawPrice);
-          console.log(`  Parsed price: ${newPrice}`);
+            const newPrice = toNumber(rawPrice);
+            console.log(`[Background]   Parsed price: ${newPrice}`);
 
-          if (newPrice && newPrice > 0) {
-            const { error: updateError } = await supabase
-              .from('krolist_products')
-              .update({
-                current_price: newPrice,
-                last_checked_at: new Date().toISOString(),
-              })
-              .eq('id', product.id);
+            if (newPrice && newPrice > 0) {
+              const { error: updateError } = await supabase
+                .from('krolist_products')
+                .update({
+                  current_price: newPrice,
+                  last_checked_at: new Date().toISOString(),
+                })
+                .eq('id', product.id);
 
-            if (updateError) {
-              console.error(`Failed to update ${product.title}:`, updateError);
-              failed++;
+              if (updateError) {
+                console.error(`[Background] Failed to update ${product.title}:`, updateError);
+                failed++;
+              } else {
+                console.log(`[Background] Updated ${product.title}: ${product.current_price} → ${newPrice}`);
+                updated++;
+              }
             } else {
-              console.log(`Updated ${product.title}: ${product.current_price} → ${newPrice}`);
-              updated++;
+              console.error(`[Background] Invalid or missing price for ${product.title}:`, rawPrice);
+              failed++;
             }
-          } else {
-            console.error(`Invalid or missing price for ${product.title}:`, rawPrice);
+          } catch (error) {
+            console.error(`[Background] Error updating ${product.title}:`, error);
             failed++;
           }
-        } catch (error) {
-          console.error(`Error updating ${product.title}:`, error);
-          failed++;
         }
       }
-    } else {
-      // Fallback path: extract each URL individually
-      console.log('Using fallback: per-item extract');
-      for (let i = 0; i < products.length; i++) {
-        const product = products[i];
-        try {
-          console.log(`Fallback extracting ${i + 1}/${products.length}: ${product.title}`);
-          const extractResult: any = await firecrawl.extract({
-            urls: [product.product_url],
-            prompt,
-            schema: priceSchema,
-          });
 
-          console.log('Fallback raw result:', extractResult);
-          const data = extractResult?.data || extractResult?.result || extractResult?.json || extractResult;
-          // Prefer object with price, but handle array shape too
-          const candidate = Array.isArray(data) ? data[0] : data;
-          const rawPrice = candidate?.price
-            ?? candidate?.data?.price
-            ?? candidate?.json?.price
-            ?? candidate?.extract?.price;
-          const newPrice = toNumber(rawPrice);
+      if (useFallback) {
+        // Individual extraction fallback
+        console.log('[Background] Starting individual extraction for each product...');
+        for (const product of products) {
+          try {
+            console.log(`[Background] Extracting price for: ${product.title}`);
+            const result = await firecrawl.extract({
+              urls: [product.product_url],
+              prompt,
+              schema: priceSchema
+            });
 
-          if (newPrice && newPrice > 0) {
-            const { error: updateError } = await supabase
-              .from('krolist_products')
-              .update({
-                current_price: newPrice,
-                last_checked_at: new Date().toISOString(),
-              })
-              .eq('id', product.id);
+            const extractedData = result?.data?.[0];
+            const rawPrice = extractedData?.price
+              ?? extractedData?.data?.price
+              ?? extractedData?.json?.price;
 
-            if (updateError) {
-              console.error(`Failed to update ${product.title}:`, updateError);
-              failed++;
+            const newPrice = toNumber(rawPrice);
+
+            if (newPrice && newPrice > 0) {
+              const { error: updateError } = await supabase
+                .from('krolist_products')
+                .update({
+                  current_price: newPrice,
+                  last_checked_at: new Date().toISOString(),
+                })
+                .eq('id', product.id);
+
+              if (!updateError) {
+                console.log(`[Background] ✓ Updated ${product.title}: ${newPrice}`);
+                updated++;
+              } else {
+                console.error(`[Background] Failed to update ${product.title}:`, updateError);
+                failed++;
+              }
             } else {
-              console.log(`Updated ${product.title}: ${product.current_price} → ${newPrice}`);
-              updated++;
+              console.error(`[Background] Invalid price for ${product.title}:`, rawPrice);
+              failed++;
             }
-          } else {
-            console.error(`Invalid or missing price (fallback) for ${product.title}:`, rawPrice);
+          } catch (error) {
+            console.error(`[Background] Error processing ${product.title}:`, error);
             failed++;
           }
-        } catch (error) {
-          console.error(`Fallback error for ${product.title}:`, error);
-          failed++;
         }
       }
-    }
 
-    console.log(`Refresh complete. Updated: ${updated}, Failed: ${failed}`);
+      console.log(`[Background] Refresh complete. Updated: ${updated}, Failed: ${failed}`);
+    };
 
+    // Start background task without blocking response
+    EdgeRuntime.waitUntil(backgroundTask());
+
+    // Return immediate response - processing happens in background
     return new Response(
       JSON.stringify({
         success: true,
-        updated,
-        failed,
-        total: products.length,
-        collection: collection_title || 'all',
+        message: `Price refresh started for ${products.length} products. Check logs for progress.`,
+        products_count: products.length,
+        collection: collection_title || 'ALL'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
 
-  } catch (error: any) {
-    console.error('Error in admin-refresh-krolist-prices:', error);
+  } catch (error) {
+    console.error('Error in price refresh:', error);
     return new Response(
-      JSON.stringify({ error: error?.message || 'Unknown error' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
