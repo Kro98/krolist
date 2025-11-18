@@ -108,6 +108,12 @@ export function ProductCard({
     }
   };
   const handleEdit = () => {
+    // For Krolist products in admin, let parent handle the dialog
+    if (product.isKrolistProduct && onUpdate) {
+      onUpdate(product.id, {});
+      return;
+    }
+    
     if (onUpdate) {
       onUpdate(product.id, {
         title: editForm.title,
