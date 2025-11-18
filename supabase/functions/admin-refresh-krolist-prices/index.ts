@@ -112,12 +112,7 @@ serve(async (req) => {
     const extractionJob = await firecrawl.startExtract({
       urls: products.map(p => p.product_url),
       prompt: 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.',
-      schema: priceSchema,
-      scrapeOptions: {
-        formats: ['extract'],
-        waitFor: 2000,  // Wait for page to load fully
-        timeout: 30000  // 30 second timeout per page
-      }
+      schema: priceSchema
     });
 
     if (!extractionJob?.success || !extractionJob?.id) {
