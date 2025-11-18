@@ -93,11 +93,14 @@ serve(async (req) => {
     let updated = 0;
     let failed = 0;
 
-    // Define schema for price extraction
+    // Define schema for price extraction (flexible to handle both number and string)
     const priceSchema = {
       type: 'object',
       properties: {
-        price: { type: 'number', description: 'The current price of the product as a number' }
+        price: { 
+          type: ['number', 'string'],
+          description: 'The current price of the product. Can be a number or string with numeric value.'
+        }
       },
       required: ['price']
     };
@@ -108,8 +111,13 @@ serve(async (req) => {
     const startTime = Date.now();
     const extractionJob = await firecrawl.startExtract({
       urls: products.map(p => p.product_url),
-      prompt: 'Extract only the current price of the product. Return just the numeric price value without currency symbols.',
+      prompt: 'Extract the current price of the product. Look for the main product price displayed on the page. Return only the numeric value without currency symbols.',
       schema: priceSchema,
+      scrapeOptions: {
+        formats: ['extract'],
+        waitFor: 2000,  // Wait for page to load fully
+        timeout: 30000  // 30 second timeout per page
+      }
     });
 
     if (!extractionJob.success || !extractionJob.id) {
@@ -153,9 +161,28 @@ serve(async (req) => {
       const extractedData = results[i];
 
       try {
-        if (extractedData?.price && extractedData.price > 0) {
-          const newPrice = extractedData.price;
-          
+        console.log(`Product ${i + 1}/${products.length}: ${product.title}`);
+        console.log(`  URL: ${product.product_url}`);
+        console.log(`  Extracted data:`, extractedData);
+        
+        let newPrice: number | null = null;
+        
+        if (extractedData?.price) {
+          // Handle both number and string prices
+          if (typeof extractedData.price === 'number') {
+            newPrice = extractedData.price;
+          } else if (typeof extractedData.price === 'string') {
+            // Extract numeric value from string (e.g., "178.00 SAR" -> 178)
+            const priceMatch = extractedData.price.match(/[\d,]+\.?\d*/);
+            if (priceMatch) {
+              newPrice = parseFloat(priceMatch[0].replace(/,/g, ''));
+            }
+          }
+        }
+        
+        console.log(`  Parsed price: ${newPrice}`);
+        
+        if (newPrice && newPrice > 0) {
           const { error: updateError } = await supabase
             .from('krolist_products')
             .update({
