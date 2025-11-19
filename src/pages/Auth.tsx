@@ -127,8 +127,8 @@ export default function Auth() {
       </div>
 
       {/* Main Content Container */}
-      <div className="flex-1 flex items-center justify-center px-8 py-16">
-        <div className="w-full max-w-[1400px] flex items-center justify-between gap-16">
+      <div className="flex-1 flex items-center justify-center py-16">
+        <div className="w-full max-w-[1400px] mx-auto px-8 flex items-center justify-center gap-12 lg:gap-16">
           {/* Left Side - Logo Section */}
           <div className="flex-1 flex flex-col items-start justify-center min-w-[300px]">
             <img src={krolistCircleLogo} alt="Krolist Logo" className="w-64 h-64 object-contain mb-6" />
