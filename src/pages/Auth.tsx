@@ -126,17 +126,17 @@ export default function Auth() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 pb-20">
-        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Side - Logo */}
-          <div className="hidden lg:flex flex-col items-center justify-center">
+          <div className="hidden lg:flex flex-col items-center justify-center p-8">
             <img src={krolistCircleLogo} alt="Krolist Logo" className="w-80 h-80 object-contain mb-8" />
             <p className="text-xl text-gray-400">Your ultimate shopping manager.</p>
           </div>
 
           {/* Right Side - Auth Form */}
-          <div className="w-full max-w-md mx-auto">
-            <div className="bg-[#1a1a1a] rounded-lg p-8">
+          <div className="w-full max-w-md mx-auto p-4 lg:p-8">
+            <div className="bg-[#1a1a1a] rounded-lg p-6 sm:p-8">
               <div className="text-center mb-10">
                 <h1 className="text-4xl font-bold mb-3 text-foreground">
                   Welcome to <img src={krolistWelcomeLogo} alt="Krolist" className="inline h-10 mb-1" />
