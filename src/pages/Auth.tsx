@@ -8,18 +8,15 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-circle-logo.png';
-
 const signUpSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
-
 const signInSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
-
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -27,22 +24,29 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp, signIn, user, continueAsGuest } = useAuth();
+  const {
+    signUp,
+    signIn,
+    user,
+    continueAsGuest
+  } = useAuth();
   const navigate = useNavigate();
-
   if (user) {
     navigate('/products');
     return null;
   }
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      const validatedData = signUpSchema.parse({ username, email, password });
-      const { error } = await signUp(validatedData.email, validatedData.password, validatedData.username);
-
+      const validatedData = signUpSchema.parse({
+        username,
+        email,
+        password
+      });
+      const {
+        error
+      } = await signUp(validatedData.email, validatedData.password, validatedData.username);
       if (error) {
         toast.error(error.message);
       } else {
@@ -57,15 +61,17 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      const validatedData = signInSchema.parse({ email, password });
-      const { error } = await signIn(validatedData.email, validatedData.password);
-
+      const validatedData = signInSchema.parse({
+        email,
+        password
+      });
+      const {
+        error
+      } = await signIn(validatedData.email, validatedData.password);
       if (error) {
         toast.error(error.message);
       } else {
@@ -80,85 +86,47 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
-
   const handleGuestMode = () => {
     continueAsGuest();
     navigate('/products');
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 mx-[1000px] px-[5px]">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="w-20 h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Krolist</h1>
-          <p className="text-muted-foreground">Track prices, save money, shop smarter</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2 px-[5px]">Welcome to Krolist</h1>
+          <p className="text-muted-foreground px-[5px]">Track prices, save money, shop smarter</p>
         </div>
 
         {/* Auth Card */}
         <div className="bg-card border border-border rounded-2xl shadow-lg p-8 animate-scale-in">
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
-            {isSignUp && (
-              <div className="space-y-2">
+            {isSignUp && <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            )}
+                <Input id="username" type="text" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} required disabled={isLoading} />
+              </div>}
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+              <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-10" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
             <Button type="submit" className="w-full group" disabled={isLoading}>
-              {isLoading ? (
-                'Please wait...'
-              ) : (
-                <>
+              {isLoading ? 'Please wait...' : <>
                   {isSignUp ? 'Create Account' : 'Sign In'}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
+                </>}
             </Button>
           </form>
 
@@ -172,42 +140,28 @@ export default function Auth() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleGuestMode}
-            >
+            <Button type="button" variant="outline" className="w-full" onClick={handleGuestMode}>
               Continue as Guest
             </Button>
           </div>
 
           <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {isSignUp ? (
-                <>
+            <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {isSignUp ? <>
                   Already have an account?{' '}
                   <span className="text-primary font-medium">Sign In</span>
-                </>
-              ) : (
-                <>
+                </> : <>
                   Don't have an account?{' '}
                   <span className="text-primary font-medium">Sign Up</span>
-                </>
-              )}
+                </>}
             </button>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-8">
+        <p className="text-center text-sm text-muted-foreground mt-8 px-[5px]">
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
-    </div>
-  );
+    </div>;
 }
