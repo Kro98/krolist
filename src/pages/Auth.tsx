@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const {
     signUp,
     signIn,
@@ -90,6 +91,14 @@ export default function Auth() {
     continueAsGuest();
     navigate('/products');
   };
+
+  const toggleAuthMode = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setIsSignUp(!isSignUp);
+      setIsAnimating(false);
+    }, 150);
+  };
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 mx-[1000px] px-[5px]">
       <div className="w-full max-w-md">
         {/* Logo */}
@@ -101,11 +110,25 @@ export default function Auth() {
 
         {/* Auth Card */}
         <div className="bg-card border border-border rounded-2xl shadow-lg p-8 animate-scale-in">
-          <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
-            {isSignUp && <div className="space-y-2">
+          <div className={`transition-opacity duration-150 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
+            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
+              <div 
+                className={`space-y-2 overflow-hidden transition-all duration-300 ${
+                  isSignUp ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
                 <Label htmlFor="username">Username</Label>
-                <Input id="username" type="text" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} required disabled={isLoading} />
-              </div>}
+                <Input 
+                  id="username" 
+                  type="text" 
+                  placeholder="Enter your username" 
+                  value={username} 
+                  onChange={e => setUsername(e.target.value)} 
+                  required={isSignUp} 
+                  disabled={isLoading}
+                  tabIndex={isSignUp ? 0 : -1}
+                />
+              </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -122,13 +145,14 @@ export default function Auth() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full group" disabled={isLoading}>
-              {isLoading ? 'Please wait...' : <>
-                  {isSignUp ? 'Create Account' : 'Sign In'}
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </>}
-            </Button>
-          </form>
+              <Button type="submit" className="w-full group" disabled={isLoading}>
+                {isLoading ? 'Please wait...' : <>
+                    {isSignUp ? 'Create Account' : 'Sign In'}
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </>}
+              </Button>
+            </form>
+          </div>
 
           <div className="mt-6 space-y-4">
             <div className="relative">
@@ -146,14 +170,20 @@ export default function Auth() {
           </div>
 
           <div className="mt-6 text-center">
-            <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              {isSignUp ? <>
-                  Already have an account?{' '}
-                  <span className="text-primary font-medium">Sign In</span>
-                </> : <>
-                  Don't have an account?{' '}
-                  <span className="text-primary font-medium">Sign Up</span>
-                </>}
+            <button 
+              type="button" 
+              onClick={toggleAuthMode} 
+              className="text-sm text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105"
+            >
+              <span className="transition-all duration-300">
+                {isSignUp ? <>
+                    Already have an account?{' '}
+                    <span className="text-primary font-medium">Sign In</span>
+                  </> : <>
+                    Don't have an account?{' '}
+                    <span className="text-primary font-medium">Sign Up</span>
+                  </>}
+              </span>
             </button>
           </div>
         </div>
