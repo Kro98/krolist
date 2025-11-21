@@ -53,6 +53,8 @@ export default function KrolistProductsManager() {
   const [showRefreshProgress, setShowRefreshProgress] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [showNewListDialog, setShowNewListDialog] = useState(false);
+  const [showManualPriceDialog, setShowManualPriceDialog] = useState(false);
+  const [manualPrices, setManualPrices] = useState<Record<string, string>>({});
   const [newListTitle, setNewListTitle] = useState('');
   const [selectedProductsToCopy, setSelectedProductsToCopy] = useState<string[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
@@ -425,6 +427,92 @@ export default function KrolistProductsManager() {
     }
   };
 
+  const handleOpenManualPriceDialog = () => {
+    // Group products by title to handle duplicates
+    const productsByTitle = products.reduce((acc, product) => {
+      if (!acc[product.title]) {
+        acc[product.title] = [];
+      }
+      acc[product.title].push(product);
+      return acc;
+    }, {} as Record<string, KrolistProduct[]>);
+
+    // Initialize manual prices with current prices (using first product of each group)
+    const initialPrices: Record<string, string> = {};
+    Object.entries(productsByTitle).forEach(([title, prods]) => {
+      initialPrices[title] = prods[0].current_price.toString();
+    });
+    
+    setManualPrices(initialPrices);
+    setShowManualPriceDialog(true);
+  };
+
+  const handleSaveManualPrices = async () => {
+    try {
+      // Group products by title
+      const productsByTitle = products.reduce((acc, product) => {
+        if (!acc[product.title]) {
+          acc[product.title] = [];
+        }
+        acc[product.title].push(product);
+        return acc;
+      }, {} as Record<string, KrolistProduct[]>);
+
+      let updateCount = 0;
+      const errors: string[] = [];
+
+      // Update all products with the same title with the same price
+      for (const [title, priceStr] of Object.entries(manualPrices)) {
+        const price = parseFloat(priceStr);
+        if (isNaN(price) || price <= 0) continue;
+
+        const productsToUpdate = productsByTitle[title] || [];
+        
+        for (const product of productsToUpdate) {
+          try {
+            const { error } = await supabase
+              .from('krolist_products')
+              .update({ 
+                current_price: price,
+                last_checked_at: new Date().toISOString()
+              })
+              .eq('id', product.id);
+
+            if (error) {
+              errors.push(`Failed to update ${title}: ${error.message}`);
+            } else {
+              updateCount++;
+            }
+          } catch (err: any) {
+            errors.push(`Error updating ${title}: ${err.message}`);
+          }
+        }
+      }
+
+      if (errors.length > 0) {
+        toast({
+          title: 'Partial success',
+          description: `Updated ${updateCount} products. ${errors.length} errors occurred.`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: `Updated ${updateCount} products successfully`,
+        });
+      }
+
+      setShowManualPriceDialog(false);
+      fetchProducts();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return <div>{t('loading')}</div>;
   }
@@ -436,7 +524,7 @@ export default function KrolistProductsManager() {
           <h2 className="text-2xl font-bold">{t('admin.krolistProducts')}</h2>
           <p className="text-muted-foreground">{t('admin.krolistProductsDesc')}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button disabled={isRefreshing} variant="outline" className="flex-1 md:flex-none">
@@ -460,6 +548,10 @@ export default function KrolistProductsManager() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button onClick={handleOpenManualPriceDialog} variant="outline" className="flex-1 md:flex-none">
+            <Edit className="h-4 w-4" />
+            <span className="hidden md:inline md:ml-2">Manual Prices</span>
+          </Button>
           <Button onClick={() => setShowNewListDialog(true)} variant="outline" className="flex-1 md:flex-none">
             <Plus className="h-4 w-4" />
             <span className="hidden md:inline md:ml-2">New List</span>
@@ -987,6 +1079,165 @@ export default function KrolistProductsManager() {
               if (collectionAction === 'delete') handleDeleteCollection();
             }}>
               Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Price Update Dialog */}
+      <Dialog open={showManualPriceDialog} onOpenChange={setShowManualPriceDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Manual Price Update</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Update prices manually. Products with the same title will be updated together.
+            </p>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            {/* Mobile View - Cards */}
+            <div className="md:hidden space-y-3">
+              {Object.entries(
+                products.reduce((acc, product) => {
+                  if (!acc[product.title]) {
+                    acc[product.title] = [];
+                  }
+                  acc[product.title].push(product);
+                  return acc;
+                }, {} as Record<string, KrolistProduct[]>)
+              ).map(([title, prods]) => (
+                <Card key={title}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      {prods[0].image_url && (
+                        <img 
+                          src={prods[0].image_url} 
+                          alt={title}
+                          className="w-16 h-16 object-cover rounded flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-sm line-clamp-2">{title}</CardTitle>
+                        <div className="flex gap-1 flex-wrap mt-1">
+                          {prods.map(p => (
+                            <Badge key={p.id} variant="outline" className="text-xs">
+                              {p.collection_title}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs whitespace-nowrap">Price:</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={manualPrices[title] || ''}
+                        onChange={(e) => setManualPrices({
+                          ...manualPrices,
+                          [title]: e.target.value
+                        })}
+                        className="h-8 text-sm"
+                        placeholder={prods[0].current_price.toString()}
+                      />
+                      <span className="text-xs text-muted-foreground">{prods[0].currency}</span>
+                    </div>
+                    {prods.length > 1 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Updates {prods.length} copies
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Desktop View - Table */}
+            <div className="hidden md:block border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted/50 border-b">
+                  <tr>
+                    <th className="text-left p-3 text-sm font-medium">Product</th>
+                    <th className="text-left p-3 text-sm font-medium">Collections</th>
+                    <th className="text-left p-3 text-sm font-medium">Current Price</th>
+                    <th className="text-left p-3 text-sm font-medium w-40">New Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {Object.entries(
+                    products.reduce((acc, product) => {
+                      if (!acc[product.title]) {
+                        acc[product.title] = [];
+                      }
+                      acc[product.title].push(product);
+                      return acc;
+                    }, {} as Record<string, KrolistProduct[]>)
+                  ).map(([title, prods]) => (
+                    <tr key={title} className="hover:bg-accent/50">
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          {prods[0].image_url && (
+                            <img 
+                              src={prods[0].image_url} 
+                              alt={title}
+                              className="w-12 h-12 object-cover rounded flex-shrink-0"
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm line-clamp-2">{title}</p>
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {prods[0].store}
+                            </Badge>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1 flex-wrap">
+                          {prods.map(p => (
+                            <Badge key={p.id} variant="secondary" className="text-xs">
+                              {p.collection_title}
+                            </Badge>
+                          ))}
+                        </div>
+                        {prods.length > 1 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {prods.length} copies
+                          </p>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <span className="font-semibold">
+                          {prods[0].current_price} {prods[0].currency}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={manualPrices[title] || ''}
+                          onChange={(e) => setManualPrices({
+                            ...manualPrices,
+                            [title]: e.target.value
+                          })}
+                          className="h-9"
+                          placeholder={prods[0].current_price.toString()}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowManualPriceDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveManualPrices}>
+              Update Prices
             </Button>
           </DialogFooter>
         </DialogContent>
