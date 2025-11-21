@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical, Download, Upload } from 'lucide-react';
 import { STORES } from '@/config/stores';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -445,6 +445,81 @@ export default function KrolistProductsManager() {
     
     setManualPrices(initialPrices);
     setShowManualPriceDialog(true);
+  };
+
+  const handleExportPrices = () => {
+    // Group products by title
+    const productsByTitle = products.reduce((acc, product) => {
+      if (!acc[product.title]) {
+        acc[product.title] = [];
+      }
+      acc[product.title].push(product);
+      return acc;
+    }, {} as Record<string, KrolistProduct[]>);
+
+    // Create CSV content
+    let csv = 'Product Title,Store,Current Price,Currency,Product URL,Collections,Number of Copies\n';
+    
+    Object.entries(productsByTitle).forEach(([title, prods]) => {
+      const collections = prods.map(p => p.collection_title).join(' | ');
+      const productUrl = prods[0].product_url;
+      csv += `"${title}","${prods[0].store}","${prods[0].current_price}","${prods[0].currency}","${productUrl}","${collections}","${prods.length}"\n`;
+    });
+
+    // Download CSV
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `krolist-prices-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Export successful',
+      description: 'Prices exported to CSV file',
+    });
+  };
+
+  const handleImportPrices = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n');
+      
+      // Skip header
+      const dataLines = lines.slice(1).filter(line => line.trim());
+      
+      const importedPrices: Record<string, string> = {};
+      
+      dataLines.forEach(line => {
+        // Parse CSV line (handle quoted fields)
+        const matches = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+        if (matches && matches.length >= 3) {
+          const title = matches[0].replace(/^"|"$/g, '').trim();
+          const price = matches[2].replace(/^"|"$/g, '').trim();
+          if (title && price && !isNaN(parseFloat(price))) {
+            importedPrices[title] = price;
+          }
+        }
+      });
+
+      setManualPrices({ ...manualPrices, ...importedPrices });
+      
+      toast({
+        title: 'Import successful',
+        description: `Imported ${Object.keys(importedPrices).length} prices`,
+      });
+    };
+
+    reader.readAsText(file);
+    // Reset input
+    event.target.value = '';
   };
 
   const handleSaveManualPrices = async () => {
@@ -1088,10 +1163,32 @@ export default function KrolistProductsManager() {
       <Dialog open={showManualPriceDialog} onOpenChange={setShowManualPriceDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Manual Price Update</DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Update prices manually. Products with the same title will be updated together.
-            </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <DialogTitle>Manual Price Update</DialogTitle>
+                <p className="text-sm text-muted-foreground">
+                  Update prices manually. Products with the same title will be updated together.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleExportPrices}>
+                  <Download className="h-4 w-4" />
+                  <span className="hidden md:inline md:ml-2">Export</span>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <label className="cursor-pointer">
+                    <Upload className="h-4 w-4" />
+                    <span className="hidden md:inline md:ml-2">Import</span>
+                    <input
+                      type="file"
+                      accept=".csv"
+                      className="hidden"
+                      onChange={handleImportPrices}
+                    />
+                  </label>
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto">
@@ -1116,8 +1213,18 @@ export default function KrolistProductsManager() {
                           className="w-16 h-16 object-cover rounded flex-shrink-0"
                         />
                       )}
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-sm line-clamp-2">{title}</CardTitle>
+                       <div className="flex-1 min-w-0">
+                        <a 
+                          href={prods[0].product_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors"
+                        >
+                          <CardTitle className="text-sm line-clamp-2 flex items-center gap-1">
+                            {title}
+                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                          </CardTitle>
+                        </a>
                         <div className="flex gap-1 flex-wrap mt-1">
                           {prods.map(p => (
                             <Badge key={p.id} variant="outline" className="text-xs">
@@ -1186,7 +1293,17 @@ export default function KrolistProductsManager() {
                             />
                           )}
                           <div className="min-w-0">
-                            <p className="font-medium text-sm line-clamp-2">{title}</p>
+                            <a 
+                              href={prods[0].product_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="hover:text-primary transition-colors"
+                            >
+                              <p className="font-medium text-sm line-clamp-2 flex items-center gap-1">
+                                {title}
+                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                              </p>
+                            </a>
                             <Badge variant="outline" className="text-xs mt-1">
                               {prods[0].store}
                             </Badge>
