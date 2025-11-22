@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Twitter } from 'lucide-react';
+import { Music } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-text-logo-new.png';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 const signUpSchema = z.object({
@@ -348,9 +350,56 @@ export default function Auth() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-8">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+        <div className="mt-8 space-y-4">
+          {/* Links */}
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+            <Link 
+              to="/auth/contact-us" 
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Contact Us
+            </Link>
+            <Link 
+              to="/auth/privacy-policy" 
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link 
+              to="/auth/terms-of-service" 
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Terms of Service
+            </Link>
+          </div>
+
+          {/* Social Icons */}
+          <div className="flex justify-center gap-4">
+            <a 
+              href="https://twitter.com/krolist" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Twitter"
+            >
+              <Twitter className="w-5 h-5" />
+            </a>
+            <a 
+              href="https://tiktok.com/@krolist" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="TikTok"
+            >
+              <Music className="w-5 h-5" />
+            </a>
+          </div>
+
+          {/* Legal Text */}
+          <p className="text-center text-xs text-muted-foreground">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
+        </div>
       </div>
     </div>;
 }
