@@ -92,7 +92,6 @@ export default function Auth() {
     continueAsGuest();
     navigate('/products');
   };
-
   useSwipeGesture({
     onSwipeLeft: () => {
       if (activeTab === 'signin') setActiveTab('signup');
@@ -107,11 +106,167 @@ export default function Auth() {
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="w-20 h-20 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Krolist</h1>
-          <p className="text-muted-foreground">Track prices, save money, shop smarter</p>
+          <p className="text-muted-foreground">collection of cool products and more
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </p>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-card border border-border rounded-2xl shadow-lg p-8 animate-scale-in">
+        <div className="bg-card border border-border rounded-2xl shadow-lg p-8 animate-scale-in mx-0 px-[15px] py-[15px]">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -119,50 +274,27 @@ export default function Auth() {
             </TabsList>
 
             <TabsContent value="signin" className="space-y-6">
-              <form onSubmit={handleSignIn} className="space-y-6">
+              <form onSubmit={handleSignIn} className="space-y-6 px-0 mx-0">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
-                  <Input 
-                    id="signin-email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                  />
+                  <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="signin-password" 
-                      type={showPassword ? 'text' : 'password'} 
-                      placeholder="Enter your password" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading} 
-                      className="pr-10" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Input id="signin-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-10" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
                 <Button type="submit" className="w-full group" disabled={isLoading}>
-                  {isLoading ? 'Please wait...' : (
-                    <>
+                  {isLoading ? 'Please wait...' : <>
                       Sign In
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </form>
             </TabsContent>
@@ -171,60 +303,29 @@ export default function Auth() {
               <form onSubmit={handleSignUp} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signup-username">Username</Label>
-                  <Input 
-                    id="signup-username" 
-                    type="text" 
-                    placeholder="Enter your username" 
-                    value={username} 
-                    onChange={e => setUsername(e.target.value)} 
-                    required 
-                    disabled={isLoading}
-                  />
+                  <Input id="signup-username" type="text" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} required disabled={isLoading} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input 
-                    id="signup-email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                  />
+                  <Input id="signup-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="signup-password" 
-                      type={showPassword ? 'text' : 'password'} 
-                      placeholder="Enter your password" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading} 
-                      className="pr-10" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Input id="signup-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-10" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
                 <Button type="submit" className="w-full group" disabled={isLoading}>
-                  {isLoading ? 'Please wait...' : (
-                    <>
+                  {isLoading ? 'Please wait...' : <>
                       Create Account
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </form>
             </TabsContent>
