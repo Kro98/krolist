@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-circle-logo.png';
+import krolistTextLogo from '@/assets/krolist-welcome-text-logo.png';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 const signUpSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -105,7 +106,7 @@ export default function Auth() {
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="w-20 h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Krolist</h1>
+          <img src={krolistTextLogo} alt="Krolist" className="h-12 mx-auto mb-2" />
           <p className="text-muted-foreground">collection of cool products and more
 
 
