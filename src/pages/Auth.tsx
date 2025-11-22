@@ -376,7 +376,7 @@ export default function Auth() {
           {/* Social Icons */}
           <div className="flex justify-center gap-4">
             <a 
-              href="https://twitter.com/krolist" 
+              href="https://twitter.com/krolist_help" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -385,7 +385,7 @@ export default function Auth() {
               <Twitter className="w-5 h-5" />
             </a>
             <a 
-              href="https://tiktok.com/@krolist" 
+              href="https://tiktok.com/@krolist_help" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
