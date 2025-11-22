@@ -4,10 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-circle-logo.png';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 const signUpSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
@@ -18,13 +20,12 @@ const signInSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters')
 });
 export default function Auth() {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const {
     signUp,
     signIn,
@@ -92,13 +93,14 @@ export default function Auth() {
     navigate('/products');
   };
 
-  const toggleAuthMode = () => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      setIsSignUp(!isSignUp);
-      setIsAnimating(false);
-    }, 150);
-  };
+  useSwipeGesture({
+    onSwipeLeft: () => {
+      if (activeTab === 'signin') setActiveTab('signup');
+    },
+    onSwipeRight: () => {
+      if (activeTab === 'signup') setActiveTab('signin');
+    }
+  });
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
@@ -110,49 +112,123 @@ export default function Auth() {
 
         {/* Auth Card */}
         <div className="bg-card border border-border rounded-2xl shadow-lg p-8 animate-scale-in">
-          <div className={`transition-opacity duration-150 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
-            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
-              <div 
-                className={`space-y-2 overflow-hidden transition-all duration-300 ${
-                  isSignUp ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <Label htmlFor="username">Username</Label>
-                <Input 
-                  id="username" 
-                  type="text" 
-                  placeholder="Enter your username" 
-                  value={username} 
-                  onChange={e => setUsername(e.target.value)} 
-                  required={isSignUp} 
-                  disabled={isLoading}
-                  tabIndex={isSignUp ? 0 : -1}
-                />
-              </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
-            </div>
+            <TabsContent value="signin" className="space-y-6">
+              <form onSubmit={handleSignIn} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input 
+                    id="signin-email" 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    required 
+                    disabled={isLoading} 
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-10" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <div className="relative">
+                    <Input 
+                      id="signin-password" 
+                      type={showPassword ? 'text' : 'password'} 
+                      placeholder="Enter your password" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      required 
+                      disabled={isLoading} 
+                      className="pr-10" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
 
-              <Button type="submit" className="w-full group" disabled={isLoading}>
-                {isLoading ? 'Please wait...' : <>
-                    {isSignUp ? 'Create Account' : 'Sign In'}
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </>}
-              </Button>
-            </form>
-          </div>
+                <Button type="submit" className="w-full group" disabled={isLoading}>
+                  {isLoading ? 'Please wait...' : (
+                    <>
+                      Sign In
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup" className="space-y-6">
+              <form onSubmit={handleSignUp} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Username</Label>
+                  <Input 
+                    id="signup-username" 
+                    type="text" 
+                    placeholder="Enter your username" 
+                    value={username} 
+                    onChange={e => setUsername(e.target.value)} 
+                    required 
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input 
+                    id="signup-email" 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    required 
+                    disabled={isLoading} 
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <div className="relative">
+                    <Input 
+                      id="signup-password" 
+                      type={showPassword ? 'text' : 'password'} 
+                      placeholder="Enter your password" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      required 
+                      disabled={isLoading} 
+                      className="pr-10" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full group" disabled={isLoading}>
+                  {isLoading ? 'Please wait...' : (
+                    <>
+                      Create Account
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
 
           <div className="mt-6 space-y-4">
             <div className="relative">
@@ -167,24 +243,6 @@ export default function Auth() {
             <Button type="button" variant="outline" className="w-full" onClick={handleGuestMode}>
               Continue as Guest
             </Button>
-          </div>
-
-          <div className="mt-6 text-center">
-            <button 
-              type="button" 
-              onClick={toggleAuthMode} 
-              className="text-sm text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105"
-            >
-              <span className="transition-all duration-300">
-                {isSignUp ? <>
-                    Already have an account?{' '}
-                    <span className="text-primary font-medium">Sign In</span>
-                  </> : <>
-                    Don't have an account?{' '}
-                    <span className="text-primary font-medium">Sign Up</span>
-                  </>}
-              </span>
-            </button>
           </div>
         </div>
 
