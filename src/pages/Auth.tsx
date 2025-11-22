@@ -99,13 +99,13 @@ export default function Auth() {
       setIsAnimating(false);
     }, 150);
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 mx-[1000px] px-[5px]">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="w-20 h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-foreground mb-2 px-[5px]">Welcome to Krolist</h1>
-          <p className="text-muted-foreground px-[5px]">Track prices, save money, shop smarter</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Krolist</h1>
+          <p className="text-muted-foreground">Track prices, save money, shop smarter</p>
         </div>
 
         {/* Auth Card */}
@@ -189,7 +189,7 @@ export default function Auth() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-8 px-[5px]">
+        <p className="text-center text-sm text-muted-foreground mt-8">
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
