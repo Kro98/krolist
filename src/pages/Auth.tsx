@@ -103,7 +103,7 @@ export default function Auth() {
     }
   });
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="h-16 mx-auto mb-4" />
