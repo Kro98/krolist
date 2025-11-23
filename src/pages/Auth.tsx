@@ -107,8 +107,8 @@ export default function Auth() {
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="h-16 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Krolist</h1>
-          <p className="text-muted-foreground">collection of cool products and more
+          <h1 className="text-3xl font-bold text-foreground mb-2 text-center">Welcome to Krolist</h1>
+          <p className="text-muted-foreground text-center">collection of cool products and more
 
 
 
@@ -353,50 +353,29 @@ export default function Auth() {
         <div className="mt-8 space-y-4">
           {/* Links */}
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-            <Link 
-              to="/auth/contact-us" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/auth/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">
               Contact Us
             </Link>
-            <Link 
-              to="/auth/privacy-policy" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/auth/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
-            <Link 
-              to="/auth/terms-of-service" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/auth/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors">
               Terms of Service
             </Link>
           </div>
 
           {/* Social Icons */}
           <div className="flex justify-center gap-4">
-            <a 
-              href="https://twitter.com/krolist_help" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Twitter"
-            >
+            <a href="https://twitter.com/krolist_help" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
               <Twitter className="w-5 h-5" />
             </a>
-            <a 
-              href="https://tiktok.com/@krolist_help" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="TikTok"
-            >
+            <a href="https://tiktok.com/@krolist_help" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="TikTok">
               <Music className="w-5 h-5" />
             </a>
           </div>
 
           {/* Legal Text */}
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground text-center">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
