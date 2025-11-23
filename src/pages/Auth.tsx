@@ -268,7 +268,7 @@ export default function Auth() {
         </div>
 
         {/* Auth Card */}
-        <div className="bg-card border border-border rounded-2xl shadow-lg p-8 animate-scale-in mx-0 px-[15px] py-[15px]">
+        <div className="bg-card border border-border rounded-2xl shadow-lg p-6 sm:p-8 animate-scale-in">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -276,7 +276,7 @@ export default function Auth() {
             </TabsList>
 
             <TabsContent value="signin" className="space-y-6 animate-fade-in">
-              <form onSubmit={handleSignIn} className="space-y-6 px-0 mx-0">
+              <form onSubmit={handleSignIn} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
