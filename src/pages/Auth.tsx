@@ -275,7 +275,7 @@ export default function Auth() {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="space-y-6">
+            <TabsContent value="signin" className="space-y-6 animate-fade-in">
               <form onSubmit={handleSignIn} className="space-y-6 px-0 mx-0">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
@@ -301,7 +301,7 @@ export default function Auth() {
               </form>
             </TabsContent>
 
-            <TabsContent value="signup" className="space-y-6">
+            <TabsContent value="signup" className="space-y-6 animate-fade-in">
               <form onSubmit={handleSignUp} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signup-username">Username</Label>
