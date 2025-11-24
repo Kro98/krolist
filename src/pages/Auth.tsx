@@ -105,10 +105,10 @@ export default function Auth() {
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-4 py-6 md:px-8 md:py-10 lg:px-12 lg:py-16">
       <div className="w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
         {/* Logo */}
-        <div className="text-center mb-6 md:mb-8 lg:mb-10 animate-fade-in">
+        <div className="text-center mb-6 md:mb-8 lg:mb-10 animate-fade-in px-0">
           <img src={krolistLogo} alt="Krolist" className="h-12 md:h-14 lg:h-16 xl:h-20 mx-auto mb-3 md:mb-4 lg:mb-5" />
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1.5 md:mb-2 lg:mb-3 text-center">Welcome to Krolist</h1>
-          <p className="text-sm md:text-base lg:text-lg text-muted-foreground text-center">collection of cool products and more
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1.5 md:mb-2 lg:mb-3 text-center text-warning">Welcome to Krolist</h1>
+          <p className="text-sm md:text-base lg:text-lg text-center text-slate-300">collection of cool products and more
 
 
 
@@ -268,7 +268,7 @@ export default function Auth() {
         </div>
 
         {/* Auth Card */}
-        <div className="bg-card border border-border rounded-xl md:rounded-2xl lg:rounded-3xl shadow-lg p-5 md:p-7 lg:p-9 xl:p-10 animate-scale-in">
+        <div className="bg-card border border-border rounded-xl md:rounded-2xl lg:rounded-3xl shadow-lg p-5 md:p-7 lg:p-9 xl:p-10 animate-scale-in mx-0 px-[10px]">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4 md:mb-5 lg:mb-6 h-10 md:h-11 lg:h-12">
               <TabsTrigger value="signin" className="text-sm md:text-base">Sign In</TabsTrigger>
@@ -375,7 +375,7 @@ export default function Auth() {
           </div>
 
           {/* Legal Text */}
-          <p className="text-xs md:text-sm text-muted-foreground text-center px-2">
+          <p className="text-xs md:text-sm px-2 text-center text-primary">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
