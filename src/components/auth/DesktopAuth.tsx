@@ -47,7 +47,7 @@ export default function DesktopAuth({
         </div>
 
         {/* Auth Card */}
-        <div className="bg-card border border-border rounded-2xl shadow-xl p-10 animate-scale-in">
+        <div className="bg-card border border-border rounded-2xl shadow-xl p-10 animate-scale-in px-[20px] my-[50px] py-[20px] mx-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6 h-12">
               <TabsTrigger value="signin" className="text-lg">Sign In</TabsTrigger>
