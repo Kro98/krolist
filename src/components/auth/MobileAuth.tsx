@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight, Twitter, Music } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-text-logo-new.png';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
-
 interface MobileAuthProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -24,7 +23,6 @@ interface MobileAuthProps {
   handleSignIn: (e: React.FormEvent) => void;
   handleGuestMode: () => void;
 }
-
 export default function MobileAuth({
   activeTab,
   setActiveTab,
@@ -49,15 +47,13 @@ export default function MobileAuth({
       if (activeTab === 'signup') setActiveTab('signin');
     }
   });
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-4 py-6">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-4 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="h-10 mx-auto mb-2" />
-          <h1 className="text-xl font-bold mb-1 text-warning">Welcome to Krolist</h1>
-          <p className="text-sm text-muted-foreground">collection of cool products and more</p>
+          <h1 className="text-xl font-bold mb-1 text-warning text-center">Welcome to Krolist</h1>
+          <p className="text-sm text-muted-foreground text-center">collection of cool products and more</p>
         </div>
 
         {/* Auth Card */}
@@ -72,48 +68,24 @@ export default function MobileAuth({
               <form onSubmit={handleSignIn} className="space-y-3">
                 <div className="space-y-1">
                   <Label htmlFor="signin-email" className="text-sm">Email</Label>
-                  <Input 
-                    id="signin-email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                    className="h-9 text-sm" 
-                  />
+                  <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} className="h-9 text-sm" />
                 </div>
 
                 <div className="space-y-1">
                   <Label htmlFor="signin-password" className="text-sm">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="signin-password" 
-                      type={showPassword ? 'text' : 'password'} 
-                      placeholder="Enter your password" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading} 
-                      className="pr-10 h-9 text-sm" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Input id="signin-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-10 h-9 text-sm" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
                 <Button type="submit" className="w-full group h-9 text-sm" disabled={isLoading}>
-                  {isLoading ? 'Please wait...' : (
-                    <>
+                  {isLoading ? 'Please wait...' : <>
                       Sign In
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </form>
             </TabsContent>
@@ -122,62 +94,29 @@ export default function MobileAuth({
               <form onSubmit={handleSignUp} className="space-y-3">
                 <div className="space-y-1">
                   <Label htmlFor="signup-username" className="text-sm">Username</Label>
-                  <Input 
-                    id="signup-username" 
-                    type="text" 
-                    placeholder="Enter your username" 
-                    value={username} 
-                    onChange={e => setUsername(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                    className="h-9 text-sm" 
-                  />
+                  <Input id="signup-username" type="text" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} required disabled={isLoading} className="h-9 text-sm" />
                 </div>
 
                 <div className="space-y-1">
                   <Label htmlFor="signup-email" className="text-sm">Email</Label>
-                  <Input 
-                    id="signup-email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                    className="h-9 text-sm" 
-                  />
+                  <Input id="signup-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} className="h-9 text-sm" />
                 </div>
 
                 <div className="space-y-1">
                   <Label htmlFor="signup-password" className="text-sm">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="signup-password" 
-                      type={showPassword ? 'text' : 'password'} 
-                      placeholder="Enter your password" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading} 
-                      className="pr-10 h-9 text-sm" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Input id="signup-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-10 h-9 text-sm" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
                 <Button type="submit" className="w-full group h-9 text-sm" disabled={isLoading}>
-                  {isLoading ? 'Please wait...' : (
-                    <>
+                  {isLoading ? 'Please wait...' : <>
                       Create Account
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </form>
             </TabsContent>
@@ -193,12 +132,7 @@ export default function MobileAuth({
               </div>
             </div>
 
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full h-9 text-sm" 
-              onClick={handleGuestMode}
-            >
+            <Button type="button" variant="outline" className="w-full h-9 text-sm" onClick={handleGuestMode}>
               Continue as Guest
             </Button>
           </div>
@@ -221,32 +155,19 @@ export default function MobileAuth({
 
           {/* Social Icons */}
           <div className="flex justify-center gap-4">
-            <a 
-              href="https://twitter.com/krolist_help" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-muted-foreground hover:text-foreground transition-colors" 
-              aria-label="Twitter"
-            >
+            <a href="https://twitter.com/krolist_help" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
               <Twitter className="w-4 h-4" />
             </a>
-            <a 
-              href="https://tiktok.com/@krolist_help" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-muted-foreground hover:text-foreground transition-colors" 
-              aria-label="TikTok"
-            >
+            <a href="https://tiktok.com/@krolist_help" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="TikTok">
               <Music className="w-4 h-4" />
             </a>
           </div>
 
           {/* Legal Text */}
-          <p className="text-xs px-2 text-center text-primary">
+          <p className="text-xs px-2 text-primary text-center">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }

@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight, Twitter, Music } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-text-logo-new.png';
-
 interface DesktopAuthProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -22,7 +21,6 @@ interface DesktopAuthProps {
   handleSignIn: (e: React.FormEvent) => void;
   handleGuestMode: () => void;
 }
-
 export default function DesktopAuth({
   activeTab,
   setActiveTab,
@@ -39,14 +37,13 @@ export default function DesktopAuth({
   handleSignIn,
   handleGuestMode
 }: DesktopAuthProps) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-12 py-16">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-12 py-16">
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="h-20 mx-auto mb-5" />
-          <h1 className="text-4xl font-bold mb-3 text-warning">Welcome to Krolist</h1>
-          <p className="text-lg text-muted-foreground">collection of cool products and more</p>
+          <h1 className="text-4xl font-bold mb-3 text-warning text-center">Welcome to Krolist</h1>
+          <p className="text-lg text-muted-foreground text-center">collection of cool products and more</p>
         </div>
 
         {/* Auth Card */}
@@ -61,52 +58,24 @@ export default function DesktopAuth({
               <form onSubmit={handleSignIn} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email" className="text-lg">Email</Label>
-                  <Input 
-                    id="signin-email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                    className="h-12 text-lg" 
-                  />
+                  <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} className="h-12 text-lg" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signin-password" className="text-lg">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="signin-password" 
-                      type={showPassword ? 'text' : 'password'} 
-                      placeholder="Enter your password" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading} 
-                      className="pr-12 h-12 text-lg" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Input id="signin-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-12 h-12 text-lg" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full group h-12 text-lg hover:shadow-lg transition-all" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Please wait...' : (
-                    <>
+                <Button type="submit" className="w-full group h-12 text-lg hover:shadow-lg transition-all" disabled={isLoading}>
+                  {isLoading ? 'Please wait...' : <>
                       Sign In
                       <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </form>
             </TabsContent>
@@ -115,66 +84,29 @@ export default function DesktopAuth({
               <form onSubmit={handleSignUp} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signup-username" className="text-lg">Username</Label>
-                  <Input 
-                    id="signup-username" 
-                    type="text" 
-                    placeholder="Enter your username" 
-                    value={username} 
-                    onChange={e => setUsername(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                    className="h-12 text-lg" 
-                  />
+                  <Input id="signup-username" type="text" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} required disabled={isLoading} className="h-12 text-lg" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-email" className="text-lg">Email</Label>
-                  <Input 
-                    id="signup-email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                    disabled={isLoading} 
-                    className="h-12 text-lg" 
-                  />
+                  <Input id="signup-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} className="h-12 text-lg" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-password" className="text-lg">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="signup-password" 
-                      type={showPassword ? 'text' : 'password'} 
-                      placeholder="Enter your password" 
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                      disabled={isLoading} 
-                      className="pr-12 h-12 text-lg" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Input id="signup-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} className="pr-12 h-12 text-lg" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full group h-12 text-lg hover:shadow-lg transition-all" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Please wait...' : (
-                    <>
+                <Button type="submit" className="w-full group h-12 text-lg hover:shadow-lg transition-all" disabled={isLoading}>
+                  {isLoading ? 'Please wait...' : <>
                       Create Account
                       <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </form>
             </TabsContent>
@@ -190,12 +122,7 @@ export default function DesktopAuth({
               </div>
             </div>
 
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full h-12 text-lg hover:shadow-md transition-all" 
-              onClick={handleGuestMode}
-            >
+            <Button type="button" variant="outline" className="w-full h-12 text-lg hover:shadow-md transition-all" onClick={handleGuestMode}>
               Continue as Guest
             </Button>
           </div>
@@ -205,54 +132,32 @@ export default function DesktopAuth({
         <div className="mt-10 space-y-5">
           {/* Links - Horizontal for desktop */}
           <div className="flex justify-center gap-8 text-base">
-            <Link 
-              to="/auth/contact-us" 
-              className="text-muted-foreground hover:text-foreground transition-colors hover:underline"
-            >
+            <Link to="/auth/contact-us" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
               Contact Us
             </Link>
-            <Link 
-              to="/auth/privacy-policy" 
-              className="text-muted-foreground hover:text-foreground transition-colors hover:underline"
-            >
+            <Link to="/auth/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
               Privacy Policy
             </Link>
-            <Link 
-              to="/auth/terms-of-service" 
-              className="text-muted-foreground hover:text-foreground transition-colors hover:underline"
-            >
+            <Link to="/auth/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
               Terms of Service
             </Link>
           </div>
 
           {/* Social Icons */}
           <div className="flex justify-center gap-5">
-            <a 
-              href="https://twitter.com/krolist_help" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all" 
-              aria-label="Twitter"
-            >
+            <a href="https://twitter.com/krolist_help" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all" aria-label="Twitter">
               <Twitter className="w-6 h-6" />
             </a>
-            <a 
-              href="https://tiktok.com/@krolist_help" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all" 
-              aria-label="TikTok"
-            >
+            <a href="https://tiktok.com/@krolist_help" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all" aria-label="TikTok">
               <Music className="w-6 h-6" />
             </a>
           </div>
 
           {/* Legal Text */}
-          <p className="text-sm text-center text-primary">
+          <p className="text-sm text-primary text-center">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
