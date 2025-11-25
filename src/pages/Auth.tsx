@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -35,6 +35,11 @@ export default function Auth() {
   const isMobile = useMediaQuery('(max-width: 767px)');
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)');
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+  // Always default to 'signin' tab on mount
+  useEffect(() => {
+    setActiveTab('signin');
+  }, []);
   if (user) {
     navigate('/products');
     return null;
@@ -119,9 +124,9 @@ export default function Auth() {
     return <TabletAuth {...sharedProps} />;
   }
   if (isDesktop) {
-    return <DesktopAuth className="mx-[600px]" />;
+    return <DesktopAuth {...sharedProps} />;
   }
 
   // Fallback to desktop if media queries haven't resolved yet
-  return <DesktopAuth className="my-0 py-0 px-0 mx-[180px]" />;
+  return <DesktopAuth {...sharedProps} />;
 }
