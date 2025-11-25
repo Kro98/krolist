@@ -124,9 +124,9 @@ export default function Auth() {
     return <TabletAuth {...sharedProps} />;
   }
   if (isDesktop) {
-    return <DesktopAuth className="py-[10px] mx-[500px]" />;
+    return <DesktopAuth {...sharedProps} />;
   }
 
   // Fallback to desktop if media queries haven't resolved yet
-  return <DesktopAuth className="mx-[150px] my-0 py-0 px-0" />;
+  return <DesktopAuth {...sharedProps} />;
 }
