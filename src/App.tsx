@@ -40,7 +40,7 @@ const App = () => <QueryClientProvider client={queryClient}>
             <BrowserRouter>
               <Layout>
                 <Routes>
-                  <Route path="/auth" element={<Auth />} className="mx-[10px] py-0 my-0 px-0" />
+                  <Route path="/auth" element={<Auth />} />
                   <Route path="/auth/privacy-policy" element={<AuthPrivacyPolicy />} />
                   <Route path="/auth/terms-of-service" element={<AuthTermsOfService />} />
                   <Route path="/auth/contact-us" element={<AuthContactUs />} />
