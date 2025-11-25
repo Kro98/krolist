@@ -38,7 +38,7 @@ export default function DesktopAuth({
   handleGuestMode
 }: DesktopAuthProps) {
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-12 py-16">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg mx-[10px]">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <img src={krolistLogo} alt="Krolist" className="h-20 mx-auto mb-5" />

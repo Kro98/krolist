@@ -128,5 +128,5 @@ export default function Auth() {
   }
 
   // Fallback to desktop if media queries haven't resolved yet
-  return <DesktopAuth {...sharedProps} />;
+  return <DesktopAuth className="mx-[150px] my-0 py-0 px-0" />;
 }

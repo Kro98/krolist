@@ -50,7 +50,7 @@ export default function MobileAuth({
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-4 animate-fade-in">
+        <div className="text-center mb-4 animate-fade-in px-0 py-0 my-0">
           <img src={krolistLogo} alt="Krolist" className="h-10 mx-auto mb-2" />
           <h1 className="text-xl font-bold mb-1 text-warning text-center">Welcome to Krolist</h1>
           <p className="text-sm text-muted-foreground text-center">collection of cool products and more</p>
