@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Autoplay from "embla-carousel-autoplay";
 
 interface ProductCarouselProps {
   title: string;
@@ -48,6 +49,12 @@ export function ProductCarousel({
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1024px)");
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
+  
+  const autoplayPlugin = Autoplay({
+    delay: 3000,
+    stopOnInteraction: true,
+    stopOnMouseEnter: true,
+  });
   
   // Calculate items per slide based on device
   const itemsPerSlide = isMobile ? 1 : isTablet ? 2 : 3;
@@ -119,9 +126,10 @@ export function ProductCarousel({
           <Carousel
             opts={{
               align: "start",
-              loop: false,
+              loop: true,
               direction: language === 'ar' ? 'rtl' : 'ltr',
             }}
+            plugins={[autoplayPlugin]}
             setApi={setApi}
             className="w-full"
           >
