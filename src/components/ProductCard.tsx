@@ -232,13 +232,13 @@ export function ProductCard({
             
             {/* Badges */}
             <div className={`flex gap-2 flex-wrap items-center mt-auto ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-              {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white border-0">
+              {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white border-0 px-1.5 py-0 text-[0.65rem]">
                   Krolist
                 </Badge>}
-              <Badge className="bg-orange-500 text-white hover:bg-orange-600 border-0">
+              <Badge className="bg-orange-500 text-white hover:bg-orange-600 border-0 px-1.5 py-0 text-[0.65rem]">
                 {product.store}
               </Badge>
-              {product.category && <Badge variant="secondary" className={`border ${(() => {
+              {product.category && <Badge variant="secondary" className={`border px-1.5 py-0 text-[0.65rem] ${(() => {
               const predefinedCategories = ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture'];
               return !predefinedCategories.includes(product.category) ? 'border-2 border-primary' : 'border-border';
             })()}`}>
