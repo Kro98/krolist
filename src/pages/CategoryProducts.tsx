@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ProductCarousel } from '@/components/ProductCarousel';
+import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Package } from 'lucide-react';
 
@@ -105,7 +105,18 @@ export default function CategoryProducts() {
       </div>
 
       {products.length > 0 ? (
-        <ProductCarousel products={products} title={categoryTitle} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={{
+                ...product,
+                isKrolistProduct: true,
+                youtube_url: null
+              }}
+            />
+          ))}
+        </div>
       ) : (
         <div className="text-center py-12 text-muted-foreground">
           <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
