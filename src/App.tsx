@@ -56,7 +56,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                   <Route path="/donation" element={<Donation />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/categories" element={<CategoryTags />} />
-            <Route path="/category/:categoryId" element={<CategoryProducts />} />
+            <Route path="/category/:categoryId" element={<CategoryProducts />} className="py-[15px] my-0 mx-0 px-[10px]" />
             <Route path="/my-orders" element={<MyOrders />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
