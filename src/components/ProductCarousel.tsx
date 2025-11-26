@@ -89,7 +89,6 @@ export function ProductCarousel({
       {/* Header with title and expand button */}
       {(title || enableExpand) && (
         <div className={`flex items-center justify-between ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          {title && <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>}
           {enableExpand && isTabletOrAbove && (
             <Button
               variant="ghost"
@@ -99,6 +98,7 @@ export function ProductCarousel({
               {isExpanded ? t('products.collapse') : t('products.expand')}
             </Button>
           )}
+          {title && <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>}
         </div>
       )}
       
