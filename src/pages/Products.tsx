@@ -554,6 +554,7 @@ export default function Products() {
               isSelectionMode={isSelectMode}
               onToggleSelect={handleToggleSelect}
               selectedProductIds={selectedProducts}
+              enableExpand
             />
           ))}
 
