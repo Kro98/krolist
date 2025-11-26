@@ -522,16 +522,8 @@ export default function Products() {
           {/* User Products Carousel - Show first */}
           {filteredUserProducts.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">{t('products.myProducts')}</h2>
-                {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
-                  <p className="text-sm text-muted-foreground">
-                    Next refresh: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
               <ProductCarousel
-                title=""
+                title={t('products.myProducts')}
                 products={filteredUserProducts}
                 onDelete={handleDelete}
                 onUpdate={handleUpdate}
@@ -540,6 +532,11 @@ export default function Products() {
                 selectedProductIds={selectedProducts}
                 enableExpand
               />
+              {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
+                <p className="text-sm text-muted-foreground text-center">
+                  Next refresh: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
+                </p>
+              )}
             </div>
           )}
 
