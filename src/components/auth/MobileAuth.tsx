@@ -19,6 +19,8 @@ interface MobileAuthProps {
   password: string;
   setPassword: (password: string) => void;
   isLoading: boolean;
+  rememberMe: boolean;
+  setRememberMe: (remember: boolean) => void;
   handleSignUp: (e: React.FormEvent) => void;
   handleSignIn: (e: React.FormEvent) => void;
   handleGuestMode: () => void;
@@ -35,6 +37,8 @@ export default function MobileAuth({
   password,
   setPassword,
   isLoading,
+  rememberMe,
+  setRememberMe,
   handleSignUp,
   handleSignIn,
   handleGuestMode
@@ -79,6 +83,19 @@ export default function MobileAuth({
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    id="remember-me-mobile" 
+                    checked={rememberMe} 
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                  />
+                  <Label htmlFor="remember-me-mobile" className="text-xs font-normal cursor-pointer">
+                    Remember me
+                  </Label>
                 </div>
 
                 <Button type="submit" className="w-full group h-9 text-sm" disabled={isLoading}>
