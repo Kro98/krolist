@@ -139,21 +139,37 @@ export default function Settings() {
               
               <Separator />
               
-              <div className="space-y-2">
-                <Label htmlFor="undertone">Undertone Color</Label>
-                <Select value={undertone} onValueChange={(value: any) => setUndertone(value)}>
-                  <SelectTrigger id="undertone">
-                    <SelectValue placeholder="Select undertone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="orange">Orange</SelectItem>
-                    <SelectItem value="blue">Blue</SelectItem>
-                    <SelectItem value="green">Green</SelectItem>
-                    <SelectItem value="purple">Purple</SelectItem>
-                    <SelectItem value="red">Red</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="undertone">Undertone Color</Label>
+                  <Select value={undertone} onValueChange={(value: any) => setUndertone(value)}>
+                    <SelectTrigger id="undertone">
+                      <SelectValue placeholder="Select undertone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="orange">Orange</SelectItem>
+                      <SelectItem value="blue">Blue</SelectItem>
+                      <SelectItem value="green">Green</SelectItem>
+                      <SelectItem value="purple">Purple</SelectItem>
+                      <SelectItem value="red">Red</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-end justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="image-zoom">Image Zoom on Hover</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable zoom effect
+                    </p>
+                  </div>
+                  <Switch
+                    id="image-zoom"
+                    checked={isZoomEnabled}
+                    onCheckedChange={setIsZoomEnabled}
+                  />
+                </div>
               </div>
               
               {/* Custom Hue Picker */}
@@ -190,22 +206,6 @@ export default function Settings() {
                   </div>
                 </div>
               )}
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label htmlFor="image-zoom">Image Zoom on Hover</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable zoom effect when hovering over product images
-                  </p>
-                </div>
-                <Switch
-                  id="image-zoom"
-                  checked={isZoomEnabled}
-                  onCheckedChange={setIsZoomEnabled}
-                />
-              </div>
             </CardContent>
           </Card>
 
