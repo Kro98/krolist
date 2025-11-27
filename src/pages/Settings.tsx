@@ -121,51 +121,8 @@ export default function Settings() {
         </div>
 
         <div className="grid gap-6">
-        {/* Language & Currency + Appearance */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Language & Currency */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" />
-                Language & Currency
-              </CardTitle>
-              <CardDescription>
-                {t('settings.languageDesc')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="language">{t('settings.language')}</Label>
-                <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">{t('language.en')}</SelectItem>
-                    <SelectItem value="ar">{t('language.ar')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="currency">{t('settings.currency')}</Label>
-                <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">{t('currency.USD')}</SelectItem>
-                    <SelectItem value="SAR">{t('currency.SAR')}</SelectItem>
-                    <SelectItem value="EGP">{t('currency.EGP')}</SelectItem>
-                    <SelectItem value="AED">{t('currency.AED')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Appearance */}
-          <Card className="shadow-card">
+        {/* Appearance */}
+        <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5 text-primary" />
@@ -251,7 +208,47 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
-        </div>
+
+        {/* Language & Currency */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-primary" />
+              Language & Currency
+            </CardTitle>
+            <CardDescription>
+              {t('settings.languageDesc')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="language">{t('settings.language')}</Label>
+              <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t('language.en')}</SelectItem>
+                  <SelectItem value="ar">{t('language.ar')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="currency">{t('settings.currency')}</Label>
+              <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">{t('currency.USD')}</SelectItem>
+                  <SelectItem value="SAR">{t('currency.SAR')}</SelectItem>
+                  <SelectItem value="EGP">{t('currency.EGP')}</SelectItem>
+                  <SelectItem value="AED">{t('currency.AED')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Shop Management */}
         <ShopManager />
