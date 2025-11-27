@@ -23,6 +23,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const {
     signUp,
     signIn,
@@ -80,7 +81,7 @@ export default function Auth() {
       });
       const {
         error
-      } = await signIn(validatedData.email, validatedData.password);
+      } = await signIn(validatedData.email, validatedData.password, rememberMe);
       if (error) {
         toast.error(error.message);
       } else {
@@ -111,6 +112,8 @@ export default function Auth() {
     password,
     setPassword,
     isLoading,
+    rememberMe,
+    setRememberMe,
     handleSignUp,
     handleSignIn,
     handleGuestMode

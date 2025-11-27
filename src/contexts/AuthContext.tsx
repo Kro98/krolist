@@ -8,7 +8,7 @@ interface AuthContextType {
   loading: boolean;
   isGuest: boolean;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   continueAsGuest: () => void;
@@ -38,6 +38,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsGuest(false);
           localStorage.removeItem('isGuest');
         }
+        
+        // Handle remember me functionality
+        if (session?.user && !sessionStorage.getItem('rememberMeSession')) {
+          // User has a session but no session marker - check if they want to be remembered
+          const rememberMe = localStorage.getItem('rememberMe') === 'true';
+          if (!rememberMe) {
+            // User didn't want to be remembered and tab was closed/reopened
+            setTimeout(() => {
+              supabase.auth.signOut();
+            }, 0);
+          }
+        }
       }
     );
 
@@ -46,6 +58,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Check remember me on initial load
+      if (session?.user) {
+        const rememberMe = localStorage.getItem('rememberMe') === 'true';
+        if (!rememberMe && !sessionStorage.getItem('rememberMeSession')) {
+          // Sign out if user didn't want to be remembered
+          setTimeout(() => {
+            supabase.auth.signOut();
+          }, 0);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -68,11 +91,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = true) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
+    
+    if (!error) {
+      // Store remember me preference
+      localStorage.setItem('rememberMe', rememberMe.toString());
+      
+      if (rememberMe) {
+        // Mark this session as valid for the browser session
+        sessionStorage.setItem('rememberMeSession', 'true');
+      } else {
+        // Don't create a session marker - session will be cleared on tab close
+        sessionStorage.removeItem('rememberMeSession');
+      }
+    }
     
     return { error };
   };
