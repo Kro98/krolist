@@ -15,7 +15,6 @@ import Settings from "./pages/Settings";
 import PromoCodes from "./pages/PromoCodes";
 import Donation from "./pages/Donation";
 import Events from "./pages/Events";
-import NewsUpdates from "./pages/NewsUpdates";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
@@ -50,7 +49,6 @@ const App = () => <QueryClientProvider client={queryClient}>
             <Route path="/search-products" element={<SearchProducts />} />
             <Route path="/how-to-use-search" element={<HowToUseSearch />} />
             <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/news" element={<NewsUpdates />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/promo-codes" element={<PromoCodes />} />
                   <Route path="/donation" element={<Donation />} />
