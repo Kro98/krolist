@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
 import { ShoppingCart } from "@/components/ShoppingCart";
+import { UserAccountControl } from "@/components/UserAccountControl";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -53,11 +54,6 @@ function LayoutContent({ children }: LayoutProps) {
   // Public routes that don't require authentication
   const publicRoutes = ['/auth', '/auth/privacy-policy', '/auth/terms-of-service', '/auth/contact-us', '/privacy-policy', '/terms-of-service', '/contact-us'];
   const isPublicRoute = publicRoutes.includes(location.pathname);
-  useEffect(() => {
-    if (!loading && !user && !isGuest && !isPublicRoute) {
-      navigate('/auth');
-    }
-  }, [user, loading, isGuest, location.pathname, navigate, isPublicRoute]);
 
   // Show auth pages and public resource pages without layout
   if (isPublicRoute) {
@@ -81,7 +77,10 @@ function LayoutContent({ children }: LayoutProps) {
               <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
             </Link>
           </div>
-          <ShoppingCart />
+          <div className="flex items-center gap-2">
+            <UserAccountControl />
+            <ShoppingCart />
+          </div>
         </header>
         
         <main className="flex-1 overflow-auto">
