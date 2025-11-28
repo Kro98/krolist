@@ -68,6 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             supabase.auth.signOut();
           }, 0);
         }
+      } else if (!guestStatus) {
+        // Auto-login as guest if no user session and not already a guest
+        setIsGuest(true);
+        localStorage.setItem('isGuest', 'true');
       }
     });
 
@@ -126,10 +130,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setIsGuest(false);
-    localStorage.removeItem('isGuest');
-    // Redirect to auth page after logout
-    window.location.href = '/auth';
+    // Set guest mode after logout
+    setIsGuest(true);
+    localStorage.setItem('isGuest', 'true');
   };
 
   const continueAsGuest = () => {
