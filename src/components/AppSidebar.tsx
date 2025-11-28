@@ -1,11 +1,7 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, LogOut, User, Shield, Tag, ShoppingBag } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
@@ -85,10 +81,7 @@ export function AppSidebar() {
     t,
     language
   } = useLanguage();
-  const { user, signOut } = useAuth();
   const [shopItems, setShopItems] = useState(getShopItems());
-  const [username, setUsername] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
   const [promotions, setPromotions] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
@@ -109,26 +102,8 @@ export function AppSidebar() {
   }, []);
 
   useEffect(() => {
-    fetchUsername();
     fetchPromotions();
-    checkAdminRole();
-  }, [user, t]);
-
-  const checkAdminRole = async () => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-    
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-    
-    setIsAdmin(!!data);
-  };
+  }, [t]);
 
   const fetchPromotions = async () => {
     try {
@@ -151,27 +126,6 @@ export function AppSidebar() {
       setPromotions(grouped);
     } catch (error) {
       console.error('Error fetching promotions:', error);
-    }
-  };
-
-  const fetchUsername = async () => {
-    // Check if user is in guest mode
-    const isGuest = localStorage.getItem('isGuest') === 'true';
-    if (isGuest) {
-      setUsername(t('user.guest'));
-      return;
-    }
-    
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .single();
-    
-    if (data) {
-      setUsername(data.username);
     }
   };
   const handleNavClick = () => {
@@ -269,41 +223,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* User Profile Section */}
-        {!collapsed && (
-          <>
-            <Separator className="my-2" />
-            <div className="p-4 space-y-2">
-              {user && (
-                <div className="mb-2">
-                  <Badge 
-                    variant={isAdmin ? "default" : "secondary"} 
-                    className={`text-xs flex items-center gap-1 ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
-                    onClick={isAdmin ? () => window.location.href = '/admin' : undefined}
-                  >
-                    {isAdmin && <Shield className="h-3 w-3" />}
-                    {isAdmin ? t('user.admin') : t('user.user')}
-                  </Badge>
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-sm">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sidebar-foreground truncate">{username || user?.email}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={signOut}
-                className={`w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 ${
-                  language === 'ar' ? 'justify-start flex-row-reverse' : 'justify-start'
-                }`}
-              >
-                <LogOut className="h-4 w-4" />
-                {t('auth.signOut') || 'Sign Out'}
-              </Button>
-            </div>
-          </>
-        )}
       </SidebarContent>
     </Sidebar>;
 }
