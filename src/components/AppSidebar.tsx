@@ -1,4 +1,4 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, Newspaper, LogOut, User, Shield, Tag, ShoppingBag } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, LogOut, User, Shield, Tag, ShoppingBag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -56,10 +56,6 @@ const getShopItems = () => {
   }));
 };
 const otherItems = [{
-  title: "nav.news",
-  url: "/news",
-  icon: Newspaper
-}, {
   title: "nav.events",
   url: "/events",
   icon: Calendar
