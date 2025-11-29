@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus, ShoppingCart as ShoppingCartIcon } from "lucide-react";
+import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus, ShoppingCart as ShoppingCartIcon, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ interface ProductCardProps {
   isSelectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (product: Product) => void;
+  isInFavorites?: boolean;
 }
 export function ProductCard({
   product,
@@ -59,7 +60,8 @@ export function ProductCard({
   userProductCount = 0,
   isSelectionMode = false,
   isSelected = false,
-  onToggleSelect
+  onToggleSelect,
+  isInFavorites = false
 }: ProductCardProps) {
   const {
     t,
@@ -168,9 +170,9 @@ export function ProductCard({
                 {sanitizeContent(product.title)}
               </a>
               
-              {/* Show + icon for Krolist products */}
-              {product.isKrolistProduct && onAddToMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0" onClick={handleAddToMyProducts} title={userProductCount >= 24 ? "Product limit reached" : "Add to my list"}>
-                  <Plus className="h-5 w-5 text-primary" />
+              {/* Show heart icon for Krolist products */}
+              {product.isKrolistProduct && onAddToMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0" onClick={handleAddToMyProducts} title={userProductCount >= 24 ? "Product limit reached" : "Add to favorites"}>
+                  <Heart className={`h-5 w-5 ${isInFavorites ? 'fill-red-500 text-red-500' : 'text-primary'}`} />
                 </Button> : (/* Show menu for user products only */
             (onDelete || onUpdate) && <DropdownMenu>
                     <DropdownMenuTrigger asChild>
