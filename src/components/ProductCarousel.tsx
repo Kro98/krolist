@@ -27,6 +27,7 @@ interface ProductCarouselProps {
   onToggleSelect?: (product: Product) => void;
   selectedProductIds?: Set<string>;
   enableExpand?: boolean;
+  userProducts?: Product[];
 }
 
 export function ProductCarousel({
@@ -40,7 +41,8 @@ export function ProductCarousel({
   isSelectionMode = false,
   onToggleSelect,
   selectedProductIds = new Set(),
-  enableExpand = false
+  enableExpand = false,
+  userProducts = []
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
@@ -84,6 +86,11 @@ export function ProductCarousel({
 
   if (products.length === 0) return null;
 
+  // Helper function to check if a product is in user's favorites
+  const isInFavorites = (product: Product) => {
+    return userProducts.some(p => p.product_url === product.product_url);
+  };
+
   return (
     <div className="space-y-4">
       {/* Header with title and expand button */}
@@ -117,6 +124,7 @@ export function ProductCarousel({
               isSelectionMode={isSelectionMode}
               isSelected={selectedProductIds.has(product.id)}
               onToggleSelect={onToggleSelect}
+              isInFavorites={isInFavorites(product)}
             />
           ))}
         </div>
@@ -156,6 +164,7 @@ export function ProductCarousel({
                         isSelectionMode={isSelectionMode}
                         isSelected={selectedProductIds.has(product.id)}
                         onToggleSelect={onToggleSelect}
+                        isInFavorites={isInFavorites(product)}
                       />
                     ))}
                   </div>

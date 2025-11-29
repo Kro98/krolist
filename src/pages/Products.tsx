@@ -6,7 +6,7 @@ import { ProductCard, type Product } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoriesCarousel } from "@/components/CategoriesCarousel";
 import { useCart } from "@/contexts/CartContext";
-import { Plus, Search, Filter, RefreshCw } from "lucide-react";
+import { Plus, Search, Filter, RefreshCw, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -401,7 +401,8 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-3 items-center mb-6">
+      {/* Search bar temporarily hidden - will be reactivated later */}
+      <div className="flex gap-3 items-center mb-6 hidden">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -523,7 +524,7 @@ export default function Products() {
           {filteredUserProducts.length > 0 && (
             <div className="space-y-4">
               <ProductCarousel
-                title={t('products.myProducts')}
+                title="MY FAVORITES"
                 products={filteredUserProducts}
                 onDelete={handleDelete}
                 onUpdate={handleUpdate}
@@ -552,6 +553,7 @@ export default function Products() {
               onToggleSelect={handleToggleSelect}
               selectedProductIds={selectedProducts}
               enableExpand
+              userProducts={products}
             />
           ))}
 
@@ -584,16 +586,11 @@ export default function Products() {
             <div className="flex gap-3 justify-center flex-wrap">
               <NavLink to="/search-products">
                 <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-300 h-11 px-6">
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Heart className="h-4 w-4 mr-2" />
                   {t('products.searchProducts')}
                 </Button>
               </NavLink>
-              <NavLink to="/add-product">
-                <Button variant="outline" className="border-border hover:bg-accent hover:border-primary/50 transition-all duration-300 h-11 px-6">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('products.manualEntry')}
-                </Button>
-              </NavLink>
+              {/* Manual entry temporarily hidden - will be reactivated later */}
             </div>
           </CardContent>
         </Card>
