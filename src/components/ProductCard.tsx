@@ -45,6 +45,7 @@ interface ProductCardProps {
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
+  onRemoveFromMyProducts?: (product: Product) => void;
   userProductCount?: number;
   isSelectionMode?: boolean;
   isSelected?: boolean;
@@ -57,6 +58,7 @@ export function ProductCard({
   onUpdate,
   onRefreshPrice,
   onAddToMyProducts,
+  onRemoveFromMyProducts,
   userProductCount = 0,
   isSelectionMode = false,
   isSelected = false,
@@ -128,13 +130,19 @@ export function ProductCard({
       setShowEditDialog(false);
     }
   };
-  const handleAddToMyProducts = () => {
-    if (userProductCount >= 24) {
-      toast.error("Max products reached. Remove older products or contact us for an upgrade.");
-      return;
-    }
-    if (onAddToMyProducts) {
-      onAddToMyProducts(product);
+  const handleToggleFavorite = () => {
+    if (isInFavorites && onRemoveFromMyProducts) {
+      // Remove from favorites
+      onRemoveFromMyProducts(product);
+    } else {
+      // Add to favorites
+      if (userProductCount >= 24) {
+        toast.error("Max products reached. Remove older products or contact us for an upgrade.");
+        return;
+      }
+      if (onAddToMyProducts) {
+        onAddToMyProducts(product);
+      }
     }
   };
   const handleCardClick = () => {
@@ -171,8 +179,8 @@ export function ProductCard({
               </a>
               
               {/* Show heart icon for Krolist products */}
-              {product.isKrolistProduct && onAddToMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0" onClick={handleAddToMyProducts} title={userProductCount >= 24 ? "Product limit reached" : "Add to favorites"}>
-                  <Heart className={`h-5 w-5 ${isInFavorites ? 'fill-red-500 text-red-500' : 'text-primary'}`} />
+              {product.isKrolistProduct && onAddToMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0 transition-transform active:scale-90" onClick={handleToggleFavorite} title={isInFavorites ? "Remove from favorites" : (userProductCount >= 24 ? "Product limit reached" : "Add to favorites")}>
+                  <Heart className={`h-5 w-5 transition-all duration-200 ${isInFavorites ? 'fill-red-500 text-red-500 animate-in zoom-in-50' : 'text-primary'}`} />
                 </Button> : (/* Show menu for user products only */
             (onDelete || onUpdate) && <DropdownMenu>
                     <DropdownMenuTrigger asChild>
