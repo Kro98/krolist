@@ -59,19 +59,14 @@ export default function SearchProducts() {
 
   const handleSearch = async () => {
     if (isGuest) {
-      toast.error("Please create an account to use the search feature", {
-        action: {
-          label: "Sign Up",
-          onClick: () => navigate('/auth')
-        },
+      toast.error("Please create an account to use the search feature. Click the user icon in the top right to sign up.", {
         duration: 5000
       });
       return;
     }
     
     if (!user) {
-      toast.error("Please login to search products");
-      navigate('/auth');
+      toast.error("Please log in to search products. Click the user icon in the top right.");
       return;
     }
     if (!searchQuery.trim()) {
@@ -260,13 +255,7 @@ export default function SearchProducts() {
             {isGuest && <Alert className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <button 
-                    onClick={() => navigate('/auth')}
-                    className="text-primary underline hover:text-primary/80"
-                  >
-                    Create an account
-                  </button>
-                  {' '}to access the search feature and track products
+                  Create an account using the user icon in the top right to access the search feature and track products
                 </AlertDescription>
               </Alert>}
 
