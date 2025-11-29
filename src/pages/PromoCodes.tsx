@@ -421,11 +421,8 @@ export default function PromoCodes() {
               <Gift className="h-12 w-12 text-primary mx-auto mb-3" />
               <h3 className="text-lg font-semibold mb-2">Want to Save Your Own Promo Codes?</h3>
               <p className="text-muted-foreground mb-4">
-                Create an account to save and manage your personal promo codes collection
+                Create an account to save and manage your personal promo codes collection. Click the user icon in the top right to sign up or log in.
               </p>
-              <Button onClick={() => navigate('/auth')} className="bg-gradient-primary">
-                Sign Up / Login
-              </Button>
             </div>
           </CardContent>
         </Card>
