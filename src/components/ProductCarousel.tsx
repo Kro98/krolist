@@ -22,6 +22,7 @@ interface ProductCarouselProps {
   onUpdate?: (id: string, updates: Partial<Product>) => void;
   onRefreshPrice?: (id: string) => void;
   onAddToMyProducts?: (product: Product) => void;
+  onRemoveFromMyProducts?: (product: Product) => void;
   userProductCount?: number;
   isSelectionMode?: boolean;
   onToggleSelect?: (product: Product) => void;
@@ -37,6 +38,7 @@ export function ProductCarousel({
   onUpdate,
   onRefreshPrice,
   onAddToMyProducts,
+  onRemoveFromMyProducts,
   userProductCount = 0,
   isSelectionMode = false,
   onToggleSelect,
@@ -120,6 +122,7 @@ export function ProductCarousel({
               onUpdate={onUpdate}
               onRefreshPrice={onRefreshPrice}
               onAddToMyProducts={onAddToMyProducts}
+              onRemoveFromMyProducts={onRemoveFromMyProducts}
               userProductCount={userProductCount}
               isSelectionMode={isSelectionMode}
               isSelected={selectedProductIds.has(product.id)}
@@ -160,6 +163,7 @@ export function ProductCarousel({
                         onUpdate={onUpdate}
                         onRefreshPrice={onRefreshPrice}
                         onAddToMyProducts={onAddToMyProducts}
+                        onRemoveFromMyProducts={onRemoveFromMyProducts}
                         userProductCount={userProductCount}
                         isSelectionMode={isSelectionMode}
                         isSelected={selectedProductIds.has(product.id)}

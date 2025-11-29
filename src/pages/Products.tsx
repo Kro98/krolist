@@ -319,7 +319,7 @@ export default function Products() {
 
         if (error) throw error;
 
-        toast.success('Product re-added to your list!');
+        toast.success('Added to favorites!');
         await loadProducts();
         return;
       }
@@ -350,7 +350,36 @@ export default function Products() {
 
       if (error) throw error;
 
-      toast.success('Product added to your list!');
+      toast.success('Added to favorites!');
+      await loadProducts();
+    } catch (error) {
+      toast.error(getSafeErrorMessage(error));
+    }
+  };
+
+  const handleRemoveFromMyProducts = async (product: Product) => {
+    try {
+      // Find the user's product by URL and mark as inactive
+      const { data: userProduct } = await supabase
+        .from('products')
+        .select('id')
+        .eq('product_url', product.product_url)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!userProduct) {
+        toast.error('Product not found in your favorites');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .update({ is_active: false })
+        .eq('id', userProduct.id);
+
+      if (error) throw error;
+
+      toast.success('Removed from favorites');
       await loadProducts();
     } catch (error) {
       toast.error(getSafeErrorMessage(error));
@@ -548,6 +577,7 @@ export default function Products() {
               title={collectionTitle}
               products={collectionProducts}
               onAddToMyProducts={handleAddToMyProducts}
+              onRemoveFromMyProducts={handleRemoveFromMyProducts}
               userProductCount={products.length}
               isSelectionMode={isSelectMode}
               onToggleSelect={handleToggleSelect}
