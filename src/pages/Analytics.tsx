@@ -20,6 +20,7 @@ interface RecentChange {
   id: string;
   price: number;
   scraped_at: string;
+  discount_percentage: number;
   products: {
     title: string;
     store: string;
@@ -95,13 +96,13 @@ export default function Analytics() {
   const statsDisplay = stats ? [
     {
       title: "dashboard.priceDrops",
-      value: stats.price_drops.toString(),
+      value: `${stats.price_drops}%`,
       icon: TrendingDown,
       color: "text-price-decrease"
     },
     {
       title: "dashboard.priceIncreases",
-      value: stats.price_increases.toString(),
+      value: `${stats.price_increases}%`,
       icon: TrendingUp,
       color: "text-price-increase"
     },
@@ -151,7 +152,7 @@ export default function Analytics() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>{t('dashboard.recentAlerts')}</CardTitle>
-              <CardDescription>{t('dashboard.latestPriceChanges')}</CardDescription>
+              <CardDescription>Top 3 Products by Discount %</CardDescription>
             </div>
             <Button 
               variant="ghost" 
@@ -165,10 +166,8 @@ export default function Analytics() {
             <CardContent>
               <div className="space-y-3">
                 {recentChanges.length > 0 ? (
-                  recentChanges.slice(0, 5).map((change) => {
+                  recentChanges.map((change) => {
                     const product = change.products;
-                    const priceChange = product.current_price - change.price;
-                    const isDecrease = priceChange < 0;
 
                     return (
                       <div
@@ -181,14 +180,15 @@ export default function Analytics() {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <div className={`text-sm font-medium ${isDecrease ? 'text-price-decrease' : 'text-price-increase'}`}>
-                            {product.currency} {product.current_price.toFixed(2)}
+                          <div className="flex flex-col items-end">
+                            <div className="text-sm font-medium text-price-decrease">
+                              {product.currency} {product.current_price.toFixed(2)}
+                            </div>
+                            <div className="text-xs text-price-decrease font-semibold">
+                              -{change.discount_percentage}%
+                            </div>
                           </div>
-                          {isDecrease ? (
-                            <TrendingDown className="h-4 w-4 text-price-decrease" />
-                          ) : (
-                            <TrendingUp className="h-4 w-4 text-price-increase" />
-                          )}
+                          <TrendingDown className="h-4 w-4 text-price-decrease" />
                         </div>
                       </div>
                     );
