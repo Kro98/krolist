@@ -47,12 +47,11 @@ serve(async (req) => {
 
     if (statsError) throw statsError;
 
-    // Get top 3 products with highest discount percentage
-    const { data: userProducts, error: productsError } = await supabaseClient
-      .from('products')
+    // Get top 3 Krolist featured products with highest discount percentage
+    const { data: krolistProducts, error: productsError } = await supabaseClient
+      .from('krolist_products')
       .select('id, title, store, current_price, original_price, currency')
-      .eq('user_id', user.id)
-      .eq('is_active', true);
+      .eq('is_featured', true);
 
     if (productsError) throw productsError;
 
@@ -95,7 +94,7 @@ serve(async (req) => {
     const promoCodesUsed = promoCodes?.length || 0;
 
     // Calculate discount percentages and get top 3
-    const recentChanges = (userProducts || [])
+    const recentChanges = (krolistProducts || [])
       .map(product => {
         const discountPct = product.original_price > 0 
           ? ((product.original_price - product.current_price) / product.original_price * 100)
@@ -112,8 +111,7 @@ serve(async (req) => {
             title: product.title,
             store: product.store,
             current_price: product.current_price,
-            currency: product.currency,
-            user_id: user.id
+            currency: product.currency
           }
         };
       })

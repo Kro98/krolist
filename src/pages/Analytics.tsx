@@ -175,7 +175,7 @@ export default function Analytics() {
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle>Top Price Changes</CardTitle>
-            <CardDescription>Top 3 Products by Discount %</CardDescription>
+            <CardDescription>Top 3 Krolist Deals by Discount %</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
