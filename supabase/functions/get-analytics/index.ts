@@ -56,6 +56,44 @@ serve(async (req) => {
 
     if (productsError) throw productsError;
 
+    // Get favorite products count and breakdown by store
+    const { data: storeBreakdown, error: storeError } = await supabaseClient
+      .from('products')
+      .select('store')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+
+    if (storeError) throw storeError;
+
+    // Count products by store
+    const storeStats = (storeBreakdown || []).reduce((acc: Record<string, number>, product) => {
+      acc[product.store] = (acc[product.store] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Get orders stats
+    const { data: orders, error: ordersError } = await supabaseClient
+      .from('orders')
+      .select('status, total_amount, currency')
+      .eq('user_id', user.id);
+
+    if (ordersError) throw ordersError;
+
+    const totalOrders = orders?.length || 0;
+    const processedOrders = orders?.filter(o => o.status === 'processed') || [];
+    const totalSpent = processedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
+
+    // Get promo codes stats (used promo codes)
+    const { data: promoCodes, error: promoError } = await supabaseClient
+      .from('promo_codes')
+      .select('used')
+      .eq('user_id', user.id)
+      .eq('used', true);
+
+    if (promoError) throw promoError;
+
+    const promoCodesUsed = promoCodes?.length || 0;
+
     // Calculate discount percentages and get top 3
     const recentChanges = (userProducts || [])
       .map(product => {
@@ -86,7 +124,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         stats,
-        recentChanges: recentChanges || []
+        recentChanges: recentChanges || [],
+        favoriteProducts: storeBreakdown?.length || 0,
+        storeBreakdown: storeStats,
+        totalOrders,
+        totalSpent,
+        promoCodesUsed,
+        currency: orders?.[0]?.currency || 'SAR'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

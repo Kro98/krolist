@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, TrendingDown, TrendingUp, DollarSign, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingDown, TrendingUp, DollarSign, Package, ShoppingCart, Tag, Store } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,12 @@ interface AnalyticsStats {
   price_drops: number;
   price_increases: number;
   total_value: number;
+  favoriteProducts: number;
+  storeBreakdown: Record<string, number>;
+  totalOrders: number;
+  totalSpent: number;
+  promoCodesUsed: number;
+  currency: string;
 }
 
 interface RecentChange {
@@ -33,8 +38,6 @@ export default function Analytics() {
   const { t, language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const { user } = useAuth();
-  const [showStats, setShowStats] = useState(true);
-  const [showAlerts, setShowAlerts] = useState(true);
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [recentChanges, setRecentChanges] = useState<RecentChange[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +84,13 @@ export default function Analytics() {
         
         setStats({
           ...data.stats,
-          total_value: totalValueConverted
+          total_value: totalValueConverted,
+          favoriteProducts: data.favoriteProducts || 0,
+          storeBreakdown: data.storeBreakdown || {},
+          totalOrders: data.totalOrders || 0,
+          totalSpent: data.totalSpent || 0,
+          promoCodesUsed: data.promoCodesUsed || 0,
+          currency: data.currency || 'SAR'
         });
         setRecentChanges(data.recentChanges || []);
       }
@@ -93,7 +102,7 @@ export default function Analytics() {
     }
   };
 
-  const statsDisplay = stats ? [
+  const priceStatsDisplay = stats ? [
     {
       title: "dashboard.priceDrops",
       value: `${stats.price_drops}%`,
@@ -105,18 +114,33 @@ export default function Analytics() {
       value: `${stats.price_increases}%`,
       icon: TrendingUp,
       color: "text-price-increase"
-    },
+    }
+  ] : [];
+
+  const generalStatsDisplay = stats ? [
     {
-      title: "dashboard.totalProducts",
-      value: stats.total_products.toString(),
+      title: "Favorite Products",
+      value: stats.favoriteProducts.toString(),
       icon: Package,
       color: "text-primary"
     },
     {
-      title: "dashboard.totalValue",
-      value: `${currency} ${stats.total_value.toFixed(2)}`,
+      title: "Total Orders",
+      value: stats.totalOrders.toString(),
+      icon: ShoppingCart,
+      color: "text-blue-500"
+    },
+    {
+      title: "Total Spent",
+      value: `${stats.currency} ${stats.totalSpent.toFixed(2)}`,
       icon: DollarSign,
-      color: "text-muted-foreground"
+      color: "text-green-500"
+    },
+    {
+      title: "Promo Codes Used",
+      value: stats.promoCodesUsed.toString(),
+      icon: Tag,
+      color: "text-purple-500"
     }
   ] : [];
 
@@ -149,98 +173,133 @@ export default function Analytics() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>{t('dashboard.recentAlerts')}</CardTitle>
-              <CardDescription>Top 3 Products by Discount %</CardDescription>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setShowAlerts(!showAlerts)}
-            >
-              {showAlerts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
+          <CardHeader>
+            <CardTitle>Top Price Changes</CardTitle>
+            <CardDescription>Top 3 Products by Discount %</CardDescription>
           </CardHeader>
-          {showAlerts && (
-            <CardContent>
-              <div className="space-y-3">
-                {recentChanges.length > 0 ? (
-                  recentChanges.map((change) => {
-                    const product = change.products;
+          <CardContent>
+            <div className="space-y-3">
+              {recentChanges.length > 0 ? (
+                recentChanges.map((change) => {
+                  const product = change.products;
 
-                    return (
-                      <div
-                        key={change.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium text-sm line-clamp-1">{product.title}</div>
-                          <div className="text-xs text-muted-foreground">{product.store}</div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <div className="flex flex-col items-end">
-                            <div className="text-sm font-medium text-price-decrease">
-                              {product.currency} {product.current_price.toFixed(2)}
-                            </div>
-                            <div className="text-xs text-price-decrease font-semibold">
-                              -{change.discount_percentage}%
-                            </div>
-                          </div>
-                          <TrendingDown className="h-4 w-4 text-price-decrease" />
-                        </div>
+                  return (
+                    <div
+                      key={change.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-sm line-clamp-1">{product.title}</div>
+                        <div className="text-xs text-muted-foreground">{product.store}</div>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {t('analytics.noRecentChanges')}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          )}
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-end">
+                          <div className="text-sm font-medium text-price-decrease">
+                            {product.currency} {product.current_price.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-price-decrease font-semibold">
+                            -{change.discount_percentage}%
+                          </div>
+                        </div>
+                        <TrendingDown className="h-4 w-4 text-price-decrease" />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  {t('analytics.noRecentChanges')}
+                </div>
+              )}
+            </div>
+          </CardContent>
         </Card>
 
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>{t('dashboard.overview')}</CardTitle>
-              <CardDescription>{t('dashboard.keyMetrics')}</CardDescription>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setShowStats(!showStats)}
-            >
-              {showStats ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
+          <CardHeader>
+            <CardTitle>Price Statistics</CardTitle>
+            <CardDescription>Average price change percentages</CardDescription>
           </CardHeader>
-          {showStats && (
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              {priceStatsDisplay.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={stat.title}
+                    className="p-4 rounded-lg bg-muted/50 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className={`h-4 w-4 ${stat.color}`} />
+                      <span className="text-sm text-muted-foreground">
+                        {t(stat.title)}
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold">{stat.value}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>General Statistics</CardTitle>
+            <CardDescription>Overview of your activity</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              {generalStatsDisplay.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={stat.title}
+                    className="p-4 rounded-lg bg-muted/50 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className={`h-4 w-4 ${stat.color}`} />
+                      <span className="text-sm text-muted-foreground">
+                        {stat.title}
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold">{stat.value}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {stats && Object.keys(stats.storeBreakdown).length > 0 && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Products by Store</CardTitle>
+              <CardDescription>Breakdown of favorite products by store</CardDescription>
+            </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {statsDisplay.map((stat) => {
-                  const Icon = stat.icon;
-                  return (
+              <div className="space-y-3">
+                {Object.entries(stats.storeBreakdown)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([store, count]) => (
                     <div
-                      key={stat.title}
-                      className="p-4 rounded-lg bg-muted/50 space-y-2"
+                      key={store}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                     >
                       <div className="flex items-center gap-2">
-                        <Icon className={`h-4 w-4 ${stat.color}`} />
-                        <span className="text-sm text-muted-foreground">
-                          {t(stat.title)}
-                        </span>
+                        <Store className="h-4 w-4 text-primary" />
+                        <span className="font-medium text-sm">{store}</span>
                       </div>
-                      <div className="text-2xl font-bold">{stat.value}</div>
+                      <span className="text-lg font-bold">{count}</span>
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             </CardContent>
-          )}
-        </Card>
+          </Card>
+        )}
       </div>
     </div>
   );
