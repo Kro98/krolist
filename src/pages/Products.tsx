@@ -18,6 +18,8 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGuestAuth } from "@/contexts/GuestAuthContext";
 
 // Validation schema for product updates
 const productUpdateSchema = z.object({
@@ -33,6 +35,8 @@ const productUpdateSchema = z.object({
 export default function Products() {
   const { t, language } = useLanguage();
   const { addToCart } = useCart();
+  const { isGuest } = useAuth();
+  const { openAuthModal } = useGuestAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [krolistProducts, setKrolistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -265,6 +269,12 @@ export default function Products() {
   };
 
   const handleAddToMyProducts = async (product: Product) => {
+    // Check if user is a guest
+    if (isGuest) {
+      openAuthModal();
+      return;
+    }
+
     try {
       // Check current product count
       const { count } = await supabase
@@ -328,7 +338,7 @@ export default function Products() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast.error('You must be logged in');
+        openAuthModal();
         return;
       }
 
@@ -430,8 +440,8 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      {/* Search bar temporarily hidden - will be reactivated later */}
-      <div className="flex gap-3 items-center mb-6 hidden">
+      {/* Search, Filter, and Select Tools */}
+      <div className="flex gap-3 items-center mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
