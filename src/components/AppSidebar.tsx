@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { STORES, getAllStores, getStoreById } from "@/config/stores";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 const mainItems = [{
   title: "nav.products",
@@ -86,6 +88,7 @@ export function AppSidebar() {
   const [shopItems, setShopItems] = useState(getShopItems());
   const [promotions, setPromotions] = useState<Record<string, any[]>>({});
   const [hasFavoriteProducts, setHasFavoriteProducts] = useState(false);
+  const [hasActiveOrders, setHasActiveOrders] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -131,6 +134,30 @@ export function AppSidebar() {
     };
 
     checkFavoriteProducts();
+  }, [user, isGuest]);
+
+  useEffect(() => {
+    const checkActiveOrders = async () => {
+      if (!user || isGuest) {
+        setHasActiveOrders(false);
+        return;
+      }
+
+      try {
+        const { count, error } = await supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        setHasActiveOrders((count || 0) > 0);
+      } catch (error) {
+        console.error('Error checking active orders:', error);
+        setHasActiveOrders(false);
+      }
+    };
+
+    checkActiveOrders();
   }, [user, isGuest]);
 
   const fetchPromotions = async () => {
@@ -179,7 +206,7 @@ export function AppSidebar() {
       return user && !isGuest && hasFavoriteProducts;
     }
     if (item.url === "/my-orders") {
-      return user && !isGuest;
+      return user && !isGuest && hasActiveOrders;
     }
     return true;
   });
@@ -204,7 +231,25 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
                       <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
-                      {!collapsed && <span>{t(item.title)}</span>}
+                      {!collapsed && (
+                        <div className="flex items-center gap-2 flex-1">
+                          <span>{t(item.title)}</span>
+                          {item.url === "/" && user && !isGuest && !hasFavoriteProducts && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-warning/20 text-warning hover:bg-warning/30">
+                                    +
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">Add favorites to unlock Analytics</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>)}

@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
+import { AuthModal } from "@/components/AuthModal";
 import { ShoppingCart } from "@/components/ShoppingCart";
 import { UserAccountControl } from "@/components/UserAccountControl";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -10,6 +11,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGuestAuth } from "@/contexts/GuestAuthContext";
 import { useEffect } from "react";
 import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
@@ -22,6 +24,7 @@ interface LayoutProps {
 function LayoutContent({ children }: LayoutProps) {
   const { language } = useLanguage();
   const { user, loading, isGuest } = useAuth();
+  const { showAuthModal, closeAuthModal } = useGuestAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { open, setOpen } = useSidebar();
@@ -66,6 +69,7 @@ function LayoutContent({ children }: LayoutProps) {
   return (
     <>
       <LoginMessageDialog />
+      <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
       <AppSidebar />
       <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
