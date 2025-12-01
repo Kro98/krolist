@@ -6,6 +6,7 @@ import { Layout } from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Products from "./pages/Products";
 import SearchProducts from "./pages/SearchProducts";
 import HowToUseSearch from "./pages/HowToUseSearch";
@@ -38,14 +39,14 @@ const App = () => <QueryClientProvider client={queryClient}>
                   <Route path="/products" element={<Products />} />
                   <Route path="/search-products" element={<SearchProducts />} />
                   <Route path="/how-to-use-search" element={<HowToUseSearch />} />
-                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/promo-codes" element={<PromoCodes />} />
                   <Route path="/donation" element={<Donation />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/categories" element={<CategoryTags />} />
                   <Route path="/category/:categoryId" element={<CategoryProducts />} />
-                  <Route path="/my-orders" element={<MyOrders />} />
+                  <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<TermsOfService />} />

@@ -152,12 +152,12 @@ export default function Analytics() {
     );
   }
 
-  if (stats && stats.total_products === 0) {
+  if (stats && stats.favoriteProducts === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <img src={emptyStateIcon} alt={t('products.noProducts')} className="h-24 w-24 opacity-70" />
-        <h3 className="text-xl font-medium">{t('products.noProducts')}</h3>
-        <p className="text-muted-foreground">{t('analytics.addProductsPrompt')}</p>
+        <img src={emptyStateIcon} alt="No favorite products" className="h-24 w-24 opacity-70" />
+        <h3 className="text-xl font-medium">No Favorite Products Yet</h3>
+        <p className="text-muted-foreground">Add products to your favorites to see analytics</p>
       </div>
     );
   }
