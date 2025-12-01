@@ -2,6 +2,7 @@ import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone,
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
@@ -81,8 +82,10 @@ export function AppSidebar() {
     t,
     language
   } = useLanguage();
+  const { user, isGuest } = useAuth();
   const [shopItems, setShopItems] = useState(getShopItems());
   const [promotions, setPromotions] = useState<Record<string, any[]>>({});
+  const [hasFavoriteProducts, setHasFavoriteProducts] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -104,6 +107,31 @@ export function AppSidebar() {
   useEffect(() => {
     fetchPromotions();
   }, [t]);
+
+  useEffect(() => {
+    const checkFavoriteProducts = async () => {
+      if (!user || isGuest) {
+        setHasFavoriteProducts(false);
+        return;
+      }
+
+      try {
+        const { count, error } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        if (error) throw error;
+        setHasFavoriteProducts((count || 0) > 0);
+      } catch (error) {
+        console.error('Error checking favorite products:', error);
+        setHasFavoriteProducts(false);
+      }
+    };
+
+    checkFavoriteProducts();
+  }, [user, isGuest]);
 
   const fetchPromotions = async () => {
     try {
@@ -144,6 +172,18 @@ export function AppSidebar() {
   }: {
     isActive: boolean;
   }) => isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
+  
+  // Filter menu items based on authentication and favorite products
+  const filteredMainItems = mainItems.filter(item => {
+    if (item.url === "/analytics") {
+      return user && !isGuest && hasFavoriteProducts;
+    }
+    if (item.url === "/my-orders") {
+      return user && !isGuest;
+    }
+    return true;
+  });
+
   return <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-sidebar border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
       <SidebarContent className="bg-sidebar">
         {/* Search Products Button */}
@@ -160,7 +200,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map(item => <SidebarMenuItem key={item.title}>
+              {filteredMainItems.map(item => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
                       <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
