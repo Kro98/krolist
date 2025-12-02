@@ -338,7 +338,9 @@ const translations = {
     'user.guest': 'GUEST',
     
     // Auth
+    'auth.login': 'Log In',
     'auth.signOut': 'Sign Out',
+    'auth.signOutSuccess': 'Signed out successfully',
     
     // Common UI
     'common.save': 'Save',
@@ -645,7 +647,9 @@ const translations = {
     'common.success': 'نجح',
     
     // Auth
+    'auth.login': 'تسجيل الدخول',
     'auth.signOut': 'تسجيل الخروج',
+    'auth.signOutSuccess': 'تم تسجيل الخروج بنجاح',
     
     // User
     'user.guest': 'ضيف',
