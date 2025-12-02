@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
   CarouselContent,
@@ -98,7 +99,14 @@ export function ProductCarousel({
       {/* Header with title and expand button */}
       {(title || enableExpand) && (
         <div className={`flex items-center justify-between ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-          {title && <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>}
+          {title && (
+            <div className={`flex items-center gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              <h2 className={`text-xl font-bold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{title}</h2>
+              <Badge variant="secondary" className="text-xs">
+                {products.length}
+              </Badge>
+            </div>
+          )}
           {enableExpand && isTabletOrAbove && (
             <Button
               variant="ghost"
