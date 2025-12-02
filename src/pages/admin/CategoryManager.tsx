@@ -31,6 +31,7 @@ export default function CategoryManager() {
   const [editingCategory, setEditingCategory] = useState<CategoryCollection | null>(null);
   const [selectedCategoryForProducts, setSelectedCategoryForProducts] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [productCategories, setProductCategories] = useState<Record<string, string[]>>({});
   
   const [formData, setFormData] = useState({
     title: '',
@@ -173,6 +174,42 @@ export default function CategoryManager() {
     setSelectedCategoryForProducts(category.id);
     const productIds = await fetchCategoryProducts(category.id);
     setSelectedProducts(productIds);
+    
+    // Fetch all product-category associations
+    try {
+      const { data: allCategoryProducts, error } = await supabase
+        .from('category_products')
+        .select('product_id, category_id');
+      
+      if (error) throw error;
+      
+      // Fetch category titles
+      const { data: categoriesData, error: catError } = await supabase
+        .from('category_collections')
+        .select('id, title');
+      
+      if (catError) throw catError;
+      
+      // Create a mapping of category IDs to titles
+      const categoryMap = new Map(categoriesData?.map(c => [c.id, c.title]) || []);
+      
+      // Group categories by product
+      const productCatMap: Record<string, string[]> = {};
+      allCategoryProducts?.forEach(cp => {
+        if (!productCatMap[cp.product_id]) {
+          productCatMap[cp.product_id] = [];
+        }
+        const categoryTitle = categoryMap.get(cp.category_id);
+        if (categoryTitle) {
+          productCatMap[cp.product_id].push(categoryTitle);
+        }
+      });
+      
+      setProductCategories(productCatMap);
+    } catch (error) {
+      console.error('Error fetching product categories:', error);
+    }
+    
     setShowProductsDialog(true);
   };
 
@@ -377,27 +414,35 @@ export default function CategoryManager() {
             </DialogDescription>
           </DialogHeader>
           <div className="overflow-y-auto max-h-96 space-y-2">
-            {krolistProducts.map((product) => (
-              <div key={product.id} className="flex items-center space-x-2 p-2 border rounded">
-                <Checkbox
-                  checked={selectedProducts.includes(product.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedProducts([...selectedProducts, product.id]);
-                    } else {
-                      setSelectedProducts(selectedProducts.filter(id => id !== product.id));
-                    }
-                  }}
-                />
-                <div className="flex-1">
-                  <p className="font-medium">{product.title}</p>
-                  <p className="text-xs text-muted-foreground">{product.store}</p>
+            {krolistProducts.map((product) => {
+              const categories = productCategories[product.id] || [];
+              const categoriesText = categories.length > 0 ? ` - ${categories.join(' & ')}` : '';
+              const truncatedTitle = product.title.length > 50 
+                ? product.title.substring(0, 50) + '...' 
+                : product.title;
+              
+              return (
+                <div key={product.id} className="flex items-center space-x-2 p-2 border rounded">
+                  <Checkbox
+                    checked={selectedProducts.includes(product.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedProducts([...selectedProducts, product.id]);
+                      } else {
+                        setSelectedProducts(selectedProducts.filter(id => id !== product.id));
+                      }
+                    }}
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium">{truncatedTitle}</p>
+                    <p className="text-xs text-muted-foreground">{product.store}{categoriesText}</p>
+                  </div>
+                  {product.image_url && (
+                    <img src={product.image_url} alt="" className="w-12 h-12 object-cover rounded" />
+                  )}
                 </div>
-                {product.image_url && (
-                  <img src={product.image_url} alt="" className="w-12 h-12 object-cover rounded" />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProductsDialog(false)}>
