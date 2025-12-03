@@ -159,12 +159,6 @@ export function ProductCard({
               <img src={product.image_url || '/placeholder.svg'} alt={product.title} className={`w-24 h-24 md:w-28 md:h-28 object-cover border border-border transition-transform duration-300 hover:scale-125`} />
             </div>
             
-            {/* Review button under image for Krolist products */}
-            {product.isKrolistProduct && product.youtube_url && <Button size="sm" variant="outline" className="w-full h-7 px-2 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')}>
-                <Youtube className="h-3.5 w-3.5" />
-                <span className="text-xs">Review</span>
-              </Button>}
-            
             {!product.isKrolistProduct && <div className="text-[10px] text-muted-foreground text-center">
                 {new Date(product.last_checked_at).toLocaleDateString()}
               </div>}
@@ -254,8 +248,8 @@ export function ProductCard({
             })()}`}>
                   {product.category}
                 </Badge>}
-              {/* Show YouTube button for user products only */}
-              {!product.isKrolistProduct && product.youtube_url && <Button size="sm" variant="outline" className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')}>
+              {/* Show YouTube button */}
+              {product.youtube_url && <Button size="sm" variant="outline" className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')}>
                   <Youtube className="h-3 w-3" />
                   <span className="text-xs">Review</span>
                 </Button>}
