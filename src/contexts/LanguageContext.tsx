@@ -480,6 +480,11 @@ const translations = {
     'cart.orderDialog.error': 'Failed to submit order',
     'cart.toast.openingStores': 'Opening stores in new tabs',
     'cart.itemsAdded': '{count} item(s) added to cart',
+    
+    // Footer
+    'privacyPolicy': 'Privacy Policy',
+    'termsOfService': 'Terms of Service',
+    'contactUs': 'Contact Us',
   },
   ar: {
     // Common
@@ -872,6 +877,11 @@ const translations = {
     'cart.orderDialog.error': 'فشل إرسال الطلب',
     'cart.toast.openingStores': 'فتح المتاجر في علامات تبويب جديدة',
     'cart.itemsAdded': 'تمت إضافة {count} منتج إلى السلة',
+    
+    // Footer
+    'privacyPolicy': 'سياسة الخصوصية',
+    'termsOfService': 'شروط الخدمة',
+    'contactUs': 'اتصل بنا',
   }
 };
 
