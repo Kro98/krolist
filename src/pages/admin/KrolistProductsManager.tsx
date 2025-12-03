@@ -824,100 +824,89 @@ export default function KrolistProductsManager() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>{t('product.currentPrice')}</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.current_price}
-                  onChange={(e) => setFormData({ ...formData, current_price: e.target.value })}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.current_price}
+                    onChange={(e) => setFormData({ ...formData, current_price: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Select 
+                    value={formData.currency} 
+                    onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map(curr => (
+                        <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
                 <Label>{t('product.originalPrice')}</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.original_price}
-                  onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.original_price}
+                    onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Select 
+                    value={formData.currency} 
+                    onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map(curr => (
+                        <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>{t('product.currency')}</Label>
+                <Label>{t('product.store')}</Label>
                 <Select 
-                  value={formData.currency} 
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                  value={formData.store} 
+                  onValueChange={(value) => setFormData({ ...formData, store: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CURRENCIES.map(curr => (
-                      <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                    {Object.values(STORES).map(store => (
+                      <SelectItem key={store.id} value={store.name}>{store.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>{t('product.originalCurrency')}</Label>
+                <Label>{t('product.category')}</Label>
                 <Select 
-                  value={formData.original_currency} 
-                  onValueChange={(value) => setFormData({ ...formData, original_currency: value })}
+                  value={formData.category} 
+                  onValueChange={(value) => setFormData({ ...formData, category: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CURRENCIES.map(curr => (
-                      <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div>
-              <Label>{t('product.store')}</Label>
-              <Select 
-                value={formData.store} 
-                onValueChange={(value) => setFormData({ ...formData, store: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(STORES).map(store => (
-                    <SelectItem key={store.id} value={store.name}>{store.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>{t('product.productUrl')}</Label>
-              <Input
-                value={formData.product_url}
-                onChange={(e) => setFormData({ ...formData, product_url: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
-
-            <div>
-              <Label>{t('product.category')}</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {formData.category === 'Custom' && (
@@ -932,12 +921,31 @@ export default function KrolistProductsManager() {
             )}
 
             <div>
-              <Label>Collection Title</Label>
+              <Label>{t('product.productUrl')}</Label>
               <Input
-                value={formData.collection_title}
-                onChange={(e) => setFormData({ ...formData, collection_title: e.target.value })}
-                placeholder="e.g., Summer Sale, Electronics"
+                value={formData.product_url}
+                onChange={(e) => setFormData({ ...formData, product_url: e.target.value })}
+                placeholder="https://..."
               />
+            </div>
+
+            <div>
+              <Label>Collection Title</Label>
+              <Select 
+                value={formData.collection_title} 
+                onValueChange={(value) => setFormData({ ...formData, collection_title: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select collection..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {collections
+                    .filter(c => c !== 'all')
+                    .map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
