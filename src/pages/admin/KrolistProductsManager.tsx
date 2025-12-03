@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical, Download, Upload } from 'lucide-react';
-import { STORES } from '@/config/stores';
+import { STORES, getEnabledStores } from '@/config/stores';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
@@ -38,8 +38,7 @@ interface KrolistProduct {
 }
 
 const CATEGORIES = [
-  'Electronics', 'Fashion', 'Home & Garden', 'Sports', 
-  'Beauty', 'Toys', 'Books', 'Automotive', 'Watches', 'EDC', 'Custom'
+  'Electronics', 'Fashion', 'Automotive', 'Watches', 'EDC', 'Custom'
 ];
 
 const CURRENCIES = ['SAR', 'AED', 'USD', 'EUR', 'GBP'];
@@ -869,7 +868,7 @@ export default function KrolistProductsManager() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.values(STORES).map(store => (
+                    {getEnabledStores().map(store => (
                       <SelectItem key={store.id} value={store.name}>{store.name}</SelectItem>
                     ))}
                   </SelectContent>
