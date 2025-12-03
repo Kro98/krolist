@@ -18,7 +18,7 @@ export function Footer() {
       <div className="container my-0 mx-[5px] px-[5px] py-[5px]">
         {/* Mobile: Stack vertically */}
         <div className="flex flex-col items-center gap-4 sm:items-center sm:justify-center sm:gap-[5px] mx-0 sm:flex sm:flex-row">
-          {footerLinks.map((link, index) => <Link key={link.to} to={link.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors px-0 mx-0">
+          {footerLinks.map((link, index) => <Link key={link.to} to={link.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors px-0 mx-[5px]">
               {link.label}
             </Link>)}
         </div>
