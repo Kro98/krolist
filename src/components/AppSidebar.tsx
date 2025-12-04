@@ -213,16 +213,18 @@ export function AppSidebar() {
 
   return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border relative overflow-hidden`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
       <Suspense fallback={null}>
-        <DitherBackground 
-          waveSpeed={0.03}
-          waveFrequency={2.5}
-          waveAmplitude={0.25}
-          waveColor={[0.2, 0.15, 0.3]}
-          colorNum={4}
-          pixelSize={2}
-          enableMouseInteraction={false}
-          className="rounded-lg"
-        />
+        <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+          <DitherBackground 
+            waveColor={[0.5, 0.5, 0.5]}
+            disableAnimation={false}
+            enableMouseInteraction={true}
+            mouseRadius={0.3}
+            colorNum={4}
+            waveAmplitude={0.3}
+            waveFrequency={3}
+            waveSpeed={0.05}
+          />
+        </div>
       </Suspense>
       <SidebarContent className="relative z-10 bg-transparent">
         {/* Search Products Button */}
