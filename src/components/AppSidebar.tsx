@@ -213,11 +213,11 @@ export function AppSidebar() {
 
   return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border relative overflow-hidden`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
       <Suspense fallback={null}>
-        <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+        <div className="absolute inset-0 z-0 pointer-events-none">
           <DitherBackground 
             waveColor={[0.5, 0.5, 0.5]}
             disableAnimation={false}
-            enableMouseInteraction={true}
+            enableMouseInteraction={false}
             mouseRadius={0.3}
             colorNum={4}
             waveAmplitude={0.3}
