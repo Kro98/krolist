@@ -322,12 +322,13 @@ export default function DitherBackground(props: DitherBackgroundProps) {
   } = props;
 
   return (
-    <div className={`absolute inset-0 overflow-hidden ${className}`}>
+    <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}>
       <Canvas
         className="w-full h-full"
         dpr={1}
         camera={{ position: [0, 0, 6] }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
+        style={{ pointerEvents: 'none' }}
       >
         <DitheredWaves
           waveSpeed={waveSpeed}
