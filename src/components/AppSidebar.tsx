@@ -1,5 +1,5 @@
 import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +9,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { STORES, getAllStores, getStoreById } from "@/config/stores";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-
+import DitherBackground from "@/components/DitherBackground";
 const mainItems = [{
   title: "nav.products",
   url: "/",
@@ -198,7 +198,7 @@ export function AppSidebar() {
     isActive
   }: {
     isActive: boolean;
-  }) => isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
+  }) => isActive ? "bg-white/20 text-white font-medium backdrop-blur-sm" : "hover:bg-white/10 text-white/90";
   
   // Filter menu items based on authentication and favorite products
   const filteredMainItems = mainItems.filter(item => {
@@ -211,8 +211,20 @@ export function AppSidebar() {
     return true;
   });
 
-  return <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-sidebar border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
-      <SidebarContent className="bg-sidebar">
+  return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border relative overflow-hidden`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
+      <Suspense fallback={null}>
+        <DitherBackground 
+          waveSpeed={0.03}
+          waveFrequency={2.5}
+          waveAmplitude={0.25}
+          waveColor={[0.2, 0.15, 0.3]}
+          colorNum={4}
+          pixelSize={2}
+          enableMouseInteraction={false}
+          className="rounded-lg"
+        />
+      </Suspense>
+      <SidebarContent className="relative z-10 bg-transparent">
         {/* Search Products Button */}
         <div className="p-4 px-[5px] py-[5px]">
           <NavLink to="/search-products" onClick={handleNavClick}>
@@ -224,7 +236,7 @@ export function AppSidebar() {
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('nav.dashboard')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/80">{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredMainItems.map(item => <SidebarMenuItem key={item.title}>
@@ -258,7 +270,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mx-0 px-0">
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('shops.title')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {shopItems.map(item => {
@@ -293,7 +305,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70">{t('settings.other')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/80">{t('settings.other')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {otherItems.map(item => <SidebarMenuItem key={item.title}>
