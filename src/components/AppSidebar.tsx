@@ -198,7 +198,9 @@ export function AppSidebar() {
     isActive
   }: {
     isActive: boolean;
-  }) => isActive ? "bg-white/20 text-white font-medium backdrop-blur-sm" : "hover:bg-white/10 text-white/90";
+  }) => isActive 
+    ? "bg-white/20 text-white font-medium backdrop-blur-md border border-white/30 rounded-lg shadow-lg" 
+    : "hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 rounded-lg hover:border-white/25 transition-all duration-200";
   
   // Filter menu items based on authentication and favorite products
   const filteredMainItems = mainItems.filter(item => {
@@ -228,9 +230,9 @@ export function AppSidebar() {
       </Suspense>
       <SidebarContent className="relative z-10 bg-transparent">
         {/* Search Products Button */}
-        <div className="p-4 px-[5px] py-[5px]">
+        <div className="p-4 px-2 py-2">
           <NavLink to="/search-products" onClick={handleNavClick}>
-            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 mx-0 my-[20px] py-[10px] px-[10px]">
+            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 mx-0 my-4 py-2.5 px-3 border border-white/20 backdrop-blur-md">
               <PlusCircle className="h-4 w-4" />
               {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
             </div>
@@ -240,7 +242,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className="text-white/80">{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {filteredMainItems.map(item => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
@@ -274,7 +276,7 @@ export function AppSidebar() {
         <SidebarGroup className="mx-0 px-0">
           <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {shopItems.map(item => {
               const shopId = item.title.split('.')[1];
               const shopPromotions = promotions[shopId] || [];
@@ -282,7 +284,7 @@ export function AppSidebar() {
               
               return <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-full hover:bg-sidebar-accent/50 text-sidebar-foreground" : "flex items-center gap-2 w-full p-2 rounded-md hover:bg-sidebar-accent/50 text-sidebar-foreground px-[15px] py-0"}>
+                      {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
                           {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
                           {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                               <span className="shrink-0">{t(item.title)}</span>
@@ -309,7 +311,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className="text-white/80">{t('settings.other')}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {otherItems.map(item => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
