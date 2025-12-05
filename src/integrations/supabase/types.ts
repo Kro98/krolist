@@ -103,6 +103,7 @@ export type Database = {
       }
       krolist_products: {
         Row: {
+          availability_status: string | null
           category: string | null
           collection_title: string | null
           created_at: string | null
@@ -122,6 +123,7 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          availability_status?: string | null
           category?: string | null
           collection_title?: string | null
           created_at?: string | null
@@ -141,6 +143,7 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          availability_status?: string | null
           category?: string | null
           collection_title?: string | null
           created_at?: string | null

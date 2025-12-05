@@ -5,11 +5,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { STORES, getAllStores, getStoreById } from "@/config/stores";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import DitherBackground from "@/components/DitherBackground";
+import { PersonalizeDialog } from "@/components/PersonalizeDialog";
+
 const mainItems = [{
   title: "nav.products",
   url: "/",
@@ -71,6 +73,7 @@ const otherItems = [{
   url: "/settings",
   icon: Settings
 }];
+
 export function AppSidebar() {
   const {
     state,
@@ -89,6 +92,7 @@ export function AppSidebar() {
   const [promotions, setPromotions] = useState<Record<string, any[]>>({});
   const [hasFavoriteProducts, setHasFavoriteProducts] = useState(false);
   const [hasActiveOrders, setHasActiveOrders] = useState(false);
+  const [ditherSettings, setDitherSettings] = useState<any>(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -97,13 +101,30 @@ export function AppSidebar() {
     const handleShopUpdate = () => {
       setShopItems(getShopItems());
     };
+    const handleDitherChange = (e: CustomEvent) => {
+      setDitherSettings(e.detail);
+    };
+    
+    // Load initial dither settings
+    const saved = localStorage.getItem('ditherSettings');
+    if (saved) {
+      try {
+        setDitherSettings(JSON.parse(saved));
+      } catch {
+        setDitherSettings({ enabled: true });
+      }
+    } else {
+      setDitherSettings({ enabled: true });
+    }
     
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('shopOrderUpdated', handleShopUpdate);
+    window.addEventListener('ditherSettingsChanged', handleDitherChange as EventListener);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('shopOrderUpdated', handleShopUpdate);
+      window.removeEventListener('ditherSettingsChanged', handleDitherChange as EventListener);
     };
   }, []);
 
@@ -213,26 +234,30 @@ export function AppSidebar() {
     return true;
   });
 
+  const showDither = ditherSettings?.enabled !== false;
+
   return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border relative overflow-hidden`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
-      <Suspense fallback={null}>
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <DitherBackground 
-            waveColor={[0.5, 0.5, 0.5]}
-            disableAnimation={false}
-            enableMouseInteraction={false}
-            mouseRadius={0.3}
-            colorNum={4}
-            waveAmplitude={0.3}
-            waveFrequency={3}
-            waveSpeed={0.05}
-          />
-        </div>
-      </Suspense>
-      <SidebarContent className="relative z-10 bg-transparent">
+      {showDither && (
+        <Suspense fallback={null}>
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <DitherBackground 
+              waveColor={ditherSettings?.waveColor || [0.5, 0.5, 0.5]}
+              disableAnimation={false}
+              enableMouseInteraction={false}
+              mouseRadius={0.3}
+              colorNum={ditherSettings?.colorNum || 4}
+              waveAmplitude={ditherSettings?.waveAmplitude || 0.3}
+              waveFrequency={ditherSettings?.waveFrequency || 3}
+              waveSpeed={ditherSettings?.waveSpeed || 0.05}
+            />
+          </div>
+        </Suspense>
+      )}
+      <SidebarContent className="relative z-10 bg-transparent px-2 pt-2">
         {/* Search Products Button */}
-        <div className="p-4 px-2 py-2">
+        <div className="py-2">
           <NavLink to="/search-products" onClick={handleNavClick}>
-            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 mx-0 my-4 py-2.5 px-3 border border-white/20 backdrop-blur-md">
+            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
               <PlusCircle className="h-4 w-4" />
               {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
             </div>
@@ -273,7 +298,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mx-0 px-0">
+        <SidebarGroup>
           <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
@@ -323,7 +348,11 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
       </SidebarContent>
+      
+      {/* Personalize Button at Bottom */}
+      <SidebarFooter className="relative z-10 px-2 pb-4">
+        <PersonalizeDialog collapsed={collapsed} />
+      </SidebarFooter>
     </Sidebar>;
 }

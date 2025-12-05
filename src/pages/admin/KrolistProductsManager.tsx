@@ -34,9 +34,15 @@ interface KrolistProduct {
   created_at: string;
   updated_at: string;
   last_checked_at?: string;
+  availability_status?: 'available' | 'currently_unavailable' | 'ran_out';
 }
 const CATEGORIES = ['Electronics', 'Fashion', 'Automotive', 'Watches', 'EDC', 'Custom'];
 const CURRENCIES = ['SAR', 'AED', 'USD', 'EUR', 'GBP'];
+const AVAILABILITY_STATUSES = [
+  { value: 'available', label: 'Available', color: 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30' },
+  { value: 'currently_unavailable', label: 'Currently Unavailable', color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30' },
+  { value: 'ran_out', label: 'Ran Out', color: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30' },
+];
 export default function KrolistProductsManager() {
   const {
     t
@@ -50,6 +56,7 @@ export default function KrolistProductsManager() {
   const [showNewListDialog, setShowNewListDialog] = useState(false);
   const [showManualPriceDialog, setShowManualPriceDialog] = useState(false);
   const [manualPrices, setManualPrices] = useState<Record<string, string>>({});
+  const [manualStatuses, setManualStatuses] = useState<Record<string, string>>({});
   const [newListTitle, setNewListTitle] = useState('');
   const [selectedProductsToCopy, setSelectedProductsToCopy] = useState<string[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
@@ -95,7 +102,7 @@ export default function KrolistProductsManager() {
         ascending: false
       });
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data || []) as KrolistProduct[]);
     } catch (error: any) {
       toast({
         title: t('error'),
@@ -428,12 +435,15 @@ export default function KrolistProductsManager() {
       return acc;
     }, {} as Record<string, KrolistProduct[]>);
 
-    // Initialize manual prices with current prices (using first product of each group)
+    // Initialize manual prices and statuses with current values (using first product of each group)
     const initialPrices: Record<string, string> = {};
+    const initialStatuses: Record<string, string> = {};
     Object.entries(productsByTitle).forEach(([title, prods]) => {
       initialPrices[title] = prods[0].current_price.toString();
+      initialStatuses[title] = prods[0].availability_status || 'available';
     });
     setManualPrices(initialPrices);
+    setManualStatuses(initialStatuses);
     setShowManualPriceDialog(true);
   };
   const handleExportPrices = () => {
@@ -553,17 +563,19 @@ export default function KrolistProductsManager() {
       let updateCount = 0;
       const errors: string[] = [];
 
-      // Update all products with the same title with the same price
+      // Update all products with the same title with the same price and status
       for (const [title, priceStr] of Object.entries(manualPrices)) {
         const price = parseFloat(priceStr);
         if (isNaN(price) || price <= 0) continue;
         const productsToUpdate = productsByTitle[title] || [];
+        const status = manualStatuses[title] || 'available';
         for (const product of productsToUpdate) {
           try {
             const {
               error
             } = await supabase.from('krolist_products').update({
               current_price: price,
+              availability_status: status,
               last_checked_at: new Date().toISOString()
             }).eq('id', product.id);
             if (error) {
@@ -1077,6 +1089,8 @@ export default function KrolistProductsManager() {
             }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => {
               const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
               const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A';
+              const currentStatus = manualStatuses[title] || prods[0].availability_status || 'available';
+              const statusConfig = AVAILABILITY_STATUSES.find(s => s.value === currentStatus);
               return <Card key={title}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-3">
@@ -1113,6 +1127,27 @@ export default function KrolistProductsManager() {
                   })} className="h-8 text-sm" placeholder={prods[0].current_price.toString()} />
                       <span className="text-xs text-muted-foreground">{prods[0].currency}</span>
                     </div>
+                    {/* Status Selector */}
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs whitespace-nowrap">Status:</Label>
+                      <Select value={currentStatus} onValueChange={value => setManualStatuses({
+                        ...manualStatuses,
+                        [title]: value
+                      })}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {AVAILABILITY_STATUSES.map(status => (
+                            <SelectItem key={status.value} value={status.value}>
+                              <span className={`px-1.5 py-0.5 rounded text-xs border ${status.color}`}>
+                                {status.label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {prods.length > 1 && <p className="text-xs text-muted-foreground">
                         Updates {prods.length} copies
                       </p>}
@@ -1130,6 +1165,7 @@ export default function KrolistProductsManager() {
                     <th className="text-left p-3 text-sm font-medium">Collections</th>
                     <th className="text-left p-3 text-sm font-medium">Previous Price</th>
                     <th className="text-left p-3 text-sm font-medium w-40">New Price</th>
+                    <th className="text-left p-3 text-sm font-medium w-44">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -1142,6 +1178,7 @@ export default function KrolistProductsManager() {
                 }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => {
                     const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
                     const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A';
+                    const currentStatus = manualStatuses[title] || prods[0].availability_status || 'available';
                     return <tr key={title} className="hover:bg-accent/50">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
@@ -1189,6 +1226,25 @@ export default function KrolistProductsManager() {
                       ...manualPrices,
                       [title]: e.target.value
                     })} className="h-9" placeholder={prods[0].current_price.toString()} />
+                      </td>
+                      <td className="p-3">
+                        <Select value={currentStatus} onValueChange={value => setManualStatuses({
+                          ...manualStatuses,
+                          [title]: value
+                        })}>
+                          <SelectTrigger className="h-9 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AVAILABILITY_STATUSES.map(status => (
+                              <SelectItem key={status.value} value={status.value}>
+                                <span className={`px-1.5 py-0.5 rounded text-xs border ${status.color}`}>
+                                  {status.label}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </td>
                     </tr>;
                   })}
