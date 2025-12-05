@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -72,7 +73,44 @@ export function CategoriesCarousel() {
     navigate(`/category/${categoryId}`, { state: { categoryTitle: title } });
   };
 
-  if (isLoading || categories.length === 0) {
+  // Skeleton loading component
+  const renderSkeletonCard = (index: number) => (
+    <Card key={`skeleton-${index}`} className="overflow-hidden">
+      <div className="relative h-[240px] md:h-[260px] lg:h-[280px]">
+        <Skeleton className="absolute inset-0 w-full h-full" />
+        <div className="relative h-full flex flex-col justify-between p-4 md:p-6">
+          <div className="self-start">
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+          <div>
+            <Skeleton className="h-8 w-32" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-8 w-32" />
+          {isTabletOrAbove && <Skeleton className="h-8 w-20" />}
+        </div>
+        <Carousel opts={{ align: "start" }} className="w-full">
+          <CarouselContent>
+            {[1, 2, 3].map((index) => (
+              <CarouselItem key={index} className="basis-full md:basis-1/2 lg:basis-1/3">
+                {renderSkeletonCard(index)}
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
+    );
+  }
+
+  if (categories.length === 0) {
     return null;
   }
 
