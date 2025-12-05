@@ -446,12 +446,18 @@ export default function KrolistProductsManager() {
       return acc;
     }, {} as Record<string, KrolistProduct[]>);
 
-    // Create CSV content
-    let csv = 'Product Title,Store,Current Price,Currency,Product URL,Collections,Number of Copies\n';
+    // Create CSV content with BOM for Excel compatibility
+    const BOM = '\uFEFF';
+    let csv = BOM + 'Product Title,Store,Current Price,Currency,Product URL,Collections,Number of Copies,Last Updated,Image URL\n';
     Object.entries(productsByTitle).forEach(([title, prods]) => {
       const collections = prods.map(p => p.collection_title).join(' | ');
       const productUrl = prods[0].product_url;
-      csv += `"${title}","${prods[0].store}","${prods[0].current_price}","${prods[0].currency}","${productUrl}","${collections}","${prods.length}"\n`;
+      const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
+      const imageUrl = prods[0].image_url || '';
+      // Escape quotes in title and other fields
+      const escapedTitle = title.replace(/"/g, '""');
+      const escapedCollections = collections.replace(/"/g, '""');
+      csv += `"${escapedTitle}","${prods[0].store}","${prods[0].current_price}","${prods[0].currency}","${productUrl}","${escapedCollections}","${prods.length}","${lastUpdated}","${imageUrl}"\n`;
     });
 
     // Download CSV
@@ -466,6 +472,7 @@ export default function KrolistProductsManager() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     toast({
       title: 'Export successful',
       description: 'Prices exported to CSV file'
@@ -476,23 +483,50 @@ export default function KrolistProductsManager() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-      const text = e.target?.result as string;
+      let text = e.target?.result as string;
+      // Remove BOM if present
+      if (text.charCodeAt(0) === 0xFEFF) {
+        text = text.slice(1);
+      }
       const lines = text.split('\n');
 
       // Skip header
       const dataLines = lines.slice(1).filter(line => line.trim());
       const importedPrices: Record<string, string> = {};
+      
       dataLines.forEach(line => {
-        // Parse CSV line (handle quoted fields)
-        const matches = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-        if (matches && matches.length >= 3) {
-          const title = matches[0].replace(/^"|"$/g, '').trim();
-          const price = matches[2].replace(/^"|"$/g, '').trim();
+        // Better CSV parsing that handles quoted fields with commas
+        const fields: string[] = [];
+        let field = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            fields.push(field.trim());
+            field = '';
+          } else {
+            field += char;
+          }
+        }
+        fields.push(field.trim());
+        
+        if (fields.length >= 3) {
+          const title = fields[0].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+          const price = fields[2].replace(/^"|"$/g, '').trim();
           if (title && price && !isNaN(parseFloat(price))) {
             importedPrices[title] = price;
           }
         }
       });
+      
       setManualPrices({
         ...manualPrices,
         ...importedPrices
@@ -502,7 +536,7 @@ export default function KrolistProductsManager() {
         description: `Imported ${Object.keys(importedPrices).length} prices`
       });
     };
-    reader.readAsText(file);
+    reader.readAsText(file, 'UTF-8');
     // Reset input
     event.target.value = '';
   };
@@ -1040,10 +1074,13 @@ export default function KrolistProductsManager() {
               }
               acc[product.title].push(product);
               return acc;
-            }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => <Card key={title}>
+            }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => {
+              const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
+              const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A';
+              return <Card key={title}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-3">
-                      {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-16 h-16 object-cover rounded flex-shrink-0" />}
+                      {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-16 h-16 object-cover rounded flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
                        <div className="flex-1 min-w-0">
                         <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                           <CardTitle className="text-sm line-clamp-2 flex items-center gap-1">
@@ -1051,28 +1088,37 @@ export default function KrolistProductsManager() {
                             <ExternalLink className="h-3 w-3 flex-shrink-0" />
                           </CardTitle>
                         </a>
+                        <div className="flex gap-1 flex-wrap mt-1 items-center">
+                          <Badge variant="outline" className="text-xs">{prods[0].store}</Badge>
+                          <span className="text-[10px] text-muted-foreground">Updated: {formattedDate}</span>
+                        </div>
                         <div className="flex gap-1 flex-wrap mt-1">
-                          {prods.map(p => <Badge key={p.id} variant="outline" className="text-xs">
+                          {prods.map(p => <Badge key={p.id} variant="secondary" className="text-[10px]">
                               {p.collection_title}
                             </Badge>)}
                         </div>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Previous: {prods[0].current_price} {prods[0].currency}</span>
+                      <span>Original: {prods[0].original_price} {prods[0].currency}</span>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <Label className="text-xs whitespace-nowrap">Price:</Label>
+                      <Label className="text-xs whitespace-nowrap">New Price:</Label>
                       <Input type="number" step="0.01" value={manualPrices[title] || ''} onChange={e => setManualPrices({
                     ...manualPrices,
                     [title]: e.target.value
                   })} className="h-8 text-sm" placeholder={prods[0].current_price.toString()} />
                       <span className="text-xs text-muted-foreground">{prods[0].currency}</span>
                     </div>
-                    {prods.length > 1 && <p className="text-xs text-muted-foreground mt-1">
+                    {prods.length > 1 && <p className="text-xs text-muted-foreground">
                         Updates {prods.length} copies
                       </p>}
                   </CardContent>
-                </Card>)}
+                </Card>;
+            })}
             </div>
 
             {/* Desktop View - Table */}
@@ -1082,7 +1128,7 @@ export default function KrolistProductsManager() {
                   <tr>
                     <th className="text-left p-3 text-sm font-medium">Product</th>
                     <th className="text-left p-3 text-sm font-medium">Collections</th>
-                    <th className="text-left p-3 text-sm font-medium">Current Price</th>
+                    <th className="text-left p-3 text-sm font-medium">Previous Price</th>
                     <th className="text-left p-3 text-sm font-medium w-40">New Price</th>
                   </tr>
                 </thead>
@@ -1093,10 +1139,13 @@ export default function KrolistProductsManager() {
                   }
                   acc[product.title].push(product);
                   return acc;
-                }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => <tr key={title} className="hover:bg-accent/50">
+                }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => {
+                    const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
+                    const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A';
+                    return <tr key={title} className="hover:bg-accent/50">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
-                          {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-12 h-12 object-cover rounded flex-shrink-0" />}
+                          {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-12 h-12 object-cover rounded flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
                           <div className="min-w-0">
                             <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                               <p className="font-medium text-sm line-clamp-2 flex items-center gap-1">
@@ -1104,9 +1153,14 @@ export default function KrolistProductsManager() {
                                 <ExternalLink className="h-3 w-3 flex-shrink-0" />
                               </p>
                             </a>
-                            <Badge variant="outline" className="text-xs mt-1">
-                              {prods[0].store}
-                            </Badge>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                {prods[0].store}
+                              </Badge>
+                              <span className="text-[10px] text-muted-foreground">
+                                Updated: {formattedDate}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -1121,9 +1175,14 @@ export default function KrolistProductsManager() {
                           </p>}
                       </td>
                       <td className="p-3">
-                        <span className="font-semibold">
-                          {prods[0].current_price} {prods[0].currency}
-                        </span>
+                        <div>
+                          <span className="font-semibold">
+                            {prods[0].current_price} {prods[0].currency}
+                          </span>
+                          <p className="text-xs text-muted-foreground">
+                            Original: {prods[0].original_price} {prods[0].currency}
+                          </p>
+                        </div>
                       </td>
                       <td className="p-3">
                         <Input type="number" step="0.01" value={manualPrices[title] || ''} onChange={e => setManualPrices({
@@ -1131,7 +1190,8 @@ export default function KrolistProductsManager() {
                       [title]: e.target.value
                     })} className="h-9" placeholder={prods[0].current_price.toString()} />
                       </td>
-                    </tr>)}
+                    </tr>;
+                  })}
                 </tbody>
               </table>
             </div>
