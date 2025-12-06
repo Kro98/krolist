@@ -39,6 +39,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('isGuest');
         }
         
+        // Refresh page on login/logout for UI changes
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+        
         // Handle remember me functionality
         if (session?.user && !sessionStorage.getItem('rememberMeSession')) {
           // User has a session but no session marker - check if they want to be remembered
