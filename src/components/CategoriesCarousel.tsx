@@ -40,25 +40,26 @@ export function CategoriesCarousel() {
 
   const fetchCategories = async () => {
     try {
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('category_collections')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-      if (categoriesError) throw categoriesError;
-      setCategories(categoriesData || []);
-
-      // Fetch product counts for each category
-      const counts: Record<string, number> = {};
-      for (const category of categoriesData || []) {
-        const { count, error } = await supabase
+      // Fetch categories and product counts in parallel
+      const [categoriesResult, countsResult] = await Promise.all([
+        supabase
+          .from('category_collections')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true }),
+        supabase
           .from('category_products')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id);
+          .select('category_id')
+      ]);
 
-        if (!error) {
-          counts[category.id] = count || 0;
+      if (categoriesResult.error) throw categoriesResult.error;
+      setCategories(categoriesResult.data || []);
+
+      // Count products per category from the single query result
+      const counts: Record<string, number> = {};
+      if (countsResult.data) {
+        for (const item of countsResult.data) {
+          counts[item.category_id] = (counts[item.category_id] || 0) + 1;
         }
       }
       setProductCounts(counts);
