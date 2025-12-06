@@ -67,11 +67,11 @@ function LayoutContent({ children }: LayoutProps) {
   }
   
   return (
-    <>
+    <div className="flex min-h-screen w-full" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <LoginMessageDialog />
       <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
       <AppSidebar />
-      <div className="min-h-screen flex flex-col w-full bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="flex-1 flex flex-col bg-background">
         <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
           <div className="flex items-center">
             <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
@@ -95,7 +95,7 @@ function LayoutContent({ children }: LayoutProps) {
       
       <Toaster />
       <Sonner />
-    </>
+    </div>
   );
 }
 
