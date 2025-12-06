@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     // Load guest status from localStorage
@@ -33,25 +34,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
         // Clear guest mode when user signs in
         if (session?.user) {
           setIsGuest(false);
           localStorage.removeItem('isGuest');
         }
         
-        // Refresh page on login/logout for UI changes
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          setTimeout(() => {
-            window.location.reload();
-          }, 100);
+        // Only refresh on user-initiated login/logout, not on initial page load
+        if (!isInitialLoad.current && (event === 'SIGNED_IN' || event === 'SIGNED_OUT')) {
+          window.location.reload();
         }
         
         // Handle remember me functionality
         if (session?.user && !sessionStorage.getItem('rememberMeSession')) {
-          // User has a session but no session marker - check if they want to be remembered
           const rememberMe = localStorage.getItem('rememberMe') === 'true';
           if (!rememberMe) {
-            // User didn't want to be remembered and tab was closed/reopened
             setTimeout(() => {
               supabase.auth.signOut();
             }, 0);
@@ -66,17 +64,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
       
+      // Mark initial load as complete after a short delay
+      setTimeout(() => {
+        isInitialLoad.current = false;
+      }, 500);
+      
       // Check remember me on initial load
       if (session?.user) {
         const rememberMe = localStorage.getItem('rememberMe') === 'true';
         if (!rememberMe && !sessionStorage.getItem('rememberMeSession')) {
-          // Sign out if user didn't want to be remembered
           setTimeout(() => {
             supabase.auth.signOut();
           }, 0);
         }
       } else if (!guestStatus) {
-        // Auto-login as guest if no user session and not already a guest
         setIsGuest(true);
         localStorage.setItem('isGuest', 'true');
       }
