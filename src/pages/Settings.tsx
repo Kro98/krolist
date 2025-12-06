@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Save, Globe, Bell, Palette, User, Shield, ZoomIn } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { ShopManager } from "@/components/ShopManager";
+
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -249,10 +249,6 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Shop Management */}
-        <ShopManager />
-
 
         {/* Account */}
         <Card className="shadow-card">
