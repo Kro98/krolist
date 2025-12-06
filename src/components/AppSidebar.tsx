@@ -350,9 +350,9 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      {/* Personalize Button at Bottom */}
-      <SidebarFooter className="relative z-10 px-2 pb-4">
-        <PersonalizeDialog collapsed={collapsed} />
+      {/* Personalize Button in Corner */}
+      <SidebarFooter className="absolute bottom-4 right-4 z-10 p-0">
+        <PersonalizeDialog />
       </SidebarFooter>
     </Sidebar>;
 }
