@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingDown, TrendingUp, DollarSign, Package, ShoppingCart, Tag, Store } from "lucide-react";
+import { TrendingDown, TrendingUp, DollarSign, Package, ShoppingCart, Tag, Store, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import emptyStateIcon from "@/assets/empty-state-icon.png";
 
 interface AnalyticsStats {
@@ -27,6 +28,7 @@ interface RecentChange {
   scraped_at: string;
   discount_percentage: number;
   products: {
+    id: string;
     title: string;
     store: string;
     current_price: number;
@@ -38,6 +40,7 @@ export default function Analytics() {
   const { t, language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [recentChanges, setRecentChanges] = useState<RecentChange[]>([]);
   const [loading, setLoading] = useState(true);
@@ -186,10 +189,11 @@ export default function Analytics() {
                   return (
                     <div
                       key={change.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      onClick={() => navigate(`/products?highlight=${product.id}`)}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors group"
                     >
                       <div className="flex-1">
-                        <div className="font-medium text-sm line-clamp-1">{product.title}</div>
+                        <div className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.title}</div>
                         <div className="text-xs text-muted-foreground">{product.store}</div>
                       </div>
                       
@@ -203,6 +207,7 @@ export default function Analytics() {
                           </div>
                         </div>
                         <TrendingDown className="h-4 w-4 text-price-decrease" />
+                        <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
                   );
