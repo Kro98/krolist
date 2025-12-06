@@ -25,6 +25,7 @@ export default function CategoryManager() {
   const { t } = useLanguage();
   const [categories, setCategories] = useState<CategoryCollection[]>([]);
   const [krolistProducts, setKrolistProducts] = useState<any[]>([]);
+  const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [showProductsDialog, setShowProductsDialog] = useState(false);
@@ -46,13 +47,28 @@ export default function CategoryManager() {
 
   const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase
-        .from('category_collections')
-        .select('*')
-        .order('display_order', { ascending: true });
+      // Fetch categories and product counts in parallel
+      const [categoriesResult, countsResult] = await Promise.all([
+        supabase
+          .from('category_collections')
+          .select('*')
+          .order('display_order', { ascending: true }),
+        supabase
+          .from('category_products')
+          .select('category_id')
+      ]);
 
-      if (error) throw error;
-      setCategories(data || []);
+      if (categoriesResult.error) throw categoriesResult.error;
+      setCategories(categoriesResult.data || []);
+
+      // Count products per category
+      const counts: Record<string, number> = {};
+      if (countsResult.data) {
+        for (const item of countsResult.data) {
+          counts[item.category_id] = (counts[item.category_id] || 0) + 1;
+        }
+      }
+      setProductCounts(counts);
     } catch (error: any) {
       toast({
         title: t('error'),
@@ -289,6 +305,9 @@ export default function CategoryManager() {
               )}
             </CardHeader>
             <CardContent>
+              <div className="mb-3 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{productCounts[category.id] || 0}</span> products
+              </div>
               <div className="flex gap-2 justify-between items-center mb-3">
                 <div className="flex gap-2">
                   <Button 
