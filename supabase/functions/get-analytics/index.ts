@@ -12,17 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          persistSession: false
-        }
-      }
-    );
-
-    // Get user from auth header
+    // Get user from auth header first
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(
@@ -31,8 +21,18 @@ serve(async (req) => {
       );
     }
 
+    // Create a client with the user's token to validate them
+    const userClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: { persistSession: false },
+        global: { headers: { Authorization: authHeader } }
+      }
+    );
+
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: userError } = await userClient.auth.getUser(token);
 
     if (userError || !user) {
       return new Response(
@@ -40,6 +40,13 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Use service role client to bypass RLS for analytics queries
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    );
 
     // Get stats using helper function
     const { data: stats, error: statsError } = await supabaseClient
