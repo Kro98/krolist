@@ -40,7 +40,7 @@ const COLOR_PRESETS = [
   { name: 'Cyan', color: [0.2, 0.7, 0.8] as [number, number, number] },
 ];
 
-export function PersonalizeDialog({ collapsed }: { collapsed: boolean }) {
+export function PersonalizeDialog() {
   const { t } = useLanguage();
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
@@ -69,9 +69,11 @@ export function PersonalizeDialog({ collapsed }: { collapsed: boolean }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className={`flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 ${collapsed ? 'justify-center' : 'px-4'}`}>
+        <button 
+          className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10 text-white/70 hover:text-white backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200"
+          title={t('settings.personalize') || 'Personalize'}
+        >
           <Paintbrush className="h-4 w-4" />
-          {!collapsed && <span>{t('settings.personalize') || 'Personalize'}</span>}
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
