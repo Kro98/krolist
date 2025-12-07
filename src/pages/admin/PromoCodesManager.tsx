@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Copy, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, Copy } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,6 @@ interface KrolistPromoCode {
   code: string;
   store: string;
   description: string;
-  store_url: string;
   expires: string;
   used: boolean;
   reusable: boolean;
@@ -38,7 +37,6 @@ export default function PromoCodesManager() {
     code: '',
     store: '',
     description: '',
-    store_url: '',
     expires: '',
     reusable: true
   });
@@ -76,7 +74,6 @@ export default function PromoCodesManager() {
         code: code.code,
         store: code.store,
         description: code.description,
-        store_url: code.store_url,
         expires: code.expires,
         reusable: code.reusable
       });
@@ -86,21 +83,11 @@ export default function PromoCodesManager() {
         code: '',
         store: '',
         description: '',
-        store_url: '',
         expires: '',
         reusable: true
       });
     }
     setIsDialogOpen(true);
-  };
-
-  const validateUrl = (url: string): boolean => {
-    try {
-      const parsed = new URL(url);
-      return ['http:', 'https:'].includes(parsed.protocol);
-    } catch {
-      return false;
-    }
   };
 
   const handleSave = async () => {
@@ -113,21 +100,11 @@ export default function PromoCodesManager() {
       return;
     }
 
-    // Validate store URL
-    if (!validateUrl(formData.store_url)) {
-      toast({
-        title: t('error'),
-        description: "Invalid URL - Only HTTP/HTTPS URLs are allowed",
-        variant: "destructive"
-      });
-      return;
-    }
-
     const promoData = {
       code: formData.code,
       store: formData.store,
       description: formData.description,
-      store_url: formData.store_url,
+      store_url: '', // No longer storing URLs
       expires: formData.expires,
       reusable: formData.reusable,
       is_krolist: true,
@@ -227,13 +204,6 @@ export default function PromoCodesManager() {
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.open(promoCode.store_url, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -315,15 +285,6 @@ export default function PromoCodesManager() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Enter promo code description"
-              />
-            </div>
-
-            <div>
-              <Label>Store URL</Label>
-              <Input
-                value={formData.store_url}
-                onChange={(e) => setFormData({ ...formData, store_url: e.target.value })}
-                placeholder="https://..."
               />
             </div>
 

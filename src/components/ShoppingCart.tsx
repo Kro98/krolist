@@ -5,14 +5,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ShoppingCart as CartIcon, Trash2, Plus, Minus, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { ShoppingCart as CartIcon, Trash2, Plus, Minus, X, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { replaceWithAffiliateLink } from '@/lib/affiliateLinks';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import krolistCartLogo from '@/assets/krolist-cart-custom.png';
+
 export function ShoppingCart({
   onAddClick
 }: {
@@ -37,6 +39,7 @@ export function ShoppingCart({
   const [customerPhone, setCustomerPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const totalAmount = cartItems.reduce((sum, item) => sum + item.current_price * item.quantity, 0);
+
   const handleDirectBuy = () => {
     // Group products by store
     const stores = [...new Set(cartItems.map(item => item.store))];
@@ -47,6 +50,7 @@ export function ShoppingCart({
     });
     toast.success(t('cart.toast.openingStores'));
   };
+
   const handleKrolistOrder = async () => {
     if (!customerName || !customerPhone) {
       toast.error(t('cart.orderDialog.namePhoneRequired'));
@@ -86,6 +90,7 @@ export function ShoppingCart({
       setIsSubmitting(false);
     }
   };
+
   return <>
       <Sheet>
         <SheetTrigger asChild>
@@ -217,15 +222,37 @@ export function ShoppingCart({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('cart.orderDialog.title')}</DialogTitle>
+            <DialogDescription>
+              Enter your contact details to submit your order
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Privacy notice */}
+            <Alert className="border-blue-500/50 bg-blue-500/10">
+              <AlertTriangle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-700 dark:text-blue-400 text-sm">
+                <strong>Privacy Notice:</strong> Your name and phone number are used for order processing only and are 
+                <strong> not permanently stored</strong>. They will be cleared after the admin reviews your order.
+              </AlertDescription>
+            </Alert>
+
             <div>
               <Label htmlFor="name">{t('cart.orderDialog.fullName')} *</Label>
-              <Input id="name" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder={t('cart.orderDialog.fullNamePlaceholder')} />
+              <Input 
+                id="name" 
+                value={customerName} 
+                onChange={e => setCustomerName(e.target.value)} 
+                placeholder={t('cart.orderDialog.fullNamePlaceholder')} 
+              />
             </div>
             <div>
               <Label htmlFor="phone">{t('cart.orderDialog.phone')} *</Label>
-              <Input id="phone" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder={t('cart.orderDialog.phonePlaceholder')} />
+              <Input 
+                id="phone" 
+                value={customerPhone} 
+                onChange={e => setCustomerPhone(e.target.value)} 
+                placeholder={t('cart.orderDialog.phonePlaceholder')} 
+              />
             </div>
             <div className="text-sm text-muted-foreground">
               <p>{t('cart.orderDialog.totalItems')}: {totalItems}</p>

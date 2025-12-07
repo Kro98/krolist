@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Gift, Plus, Copy, ExternalLink, Edit, RotateCcw, Trash2, Clock, Calendar } from "lucide-react";
+import { Gift, Plus, Copy, Edit, RotateCcw, Trash2, Clock, Calendar } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { replaceWithAffiliateLink, AFFILIATE_LINKS, AVAILABLE_SHOPS } from "@/lib/affiliateLinks";
+import { AVAILABLE_SHOPS } from "@/lib/affiliateLinks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -22,52 +22,15 @@ interface PromoCode {
   code: string;
   store: string;
   description: string;
-  store_url: string;
   expires: string;
   used: boolean;
   reusable: boolean;
 }
 
-// Static Krolist promo codes
-const KROLIST_PROMO_CODES: PromoCode[] = [
-  {
-    id: 'krolist-kingdom',
-    code: 'KINGDOM',
-    store: 'NOON',
-    description: 'use this code at checkout to get 10 rial discount and support Krolist',
-    store_url: 'https://s.noon.com/sLVK_sCBGo4',
-    expires: '2099-12-31',
-    used: false,
-    reusable: true
-  },
-  {
-    id: 'krolist-palestine',
-    code: 'PALESTINE',
-    store: 'NOON',
-    description: 'use this code at checkout to get 10 rial discount and support Krolist',
-    store_url: 'https://s.noon.com/sLVK_sCBGo4',
-    expires: '2099-12-31',
-    used: false,
-    reusable: true
-  },
-  {
-    id: 'krolist-clearance',
-    code: 'CLEARANCE',
-    store: 'NOON',
-    description: 'use this code at checkout to get 10 rial discount and support Krolist',
-    store_url: 'https://s.noon.com/sLVK_sCBGo4',
-    expires: '2099-12-31',
-    used: false,
-    reusable: true
-  }
-];
-
 export default function PromoCodes() {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [newCode, setNewCode] = useState("");
-  const [newStore, setNewStore] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newStoreUrl, setNewStoreUrl] = useState("");
   const [selectedShop, setSelectedShop] = useState<string>("");
   const [customShopName, setCustomShopName] = useState("");
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
@@ -112,7 +75,6 @@ export default function PromoCodes() {
           code: item.code,
           store: item.store,
           description: item.description,
-          store_url: item.store_url,
           expires: item.expires,
           used: item.used,
           reusable: item.reusable
@@ -138,7 +100,7 @@ export default function PromoCodes() {
         .from('promo_codes')
         .select('*')
         .eq('is_krolist', true)
-        .gte('expires', today) // Only fetch non-expired codes
+        .gte('expires', today)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -149,7 +111,6 @@ export default function PromoCodes() {
           code: item.code,
           store: item.store,
           description: item.description,
-          store_url: item.store_url,
           expires: item.expires,
           used: item.used,
           reusable: item.reusable
@@ -186,15 +147,6 @@ export default function PromoCodes() {
     });
   };
 
-  const validateUrl = (url: string): boolean => {
-    try {
-      const parsed = new URL(url);
-      return ['http:', 'https:'].includes(parsed.protocol);
-    } catch {
-      return false;
-    }
-  };
-
   const handleAddCode = async () => {
     if (!user) {
       toast({
@@ -206,22 +158,11 @@ export default function PromoCodes() {
     }
 
     const storeName = selectedShop === 'other' ? customShopName : selectedShop;
-    const storeUrl = selectedShop === 'other' ? newStoreUrl : (AFFILIATE_LINKS[selectedShop] || '');
 
-    if (!newCode || !selectedShop || !newDescription || (selectedShop === 'other' && (!customShopName || !newStoreUrl))) {
+    if (!newCode || !selectedShop || !newDescription || (selectedShop === 'other' && !customShopName)) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate URL for custom shops
-    if (selectedShop === 'other' && !validateUrl(storeUrl)) {
-      toast({
-        title: "Invalid URL",
-        description: "Only HTTP/HTTPS URLs are allowed",
         variant: "destructive"
       });
       return;
@@ -245,7 +186,7 @@ export default function PromoCodes() {
           code: newCode,
           store: storeName,
           description: newDescription,
-          store_url: storeUrl,
+          store_url: '', // No longer storing URLs
           expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           used: false,
           reusable: false
@@ -264,7 +205,6 @@ export default function PromoCodes() {
       setSelectedShop("");
       setCustomShopName("");
       setNewDescription("");
-      setNewStoreUrl("");
       
       // Refresh the list
       fetchPromoCodes();
@@ -293,7 +233,6 @@ export default function PromoCodes() {
           code: editingPromo.code,
           store: editingPromo.store,
           description: editingPromo.description,
-          store_url: replaceWithAffiliateLink(editingPromo.store_url),
           expires: editingPromo.expires,
           used: editingPromo.used,
           reusable: editingPromo.reusable
@@ -413,17 +352,6 @@ export default function PromoCodes() {
                   maxLength={120}
                 />
               </div>
-              {selectedShop === 'other' && (
-                <div className="space-y-2">
-                  <Label htmlFor="storeUrl">Store URL</Label>
-                  <Input
-                    id="storeUrl"
-                    placeholder="https://example.com"
-                    value={newStoreUrl}
-                    onChange={(e) => setNewStoreUrl(e.target.value)}
-                  />
-                </div>
-              )}
             </div>
             <Button
               onClick={handleAddCode}
@@ -499,22 +427,15 @@ export default function PromoCodes() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="flex justify-center">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleCopyCode(promo.code)}
-                            className="w-full"
+                            className="w-full max-w-32"
                           >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => window.open(promo.store_url, '_blank')}
-                            className="w-full"
-                          >
-                            <ExternalLink className="h-4 w-4" />
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy
                           </Button>
                         </div>
                       </div>
@@ -582,17 +503,10 @@ export default function PromoCodes() {
                     variant="outline"
                     onClick={() => handleCopyCode(promo.code)}
                     disabled={promo.used && !promo.reusable}
-                    className="w-full"
+                    className="w-full col-span-2"
                   >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => window.open(promo.store_url, '_blank')}
-                    className="w-full"
-                  >
-                    <ExternalLink className="h-4 w-4" />
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy
                   </Button>
                   <Button
                     size="sm"
@@ -645,14 +559,6 @@ export default function PromoCodes() {
                   id="edit-description"
                   value={editingPromo.description}
                   onChange={(e) => setEditingPromo({...editingPromo, description: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-url">Store URL</Label>
-                <Input
-                  id="edit-url"
-                  value={editingPromo.store_url}
-                  onChange={(e) => setEditingPromo({...editingPromo, store_url: e.target.value})}
                 />
               </div>
               <div className="space-y-2">
