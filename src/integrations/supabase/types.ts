@@ -242,10 +242,54 @@ export type Database = {
         }
         Relationships: []
       }
-      orders: {
+      order_notifications: {
         Row: {
           created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_ar: string | null
+          message_en: string
+          order_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_ar?: string | null
+          message_en: string
+          order_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_ar?: string | null
+          message_en?: string
+          order_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          admin_viewed_at: string | null
+          contact_notification_sent: boolean | null
+          created_at: string | null
           currency: string
+          customer_data_cleared: boolean | null
           customer_name: string
           customer_phone: string
           id: string
@@ -257,8 +301,11 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_viewed_at?: string | null
+          contact_notification_sent?: boolean | null
           created_at?: string | null
           currency?: string
+          customer_data_cleared?: boolean | null
           customer_name: string
           customer_phone: string
           id?: string
@@ -270,8 +317,11 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_viewed_at?: string | null
+          contact_notification_sent?: boolean | null
           created_at?: string | null
           currency?: string
+          customer_data_cleared?: boolean | null
           customer_name?: string
           customer_phone?: string
           id?: string
