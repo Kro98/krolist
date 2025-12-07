@@ -216,7 +216,7 @@ All colors MUST be HSL.
   /* Persistent mobile zoom - won't reset on navigation */
   @media (max-width: 768px) {
     #root {
-      zoom: 0.85;
+      zoom: 1;
     }
   }
 }
