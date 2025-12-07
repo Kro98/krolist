@@ -94,11 +94,30 @@ export default function PromoCodesManager() {
     setIsDialogOpen(true);
   };
 
+  const validateUrl = (url: string): boolean => {
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast({
         title: t('error'),
         description: t('admin.mustBeLoggedIn'),
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate store URL
+    if (!validateUrl(formData.store_url)) {
+      toast({
+        title: t('error'),
+        description: "Invalid URL - Only HTTP/HTTPS URLs are allowed",
         variant: "destructive"
       });
       return;

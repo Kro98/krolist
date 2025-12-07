@@ -3,12 +3,24 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-key',
 };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate API key for cron jobs
+  const cronKey = req.headers.get('x-cron-key');
+  const expectedKey = Deno.env.get('CRON_SECRET_KEY');
+  
+  if (!expectedKey || cronKey !== expectedKey) {
+    console.log('Unauthorized access attempt to update-exchange-rates');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
@@ -32,7 +44,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Exchange rates fetched:', data);
+    console.log('Exchange rates fetched successfully');
 
     // Extract rates we care about
     const rates = {
@@ -42,7 +54,7 @@ serve(async (req) => {
       AED: data.rates.AED || 3.67,
     };
 
-    console.log('Updating database with rates:', rates);
+    console.log('Updating database with rates');
 
     // Update each rate in the database
     const updates = Object.entries(rates).map(async ([currency, rate]) => {
@@ -57,7 +69,7 @@ serve(async (req) => {
         });
 
       if (error) {
-        console.error(`Error updating ${currency}:`, error);
+        console.error(`Error updating ${currency}`);
         throw error;
       }
 
@@ -71,7 +83,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        rates,
         updated_at: new Date().toISOString()
       }),
       { 
@@ -79,10 +90,10 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error updating exchange rates:', error);
+    console.error('Error updating exchange rates');
     return new Response(
       JSON.stringify({
-        error: error.message || 'Failed to update exchange rates',
+        error: 'Failed to update exchange rates',
         success: false
       }),
       { 

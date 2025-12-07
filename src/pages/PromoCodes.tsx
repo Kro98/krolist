@@ -186,6 +186,15 @@ export default function PromoCodes() {
     });
   };
 
+  const validateUrl = (url: string): boolean => {
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  };
+
   const handleAddCode = async () => {
     if (!user) {
       toast({
@@ -203,6 +212,16 @@ export default function PromoCodes() {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate URL for custom shops
+    if (selectedShop === 'other' && !validateUrl(storeUrl)) {
+      toast({
+        title: "Invalid URL",
+        description: "Only HTTP/HTTPS URLs are allowed",
         variant: "destructive"
       });
       return;

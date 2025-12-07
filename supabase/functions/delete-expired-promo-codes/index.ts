@@ -2,13 +2,25 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-key',
 };
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate API key for cron jobs
+  const cronKey = req.headers.get('x-cron-key');
+  const expectedKey = Deno.env.get('CRON_SECRET_KEY');
+  
+  if (!expectedKey || cronKey !== expectedKey) {
+    console.log('Unauthorized access attempt to delete-expired-promo-codes');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
@@ -30,7 +42,7 @@ Deno.serve(async (req) => {
       .select();
 
     if (error) {
-      console.error('Error deleting expired promo codes:', error);
+      console.error('Error deleting expired promo codes');
       throw error;
     }
 
@@ -41,7 +53,6 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         message: `Deleted ${deletedCount} expired Krolist promo codes`,
-        deleted: deletedCodes,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -49,11 +60,11 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in delete-expired-promo-codes function:', error);
+    console.error('Error in delete-expired-promo-codes function');
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
+        error: 'Failed to delete expired promo codes',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
