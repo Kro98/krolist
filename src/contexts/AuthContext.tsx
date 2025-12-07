@@ -41,10 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('isGuest');
         }
         
-        // Only refresh on user-initiated login/logout, not on initial page load
-        if (!isInitialLoad.current && (event === 'SIGNED_IN' || event === 'SIGNED_OUT')) {
-          window.location.reload();
-        }
+        // Auth state is now handled reactively without page refresh
         
         // Handle remember me functionality
         if (session?.user && !sessionStorage.getItem('rememberMeSession')) {
