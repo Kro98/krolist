@@ -468,6 +468,9 @@ export default function Products() {
       </div>
 
 
+      {/* Categories Section - Always visible for everyone */}
+      <CategoriesCarousel />
+
       {filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0 ? <div className="space-y-8 animate-fade-in">
           {/* User Products Carousel - Show first */}
           {filteredUserProducts.length > 0 && <div className="space-y-4">
@@ -479,9 +482,6 @@ export default function Products() {
 
           {/* Krolist Products - Grouped by Collection */}
           {Object.entries(krolistProductsByCollection).map(([collectionTitle, collectionProducts]) => <ProductCarousel key={collectionTitle} title={collectionTitle} products={collectionProducts} onAddToMyProducts={handleAddToMyProducts} onRemoveFromMyProducts={handleRemoveFromMyProducts} userProductCount={products.length} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand userProducts={products} />)}
-
-          {/* Categories Section */}
-          <CategoriesCarousel />
         </div> : searchQuery ? <Card className="shadow-card border-border animate-fade-in">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl">{t('products.noResults')}</CardTitle>
@@ -492,23 +492,7 @@ export default function Products() {
               Clear Search
             </Button>
           </CardContent>
-        </Card> : <Card className="shadow-card border-border animate-fade-in max-w-2xl mx-auto">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl">{t('products.noProducts')}</CardTitle>
-            <CardDescription className="text-base">{t('products.startTracking')}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center pb-6">
-            <div className="flex gap-3 justify-center flex-wrap">
-              <NavLink to="/search-products">
-                <Button className="bg-gradient-primary hover:shadow-hover transition-all duration-300 h-11 px-6">
-                  <Heart className="h-4 w-4 mr-2" />
-                  {t('products.searchProducts')}
-                </Button>
-              </NavLink>
-              {/* Manual entry temporarily hidden - will be reactivated later */}
-            </div>
-          </CardContent>
-        </Card>}
+        </Card> : null}
       
       {/* Floating action bar for selection mode */}
       {showSelectionActions && selectedProducts.size > 0 && <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5">
