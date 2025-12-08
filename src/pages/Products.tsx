@@ -471,18 +471,30 @@ export default function Products() {
       {/* Categories Section - Always visible for everyone */}
       <CategoriesCarousel />
 
-      {filteredUserProducts.length > 0 || filteredKrolistProducts.length > 0 ? <div className="space-y-8 animate-fade-in">
-          {/* User Products Carousel - Show first */}
-          {filteredUserProducts.length > 0 && <div className="space-y-4">
-              <ProductCarousel title="MY FAVORITES" products={filteredUserProducts} onDelete={handleDelete} onUpdate={handleUpdate} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand />
-              {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && <p className="text-sm text-muted-foreground text-center">
-                  Next refresh: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
-                </p>}
-            </div>}
+      {/* User Favorites - Always on top when logged in */}
+      {filteredUserProducts.length > 0 && (
+        <div className="space-y-4 animate-fade-in">
+          <ProductCarousel title="MY FAVORITES" products={filteredUserProducts} onDelete={handleDelete} onUpdate={handleUpdate} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand />
+          {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
+            <p className="text-sm text-muted-foreground text-center">
+              Next refresh: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
 
-          {/* Krolist Products - Grouped by Collection */}
-          {Object.entries(krolistProductsByCollection).map(([collectionTitle, collectionProducts]) => <ProductCarousel key={collectionTitle} title={collectionTitle} products={collectionProducts} onAddToMyProducts={handleAddToMyProducts} onRemoveFromMyProducts={handleRemoveFromMyProducts} userProductCount={products.length} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand userProducts={products} />)}
-        </div> : searchQuery ? <Card className="shadow-card border-border animate-fade-in">
+      {/* Krolist Products - Grouped by Collection (visible to everyone) */}
+      {filteredKrolistProducts.length > 0 && (
+        <div className="space-y-8 animate-fade-in">
+          {Object.entries(krolistProductsByCollection).map(([collectionTitle, collectionProducts]) => (
+            <ProductCarousel key={collectionTitle} title={collectionTitle} products={collectionProducts} onAddToMyProducts={handleAddToMyProducts} onRemoveFromMyProducts={handleRemoveFromMyProducts} userProductCount={products.length} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand userProducts={products} />
+          ))}
+        </div>
+      )}
+
+      {/* No results message - only show when searching */}
+      {searchQuery && filteredUserProducts.length === 0 && filteredKrolistProducts.length === 0 && (
+        <Card className="shadow-card border-border animate-fade-in">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl">{t('products.noResults')}</CardTitle>
             <CardDescription className="text-base">{t('products.noResultsDesc')}</CardDescription>
@@ -492,7 +504,8 @@ export default function Products() {
               Clear Search
             </Button>
           </CardContent>
-        </Card> : null}
+        </Card>
+      )}
       
       {/* Floating action bar for selection mode */}
       {showSelectionActions && selectedProducts.size > 0 && <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5">
