@@ -77,7 +77,7 @@ export function CategoriesCarousel() {
   // Skeleton loading component
   const renderSkeletonCard = (index: number) => (
     <Card key={`skeleton-${index}`} className="overflow-hidden">
-      <div className="relative h-[240px] md:h-[260px] lg:h-[280px]">
+      <div className="relative h-[280px] sm:h-[260px] md:h-[260px] lg:h-[280px]">
         <Skeleton className="absolute inset-0 w-full h-full" />
         <div className="relative h-full flex flex-col justify-between p-4 md:p-6">
           <div className="self-start">
@@ -121,7 +121,8 @@ export function CategoriesCarousel() {
       className="cursor-pointer group overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
       onClick={() => handleCategoryClick(category.id, category.title)}
     >
-      <div className="relative h-[240px] md:h-[260px] lg:h-[280px] overflow-hidden">
+      {/* Increased mobile height to compensate for global zoom */}
+      <div className="relative h-[280px] sm:h-[260px] md:h-[260px] lg:h-[280px] overflow-hidden">
         {category.icon_url ? (
           <>
             {/* Background Image */}
