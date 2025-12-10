@@ -253,9 +253,9 @@ export function AppSidebar() {
           </div>
         </Suspense>
       )}
-      <SidebarContent className="relative z-10 bg-transparent px-2 pt-0">
+      <SidebarContent className="relative z-10 bg-transparent px-2 pt-4 !flex-none">
         {/* Search Products Button */}
-        <div className="pt-2 pb-2">
+        <div className="pb-2">
           <NavLink to="/search-products" onClick={handleNavClick}>
             <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
               <PlusCircle className="h-4 w-4" />
