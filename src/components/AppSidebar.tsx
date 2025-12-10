@@ -253,7 +253,7 @@ export function AppSidebar() {
           </div>
         </Suspense>
       )}
-      <SidebarContent className="relative z-10 bg-transparent px-2 pt-4 !flex-none">
+      <SidebarContent className="relative z-10 bg-transparent px-2 pt-4">
         {/* Search Products Button */}
         <div className="pb-2">
           <NavLink to="/search-products" onClick={handleNavClick}>
