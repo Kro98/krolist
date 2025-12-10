@@ -236,10 +236,11 @@ export function AppSidebar() {
 
   const showDither = ditherSettings?.enabled !== false;
 
-  return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border relative overflow-hidden`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
+  return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
+      {/* Dither Background - absolutely positioned within sidebar */}
       {showDither && (
-        <Suspense fallback={null}>
-          <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <Suspense fallback={null}>
             <DitherBackground 
               waveColor={ditherSettings?.waveColor || [0.5, 0.5, 0.5]}
               disableAnimation={false}
@@ -250,20 +251,21 @@ export function AppSidebar() {
               waveFrequency={ditherSettings?.waveFrequency || 3}
               waveSpeed={ditherSettings?.waveSpeed || 0.05}
             />
-          </div>
-        </Suspense>
-      )}
-      <SidebarContent className="relative z-10 bg-transparent px-2 pt-4">
-        {/* Search Products Button */}
-        <div className="pb-2">
-          <NavLink to="/search-products" onClick={handleNavClick}>
-            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
-              <PlusCircle className="h-4 w-4" />
-              {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
-            </div>
-          </NavLink>
+          </Suspense>
         </div>
+      )}
+      
+      {/* Search Products Button - positioned at top */}
+      <div className="relative z-10 px-2 pt-4 pb-2">
+        <NavLink to="/search-products" onClick={handleNavClick}>
+          <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
+            <PlusCircle className="h-4 w-4" />
+            {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
+          </div>
+        </NavLink>
+      </div>
 
+      <SidebarContent className="relative z-10 bg-transparent px-2">
         <SidebarGroup>
           <SidebarGroupLabel className="text-white/80">{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
