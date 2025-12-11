@@ -62,7 +62,7 @@ export function ProductCarousel({
   });
   
   // Calculate items per slide based on device
-  const itemsPerSlide = isMobile ? 1 : isTablet ? 2 : 3;
+  const itemsPerSlide = isMobile ? 1 : 2;
   
   // Group products into slides
   const slides: Product[][] = [];
@@ -158,11 +158,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${
-                    isMobile ? 'grid-cols-1' : 
-                    isTablet ? 'grid-cols-2' : 
-                    'grid-cols-3'
-                  }`}>
+                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                     {slide.map(product => (
                       <ProductCard
                         key={product.id}
