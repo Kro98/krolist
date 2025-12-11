@@ -10,10 +10,10 @@ export default function TermsOfService() {
   const navigate = useNavigate();
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col items-center">
       {/* Header Section */}
-      <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="w-full bg-gradient-to-b from-primary/10 to-background border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
@@ -22,7 +22,7 @@ export default function TermsOfService() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('common.back')}
           </Button>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <FileText className="h-8 w-8 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold">{t('terms.title')}</h1>
           </div>
