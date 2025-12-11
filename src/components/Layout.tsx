@@ -74,7 +74,7 @@ function LayoutContent({ children }: LayoutProps) {
       <div className="flex-1 flex flex-col bg-background">
         <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
           <div className="flex items-center">
-            {isMobile && <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />}
+            <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
             <Link to="/products">
               <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
             </Link>

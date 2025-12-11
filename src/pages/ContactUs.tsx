@@ -9,10 +9,10 @@ export default function ContactUs() {
   const navigate = useNavigate();
   
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center">
+    <div className="min-h-screen bg-background">
       {/* Header Section */}
-      <div className="w-full bg-gradient-to-b from-primary/10 to-background border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+      <div className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 py-12">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
@@ -21,7 +21,7 @@ export default function ContactUs() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('common.back')}
           </Button>
-          <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-4">
             <Mail className="h-8 w-8 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold">{t('contact.title')}</h1>
           </div>
