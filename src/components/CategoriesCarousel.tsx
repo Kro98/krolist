@@ -101,7 +101,7 @@ export function CategoriesCarousel() {
         <Carousel opts={{ align: "start" }} className="w-full">
           <CarouselContent>
             {[1, 2, 3].map((index) => (
-              <CarouselItem key={index} className="basis-full sm:basis-1/2 lg:basis-1/3">
+              <CarouselItem key={index} className="!basis-full sm:!basis-1/2 md:!basis-1/2 lg:!basis-1/3">
                 {renderSkeletonCard(index)}
               </CarouselItem>
             ))}
@@ -204,7 +204,7 @@ export function CategoriesCarousel() {
             {categories.map((category) => (
               <CarouselItem 
                 key={category.id}
-                className="basis-full sm:basis-1/2 lg:basis-1/3"
+                className="!basis-full sm:!basis-1/2 md:!basis-1/2 lg:!basis-1/3"
               >
                 {renderCategoryCard(category)}
               </CarouselItem>
