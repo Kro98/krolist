@@ -16,7 +16,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.ai-product-search]
-verify_jwt = false
+verify_jwt = true
 
 [functions.user-refresh-prices]
 verify_jwt = true
