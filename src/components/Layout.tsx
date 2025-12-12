@@ -67,12 +67,12 @@ function LayoutContent({ children }: LayoutProps) {
   }
   
   return (
-    <div className="flex min-h-screen w-full" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <LoginMessageDialog />
       <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
       <AppSidebar />
-      <div className="flex-1 flex flex-col bg-background">
-        <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4">
+      <div className="flex-1 flex flex-col bg-background min-w-0 max-w-full">
+        <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4 flex-shrink-0">
           <div className="flex items-center">
             <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
             <Link to="/products">
@@ -85,8 +85,8 @@ function LayoutContent({ children }: LayoutProps) {
           </div>
         </header>
         
-        <main className="flex-1 overflow-auto">
-          <div className="container max-w-7xl mx-auto sm:px-6 lg:px-8 py-[20px] px-[10px]">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5">
             <PageBreadcrumbs />
             {children}
           </div>
