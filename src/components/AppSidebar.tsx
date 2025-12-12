@@ -348,7 +348,7 @@ export function AppSidebar() {
                                   e.stopPropagation();
                                   setActiveGuide(shopId);
                                 }}
-                                className="p-1 ml-1 rounded-full hover:bg-white/20 text-white/60 hover:text-white transition-all duration-200"
+                                className="p-1.5 ml-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white backdrop-blur-sm border border-white/20 hover:border-white/30 transition-all duration-200"
                               >
                                 <HelpCircle className="h-3.5 w-3.5" />
                               </button>
