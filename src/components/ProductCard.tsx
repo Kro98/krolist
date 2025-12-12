@@ -241,7 +241,7 @@ export function ProductCard({
             
             {/* Badges */}
             <div className={`flex gap-2 flex-wrap items-center mt-auto ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-              {product.isKrolistProduct && <Badge className="bg-gradient-primary text-white px-1.5 py-0 text-[0.65rem] border-2">
+              {product.isKrolistProduct && <Badge className="hidden bg-gradient-primary text-white px-1.5 py-0 text-[0.65rem] border-2">
                   Krolist
                 </Badge>}
               <Badge className="bg-orange-500 text-white hover:bg-orange-600 px-1.5 py-0 text-[0.65rem] border-2">
