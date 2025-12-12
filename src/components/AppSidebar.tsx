@@ -327,11 +327,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {shopItems.map(item => {
+        {!collapsed && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {shopItems.map(item => {
               const shopId = item.title.split('.')[1];
               const shopPromotions = promotions[shopId] || [];
               const isImageIcon = typeof item.icon === 'string';
@@ -381,9 +382,10 @@ export function AppSidebar() {
                     </div>
                   </SidebarMenuItem>;
             })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-white/80">{t('settings.other')}</SidebarGroupLabel>
