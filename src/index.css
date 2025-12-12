@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent mobile zoom issues from carousel transforms */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  touch-action: pan-y;
+}
+
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 /* RTL Support */
 [dir="rtl"] {
   direction: rtl;
