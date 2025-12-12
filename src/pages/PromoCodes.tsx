@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Gift, Plus, Copy, Edit, RotateCcw, Trash2, Clock, Calendar } from "lucide-react";
+import { Gift, Plus, Copy, Edit, RotateCcw, Trash2, Clock, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +47,7 @@ export default function PromoCodes() {
   // Allow guests to view but show message that they can't create promo codes
 
   const [krolistPromoCodes, setKrolistPromoCodes] = useState<PromoCode[]>([]);
+  const [isAddFormVisible, setIsAddFormVisible] = useState(true);
 
   // Fetch promo codes from database
   useEffect(() => {
@@ -294,72 +295,84 @@ export default function PromoCodes() {
       {/* Add New Promo Code - Hidden for guests */}
       {!isGuest ? (
         <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              Add New Promo Code
-            </CardTitle>
-            <CardDescription>
-              Save promo codes you find online for easy access when shopping
-            </CardDescription>
+          <CardHeader 
+            className="cursor-pointer select-none" 
+            onClick={() => setIsAddFormVisible(!isAddFormVisible)}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5 text-primary" />
+                  Add New Promo Code
+                </CardTitle>
+                <CardDescription>
+                  Save promo codes you find online for easy access when shopping
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                {isAddFormVisible ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="code">Promo Code</Label>
-                <Input
-                  id="code"
-                  placeholder="SAVE20"
-                  value={newCode}
-                  onChange={(e) => setNewCode(e.target.value)}
-                  maxLength={20}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shop">Shop</Label>
-                <Select value={selectedShop} onValueChange={setSelectedShop}>
-                  <SelectTrigger id="shop">
-                    <SelectValue placeholder="Select a shop" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AVAILABLE_SHOPS.map((shop) => (
-                      <SelectItem key={shop.id} value={shop.id}>
-                        {shop.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {selectedShop === 'other' && (
+          {isAddFormVisible && (
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="customShop">Custom Shop Name</Label>
+                  <Label htmlFor="code">Promo Code</Label>
                   <Input
-                    id="customShop"
-                    placeholder="Enter shop name"
-                    value={customShopName}
-                    onChange={(e) => setCustomShopName(e.target.value)}
+                    id="code"
+                    placeholder="SAVE20"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value)}
                     maxLength={20}
                   />
                 </div>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  placeholder="20% off electronics"
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  maxLength={120}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="shop">Shop</Label>
+                  <Select value={selectedShop} onValueChange={setSelectedShop}>
+                    <SelectTrigger id="shop">
+                      <SelectValue placeholder="Select a shop" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_SHOPS.map((shop) => (
+                        <SelectItem key={shop.id} value={shop.id}>
+                          {shop.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {selectedShop === 'other' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customShop">Custom Shop Name</Label>
+                    <Input
+                      id="customShop"
+                      placeholder="Enter shop name"
+                      value={customShopName}
+                      onChange={(e) => setCustomShopName(e.target.value)}
+                      maxLength={20}
+                    />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="20% off electronics"
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    maxLength={120}
+                  />
+                </div>
               </div>
-            </div>
-            <Button
-              onClick={handleAddCode}
-              className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
-            >
-              Add Code
-            </Button>
-          </CardContent>
+              <Button
+                onClick={handleAddCode}
+                className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
+              >
+                Add Code
+              </Button>
+            </CardContent>
+          )}
         </Card>
       ) : (
         <Card className="shadow-card border-2 border-primary/30">
