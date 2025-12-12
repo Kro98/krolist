@@ -50,13 +50,26 @@ export function ProductCarousel({
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [carouselSpeed, setCarouselSpeed] = useState(() => {
+    const saved = localStorage.getItem('carouselSpeed');
+    return saved ? parseInt(saved) : 3000;
+  });
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1024px)");
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
   
+  // Listen for speed changes
+  useEffect(() => {
+    const handleSpeedChange = (e: CustomEvent) => {
+      setCarouselSpeed(e.detail);
+    };
+    window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
+    return () => window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
+  }, []);
+  
   const autoplayPlugin = Autoplay({
-    delay: 3000,
+    delay: carouselSpeed,
     stopOnInteraction: true,
     stopOnMouseEnter: true,
   });

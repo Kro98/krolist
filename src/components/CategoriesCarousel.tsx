@@ -29,10 +29,30 @@ export function CategoriesCarousel() {
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [carouselSpeed, setCarouselSpeed] = useState(() => {
+    const saved = localStorage.getItem('carouselSpeed');
+    return saved ? parseInt(saved) : 3000;
+  });
+  
+  // Listen for speed changes
+  useEffect(() => {
+    const handleSpeedChange = (e: CustomEvent) => {
+      setCarouselSpeed(e.detail);
+    };
+    window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
+    return () => window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
+  }, []);
   
   const autoplayPlugin = useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: carouselSpeed, stopOnInteraction: true })
   );
+  
+  // Update autoplay delay when speed changes
+  useEffect(() => {
+    if (autoplayPlugin.current) {
+      autoplayPlugin.current = Autoplay({ delay: carouselSpeed, stopOnInteraction: true });
+    }
+  }, [carouselSpeed]);
 
   useEffect(() => {
     fetchCategories();
