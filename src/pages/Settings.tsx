@@ -40,6 +40,14 @@ export default function Settings() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [carouselSpeed, setCarouselSpeed] = useState(() => {
+    const saved = localStorage.getItem('carouselSpeed');
+    return saved ? parseInt(saved) : 3000;
+  });
+  const [titleScrollSpeed, setTitleScrollSpeed] = useState(() => {
+    const saved = localStorage.getItem('titleScrollSpeed');
+    return saved ? parseInt(saved) : 5;
+  });
   const {
     toast
   } = useToast();
@@ -169,6 +177,56 @@ export default function Settings() {
                     checked={isZoomEnabled}
                     onCheckedChange={setIsZoomEnabled}
                   />
+                </div>
+              </div>
+              <Separator />
+              
+              {/* Speed Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="carousel-speed" className="flex items-center justify-between">
+                    <span>Carousel Auto-Scroll Speed</span>
+                    <span className="text-sm text-muted-foreground">{(carouselSpeed / 1000).toFixed(1)}s</span>
+                  </Label>
+                  <input
+                    id="carousel-speed"
+                    type="range"
+                    min="1000"
+                    max="8000"
+                    step="500"
+                    value={carouselSpeed}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      setCarouselSpeed(value);
+                      localStorage.setItem('carouselSpeed', value.toString());
+                      window.dispatchEvent(new CustomEvent('carouselSpeedChanged', { detail: value }));
+                    }}
+                    className="w-full accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground">Lower = faster scrolling</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="title-scroll-speed" className="flex items-center justify-between">
+                    <span>Product Title Scroll Speed</span>
+                    <span className="text-sm text-muted-foreground">{titleScrollSpeed}s</span>
+                  </Label>
+                  <input
+                    id="title-scroll-speed"
+                    type="range"
+                    min="2"
+                    max="10"
+                    step="1"
+                    value={titleScrollSpeed}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      setTitleScrollSpeed(value);
+                      localStorage.setItem('titleScrollSpeed', value.toString());
+                      document.documentElement.style.setProperty('--marquee-speed', `${value}s`);
+                    }}
+                    className="w-full accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground">Lower = faster scrolling</p>
                 </div>
               </div>
               

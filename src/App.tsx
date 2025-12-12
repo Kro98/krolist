@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -26,7 +27,15 @@ import CategoryTags from "@/pages/CategoryTags";
 import CategoryProducts from "@/pages/CategoryProducts";
 import MyOrders from "./pages/MyOrders";
 const queryClient = new QueryClient();
-// Search products page for affiliate link system
+
+// Initialize settings from localStorage
+const initializeSettings = () => {
+  const titleScrollSpeed = localStorage.getItem('titleScrollSpeed');
+  if (titleScrollSpeed) {
+    document.documentElement.style.setProperty('--marquee-speed', `${titleScrollSpeed}s`);
+  }
+};
+initializeSettings();
 
 const App = () => <QueryClientProvider client={queryClient}>
     <ThemeProvider>
