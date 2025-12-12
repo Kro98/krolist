@@ -266,13 +266,13 @@ export function AppSidebar() {
   return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
       {/* Dither Background - absolutely positioned within sidebar */}
       {showDither && (
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className={`absolute inset-0 z-0 overflow-hidden ${ditherSettings?.enableMouseInteraction ? 'pointer-events-auto' : 'pointer-events-none'}`}>
           <Suspense fallback={null}>
             <DitherBackground 
               waveColor={ditherSettings?.waveColor || [0.5, 0.5, 0.5]}
               disableAnimation={false}
-              enableMouseInteraction={false}
-              mouseRadius={0.3}
+              enableMouseInteraction={ditherSettings?.enableMouseInteraction || false}
+              mouseRadius={ditherSettings?.mouseRadius || 0.3}
               colorNum={ditherSettings?.colorNum || 4}
               waveAmplitude={ditherSettings?.waveAmplitude || 0.3}
               waveFrequency={ditherSettings?.waveFrequency || 3}
@@ -389,7 +389,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-white/80">{t('settings.other')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {otherItems.map(item => <SidebarMenuItem key={item.title}>
+              {otherItems.filter(item => item.title !== 'nav.settings').map(item => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
                       <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
@@ -397,15 +397,25 @@ export function AppSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>)}
+              
+              {/* Personalize Button */}
+              <SidebarMenuItem>
+                <PersonalizeDialog collapsed={collapsed} />
+              </SidebarMenuItem>
+              
+              {/* Settings Button */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/settings" className={getNavCls} onClick={handleNavClick}>
+                    <Settings className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                    {!collapsed && <span>{t('nav.settings')}</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
-      {/* Personalize Button in Corner */}
-      <SidebarFooter className="absolute bottom-4 right-4 z-10 p-0">
-        <PersonalizeDialog />
-      </SidebarFooter>
 
       {/* Shop Guide Dialog */}
       <Dialog open={!!activeGuide} onOpenChange={(open) => !open && setActiveGuide(null)}>
