@@ -351,7 +351,7 @@ export default function Events() {
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 'bold'
             }
-          }} className="rounded-md border p-3 pointer-events-auto flex-1" />
+          }} className="rounded-md border p-3 pointer-events-auto flex-1 w-full md:w-auto [&_.rdp-months]:w-full [&_.rdp-month]:w-full [&_.rdp-table]:w-full [&_.rdp-head_cell]:w-12 [&_.rdp-cell]:w-12 [&_.rdp-cell]:h-12 [&_.rdp-day]:w-12 [&_.rdp-day]:h-12 md:[&_.rdp-head_cell]:w-14 md:[&_.rdp-cell]:w-14 md:[&_.rdp-cell]:h-14 md:[&_.rdp-day]:w-14 md:[&_.rdp-day]:h-14 lg:[&_.rdp-head_cell]:w-16 lg:[&_.rdp-cell]:w-16 lg:[&_.rdp-cell]:h-16 lg:[&_.rdp-day]:w-16 lg:[&_.rdp-day]:h-16" />
           </CardContent>
         </Card>
 
