@@ -15,8 +15,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import sheinGuideGif from "@/assets/shop-guides/shein-guide.gif";
 
 // Shop guides configuration - add more shops here later
-const SHOP_GUIDES: Record<string, { title: string; gif: string }> = {
-  shein: { title: "SHOP GUIDE : SHEIN", gif: sheinGuideGif }
+interface ShopGuideStep {
+  en: string;
+  ar: string;
+}
+
+interface ShopGuide {
+  title: { en: string; ar: string };
+  gif: string;
+  steps: ShopGuideStep[];
+}
+
+const SHOP_GUIDES: Record<string, ShopGuide> = {
+  shein: { 
+    title: { en: "SHOP GUIDE : SHEIN", ar: "دليل التسوق : شي إن" },
+    gif: sheinGuideGif,
+    steps: [
+      { en: "Open the Shein app or website", ar: "افتح تطبيق شي إن أو الموقع" },
+      { en: "Go to the search bar and type R2M6A", ar: "اذهب إلى شريط البحث واكتب R2M6A" },
+      { en: "Browse and shop for anything you like!", ar: "تصفح وتسوق أي شيء يعجبك!" }
+    ]
+  }
 };
 
 const mainItems = [{
@@ -393,16 +412,31 @@ export function AppSidebar() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center font-bold">
-              {activeGuide && SHOP_GUIDES[activeGuide]?.title}
+              {activeGuide && SHOP_GUIDES[activeGuide]?.title[language === 'ar' ? 'ar' : 'en']}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex justify-center p-2">
+          <div className="flex flex-col gap-4 p-2">
             {activeGuide && SHOP_GUIDES[activeGuide] && (
-              <img 
-                src={SHOP_GUIDES[activeGuide].gif} 
-                alt={`${activeGuide} guide`}
-                className="rounded-lg max-w-full h-auto"
-              />
+              <>
+                <img 
+                  src={SHOP_GUIDES[activeGuide].gif} 
+                  alt={`${activeGuide} guide`}
+                  className="rounded-lg max-w-full h-auto mx-auto"
+                  style={{ imageRendering: 'auto' }}
+                />
+                <ol className={`space-y-2 text-sm ${language === 'ar' ? 'text-right' : 'text-left'}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                  {SHOP_GUIDES[activeGuide].steps.map((step, index) => (
+                    <li key={index} className="flex gap-2 items-start">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
+                        {index + 1}
+                      </span>
+                      <span className="text-muted-foreground pt-0.5">
+                        {step[language === 'ar' ? 'ar' : 'en']}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </>
             )}
           </div>
         </DialogContent>
