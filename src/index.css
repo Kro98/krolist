@@ -2,17 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent mobile zoom issues from carousel transforms */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-  touch-action: pan-y;
-}
-
-#root {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
 /* RTL Support */
 [dir="rtl"] {
   direction: rtl;
@@ -222,13 +211,6 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     overflow-x: hidden;
     max-width: 100vw;
-  }
-
-  /* Persistent mobile zoom - won't reset on navigation */
-  @media (max-width: 768px) {
-    #root {
-      zoom: 0.85;
-    }
   }
 }
 
