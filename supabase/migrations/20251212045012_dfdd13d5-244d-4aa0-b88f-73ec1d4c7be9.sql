@@ -1,0 +1,1 @@
+DELETE FROM store_promotions WHERE id = '3cb9352d-86ad-4457-88a5-5572fb09e536';
