@@ -168,8 +168,13 @@ export function ProductCard({
           <div className={`flex-1 min-w-0 flex flex-col ${language === 'ar' ? 'text-right' : 'text-left'}`}>
             {/* Title and Menu/Add Button */}
             <div className={`flex items-start justify-between mb-2 gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-              <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-base line-clamp-1 hover:text-primary transition-colors hover:underline flex-1">
-                {sanitizeContent(product.title)}
+              <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 overflow-hidden">
+                <div className="marquee-container overflow-hidden">
+                  <span className="marquee-text font-semibold text-base hover:text-primary transition-colors hover:underline inline-block whitespace-nowrap group-hover:pr-8">
+                    {sanitizeContent(product.title)}
+                    <span className="hidden group-hover:inline">&nbsp;&nbsp;&nbsp;&nbsp;{sanitizeContent(product.title)}</span>
+                  </span>
+                </div>
               </a>
               
               {/* Show heart icon for Krolist products */}
