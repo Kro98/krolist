@@ -1,4 +1,4 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag, HelpCircle, X } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,6 +11,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge";
 import DitherBackground from "@/components/DitherBackground";
 import { PersonalizeDialog } from "@/components/PersonalizeDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import sheinGuideGif from "@/assets/shop-guides/shein-guide.gif";
+
+// Shop guides configuration - add more shops here later
+const SHOP_GUIDES: Record<string, { title: string; gif: string }> = {
+  shein: { title: "SHOP GUIDE : SHEIN", gif: sheinGuideGif }
+};
 
 const mainItems = [{
   title: "nav.products",
@@ -93,6 +100,7 @@ export function AppSidebar() {
   const [hasFavoriteProducts, setHasFavoriteProducts] = useState(false);
   const [hasActiveOrders, setHasActiveOrders] = useState(false);
   const [ditherSettings, setDitherSettings] = useState<any>(null);
+  const [activeGuide, setActiveGuide] = useState<string | null>(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -308,27 +316,50 @@ export function AppSidebar() {
               const shopId = item.title.split('.')[1];
               const shopPromotions = promotions[shopId] || [];
               const isImageIcon = typeof item.icon === 'string';
+              const hasGuide = SHOP_GUIDES[shopId];
               
-              return <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
-                          {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
-                          {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                              <span className="shrink-0">{t(item.title)}</span>
-                              {shopPromotions.map((promo: any) => (
-                                <span 
-                                  key={promo.id}
-                                  className={`px-1.5 py-0.5 bg-${promo.badge_color}-500/20 text-${promo.badge_color}-700 dark:text-${promo.badge_color}-400 text-[10px] font-medium rounded border border-${promo.badge_color}-500/30`}
-                                >
-                                  {promo.badge_text}
-                                </span>
-                              ))}
-                            </div>}
-                        </button> : <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                          {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />}
-                          {!collapsed && <span>{t(item.title)}</span>}
-                        </NavLink>}
-                    </SidebarMenuButton>
+              return <SidebarMenuItem key={item.title} className="relative">
+                    <div className="flex items-center w-full">
+                      <SidebarMenuButton asChild className="flex-1">
+                        {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
+                            {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
+                            {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                                <span className="shrink-0">{t(item.title)}</span>
+                                {shopPromotions.map((promo: any) => (
+                                  <span 
+                                    key={promo.id}
+                                    className={`px-1.5 py-0.5 bg-${promo.badge_color}-500/20 text-${promo.badge_color}-700 dark:text-${promo.badge_color}-400 text-[10px] font-medium rounded border border-${promo.badge_color}-500/30`}
+                                  >
+                                    {promo.badge_text}
+                                  </span>
+                                ))}
+                              </div>}
+                          </button> : <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
+                            {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />}
+                            {!collapsed && <span>{t(item.title)}</span>}
+                          </NavLink>}
+                      </SidebarMenuButton>
+                      {!collapsed && hasGuide && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveGuide(shopId);
+                                }}
+                                className="p-1 ml-1 rounded-full hover:bg-white/20 text-white/60 hover:text-white transition-all duration-200"
+                              >
+                                <HelpCircle className="h-3.5 w-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              <p className="text-xs">Shop Guide</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
                   </SidebarMenuItem>;
             })}
             </SidebarMenu>
@@ -356,5 +387,25 @@ export function AppSidebar() {
       <SidebarFooter className="absolute bottom-4 right-4 z-10 p-0">
         <PersonalizeDialog />
       </SidebarFooter>
+
+      {/* Shop Guide Dialog */}
+      <Dialog open={!!activeGuide} onOpenChange={(open) => !open && setActiveGuide(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center font-bold">
+              {activeGuide && SHOP_GUIDES[activeGuide]?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center p-2">
+            {activeGuide && SHOP_GUIDES[activeGuide] && (
+              <img 
+                src={SHOP_GUIDES[activeGuide].gif} 
+                alt={`${activeGuide} guide`}
+                className="rounded-lg max-w-full h-auto"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sidebar>;
 }
