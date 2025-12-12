@@ -398,19 +398,17 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>)}
               
-              {/* Personalize Button */}
+              {/* Settings Button with Personalize Icon */}
               <SidebarMenuItem>
-                <PersonalizeDialog collapsed={collapsed} />
-              </SidebarMenuItem>
-              
-              {/* Settings Button */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/settings" className={getNavCls} onClick={handleNavClick}>
-                    <Settings className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
-                    {!collapsed && <span>{t('nav.settings')}</span>}
-                  </NavLink>
-                </SidebarMenuButton>
+                <div className="flex items-center w-full">
+                  <SidebarMenuButton asChild className="flex-1">
+                    <NavLink to="/settings" className={getNavCls} onClick={handleNavClick}>
+                      <Settings className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                      {!collapsed && <span>{t('nav.settings')}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                  {!collapsed && <PersonalizeDialog iconOnly />}
+                </div>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

@@ -58,9 +58,10 @@ const THEME_UNDERTONES = [
 
 interface PersonalizeDialogProps {
   collapsed?: boolean;
+  iconOnly?: boolean;
 }
 
-export function PersonalizeDialog({ collapsed = false }: PersonalizeDialogProps) {
+export function PersonalizeDialog({ collapsed = false, iconOnly = false }: PersonalizeDialogProps) {
   const { t, language } = useLanguage();
   const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
@@ -97,12 +98,16 @@ export function PersonalizeDialog({ collapsed = false }: PersonalizeDialogProps)
       <DialogTrigger asChild>
         <button 
           className={`flex items-center justify-center rounded-lg hover:bg-white/10 text-white/70 hover:text-white backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 ${
-            collapsed ? 'w-10 h-10 mx-auto' : 'w-full gap-2 p-2 px-[15px]'
+            iconOnly 
+              ? 'w-8 h-8 ml-1' 
+              : collapsed 
+                ? 'w-10 h-10 mx-auto' 
+                : 'w-full gap-2 p-2 px-[15px]'
           }`}
           title={t('settings.personalize') || 'Personalize'}
         >
-          <Paintbrush className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />
-          {!collapsed && <span className="flex-1 text-left">{isArabic ? 'تخصيص' : 'Personalize'}</span>}
+          <Paintbrush className={iconOnly ? "h-3.5 w-3.5" : collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />
+          {!collapsed && !iconOnly && <span className="flex-1 text-left">{isArabic ? 'تخصيص' : 'Personalize'}</span>}
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
