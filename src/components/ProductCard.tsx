@@ -254,9 +254,8 @@ export function ProductCard({
                   {product.category}
                 </Badge>}
               {/* Show YouTube button */}
-              {product.youtube_url && <Button size="sm" variant="outline" className="h-6 px-2 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')}>
+              {product.youtube_url && <Button size="sm" variant="outline" className="h-6 w-6 p-0 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')} title="YouTube Review">
                   <Youtube className="h-3 w-3" />
-                  <span className="text-xs">Review</span>
                 </Button>}
             </div>
           </div>
