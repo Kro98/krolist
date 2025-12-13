@@ -46,6 +46,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        skipWaiting: false,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -59,6 +61,9 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
+      },
+      devOptions: {
+        enabled: false,
       },
     }),
   ].filter(Boolean),
