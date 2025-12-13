@@ -237,12 +237,15 @@ export function AppSidebar() {
     setOpenMobile(false);
   };
   const handleShopClick = (url: string, isExternal?: boolean, shopId?: string) => {
-    setOpenMobile(false);
-    // For Shein, show the links dialog instead of opening directly
+    // For Shein, show the links dialog - set state BEFORE closing sidebar
     if (shopId === 'shein' && isExternal) {
       setActiveShopLinks({ shopId, shopUrl: url });
+      // Close sidebar after a small delay to ensure dialog state is set
+      setTimeout(() => setOpenMobile(false), 50);
       return;
     }
+    // For other shops, close sidebar and open link
+    setOpenMobile(false);
     if (isExternal) {
       window.open(url, '_blank');
     }
@@ -269,161 +272,164 @@ export function AppSidebar() {
 
   const showDither = ditherSettings?.enabled !== false;
 
-  return <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
-      {/* Dither Background - absolutely positioned within sidebar */}
-      {showDither && (
-        <div className={`absolute inset-0 z-0 overflow-hidden ${ditherSettings?.enableMouseInteraction ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-          <Suspense fallback={null}>
-            <DitherBackground 
-              waveColor={ditherSettings?.waveColor || [0.5, 0.5, 0.5]}
-              disableAnimation={false}
-              enableMouseInteraction={ditherSettings?.enableMouseInteraction || false}
-              mouseRadius={ditherSettings?.mouseRadius || 0.3}
-              colorNum={ditherSettings?.colorNum || 4}
-              waveAmplitude={ditherSettings?.waveAmplitude || 0.3}
-              waveFrequency={ditherSettings?.waveFrequency || 3}
-              waveSpeed={ditherSettings?.waveSpeed || 0.05}
-            />
-          </Suspense>
-        </div>
-      )}
-      
-      {/* Search Products Button - positioned at top */}
-      <div className="relative z-10 px-2 pt-4 pb-2">
-        <NavLink to="/search-products" onClick={handleNavClick}>
-          <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
-            <PlusCircle className="h-4 w-4" />
-            {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
+  return (
+    <>
+      <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-sidebar-border`} collapsible="icon" side={language === 'ar' ? 'right' : 'left'}>
+        {/* Dither Background - absolutely positioned within sidebar */}
+        {showDither && (
+          <div className={`absolute inset-0 z-0 overflow-hidden ${ditherSettings?.enableMouseInteraction ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+            <Suspense fallback={null}>
+              <DitherBackground 
+                waveColor={ditherSettings?.waveColor || [0.5, 0.5, 0.5]}
+                disableAnimation={false}
+                enableMouseInteraction={ditherSettings?.enableMouseInteraction || false}
+                mouseRadius={ditherSettings?.mouseRadius || 0.3}
+                colorNum={ditherSettings?.colorNum || 4}
+                waveAmplitude={ditherSettings?.waveAmplitude || 0.3}
+                waveFrequency={ditherSettings?.waveFrequency || 3}
+                waveSpeed={ditherSettings?.waveSpeed || 0.05}
+              />
+            </Suspense>
           </div>
-        </NavLink>
-      </div>
+        )}
+        
+        {/* Search Products Button - positioned at top */}
+        <div className="relative z-10 px-2 pt-4 pb-2">
+          <NavLink to="/search-products" onClick={handleNavClick}>
+            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
+              <PlusCircle className="h-4 w-4" />
+              {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
+            </div>
+          </NavLink>
+        </div>
 
-      <SidebarContent className="relative z-10 bg-transparent px-2">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80">{t('nav.dashboard')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {filteredMainItems.map(item => <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
-                      <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
-                      {!collapsed && (
-                        <div className="flex items-center gap-2 flex-1">
-                          <span>{t(item.title)}</span>
-                          {item.url === "/" && user && !isGuest && !hasFavoriteProducts && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-warning/20 text-warning hover:bg-warning/30">
-                                    +
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-xs">Add favorites to unlock Analytics</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </div>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {!collapsed && (
+        <SidebarContent className="relative z-10 bg-transparent px-2">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-white/80">{t('nav.dashboard')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {shopItems.map(item => {
-              const shopId = item.title.split('.')[1];
-              const shopPromotions = promotions[shopId] || [];
-              const isImageIcon = typeof item.icon === 'string';
-              const hasGuide = SHOP_GUIDES[shopId];
-              
-              return <SidebarMenuItem key={item.title} className="relative">
-                    <div className="flex items-center w-full">
-                      <SidebarMenuButton asChild className="flex-1">
-                        {item.isExternal ? <button onClick={() => handleShopClick(item.url, true, shopId)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
-                            {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
-                            {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                                <span className="shrink-0">{t(item.title)}</span>
-                                {shopPromotions.map((promo: any) => (
-                                  <span 
-                                    key={promo.id}
-                                    className={`px-1.5 py-0.5 bg-${promo.badge_color}-500/20 text-${promo.badge_color}-700 dark:text-${promo.badge_color}-400 text-[10px] font-medium rounded border border-${promo.badge_color}-500/30`}
-                                  >
-                                    {promo.badge_text}
-                                  </span>
-                                ))}
-                              </div>}
-                          </button> : <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                            {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />}
-                            {!collapsed && <span>{t(item.title)}</span>}
-                          </NavLink>}
-                      </SidebarMenuButton>
-                      {!collapsed && hasGuide && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveGuide(shopId);
-                                }}
-                                className="p-1.5 ml-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white backdrop-blur-sm border border-white/20 hover:border-white/30 transition-all duration-200"
-                              >
-                                <HelpCircle className="h-3.5 w-3.5" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                              <p className="text-xs">Shop Guide</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </div>
-                  </SidebarMenuItem>;
-            })}
+                {filteredMainItems.map(item => <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
+                        <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                        {!collapsed && (
+                          <div className="flex items-center gap-2 flex-1">
+                            <span>{t(item.title)}</span>
+                            {item.url === "/" && user && !isGuest && !hasFavoriteProducts && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-warning/20 text-warning hover:bg-warning/30">
+                                      +
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Add favorites to unlock Analytics</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>)}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-        )}
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80">{t('settings.other')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {otherItems.filter(item => item.title !== 'nav.settings').map(item => <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                      <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
-                      {!collapsed && <span>{t(item.title)}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>)}
-              
-              {/* Settings Button with Personalize Icon */}
-              <SidebarMenuItem>
-                <div className="flex items-center w-full">
-                  <SidebarMenuButton asChild className="flex-1">
-                    <NavLink to="/settings" className={getNavCls} onClick={handleNavClick}>
-                      <Settings className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
-                      {!collapsed && <span>{t('nav.settings')}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                  {!collapsed && <PersonalizeDialog iconOnly />}
-                </div>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+          {!collapsed && (
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {shopItems.map(item => {
+                const shopId = item.title.split('.')[1];
+                const shopPromotions = promotions[shopId] || [];
+                const isImageIcon = typeof item.icon === 'string';
+                const hasGuide = SHOP_GUIDES[shopId];
+                
+                return <SidebarMenuItem key={item.title} className="relative">
+                      <div className="flex items-center w-full">
+                        <SidebarMenuButton asChild className="flex-1">
+                          {item.isExternal ? <button onClick={() => handleShopClick(item.url, true, shopId)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
+                              {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
+                              {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                                  <span className="shrink-0">{t(item.title)}</span>
+                                  {shopPromotions.map((promo: any) => (
+                                    <span 
+                                      key={promo.id}
+                                      className={`px-1.5 py-0.5 bg-${promo.badge_color}-500/20 text-${promo.badge_color}-700 dark:text-${promo.badge_color}-400 text-[10px] font-medium rounded border border-${promo.badge_color}-500/30`}
+                                    >
+                                      {promo.badge_text}
+                                    </span>
+                                  ))}
+                                </div>}
+                            </button> : <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
+                              {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover mx-auto" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />}
+                              {!collapsed && <span>{t(item.title)}</span>}
+                            </NavLink>}
+                        </SidebarMenuButton>
+                        {!collapsed && hasGuide && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveGuide(shopId);
+                                  }}
+                                  className="p-1.5 ml-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white backdrop-blur-sm border border-white/20 hover:border-white/30 transition-all duration-200"
+                                >
+                                  <HelpCircle className="h-3.5 w-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                <p className="text-xs">Shop Guide</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
+                    </SidebarMenuItem>;
+              })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
 
-      {/* Shop Guide Dialog */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/80">{t('settings.other')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {otherItems.filter(item => item.title !== 'nav.settings').map(item => <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
+                        <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                        {!collapsed && <span>{t(item.title)}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>)}
+                
+                {/* Settings Button with Personalize Icon */}
+                <SidebarMenuItem>
+                  <div className="flex items-center w-full">
+                    <SidebarMenuButton asChild className="flex-1">
+                      <NavLink to="/settings" className={getNavCls} onClick={handleNavClick}>
+                        <Settings className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                        {!collapsed && <span>{t('nav.settings')}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                    {!collapsed && <PersonalizeDialog iconOnly />}
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+
+      {/* Shop Guide Dialog - Outside Sidebar */}
       <Dialog open={!!activeGuide} onOpenChange={(open) => !open && setActiveGuide(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -458,7 +464,7 @@ export function AppSidebar() {
         </DialogContent>
       </Dialog>
 
-      {/* Shop Links Dialog (Shein) */}
+      {/* Shop Links Dialog (Shein) - Outside Sidebar */}
       <ShopLinksDialog
         open={!!activeShopLinks}
         onOpenChange={(open) => !open && setActiveShopLinks(null)}
@@ -470,5 +476,6 @@ export function AppSidebar() {
           }
         }}
       />
-    </Sidebar>;
+    </>
+  );
 }
