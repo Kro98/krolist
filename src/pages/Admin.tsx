@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Package, Layers, Tag, Store, MessageSquare, Menu, Megaphone } from "lucide-react";
+import { Shield, Package, Layers, Tag, Store, MessageSquare, Menu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import CategoryManager from "./admin/CategoryManager";
 import LoginMessagesManager from "./admin/LoginMessagesManager";
 import OrdersManager from "./admin/OrdersManager";
 import { ShopManager } from "@/components/ShopManager";
-import { ShopCampaignsManager } from "./admin/ShopCampaignsManager";
 export default function Admin() {
   const {
     isAdmin,
@@ -44,13 +43,9 @@ export default function Admin() {
     label: t('admin.promoCodes'),
     icon: Tag
   }, {
-    value: "shops",
-    label: t('admin.shopManagement'),
+    value: "shop",
+    label: "Shop",
     icon: Store
-  }, {
-    value: "campaigns",
-    label: "Campaigns",
-    icon: Megaphone
   }, {
     value: "login-messages",
     label: t('admin.loginMessages'),
@@ -189,12 +184,8 @@ export default function Admin() {
             <PromoCodesManager />
           </TabsContent>
 
-          <TabsContent value="shops" className="mt-0 md:mt-6">
+          <TabsContent value="shop" className="mt-0 md:mt-6">
             <ShopManager />
-          </TabsContent>
-
-          <TabsContent value="campaigns" className="mt-0 md:mt-6">
-            <ShopCampaignsManager />
           </TabsContent>
 
           <TabsContent value="login-messages" className="mt-0 md:mt-6">
