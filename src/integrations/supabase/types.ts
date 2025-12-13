@@ -555,6 +555,45 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_campaigns: {
+        Row: {
+          campaign_url: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          shop_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_url: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          shop_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_url?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          shop_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       store_promotions: {
         Row: {
           active: boolean | null
