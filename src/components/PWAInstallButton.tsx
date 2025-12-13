@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -18,6 +19,7 @@ export function PWAInstallButton() {
   const { language } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false);
+  const [installCount, setInstallCount] = useState<number | null>(null);
 
   useEffect(() => {
     // Listen for install prompt
@@ -44,10 +46,40 @@ export function PWAInstallButton() {
       });
     }
 
+    // Fetch install count
+    fetchInstallCount();
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
   }, []);
+
+  const fetchInstallCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('app_installs')
+        .select('*', { count: 'exact', head: true });
+      
+      if (!error && count !== null) {
+        setInstallCount(count);
+      }
+    } catch (error) {
+      console.error('Error fetching install count:', error);
+    }
+  };
+
+  const trackInstall = async () => {
+    try {
+      await supabase.from('app_installs').insert({
+        user_agent: navigator.userAgent,
+        platform: navigator.platform || 'unknown'
+      });
+      // Increment local count
+      setInstallCount(prev => (prev ?? 0) + 1);
+    } catch (error) {
+      console.error('Error tracking install:', error);
+    }
+  };
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
@@ -59,6 +91,7 @@ export function PWAInstallButton() {
     const { outcome } = await deferredPrompt.userChoice;
     
     if (outcome === "accepted") {
+      await trackInstall();
       setDeferredPrompt(null);
     }
   };
@@ -77,6 +110,13 @@ export function PWAInstallButton() {
     }
   };
 
+  const formatCount = (count: number) => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -93,11 +133,11 @@ export function PWAInstallButton() {
           className="cursor-pointer flex items-center gap-2"
         >
           <Download className="h-4 w-4" />
-          {language === "ar" ? "تثبيت التطبيق" : "Install App"}
-          {hasUpdate && (
-            <span className="ml-auto flex items-center gap-1 text-xs text-primary">
-              <RefreshCw className="h-3 w-3" />
-              {language === "ar" ? "تحديث" : "Update"}
+          <span className="flex-1">{language === "ar" ? "تثبيت التطبيق" : "Install App"}</span>
+          {installCount !== null && installCount > 0 && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+              <Users className="h-3 w-3" />
+              {formatCount(installCount)}
             </span>
           )}
         </DropdownMenuItem>
