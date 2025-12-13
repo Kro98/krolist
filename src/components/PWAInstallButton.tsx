@@ -74,9 +74,16 @@ export function PWAInstallButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false);
   const [installCount, setInstallCount] = useState<number | null>(null);
+  const [isPWA, setIsPWA] = useState(false);
   const animatedCount = useAnimatedCounter(installCount);
 
   useEffect(() => {
+    // Check if running as installed PWA
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true ||
+      document.referrer.includes("android-app://");
+    setIsPWA(isStandalone);
+
     // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -177,37 +184,51 @@ export function PWAInstallButton() {
     return count.toString();
   };
 
+  // Only show notification indicator in PWA mode when there's an update
+  const showUpdateNotification = isPWA && hasUpdate;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
           <Download className="h-5 w-5" />
-          {hasUpdate && (
+          {showUpdateNotification && (
             <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary rounded-full animate-pulse" />
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-background border-border">
-        <DropdownMenuItem 
-          onClick={handleInstall} 
-          className="cursor-pointer flex items-center gap-2"
-        >
-          <Download className="h-4 w-4" />
-          <span className="flex-1">{language === "ar" ? "تثبيت التطبيق" : "Install App"}</span>
-          {animatedCount !== null && animatedCount > 0 && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
-              <Users className="h-3 w-3" />
-              {formatCount(animatedCount)}
-            </span>
-          )}
-        </DropdownMenuItem>
-        {hasUpdate && (
+        {/* Show install option only in browser mode */}
+        {!isPWA && (
+          <DropdownMenuItem 
+            onClick={handleInstall} 
+            className="cursor-pointer flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            <span className="flex-1">{language === "ar" ? "تثبيت التطبيق" : "Install App"}</span>
+            {animatedCount !== null && animatedCount > 0 && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
+                <Users className="h-3 w-3" />
+                {formatCount(animatedCount)}
+              </span>
+            )}
+          </DropdownMenuItem>
+        )}
+        {/* Show update option in PWA mode when update is available */}
+        {isPWA && hasUpdate && (
           <DropdownMenuItem 
             onClick={handleUpdate} 
             className="cursor-pointer flex items-center gap-2 text-primary"
           >
             <RefreshCw className="h-4 w-4" />
             {language === "ar" ? "تثبيت التحديث" : "Install Update"}
+          </DropdownMenuItem>
+        )}
+        {/* Show "up to date" message in PWA mode when no update */}
+        {isPWA && !hasUpdate && (
+          <DropdownMenuItem className="cursor-default text-muted-foreground">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {language === "ar" ? "أحدث إصدار" : "Up to date"}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
