@@ -7,15 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield, ZoomIn } from "lucide-react";
+import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast as sonner } from "sonner";
 import { useImageZoom } from "@/hooks/useImageZoom";
+import { APP_VERSION } from "@/config/version";
 export default function Settings() {
   const {
     language,
@@ -48,9 +48,33 @@ export default function Settings() {
     const saved = localStorage.getItem('titleScrollSpeed');
     return saved ? parseInt(saved) : 5;
   });
+  const [hasUpdate, setHasUpdate] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const {
     toast
   } = useToast();
+
+  useEffect(() => {
+    // Check notification permission
+    if ("Notification" in window) {
+      setNotificationsEnabled(Notification.permission === "granted");
+    }
+
+    // Check for service worker updates
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.addEventListener('updatefound', () => {
+          setHasUpdate(true);
+        });
+      });
+
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration?.waiting) {
+          setHasUpdate(true);
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -120,6 +144,44 @@ export default function Settings() {
   };
 
 
+  const handleEnableNotifications = async () => {
+    if (!("Notification" in window)) {
+      toast({
+        title: language === "ar" ? "غير مدعوم" : "Not Supported",
+        description: language === "ar" 
+          ? "المتصفح لا يدعم الإشعارات" 
+          : "Your browser doesn't support notifications",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setNotificationsEnabled(permission === "granted");
+
+    if (permission === "granted") {
+      toast({
+        title: language === "ar" ? "تم التفعيل" : "Notifications Enabled",
+        description: language === "ar" 
+          ? "سيتم إعلامك بالتحديثات الجديدة" 
+          : "You'll be notified about updates",
+      });
+    }
+  };
+
+  const handleUpdate = async () => {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration?.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        window.location.reload();
+      } else {
+        await registration?.update();
+        window.location.reload();
+      }
+    }
+  };
+
   return (
     <div className="flex gap-6 items-start">
       <div className="flex-1 space-y-6 max-w-4xl">
@@ -129,6 +191,59 @@ export default function Settings() {
         </div>
 
         <div className="grid gap-6">
+        {/* App Info & Version */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-primary" />
+              {language === 'ar' ? 'معلومات التطبيق' : 'App Info'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'ar' ? 'الإصدار والتحديثات' : 'Version and updates'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div>
+                <p className="font-medium">{language === 'ar' ? 'الإصدار الحالي' : 'Current Version'}</p>
+                <p className="text-2xl font-bold text-primary">v{APP_VERSION}</p>
+              </div>
+              {hasUpdate ? (
+                <Button onClick={handleUpdate} className="bg-gradient-primary">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {language === 'ar' ? 'تثبيت التحديث' : 'Install Update'}
+                </Button>
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  {language === 'ar' ? 'أحدث إصدار' : 'Up to date'}
+                </span>
+              )}
+            </div>
+            
+            <Separator />
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">{language === 'ar' ? 'إشعارات التحديثات' : 'Update Notifications'}</p>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'ar' ? 'احصل على إشعار عند توفر تحديث جديد' : 'Get notified when a new update is available'}
+                </p>
+              </div>
+              {notificationsEnabled ? (
+                <div className="flex items-center gap-2 text-sm text-green-500">
+                  <Bell className="h-4 w-4" />
+                  {language === 'ar' ? 'مفعل' : 'Enabled'}
+                </div>
+              ) : (
+                <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
+                  <Bell className="h-4 w-4 mr-2" />
+                  {language === 'ar' ? 'تفعيل' : 'Enable'}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Appearance */}
         <Card className="shadow-card">
             <CardHeader>
