@@ -16,9 +16,7 @@ import { useEffect } from "react";
 import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -83,18 +81,7 @@ function LayoutContent({ children }: LayoutProps) {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Download className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background border-border">
-                <DropdownMenuItem disabled className="text-muted-foreground cursor-not-allowed">
-                  {language === 'ar' ? 'التطبيق قريباً' : 'App coming soon'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <PWAInstallButton />
             <UserAccountControl />
             <ShoppingCart />
           </div>
