@@ -12,11 +12,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestAuth } from "@/contexts/GuestAuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
+import { useToast } from "@/hooks/use-toast";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +33,63 @@ function LayoutContent({ children }: LayoutProps) {
   const location = useLocation();
   const { open, setOpen } = useSidebar();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const [updateToastShown, setUpdateToastShown] = useState(false);
+
+  // Check for service worker updates and show toast
+  useEffect(() => {
+    if ('serviceWorker' in navigator && !updateToastShown) {
+      const checkForUpdates = async () => {
+        const registration = await navigator.serviceWorker.getRegistration();
+        
+        if (registration?.waiting) {
+          showUpdateToast();
+        }
+
+        registration?.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker?.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateToast();
+            }
+          });
+        });
+      };
+
+      const showUpdateToast = () => {
+        if (updateToastShown) return;
+        setUpdateToastShown(true);
+        
+        toast({
+          title: language === 'ar' ? 'تحديث متاح!' : 'Update Available!',
+          description: language === 'ar' 
+            ? 'يتوفر إصدار جديد من التطبيق. قم بالتحديث للحصول على أحدث الميزات.' 
+            : 'A new version is available. Update to get the latest features.',
+          duration: 10000,
+          action: (
+            <Button 
+              size="sm" 
+              onClick={async () => {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration?.waiting) {
+                  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                } else {
+                  window.location.reload();
+                }
+              }}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <RefreshCw className="h-3 w-3 mr-1" />
+              {language === 'ar' ? 'تحديث' : 'Update'}
+            </Button>
+          ),
+        });
+      };
+
+      checkForUpdates();
+    }
+  }, [language, toast, updateToastShown]);
 
   // Add swipe gesture support for mobile/tablet
   useSwipeGesture({
