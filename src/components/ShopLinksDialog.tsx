@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, BookOpen, Clock, Image as ImageIcon, Loader2 } from "lucide-react";
@@ -28,20 +28,52 @@ interface ShopLinksDialogProps {
   onShowGuide: () => void;
 }
 
+// Cache campaigns globally to prevent refetching
+const campaignsCache: Record<string, { data: ShopCampaign[]; timestamp: number }> = {};
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export function ShopLinksDialog({ open, onOpenChange, shopId, shopUrl, onShowGuide }: ShopLinksDialogProps) {
   const { language } = useLanguage();
   const [campaigns, setCampaigns] = useState<ShopCampaign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const hasFetched = useRef(false);
   
   const storeConfig = getStoreById(shopId);
 
   useEffect(() => {
     if (open && shopId) {
-      fetchCampaigns();
+      // Check cache first
+      const cached = campaignsCache[shopId];
+      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        setCampaigns(cached.data);
+        initializeImageStates(cached.data);
+        return;
+      }
+      
+      if (!hasFetched.current) {
+        fetchCampaigns();
+        hasFetched.current = true;
+      }
     }
   }, [open, shopId]);
+
+  // Reset fetch flag when shopId changes
+  useEffect(() => {
+    hasFetched.current = false;
+  }, [shopId]);
+
+  const initializeImageStates = (data: ShopCampaign[]) => {
+    const initialLoading: Record<string, boolean> = {};
+    data.forEach(campaign => {
+      if (campaign.image_url) {
+        initialLoading[campaign.id] = true;
+      }
+    });
+    setLoadingImages(initialLoading);
+    setImageErrors({});
+  };
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -54,17 +86,13 @@ export function ShopLinksDialog({ open, onOpenChange, shopId, shopUrl, onShowGui
         .order('display_order');
 
       if (error) throw error;
-      setCampaigns(data || []);
+      const campaignData = data || [];
+      setCampaigns(campaignData);
       
-      // Initialize loading states for images
-      const initialLoading: Record<string, boolean> = {};
-      (data || []).forEach(campaign => {
-        if (campaign.image_url) {
-          initialLoading[campaign.id] = true;
-        }
-      });
-      setLoadingImages(initialLoading);
-      setImageErrors({});
+      // Cache the result
+      campaignsCache[shopId] = { data: campaignData, timestamp: Date.now() };
+      
+      initializeImageStates(campaignData);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
       setCampaigns([]);

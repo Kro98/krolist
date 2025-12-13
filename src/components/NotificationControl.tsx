@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, BellOff } from "lucide-react";
+import { Bell, BellOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,6 +32,7 @@ export function NotificationControl() {
     appUpdates: true,
   });
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
     // Load saved settings
@@ -44,7 +45,35 @@ export function NotificationControl() {
     if ("Notification" in window) {
       setPermissionGranted(Notification.permission === "granted");
     }
+
+    // Check for service worker updates
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.addEventListener('updatefound', () => {
+          setHasUpdate(true);
+        });
+      });
+
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration?.waiting) {
+          setHasUpdate(true);
+        }
+      });
+    }
   }, []);
+
+  const handleUpdate = async () => {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration?.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        window.location.reload();
+      } else {
+        await registration?.update();
+        window.location.reload();
+      }
+    }
+  };
 
   const saveSettings = (newSettings: NotificationSettings) => {
     setSettings(newSettings);
@@ -93,8 +122,8 @@ export function NotificationControl() {
           ) : (
             <BellOff className="h-5 w-5" />
           )}
-          {someEnabled && permissionGranted && (
-            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary rounded-full" />
+          {(someEnabled && permissionGranted || hasUpdate) && (
+            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary rounded-full animate-pulse" />
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -103,6 +132,19 @@ export function NotificationControl() {
           {language === "ar" ? "إعدادات الإشعارات" : "Notification Settings"}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        {hasUpdate && (
+          <>
+            <DropdownMenuItem 
+              onClick={handleUpdate} 
+              className="cursor-pointer text-primary bg-primary/10 hover:bg-primary/20"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {language === "ar" ? "تحديث متاح - اضغط للتثبيت" : "Update available - tap to install"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         
         {!permissionGranted && (
           <>
