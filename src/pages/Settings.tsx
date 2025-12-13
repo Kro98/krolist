@@ -50,11 +50,18 @@ export default function Settings() {
   });
   const [hasUpdate, setHasUpdate] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
   const {
     toast
   } = useToast();
 
   useEffect(() => {
+    // Check if running as installed PWA
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true ||
+      document.referrer.includes("android-app://");
+    setIsPWA(isStandalone);
+
     // Check notification permission
     if ("Notification" in window) {
       setNotificationsEnabled(Notification.permission === "granted");
@@ -191,59 +198,6 @@ export default function Settings() {
         </div>
 
         <div className="grid gap-6">
-        {/* App Info & Version */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-primary" />
-              {language === 'ar' ? 'معلومات التطبيق' : 'App Info'}
-            </CardTitle>
-            <CardDescription>
-              {language === 'ar' ? 'الإصدار والتحديثات' : 'Version and updates'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-              <div>
-                <p className="font-medium">{language === 'ar' ? 'الإصدار الحالي' : 'Current Version'}</p>
-                <p className="text-2xl font-bold text-primary">v{APP_VERSION}</p>
-              </div>
-              {hasUpdate ? (
-                <Button onClick={handleUpdate} className="bg-gradient-primary">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  {language === 'ar' ? 'تثبيت التحديث' : 'Install Update'}
-                </Button>
-              ) : (
-                <span className="text-sm text-muted-foreground">
-                  {language === 'ar' ? 'أحدث إصدار' : 'Up to date'}
-                </span>
-              )}
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{language === 'ar' ? 'إشعارات التحديثات' : 'Update Notifications'}</p>
-                <p className="text-sm text-muted-foreground">
-                  {language === 'ar' ? 'احصل على إشعار عند توفر تحديث جديد' : 'Get notified when a new update is available'}
-                </p>
-              </div>
-              {notificationsEnabled ? (
-                <div className="flex items-center gap-2 text-sm text-green-500">
-                  <Bell className="h-4 w-4" />
-                  {language === 'ar' ? 'مفعل' : 'Enabled'}
-                </div>
-              ) : (
-                <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
-                  <Bell className="h-4 w-4 mr-2" />
-                  {language === 'ar' ? 'تفعيل' : 'Enable'}
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Appearance */}
         <Card className="shadow-card">
             <CardHeader>
@@ -474,6 +428,61 @@ export default function Settings() {
               {t('settings.saveSettings')}
             </Button>
           </div>
+
+          {/* App Info & Version - Only shown in PWA */}
+          {isPWA && (
+            <Card className="shadow-card border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  {language === 'ar' ? 'معلومات التطبيق' : 'App Info'}
+                </CardTitle>
+                <CardDescription>
+                  {language === 'ar' ? 'الإصدار والتحديثات' : 'Version and updates'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{language === 'ar' ? 'الإصدار الحالي' : 'Current Version'}</p>
+                    <p className="text-2xl font-bold text-primary">v{APP_VERSION}</p>
+                  </div>
+                  {hasUpdate ? (
+                    <Button onClick={handleUpdate} className="bg-gradient-primary">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      {language === 'ar' ? 'تثبيت التحديث' : 'Install Update'}
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      {language === 'ar' ? 'أحدث إصدار' : 'Up to date'}
+                    </span>
+                  )}
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{language === 'ar' ? 'إشعارات التحديثات' : 'Update Notifications'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'ar' ? 'احصل على إشعار عند توفر تحديث جديد' : 'Get notified when a new update is available'}
+                    </p>
+                  </div>
+                  {notificationsEnabled ? (
+                    <div className="flex items-center gap-2 text-sm text-green-500">
+                      <Bell className="h-4 w-4" />
+                      {language === 'ar' ? 'مفعل' : 'Enabled'}
+                    </div>
+                  ) : (
+                    <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
+                      <Bell className="h-4 w-4 mr-2" />
+                      {language === 'ar' ? 'تفعيل' : 'Enable'}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
