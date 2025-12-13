@@ -54,6 +54,8 @@ export function PWAInstallButton() {
     };
   }, []);
 
+  const BASE_INSTALL_COUNT = 31; // Starting count before tracking began
+
   const fetchInstallCount = async () => {
     try {
       const { count, error } = await supabase
@@ -61,10 +63,13 @@ export function PWAInstallButton() {
         .select('*', { count: 'exact', head: true });
       
       if (!error && count !== null) {
-        setInstallCount(count);
+        setInstallCount(BASE_INSTALL_COUNT + count);
+      } else {
+        setInstallCount(BASE_INSTALL_COUNT);
       }
     } catch (error) {
       console.error('Error fetching install count:', error);
+      setInstallCount(BASE_INSTALL_COUNT);
     }
   };
 
