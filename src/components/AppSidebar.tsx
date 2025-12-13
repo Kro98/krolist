@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import DitherBackground from "@/components/DitherBackground";
 import { PersonalizeDialog } from "@/components/PersonalizeDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ShopLinksDialog } from "@/components/ShopLinksDialog";
 import sheinGuideGif from "@/assets/shop-guides/shein-guide.gif";
-
 // Shop guides configuration - add more shops here later
 interface ShopGuideStep {
   en: string;
@@ -120,6 +120,7 @@ export function AppSidebar() {
   const [hasActiveOrders, setHasActiveOrders] = useState(false);
   const [ditherSettings, setDitherSettings] = useState<any>(null);
   const [activeGuide, setActiveGuide] = useState<string | null>(null);
+  const [activeShopLinks, setActiveShopLinks] = useState<{ shopId: string; shopUrl: string } | null>(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -235,8 +236,13 @@ export function AppSidebar() {
     // Close sidebar on mobile after navigation
     setOpenMobile(false);
   };
-  const handleShopClick = (url: string, isExternal?: boolean) => {
+  const handleShopClick = (url: string, isExternal?: boolean, shopId?: string) => {
     setOpenMobile(false);
+    // For Shein, show the links dialog instead of opening directly
+    if (shopId === 'shein' && isExternal) {
+      setActiveShopLinks({ shopId, shopUrl: url });
+      return;
+    }
     if (isExternal) {
       window.open(url, '_blank');
     }
@@ -341,7 +347,7 @@ export function AppSidebar() {
               return <SidebarMenuItem key={item.title} className="relative">
                     <div className="flex items-center w-full">
                       <SidebarMenuButton asChild className="flex-1">
-                        {item.isExternal ? <button onClick={() => handleShopClick(item.url, true)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
+                        {item.isExternal ? <button onClick={() => handleShopClick(item.url, true, shopId)} className={collapsed ? "flex items-center justify-center w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200" : "flex items-center gap-2 w-full p-2 rounded-lg hover:bg-white/10 text-white/90 backdrop-blur-sm border border-white/10 hover:border-white/25 transition-all duration-200 px-[15px]"}>
                             {isImageIcon ? <img src={item.icon as string} alt={`${shopId} icon`} className={collapsed ? "h-6 w-6 rounded-full object-cover" : "h-5 w-5 rounded-full object-cover shrink-0"} /> : <item.icon className={collapsed ? "h-5 w-5" : "h-4 w-4 shrink-0"} />}
                             {!collapsed && <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                                 <span className="shrink-0">{t(item.title)}</span>
@@ -451,5 +457,18 @@ export function AppSidebar() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Shop Links Dialog (Shein) */}
+      <ShopLinksDialog
+        open={!!activeShopLinks}
+        onOpenChange={(open) => !open && setActiveShopLinks(null)}
+        shopId={activeShopLinks?.shopId || ''}
+        shopUrl={activeShopLinks?.shopUrl || ''}
+        onShowGuide={() => {
+          if (activeShopLinks) {
+            setActiveGuide(activeShopLinks.shopId);
+          }
+        }}
+      />
     </Sidebar>;
 }
