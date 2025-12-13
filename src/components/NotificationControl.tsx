@@ -12,6 +12,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface NotificationSettings {
   newProducts: boolean;
@@ -25,25 +26,22 @@ const NOTIFICATION_SETTINGS_KEY = "krolist_notification_settings";
 export function NotificationControl() {
   const { language } = useLanguage();
   const { toast } = useToast();
+  const { isSupported, isSubscribed, permission, subscribe, unsubscribe } = usePushNotifications();
+  
   const [settings, setSettings] = useState<NotificationSettings>({
     newProducts: true,
     priceUpdates: true,
     promoCodes: true,
     appUpdates: true,
   });
-  const [permissionGranted, setPermissionGranted] = useState(false);
   const [hasUpdate, setHasUpdate] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Load saved settings
     const saved = localStorage.getItem(NOTIFICATION_SETTINGS_KEY);
     if (saved) {
       setSettings(JSON.parse(saved));
-    }
-
-    // Check notification permission
-    if ("Notification" in window) {
-      setPermissionGranted(Notification.permission === "granted");
     }
 
     // Check for service worker updates
@@ -81,26 +79,33 @@ export function NotificationControl() {
   };
 
   const requestPermission = async () => {
-    if (!("Notification" in window)) {
+    if (!isSupported) {
       toast({
         title: language === "ar" ? "غير مدعوم" : "Not Supported",
         description: language === "ar" 
           ? "المتصفح لا يدعم الإشعارات" 
-          : "Your browser doesn't support notifications",
+          : "Your browser doesn't support push notifications",
         variant: "destructive",
       });
       return;
     }
 
-    const permission = await Notification.requestPermission();
-    setPermissionGranted(permission === "granted");
+    setIsLoading(true);
+    const result = await subscribe();
+    setIsLoading(false);
 
-    if (permission === "granted") {
+    if (result.success) {
       toast({
         title: language === "ar" ? "تم التفعيل" : "Enabled",
         description: language === "ar" 
           ? "سيتم إعلامك بالتحديثات الجديدة" 
           : "You'll be notified about new updates",
+      });
+    } else {
+      toast({
+        title: language === "ar" ? "فشل التفعيل" : "Failed",
+        description: result.error || (language === "ar" ? "فشل تفعيل الإشعارات" : "Failed to enable notifications"),
+        variant: "destructive",
       });
     }
   };
@@ -110,8 +115,10 @@ export function NotificationControl() {
     saveSettings(newSettings);
   };
 
+  const permissionGranted = permission === 'granted' && isSubscribed;
+
   const allEnabled = Object.values(settings).every(Boolean);
-  const someEnabled = Object.values(settings).some(Boolean);
+  const someEnabled = Object.values(settings).some(Boolean) && permissionGranted;
 
   return (
     <DropdownMenu>
