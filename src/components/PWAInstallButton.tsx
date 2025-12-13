@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, RefreshCw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,11 +15,66 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// Animated counter hook
+function useAnimatedCounter(targetValue: number | null, duration: number = 800) {
+  const [displayValue, setDisplayValue] = useState<number | null>(null);
+  const previousValue = useRef<number | null>(null);
+  const animationRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (targetValue === null) return;
+
+    // If this is the first load, just set the value without animation
+    if (previousValue.current === null) {
+      setDisplayValue(targetValue);
+      previousValue.current = targetValue;
+      return;
+    }
+
+    // Cancel any ongoing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    const startValue = previousValue.current;
+    const startTime = performance.now();
+    const difference = targetValue - startValue;
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease-out cubic)
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      
+      const currentValue = Math.round(startValue + difference * easeOut);
+      setDisplayValue(currentValue);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        previousValue.current = targetValue;
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [targetValue, duration]);
+
+  return displayValue;
+}
+
 export function PWAInstallButton() {
   const { language } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false);
   const [installCount, setInstallCount] = useState<number | null>(null);
+  const animatedCount = useAnimatedCounter(installCount);
 
   useEffect(() => {
     // Listen for install prompt
@@ -79,7 +134,7 @@ export function PWAInstallButton() {
         user_agent: navigator.userAgent,
         platform: navigator.platform || 'unknown'
       });
-      // Increment local count
+      // Increment local count with animation
       setInstallCount(prev => (prev ?? 0) + 1);
     } catch (error) {
       console.error('Error tracking install:', error);
@@ -139,10 +194,10 @@ export function PWAInstallButton() {
         >
           <Download className="h-4 w-4" />
           <span className="flex-1">{language === "ar" ? "تثبيت التطبيق" : "Install App"}</span>
-          {installCount !== null && installCount > 0 && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+          {animatedCount !== null && animatedCount > 0 && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
               <Users className="h-3 w-3" />
-              {formatCount(installCount)}
+              {formatCount(animatedCount)}
             </span>
           )}
         </DropdownMenuItem>
