@@ -160,7 +160,7 @@ export function ProductCarousel({
               </Badge>
             </div>
           )}
-          {enableExpand && (isTablet || isDesktop) && (
+          {enableExpand && isTabletOrAbove && (
             <Button
               variant="ghost"
               size="sm"
@@ -172,7 +172,7 @@ export function ProductCarousel({
         </div>
       )}
       
-      {isExpanded && (isTablet || isDesktop) ? (
+      {isExpanded && isTabletOrAbove ? (
         // Grid view for expanded state
         <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'xl:grid-cols-3' : ''} ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'xl:grid-cols-4' : ''}`}>
           {products.map(product => (
