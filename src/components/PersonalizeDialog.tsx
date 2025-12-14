@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList, Heart } from 'lucide-react';
+import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList, Heart, Type } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -114,6 +114,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(2);
+  const [titleScrollSpeed, setTitleScrollSpeed] = useState<number>(50);
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -143,6 +144,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     const savedItemsPerRow = localStorage.getItem('desktopItemsPerRow');
     if (savedItemsPerRow === '2' || savedItemsPerRow === '3') {
       setDesktopItemsPerRow(parseInt(savedItemsPerRow) as 2 | 3);
+    }
+    
+    const savedTitleScrollSpeed = localStorage.getItem('titleScrollSpeed');
+    if (savedTitleScrollSpeed) {
+      setTitleScrollSpeed(parseInt(savedTitleScrollSpeed));
     }
   }, []);
 
@@ -176,6 +182,12 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('desktopItemsPerRowChanged', { detail: count }));
   };
 
+  const saveTitleScrollSpeed = (speed: number) => {
+    setTitleScrollSpeed(speed);
+    localStorage.setItem('titleScrollSpeed', speed.toString());
+    window.dispatchEvent(new CustomEvent('titleScrollSpeedChanged', { detail: speed }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
@@ -185,6 +197,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     saveCardLayoutStyle('compact');
     saveFavoritesCardStyle('classic');
     saveDesktopItemsPerRow(2);
+    saveTitleScrollSpeed(50);
   };
 
   const isArabic = language === 'ar';
@@ -413,6 +426,33 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                 {isArabic 
                   ? 'عدد المنتجات في كل صف على سطح المكتب' 
                   : 'Number of products per row on desktop'}
+              </p>
+            </div>
+
+            {/* Title Scroll Speed */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Type className="h-4 w-4 text-primary" />
+                <Label>{isArabic ? 'سرعة تمرير العنوان' : 'Title Scroll Speed'}</Label>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{isArabic ? 'بطيء' : 'Slow'}</span>
+                  <span>{titleScrollSpeed} px/s</span>
+                  <span>{isArabic ? 'سريع' : 'Fast'}</span>
+                </div>
+                <Slider
+                  value={[titleScrollSpeed]}
+                  onValueChange={([value]) => saveTitleScrollSpeed(value)}
+                  min={20}
+                  max={150}
+                  step={10}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isArabic 
+                  ? 'سرعة تمرير عناوين المنتجات الطويلة' 
+                  : 'Speed for scrolling long product titles'}
               </p>
             </div>
           </TabsContent>

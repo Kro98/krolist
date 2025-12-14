@@ -109,10 +109,10 @@ export function ProductCarousel({
     stopOnMouseEnter: true,
   });
   
-  // Calculate items per slide based on device
+  // Calculate items per slide based on device - tablet always shows 2
   const getItemsPerSlide = () => {
     if (isMobile) return 1;
-    if (isTablet) return 2;
+    if (isTablet) return 2; // Force 2 items on tablet
     return desktopItemsPerRow;
   };
   const itemsPerSlide = getItemsPerSlide();
@@ -174,7 +174,7 @@ export function ProductCarousel({
       
       {isExpanded && (isTablet || isDesktop) ? (
         // Grid view for expanded state
-        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : desktopItemsPerRow === 2 ? 'grid-cols-2' : ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'grid-cols-3' : 'grid-cols-4'}`}>
+        <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'xl:grid-cols-3' : ''} ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'xl:grid-cols-4' : ''}`}>
           {products.map(product => (
             ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
               <ProductCard
@@ -190,6 +190,7 @@ export function ProductCarousel({
                 isSelected={selectedProductIds.has(product.id)}
                 onToggleSelect={onToggleSelect}
                 isInFavorites={isInFavorites(product)}
+                isFavoritesSection={isFavoritesSection}
               />
             ) : (
               <MobileProductCard
@@ -199,6 +200,7 @@ export function ProductCarousel({
                 onRemoveFromMyProducts={onRemoveFromMyProducts}
                 userProductCount={userProductCount}
                 isInFavorites={isInFavorites(product)}
+                isFavoritesSection={isFavoritesSection}
               />
             )
           ))}
@@ -222,7 +224,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : desktopItemsPerRow === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                     {slide.map(product => (
                       ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
                         <ProductCard
@@ -238,6 +240,7 @@ export function ProductCarousel({
                           isSelected={selectedProductIds.has(product.id)}
                           onToggleSelect={onToggleSelect}
                           isInFavorites={isInFavorites(product)}
+                          isFavoritesSection={isFavoritesSection}
                         />
                       ) : (
                         <MobileProductCard
@@ -247,6 +250,7 @@ export function ProductCarousel({
                           onRemoveFromMyProducts={onRemoveFromMyProducts}
                           userProductCount={userProductCount}
                           isInFavorites={isInFavorites(product)}
+                          isFavoritesSection={isFavoritesSection}
                         />
                       )
                     ))}

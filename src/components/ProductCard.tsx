@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus, ShoppingCart as ShoppingCartIcon, Heart } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus, ShoppingCart as ShoppingCartIcon, Heart, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,7 @@ interface ProductCardProps {
   isSelected?: boolean;
   onToggleSelect?: (product: Product) => void;
   isInFavorites?: boolean;
+  isFavoritesSection?: boolean; // Whether this card is in the My Favorites section
 }
 export function ProductCard({
   product,
@@ -63,7 +64,8 @@ export function ProductCard({
   isSelectionMode = false,
   isSelected = false,
   onToggleSelect,
-  isInFavorites = false
+  isInFavorites = false,
+  isFavoritesSection = false
 }: ProductCardProps) {
   const {
     t,
@@ -80,6 +82,49 @@ export function ProductCard({
     isZoomEnabled
   } = useImageZoom();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [titleScrollSpeed, setTitleScrollSpeed] = useState(() => {
+    const saved = localStorage.getItem('titleScrollSpeed');
+    return saved ? parseInt(saved) : 50; // pixels per second
+  });
+  const titleRef = useRef<HTMLSpanElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollDuration, setScrollDuration] = useState(0);
+  
+  // Listen for title scroll speed changes
+  useEffect(() => {
+    const handleSpeedChange = (e: CustomEvent) => {
+      setTitleScrollSpeed(e.detail);
+    };
+    window.addEventListener('titleScrollSpeedChanged', handleSpeedChange as EventListener);
+    return () => window.removeEventListener('titleScrollSpeedChanged', handleSpeedChange as EventListener);
+  }, []);
+  
+  const [scrollDistance, setScrollDistance] = useState(0);
+  
+  // Calculate scroll distance and duration based on title width and speed
+  useEffect(() => {
+    const calculateScroll = () => {
+      if (titleRef.current && containerRef.current) {
+        const titleWidth = titleRef.current.scrollWidth;
+        const containerWidth = containerRef.current.clientWidth;
+        const overflow = titleWidth - containerWidth;
+        if (overflow > 0) {
+          // Duration = distance / speed (in seconds)
+          const duration = overflow / titleScrollSpeed;
+          setScrollDuration(duration);
+          setScrollDistance(-overflow);
+        } else {
+          setScrollDuration(0);
+          setScrollDistance(0);
+        }
+      }
+    };
+    
+    // Use setTimeout to ensure DOM is ready
+    const timer = setTimeout(calculateScroll, 100);
+    return () => clearTimeout(timer);
+  }, [product.title, titleScrollSpeed]);
+  
   const [editForm, setEditForm] = useState({
     title: product.title,
     description: product.description || '',
@@ -169,42 +214,60 @@ export function ProductCard({
             {/* Title and Menu/Add Button */}
             <div className={`flex items-start justify-between mb-2 gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
               <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 overflow-hidden">
-                <div className="marquee-container overflow-hidden">
-                  <span className="marquee-text font-semibold text-base hover:text-primary transition-colors hover:underline inline-block whitespace-nowrap group-hover:pr-8">
+                <div ref={containerRef} className="title-scroll-container overflow-hidden">
+                  <span 
+                    ref={titleRef}
+                    className="title-scroll-text font-semibold text-base hover:text-primary transition-colors hover:underline inline-block whitespace-nowrap"
+                    style={scrollDuration > 0 ? { 
+                      '--scroll-duration': `${scrollDuration}s`,
+                      '--scroll-distance': `${scrollDistance}px`
+                    } as React.CSSProperties : undefined}
+                  >
                     {sanitizeContent(product.title)}
-                    <span className="hidden group-hover:inline">&nbsp;&nbsp;&nbsp;&nbsp;{sanitizeContent(product.title)}</span>
                   </span>
                 </div>
               </a>
-              
-              {/* Show heart icon for Krolist products */}
-              {product.isKrolistProduct && onAddToMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0 transition-transform active:scale-90" onClick={handleToggleFavorite} title={isInFavorites ? "Remove from favorites" : (userProductCount >= 24 ? "Product limit reached" : "Add to favorites")}>
+              {/* Show X icon for favorites section to remove */}
+              {isFavoritesSection && onRemoveFromMyProducts ? (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 hover:bg-destructive/10 flex-shrink-0 transition-transform active:scale-90" 
+                  onClick={() => onRemoveFromMyProducts(product)} 
+                  title="Remove from favorites"
+                >
+                  <X className="h-5 w-5 text-destructive" />
+                </Button>
+              ) : product.isKrolistProduct && onAddToMyProducts ? (
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0 transition-transform active:scale-90" onClick={handleToggleFavorite} title={isInFavorites ? "Remove from favorites" : (userProductCount >= 24 ? "Product limit reached" : "Add to favorites")}>
                   <Heart className={`h-5 w-5 transition-all duration-200 ${isInFavorites ? 'fill-red-500 text-red-500 animate-in zoom-in-50' : 'text-primary'}`} />
-                </Button> : (/* Show menu for user products only */
-            (onDelete || onUpdate) && <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background border-2 border-border z-50">
-                      {onUpdate && <DropdownMenuItem onClick={() => {
-                  // For Krolist products, trigger parent's dialog instead
-                  if (product.isKrolistProduct) {
-                    onUpdate(product.id, {});
-                  } else {
-                    setShowEditDialog(true);
-                  }
-                }}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          {t('products.edit')}
-                        </DropdownMenuItem>}
-                      {onDelete && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          {t('products.delete')}
-                        </DropdownMenuItem>}
-                    </DropdownMenuContent>
-                  </DropdownMenu>)}
+                </Button>
+              ) : (
+                /* Show menu for user products only */
+                (onDelete || onUpdate) && <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background border-2 border-border z-50">
+                    {onUpdate && <DropdownMenuItem onClick={() => {
+                      if (product.isKrolistProduct) {
+                        onUpdate(product.id, {});
+                      } else {
+                        setShowEditDialog(true);
+                      }
+                    }}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      {t('products.edit')}
+                    </DropdownMenuItem>}
+                    {onDelete && <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t('products.delete')}
+                    </DropdownMenuItem>}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             
             {/* Description */}

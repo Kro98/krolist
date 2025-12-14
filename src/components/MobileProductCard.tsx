@@ -1,4 +1,4 @@
-import { Heart, Youtube } from "lucide-react";
+import { Heart, Youtube, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ interface MobileProductCardProps {
   onRemoveFromMyProducts?: (product: MobileProduct) => void;
   userProductCount?: number;
   isInFavorites?: boolean;
+  isFavoritesSection?: boolean;
 }
 
 export function MobileProductCard({
@@ -37,6 +38,7 @@ export function MobileProductCard({
   onRemoveFromMyProducts,
   userProductCount = 0,
   isInFavorites = false,
+  isFavoritesSection = false,
 }: MobileProductCardProps) {
   const { language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
@@ -96,8 +98,21 @@ export function MobileProductCard({
             />
           </div>
           
-          {/* Favorite Button */}
-          {onAddToMyProducts && (
+          {/* Favorite/Remove Button */}
+          {isFavoritesSection && onRemoveFromMyProducts ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 h-8 w-8 p-0 bg-background/50 backdrop-blur-sm hover:bg-destructive/20 transition-transform active:scale-90"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemoveFromMyProducts(product);
+              }}
+            >
+              <X className="h-5 w-5 text-destructive" />
+            </Button>
+          ) : onAddToMyProducts && (
             <Button
               variant="ghost"
               size="sm"

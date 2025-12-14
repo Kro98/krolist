@@ -301,28 +301,28 @@ input[type="range"].hue-slider::-moz-range-track {
   border-radius: 6px;
 }
 
-/* Marquee Animation for Product Titles */
+/* Title Scroll Animation */
 :root {
-  --marquee-speed: 5s;
+  --scroll-duration: 3s;
+  --scroll-distance: -50px;
 }
 
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
+.title-scroll-container {
+  position: relative;
+}
+
+.group:hover .title-scroll-text[style] {
+  animation: title-scroll-hover var(--scroll-duration, 3s) ease-in-out infinite;
+}
+
+@keyframes title-scroll-hover {
+  0%, 15% {
+    transform: translateX(0);
   }
-  100% {
-    transform: translateX(-50%);
+  40%, 60% {
+    transform: translateX(var(--scroll-distance, -50px));
   }
-}
-
-.animate-marquee {
-  animation: marquee var(--marquee-speed) linear infinite;
-}
-
-.group:hover .marquee-container {
-  overflow: hidden;
-}
-
-.group:hover .marquee-text {
-  animation: marquee var(--marquee-speed) linear infinite;
+  85%, 100% {
+    transform: translateX(0);
+  }
 }
