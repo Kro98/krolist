@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, BellOff, RefreshCw } from "lucide-react";
+import { Bell, BellOff, RefreshCw, Package, TrendingDown, Tag, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { APP_VERSION } from "@/config/version";
 
 interface NotificationSettings {
   newProducts: boolean;
@@ -116,96 +117,140 @@ export function NotificationControl() {
   };
 
   const permissionGranted = permission === 'granted' && isSubscribed;
-
-  const allEnabled = Object.values(settings).every(Boolean);
   const someEnabled = Object.values(settings).some(Boolean) && permissionGranted;
+
+  // Count active notifications for badge
+  const hasNotification = hasUpdate || (someEnabled && permissionGranted);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
-          {someEnabled && permissionGranted ? (
+          {someEnabled ? (
             <Bell className="h-5 w-5" />
           ) : (
             <BellOff className="h-5 w-5" />
           )}
-          {(someEnabled && permissionGranted || hasUpdate) && (
+          {hasNotification && (
             <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-primary rounded-full animate-pulse" />
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 bg-background border-border">
-        <DropdownMenuLabel>
-          {language === "ar" ? "إعدادات الإشعارات" : "Notification Settings"}
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-72 bg-background border-border">
+        {/* Header with version */}
+        <div className="px-3 py-2 flex items-center justify-between">
+          <DropdownMenuLabel className="p-0">
+            {language === "ar" ? "مركز الإشعارات" : "Notification Center"}
+          </DropdownMenuLabel>
+          <span className="text-xs text-muted-foreground">v{APP_VERSION}</span>
+        </div>
         <DropdownMenuSeparator />
         
+        {/* Update Alert - Most prominent */}
         {hasUpdate && (
           <>
             <DropdownMenuItem 
               onClick={handleUpdate} 
-              className="cursor-pointer text-primary bg-primary/10 hover:bg-primary/20"
+              className="cursor-pointer text-primary bg-primary/10 hover:bg-primary/20 flex items-center gap-3 py-3"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              {language === "ar" ? "تحديث متاح - اضغط للتثبيت" : "Update available - tap to install"}
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <RefreshCw className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">{language === "ar" ? "تحديث متاح" : "Update Available"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {language === "ar" ? "اضغط للتثبيت" : "Tap to install"}
+                </p>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}
         
+        {/* Enable notifications prompt */}
         {!permissionGranted && (
           <>
-            <DropdownMenuItem onClick={requestPermission} className="cursor-pointer">
-              <Bell className="h-4 w-4 mr-2" />
-              {language === "ar" ? "تفعيل الإشعارات" : "Enable Notifications"}
+            <DropdownMenuItem 
+              onClick={requestPermission} 
+              className="cursor-pointer flex items-center gap-3 py-3"
+              disabled={isLoading}
+            >
+              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                <Bell className="h-4 w-4" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">{language === "ar" ? "تفعيل الإشعارات" : "Enable Notifications"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {language === "ar" ? "احصل على تنبيهات فورية" : "Get instant alerts"}
+                </p>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}
 
-        <div className="p-2 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">
-              {language === "ar" ? "منتجات جديدة" : "New Products"}
-            </span>
-            <Switch
-              checked={settings.newProducts}
-              onCheckedChange={() => toggleSetting("newProducts")}
-              disabled={!permissionGranted}
-            />
-          </div>
+        {/* Notification Settings */}
+        <div className="px-3 py-2">
+          <p className="text-xs font-medium text-muted-foreground mb-3">
+            {language === "ar" ? "إعدادات الإشعارات" : "NOTIFICATION SETTINGS"}
+          </p>
           
-          <div className="flex items-center justify-between">
-            <span className="text-sm">
-              {language === "ar" ? "تحديثات الأسعار" : "Price Updates"}
-            </span>
-            <Switch
-              checked={settings.priceUpdates}
-              onCheckedChange={() => toggleSetting("priceUpdates")}
-              disabled={!permissionGranted}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-sm">
-              {language === "ar" ? "أكواد خصم جديدة" : "New Promo Codes"}
-            </span>
-            <Switch
-              checked={settings.promoCodes}
-              onCheckedChange={() => toggleSetting("promoCodes")}
-              disabled={!permissionGranted}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-sm">
-              {language === "ar" ? "تحديثات التطبيق" : "App Updates"}
-            </span>
-            <Switch
-              checked={settings.appUpdates}
-              onCheckedChange={() => toggleSetting("appUpdates")}
-              disabled={!permissionGranted}
-            />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === "ar" ? "منتجات جديدة" : "New Products"}
+                </span>
+              </div>
+              <Switch
+                checked={settings.newProducts}
+                onCheckedChange={() => toggleSetting("newProducts")}
+                disabled={!permissionGranted}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === "ar" ? "تحديثات الأسعار" : "Price Updates"}
+                </span>
+              </div>
+              <Switch
+                checked={settings.priceUpdates}
+                onCheckedChange={() => toggleSetting("priceUpdates")}
+                disabled={!permissionGranted}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === "ar" ? "أكواد خصم جديدة" : "New Promo Codes"}
+                </span>
+              </div>
+              <Switch
+                checked={settings.promoCodes}
+                onCheckedChange={() => toggleSetting("promoCodes")}
+                disabled={!permissionGranted}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === "ar" ? "تحديثات التطبيق" : "App Updates"}
+                </span>
+              </div>
+              <Switch
+                checked={settings.appUpdates}
+                onCheckedChange={() => toggleSetting("appUpdates")}
+                disabled={!permissionGranted}
+              />
+            </div>
           </div>
         </div>
       </DropdownMenuContent>

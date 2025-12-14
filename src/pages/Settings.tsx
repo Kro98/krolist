@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw } from "lucide-react";
+import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -16,6 +16,55 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast as sonner } from "sonner";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { APP_VERSION } from "@/config/version";
+
+// Animated counter hook
+function useAnimatedCounter(targetValue: number | null, duration: number = 800) {
+  const [displayValue, setDisplayValue] = useState<number | null>(null);
+  const previousValue = useRef<number | null>(null);
+  const animationRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (targetValue === null) return;
+
+    if (previousValue.current === null) {
+      setDisplayValue(targetValue);
+      previousValue.current = targetValue;
+      return;
+    }
+
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    const startValue = previousValue.current;
+    const startTime = performance.now();
+    const difference = targetValue - startValue;
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const currentValue = Math.round(startValue + difference * easeOut);
+      setDisplayValue(currentValue);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        previousValue.current = targetValue;
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [targetValue, duration]);
+
+  return displayValue;
+}
 export default function Settings() {
   const {
     language,
@@ -51,9 +100,30 @@ export default function Settings() {
   const [hasUpdate, setHasUpdate] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
+  const [installCount, setInstallCount] = useState<number | null>(null);
+  const animatedCount = useAnimatedCounter(installCount);
   const {
     toast
   } = useToast();
+
+  const BASE_INSTALL_COUNT = 31; // Starting count before tracking began
+
+  const fetchInstallCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('app_installs')
+        .select('*', { count: 'exact', head: true });
+      
+      if (!error && count !== null) {
+        setInstallCount(BASE_INSTALL_COUNT + count);
+      } else {
+        setInstallCount(BASE_INSTALL_COUNT);
+      }
+    } catch (error) {
+      console.error('Error fetching install count:', error);
+      setInstallCount(BASE_INSTALL_COUNT);
+    }
+  };
 
   useEffect(() => {
     // Check if running as installed PWA
@@ -81,6 +151,9 @@ export default function Settings() {
         }
       });
     }
+
+    // Fetch install count for PWA mode
+    fetchInstallCount();
   }, []);
 
   useEffect(() => {
@@ -442,6 +515,7 @@ export default function Settings() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Version and Update */}
                 <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
                     <p className="font-medium">{language === 'ar' ? 'الإصدار الحالي' : 'Current Version'}</p>
@@ -460,7 +534,24 @@ export default function Settings() {
                 </div>
                 
                 <Separator />
+
+                {/* Install Count */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{language === 'ar' ? 'عدد التثبيتات' : 'Total Installs'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'ar' ? 'المستخدمون الذين قاموا بتثبيت التطبيق' : 'Users who installed the app'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-lg font-bold text-primary">
+                    <Users className="h-5 w-5" />
+                    <span className="tabular-nums">{animatedCount ?? '...'}</span>
+                  </div>
+                </div>
                 
+                <Separator />
+                
+                {/* Update Notifications */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{language === 'ar' ? 'إشعارات التحديثات' : 'Update Notifications'}</p>
