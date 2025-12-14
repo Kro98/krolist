@@ -65,6 +65,10 @@ export function ProductCarousel({
     const saved = localStorage.getItem('favoritesCardStyle');
     return saved === 'classic' ? 'classic' : 'compact';
   });
+  const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(() => {
+    const saved = localStorage.getItem('desktopItemsPerRow');
+    return saved === '3' ? 3 : 2;
+  });
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
   const isDesktop = useMediaQuery("(min-width: 1280px)");
@@ -84,13 +88,18 @@ export function ProductCarousel({
     const handleFavoritesLayoutChange = (e: CustomEvent) => {
       setFavoritesCardStyle(e.detail);
     };
+    const handleItemsPerRowChange = (e: CustomEvent) => {
+      setDesktopItemsPerRow(e.detail);
+    };
     window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
     window.addEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
     window.addEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
+    window.addEventListener('desktopItemsPerRowChanged', handleItemsPerRowChange as EventListener);
     return () => {
       window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
       window.removeEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
       window.removeEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
+      window.removeEventListener('desktopItemsPerRowChanged', handleItemsPerRowChange as EventListener);
     };
   }, []);
   
@@ -104,7 +113,7 @@ export function ProductCarousel({
   const getItemsPerSlide = () => {
     if (isMobile) return 1;
     if (isTablet) return 2;
-    return 3; // Desktop: always 3
+    return desktopItemsPerRow;
   };
   const itemsPerSlide = getItemsPerSlide();
   
@@ -165,7 +174,7 @@ export function ProductCarousel({
       
       {isExpanded && (isTablet || isDesktop) ? (
         // Grid view for expanded state
-        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'grid-cols-3' : 'grid-cols-4'}`}>
+        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : desktopItemsPerRow === 2 ? 'grid-cols-2' : ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {products.map(product => (
             ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
               <ProductCard
@@ -213,7 +222,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : desktopItemsPerRow === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                     {slide.map(product => (
                       ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
                         <ProductCard
