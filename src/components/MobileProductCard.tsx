@@ -148,17 +148,18 @@ export function MobileProductCard({
 
           {/* Badges */}
           <div className={`flex gap-1.5 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-            {product.youtube_url && (
+          {product.youtube_url && (
               <Button
                 size="sm"
                 variant="outline"
-                className="h-5 w-5 p-0 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                className="h-5 px-1.5 py-0 gap-1 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
                 onClick={(e) => {
                   e.preventDefault();
                   window.open(product.youtube_url!, '_blank');
                 }}
               >
                 <Youtube className="h-3 w-3" />
+                <span className="text-[0.6rem] font-medium">Review</span>
               </Button>
             )}
             <Badge className="bg-orange-500 text-white hover:bg-orange-600 px-1.5 py-0 text-[0.6rem]">
