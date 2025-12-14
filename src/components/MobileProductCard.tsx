@@ -86,12 +86,14 @@ export function MobileProductCard({
             <img
               src={product.image_url || '/placeholder.svg'}
               alt={product.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-300"
             />
-            {/* Gradient overlay for fade style */}
-            {cardStyle === 'fade' && (
-              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent pointer-events-none" />
-            )}
+            {/* Gradient overlay with smooth transition */}
+            <div 
+              className={`absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent pointer-events-none transition-opacity duration-500 ease-in-out ${
+                cardStyle === 'fade' ? 'opacity-100' : 'opacity-0'
+              }`} 
+            />
           </div>
           
           {/* Favorite Button */}
