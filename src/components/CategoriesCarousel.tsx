@@ -24,7 +24,8 @@ export function CategoriesCarousel() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
+  const isDesktop = useMediaQuery("(min-width: 1280px)");
   const [categories, setCategories] = useState<CategoryCollection[]>([]);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -116,7 +117,7 @@ export function CategoriesCarousel() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <Skeleton className="h-8 w-32" />
-          {isTabletOrAbove && <Skeleton className="h-8 w-20" />}
+          {isTablet && <Skeleton className="h-8 w-20" />}
         </div>
         <Carousel opts={{ align: "start" }} className="w-full">
           <CarouselContent>
@@ -195,7 +196,7 @@ export function CategoriesCarousel() {
         >
           {t('categories.title')}
         </h2>
-        {isTabletOrAbove && (
+        {isTablet && (
           <Button
             variant="ghost"
             size="sm"
@@ -207,7 +208,7 @@ export function CategoriesCarousel() {
         )}
       </div>
 
-      {isExpanded && isTabletOrAbove ? (
+      {isExpanded && isTablet ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.map((category) => renderCategoryCard(category))}
         </div>
