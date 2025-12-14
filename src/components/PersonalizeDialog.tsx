@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paintbrush, Sun, Moon, Monitor, Image, Layers } from 'lucide-react';
+import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -67,6 +67,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
+  const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -82,6 +83,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     if (savedCardStyle === 'fade' || savedCardStyle === 'full') {
       setMobileCardStyle(savedCardStyle);
     }
+    
+    const savedLayoutStyle = localStorage.getItem('cardLayoutStyle');
+    if (savedLayoutStyle === 'classic' || savedLayoutStyle === 'compact') {
+      setCardLayoutStyle(savedLayoutStyle);
+    }
   }, []);
 
   const saveSettings = (newSettings: DitherSettings) => {
@@ -96,12 +102,19 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('mobileCardStyleChanged', { detail: style }));
   };
 
+  const saveCardLayoutStyle = (style: 'classic' | 'compact') => {
+    setCardLayoutStyle(style);
+    localStorage.setItem('cardLayoutStyle', style);
+    window.dispatchEvent(new CustomEvent('cardLayoutStyleChanged', { detail: style }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
     setUndertone('orange');
     setCustomHue(31);
     saveMobileCardStyle('fade');
+    saveCardLayoutStyle('compact');
   };
 
   const isArabic = language === 'ar';
@@ -222,35 +235,67 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
 
           {/* Visual Tab */}
           <TabsContent value="visual" className="space-y-6 py-4">
-            {/* Mobile Card Style */}
+            {/* Card Layout Style */}
             <div className="space-y-3">
-              <Label>{isArabic ? 'نمط بطاقة المنتج (موبايل)' : 'Product Card Style (Mobile)'}</Label>
+              <Label>{isArabic ? 'تخطيط البطاقة' : 'Card Layout'}</Label>
               <div className="flex gap-2">
                 <Button
-                  variant={mobileCardStyle === 'fade' ? 'default' : 'outline'}
+                  variant={cardLayoutStyle === 'classic' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => saveMobileCardStyle('fade')}
+                  onClick={() => saveCardLayoutStyle('classic')}
                   className="flex-1 gap-2"
                 >
-                  <Layers className="h-4 w-4" />
-                  {isArabic ? 'تلاشي' : 'Fade'}
+                  <LayoutList className="h-4 w-4" />
+                  {isArabic ? 'كلاسيكي' : 'Classic'}
                 </Button>
                 <Button
-                  variant={mobileCardStyle === 'full' ? 'default' : 'outline'}
+                  variant={cardLayoutStyle === 'compact' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => saveMobileCardStyle('full')}
+                  onClick={() => saveCardLayoutStyle('compact')}
                   className="flex-1 gap-2"
                 >
-                  <Image className="h-4 w-4" />
-                  {isArabic ? 'كامل' : 'Full'}
+                  <LayoutGrid className="h-4 w-4" />
+                  {isArabic ? 'مدمج' : 'Compact'}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
                 {isArabic 
-                  ? 'تلاشي: تدرج لوني على الصورة. كامل: عرض الصورة بالكامل.' 
-                  : 'Fade: Gradient overlay on image. Full: Show complete image.'}
+                  ? 'كلاسيكي: تخطيط أفقي مع الصورة على الجانب. مدمج: تخطيط عمودي مع الصورة في الأعلى.' 
+                  : 'Classic: Horizontal layout with image on side. Compact: Vertical layout with image on top.'}
               </p>
             </div>
+
+            {/* Mobile Card Style - only show when compact is selected */}
+            {cardLayoutStyle === 'compact' && (
+              <div className="space-y-3">
+                <Label>{isArabic ? 'نمط صورة البطاقة' : 'Card Image Style'}</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={mobileCardStyle === 'fade' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => saveMobileCardStyle('fade')}
+                    className="flex-1 gap-2"
+                  >
+                    <Layers className="h-4 w-4" />
+                    {isArabic ? 'تلاشي' : 'Fade'}
+                  </Button>
+                  <Button
+                    variant={mobileCardStyle === 'full' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => saveMobileCardStyle('full')}
+                    className="flex-1 gap-2"
+                  >
+                    <Image className="h-4 w-4" />
+                    {isArabic ? 'كامل' : 'Full'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {isArabic 
+                    ? 'تلاشي: تدرج لوني على الصورة. كامل: عرض الصورة بالكامل.' 
+                    : 'Fade: Gradient overlay on image. Full: Show complete image.'}
+                </p>
+              </div>
+            )}
           </TabsContent>
 
           {/* Dither Background Tab */}
