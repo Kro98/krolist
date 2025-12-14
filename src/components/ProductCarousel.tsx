@@ -56,6 +56,9 @@ export function ProductCarousel({
   });
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1024px)");
+  const isDesktop = useMediaQuery("(min-width: 1025px)");
+  const isLargeDesktop = useMediaQuery("(min-width: 1280px)");
+  const isXLDesktop = useMediaQuery("(min-width: 1536px)");
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
   
@@ -75,7 +78,15 @@ export function ProductCarousel({
   });
   
   // Calculate items per slide based on device
-  const itemsPerSlide = isMobile ? 1 : 2;
+  const getItemsPerSlide = () => {
+    if (isMobile) return 1;
+    if (isTablet) return 2;
+    if (isXLDesktop) return 6;
+    if (isLargeDesktop) return 5;
+    if (isDesktop) return 4;
+    return 3;
+  };
+  const itemsPerSlide = getItemsPerSlide();
   
   // Group products into slides
   const slides: Product[][] = [];
@@ -120,7 +131,7 @@ export function ProductCarousel({
               </Badge>
             </div>
           )}
-          {enableExpand && isTabletOrAbove && (
+          {enableExpand && isTablet && (
             <Button
               variant="ghost"
               size="sm"
@@ -132,9 +143,9 @@ export function ProductCarousel({
         </div>
       )}
       
-      {isExpanded && isTabletOrAbove ? (
-        // Grid view for expanded state
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {isExpanded && isTablet ? (
+        // Grid view for expanded state (tablet only)
+        <div className="grid grid-cols-2 gap-4">
           {products.map(product => (
             <ProductCard
               key={product.id}
@@ -171,7 +182,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : isXLDesktop ? 'grid-cols-6' : isLargeDesktop ? 'grid-cols-5' : isDesktop ? 'grid-cols-4' : 'grid-cols-3'}`}>
                     {slide.map(product => (
                       <ProductCard
                         key={product.id}
@@ -193,14 +204,14 @@ export function ProductCarousel({
               ))}
             </CarouselContent>
             
-            {/* Navigation arrows on opposite sides */}
-            {slides.length > 1 && !isMobile && (
+            {/* Navigation arrows - desktop only, hidden on tablet */}
+            {slides.length > 1 && isDesktop && (
               <>
                 <Button
                   onClick={() => api?.scrollPrev()}
                   size="icon"
                   variant="ghost"
-                  className={`absolute ${language === 'ar' ? 'right-2 lg:-right-12' : 'left-2 lg:-left-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
+                  className={`absolute ${language === 'ar' ? '-right-12' : '-left-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
                 >
                   <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -208,7 +219,7 @@ export function ProductCarousel({
                   onClick={() => api?.scrollNext()}
                   size="icon"
                   variant="ghost"
-                  className={`absolute ${language === 'ar' ? 'left-2 lg:-left-12' : 'right-2 lg:-right-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
+                  className={`absolute ${language === 'ar' ? '-left-12' : '-right-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
                 >
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
