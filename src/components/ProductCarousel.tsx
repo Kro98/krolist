@@ -10,6 +10,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { ProductCard, type Product } from "@/components/ProductCard";
+import { MobileProductCard } from "@/components/MobileProductCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -181,20 +182,31 @@ export function ProductCarousel({
                 >
                   <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
                     {slide.map(product => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onDelete={onDelete}
-                        onUpdate={onUpdate}
-                        onRefreshPrice={onRefreshPrice}
-                        onAddToMyProducts={onAddToMyProducts}
-                        onRemoveFromMyProducts={onRemoveFromMyProducts}
-                        userProductCount={userProductCount}
-                        isSelectionMode={isSelectionMode}
-                        isSelected={selectedProductIds.has(product.id)}
-                        onToggleSelect={onToggleSelect}
-                        isInFavorites={isInFavorites(product)}
-                      />
+                      isMobile ? (
+                        <MobileProductCard
+                          key={product.id}
+                          product={product}
+                          onAddToMyProducts={onAddToMyProducts}
+                          onRemoveFromMyProducts={onRemoveFromMyProducts}
+                          userProductCount={userProductCount}
+                          isInFavorites={isInFavorites(product)}
+                        />
+                      ) : (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onDelete={onDelete}
+                          onUpdate={onUpdate}
+                          onRefreshPrice={onRefreshPrice}
+                          onAddToMyProducts={onAddToMyProducts}
+                          onRemoveFromMyProducts={onRemoveFromMyProducts}
+                          userProductCount={userProductCount}
+                          isSelectionMode={isSelectionMode}
+                          isSelected={selectedProductIds.has(product.id)}
+                          onToggleSelect={onToggleSelect}
+                          isInFavorites={isInFavorites(product)}
+                        />
+                      )
                     ))}
                   </div>
                 </CarouselItem>
