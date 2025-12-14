@@ -193,6 +193,7 @@ export type Database = {
           display_times: number
           id: string
           is_active: boolean | null
+          language: string
           title_ar: string | null
           title_en: string
           updated_at: string | null
@@ -204,6 +205,7 @@ export type Database = {
           display_times?: number
           id?: string
           is_active?: boolean | null
+          language?: string
           title_ar?: string | null
           title_en: string
           updated_at?: string | null
@@ -215,6 +217,7 @@ export type Database = {
           display_times?: number
           id?: string
           is_active?: boolean | null
+          language?: string
           title_ar?: string | null
           title_en?: string
           updated_at?: string | null

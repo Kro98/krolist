@@ -1096,9 +1096,9 @@ export default function KrolistProductsManager() {
                     <div className="flex items-start gap-3">
                       {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-16 h-16 object-cover rounded flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
                        <div className="flex-1 min-w-0">
-                        <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                          <CardTitle className="text-sm line-clamp-2 flex items-center gap-1">
-                            {title}
+                        <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors" title={title}>
+                          <CardTitle className="text-sm flex items-center gap-1">
+                            {title.length > 30 ? `${title.substring(0, 30)}...` : title}
                             <ExternalLink className="h-3 w-3 flex-shrink-0" />
                           </CardTitle>
                         </a>
