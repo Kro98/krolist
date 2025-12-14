@@ -722,7 +722,27 @@ export default function KrolistProductsManager() {
         if (product) handleOpenDialog(product);
       }} />
           </div>) : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProducts.map(product => <Card key={product.id}>
+          {filteredProducts.map(product => <Card key={product.id} className="relative">
+              {/* Three-dot menu for admin actions */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleOpenDialog(product)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    {t('admin.editProduct')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t('admin.deleteProduct')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <CardHeader>
                 {product.image_url && <img src={product.image_url} alt={product.title} className="w-full h-48 object-cover rounded-md mb-4" />}
                 <CardTitle className="line-clamp-2">{product.title}</CardTitle>
