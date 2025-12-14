@@ -1,7 +1,8 @@
 // App version - increment by 0.1 with each update
-export const APP_VERSION = "0.1";
+export const APP_VERSION = "0.2";
 
 // Version history for reference
 export const VERSION_HISTORY = [
+  { version: "0.2", date: "2024-12-14", notes: "Updated defaults, tablet view improvements" },
   { version: "0.1", date: "2024-12-13", notes: "Initial release" },
 ];
