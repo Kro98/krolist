@@ -1061,9 +1061,7 @@ export default function KrolistProductsManager() {
             <div className="flex items-start justify-between">
               <div>
                 <DialogTitle>Manual Price Update</DialogTitle>
-                <p className="text-sm text-muted-foreground">
-                  Update prices manually. Products with the same title will be updated together.
-                </p>
+                
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleExportPrices}>
