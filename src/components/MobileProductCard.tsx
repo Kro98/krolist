@@ -1,0 +1,177 @@
+import { Heart, Youtube } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useConvertedPrice } from "@/hooks/useConvertedPrice";
+import { sanitizeContent } from "@/lib/sanitize";
+import { useState, useEffect } from "react";
+
+export interface MobileProduct {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  category: string | null;
+  store: string;
+  product_url: string;
+  current_price: number;
+  original_price: number;
+  original_currency: string;
+  currency: string;
+  youtube_url?: string | null;
+  isKrolistProduct?: boolean;
+}
+
+interface MobileProductCardProps {
+  product: MobileProduct;
+  onAddToMyProducts?: (product: MobileProduct) => void;
+  onRemoveFromMyProducts?: (product: MobileProduct) => void;
+  userProductCount?: number;
+  isInFavorites?: boolean;
+}
+
+export function MobileProductCard({
+  product,
+  onAddToMyProducts,
+  onRemoveFromMyProducts,
+  userProductCount = 0,
+  isInFavorites = false,
+}: MobileProductCardProps) {
+  const { language } = useLanguage();
+  const { currency, convertPriceToDisplay } = useConvertedPrice();
+  const [cardStyle, setCardStyle] = useState<'fade' | 'full'>('fade');
+
+  useEffect(() => {
+    const loadCardStyle = () => {
+      const saved = localStorage.getItem('mobileCardStyle');
+      if (saved === 'fade' || saved === 'full') {
+        setCardStyle(saved);
+      }
+    };
+    loadCardStyle();
+    
+    const handleStyleChange = (e: CustomEvent) => {
+      setCardStyle(e.detail);
+    };
+    
+    window.addEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
+    return () => window.removeEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
+  }, []);
+
+  const displayCurrentPrice = convertPriceToDisplay(product.current_price, product.original_currency);
+  const displayOriginalPrice = convertPriceToDisplay(product.original_price, product.original_currency);
+  const discountPercent = product.original_price > 0 
+    ? ((product.original_price - product.current_price) / product.original_price * 100).toFixed(0) 
+    : '0';
+  const discountValue = parseFloat(discountPercent);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInFavorites && onRemoveFromMyProducts) {
+      onRemoveFromMyProducts(product);
+    } else if (onAddToMyProducts) {
+      if (userProductCount >= 24) return;
+      onAddToMyProducts(product);
+    }
+  };
+
+  return (
+    <Card className="bg-card border border-border shadow-card hover:shadow-hover transition-all duration-300 overflow-hidden relative">
+      <CardContent className="p-0">
+        {/* Image Container */}
+        <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="block relative">
+          <div className="relative aspect-square overflow-hidden">
+            <img
+              src={product.image_url || '/placeholder.svg'}
+              alt={product.title}
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient overlay for fade style */}
+            {cardStyle === 'fade' && (
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent pointer-events-none" />
+            )}
+          </div>
+          
+          {/* Favorite Button */}
+          {onAddToMyProducts && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 h-8 w-8 p-0 bg-background/50 backdrop-blur-sm hover:bg-background/80 transition-transform active:scale-90"
+              onClick={handleToggleFavorite}
+            >
+              <Heart
+                className={`h-5 w-5 transition-all duration-200 ${
+                  isInFavorites ? 'fill-red-500 text-red-500' : 'text-foreground'
+                }`}
+              />
+            </Button>
+          )}
+        </a>
+
+        {/* Content */}
+        <div className={`p-3 space-y-2 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+          {/* Title */}
+          <a href={product.product_url} target="_blank" rel="noopener noreferrer">
+            <h3 className="font-semibold text-sm line-clamp-1 hover:text-primary transition-colors">
+              {sanitizeContent(product.title)}
+            </h3>
+          </a>
+
+          {/* Description */}
+          {product.description && (
+            <p className="text-xs text-muted-foreground line-clamp-1">
+              {sanitizeContent(product.description)}
+            </p>
+          )}
+
+          {/* Price */}
+          <div className={`flex items-center gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+            <span className="text-base font-bold text-foreground">
+              {currency} {displayCurrentPrice.toFixed(2)}
+            </span>
+            {discountValue > 0 && (
+              <Badge className="bg-success hover:bg-success text-success-foreground text-xs px-1.5 py-0">
+                -{discountValue}%
+              </Badge>
+            )}
+          </div>
+
+          {/* Original Price */}
+          {product.current_price !== product.original_price && (
+            <span className="text-xs text-muted-foreground line-through">
+              {currency} {displayOriginalPrice.toFixed(2)}
+            </span>
+          )}
+
+          {/* Badges */}
+          <div className={`flex gap-1.5 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+            {product.youtube_url && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-5 w-5 p-0 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open(product.youtube_url!, '_blank');
+                }}
+              >
+                <Youtube className="h-3 w-3" />
+              </Button>
+            )}
+            <Badge className="bg-orange-500 text-white hover:bg-orange-600 px-1.5 py-0 text-[0.6rem]">
+              {product.store}
+            </Badge>
+            {product.category && (
+              <Badge variant="secondary" className="px-1.5 py-0 text-[0.6rem] border border-border">
+                {product.category}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

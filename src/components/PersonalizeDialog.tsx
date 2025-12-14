@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paintbrush, Sun, Moon, Monitor } from 'lucide-react';
+import { Paintbrush, Sun, Moon, Monitor, Image, Layers } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -66,6 +66,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
+  const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -76,6 +77,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
         setSettings(DEFAULT_SETTINGS);
       }
     }
+    
+    const savedCardStyle = localStorage.getItem('mobileCardStyle');
+    if (savedCardStyle === 'fade' || savedCardStyle === 'full') {
+      setMobileCardStyle(savedCardStyle);
+    }
   }, []);
 
   const saveSettings = (newSettings: DitherSettings) => {
@@ -84,11 +90,18 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('ditherSettingsChanged', { detail: newSettings }));
   };
 
+  const saveMobileCardStyle = (style: 'fade' | 'full') => {
+    setMobileCardStyle(style);
+    localStorage.setItem('mobileCardStyle', style);
+    window.dispatchEvent(new CustomEvent('mobileCardStyleChanged', { detail: style }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
     setUndertone('orange');
     setCustomHue(31);
+    saveMobileCardStyle('fade');
   };
 
   const isArabic = language === 'ar';
@@ -116,8 +129,9 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
         </DialogHeader>
         
         <Tabs defaultValue="theme" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="theme">{isArabic ? 'السمة' : 'Theme'}</TabsTrigger>
+            <TabsTrigger value="visual">{isArabic ? 'مرئي' : 'Visual'}</TabsTrigger>
             <TabsTrigger value="dither">{isArabic ? 'الخلفية' : 'Background'}</TabsTrigger>
           </TabsList>
 
@@ -204,6 +218,39 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                 />
               </div>
             )}
+          </TabsContent>
+
+          {/* Visual Tab */}
+          <TabsContent value="visual" className="space-y-6 py-4">
+            {/* Mobile Card Style */}
+            <div className="space-y-3">
+              <Label>{isArabic ? 'نمط بطاقة المنتج (موبايل)' : 'Product Card Style (Mobile)'}</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={mobileCardStyle === 'fade' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => saveMobileCardStyle('fade')}
+                  className="flex-1 gap-2"
+                >
+                  <Layers className="h-4 w-4" />
+                  {isArabic ? 'تلاشي' : 'Fade'}
+                </Button>
+                <Button
+                  variant={mobileCardStyle === 'full' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => saveMobileCardStyle('full')}
+                  className="flex-1 gap-2"
+                >
+                  <Image className="h-4 w-4" />
+                  {isArabic ? 'كامل' : 'Full'}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isArabic 
+                  ? 'تلاشي: تدرج لوني على الصورة. كامل: عرض الصورة بالكامل.' 
+                  : 'Fade: Gradient overlay on image. Full: Show complete image.'}
+              </p>
+            </div>
           </TabsContent>
 
           {/* Dither Background Tab */}
