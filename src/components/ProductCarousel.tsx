@@ -128,7 +128,7 @@ export function ProductCarousel({
               </Badge>
             </div>
           )}
-          {enableExpand && isTablet && (
+          {enableExpand && (isTablet || isDesktop) && (
             <Button
               variant="ghost"
               size="sm"
@@ -140,9 +140,9 @@ export function ProductCarousel({
         </div>
       )}
       
-      {isExpanded && isTablet ? (
-        // Grid view for expanded state (tablet only)
-        <div className="grid grid-cols-2 gap-4">
+      {isExpanded && (isTablet || isDesktop) ? (
+        // Grid view for expanded state
+        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
           {products.map(product => (
             <ProductCard
               key={product.id}
