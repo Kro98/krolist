@@ -55,8 +55,8 @@ export function ProductCarousel({
     return saved ? parseInt(saved) : 3000;
   });
   const isMobile = useIsMobile();
-  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1024px)");
-  const isDesktop = useMediaQuery("(min-width: 1025px)");
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
+  const isDesktop = useMediaQuery("(min-width: 1280px)");
   const isLargeDesktop = useMediaQuery("(min-width: 1280px)");
   const isXLDesktop = useMediaQuery("(min-width: 1536px)");
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
