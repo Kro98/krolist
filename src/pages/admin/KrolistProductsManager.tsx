@@ -726,7 +726,7 @@ export default function KrolistProductsManager() {
               {/* Three-dot menu for admin actions */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm">
+                  <Button variant="outline" size="icon" className="absolute top-3 right-3 z-10 h-8 w-8 bg-background shadow-md hover:bg-accent">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
