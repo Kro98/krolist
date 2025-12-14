@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList } from 'lucide-react';
+import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList, Heart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -14,6 +14,50 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Preview thumbnail components
+const ClassicCardPreview = ({ selected }: { selected: boolean }) => (
+  <div className={`w-full h-16 rounded-lg border-2 p-2 flex gap-2 transition-all ${selected ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'}`}>
+    <div className="w-12 h-full bg-muted rounded" />
+    <div className="flex-1 flex flex-col justify-center gap-1">
+      <div className="h-2 w-3/4 bg-muted-foreground/30 rounded" />
+      <div className="h-1.5 w-1/2 bg-muted-foreground/20 rounded" />
+      <div className="h-1.5 w-1/3 bg-primary/50 rounded" />
+    </div>
+  </div>
+);
+
+const CompactCardPreview = ({ selected }: { selected: boolean }) => (
+  <div className={`w-full h-16 rounded-lg border-2 p-2 transition-all ${selected ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'}`}>
+    <div className="w-full h-8 bg-muted rounded mb-1" />
+    <div className="flex flex-col gap-0.5">
+      <div className="h-1.5 w-2/3 bg-muted-foreground/30 rounded" />
+      <div className="h-1.5 w-1/3 bg-primary/50 rounded" />
+    </div>
+  </div>
+);
+
+const FadeImagePreview = ({ selected }: { selected: boolean }) => (
+  <div className={`w-full h-16 rounded-lg border-2 overflow-hidden transition-all ${selected ? 'border-primary' : 'border-muted hover:border-muted-foreground/50'}`}>
+    <div className="w-full h-full bg-muted relative">
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+      <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-0.5">
+        <div className="h-1.5 w-2/3 bg-foreground/70 rounded" />
+        <div className="h-1.5 w-1/3 bg-primary rounded" />
+      </div>
+    </div>
+  </div>
+);
+
+const FullImagePreview = ({ selected }: { selected: boolean }) => (
+  <div className={`w-full h-16 rounded-lg border-2 overflow-hidden transition-all ${selected ? 'border-primary' : 'border-muted hover:border-muted-foreground/50'}`}>
+    <div className="w-full h-10 bg-muted" />
+    <div className="p-1.5 bg-card flex flex-col gap-0.5">
+      <div className="h-1.5 w-2/3 bg-muted-foreground/30 rounded" />
+      <div className="h-1.5 w-1/3 bg-primary/50 rounded" />
+    </div>
+  </div>
+);
 
 interface DitherSettings {
   enabled: boolean;
@@ -68,6 +112,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
+  const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -87,6 +132,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     const savedLayoutStyle = localStorage.getItem('cardLayoutStyle');
     if (savedLayoutStyle === 'classic' || savedLayoutStyle === 'compact') {
       setCardLayoutStyle(savedLayoutStyle);
+    }
+    
+    const savedFavoritesStyle = localStorage.getItem('favoritesCardStyle');
+    if (savedFavoritesStyle === 'classic' || savedFavoritesStyle === 'compact') {
+      setFavoritesCardStyle(savedFavoritesStyle);
     }
   }, []);
 
@@ -108,6 +158,12 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('cardLayoutStyleChanged', { detail: style }));
   };
 
+  const saveFavoritesCardStyle = (style: 'classic' | 'compact') => {
+    setFavoritesCardStyle(style);
+    localStorage.setItem('favoritesCardStyle', style);
+    window.dispatchEvent(new CustomEvent('favoritesCardStyleChanged', { detail: style }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
@@ -115,6 +171,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     setCustomHue(31);
     saveMobileCardStyle('fade');
     saveCardLayoutStyle('compact');
+    saveFavoritesCardStyle('classic');
   };
 
   const isArabic = language === 'ar';
@@ -238,64 +295,69 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
             {/* Card Layout Style */}
             <div className="space-y-3">
               <Label>{isArabic ? 'تخطيط البطاقة' : 'Card Layout'}</Label>
-              <div className="flex gap-2">
-                <Button
-                  variant={cardLayoutStyle === 'classic' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => saveCardLayoutStyle('classic')}
-                  className="flex-1 gap-2"
-                >
-                  <LayoutList className="h-4 w-4" />
-                  {isArabic ? 'كلاسيكي' : 'Classic'}
-                </Button>
-                <Button
-                  variant={cardLayoutStyle === 'compact' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => saveCardLayoutStyle('compact')}
-                  className="flex-1 gap-2"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                  {isArabic ? 'مدمج' : 'Compact'}
-                </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => saveCardLayoutStyle('classic')} className="flex flex-col gap-2">
+                  <ClassicCardPreview selected={cardLayoutStyle === 'classic'} />
+                  <span className={`text-xs text-center ${cardLayoutStyle === 'classic' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    {isArabic ? 'كلاسيكي' : 'Classic'}
+                  </span>
+                </button>
+                <button onClick={() => saveCardLayoutStyle('compact')} className="flex flex-col gap-2">
+                  <CompactCardPreview selected={cardLayoutStyle === 'compact'} />
+                  <span className={`text-xs text-center ${cardLayoutStyle === 'compact' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    {isArabic ? 'مدمج' : 'Compact'}
+                  </span>
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {isArabic 
-                  ? 'كلاسيكي: تخطيط أفقي مع الصورة على الجانب. مدمج: تخطيط عمودي مع الصورة في الأعلى.' 
-                  : 'Classic: Horizontal layout with image on side. Compact: Vertical layout with image on top.'}
-              </p>
             </div>
 
             {/* Mobile Card Style - only show when compact is selected */}
             {cardLayoutStyle === 'compact' && (
               <div className="space-y-3">
                 <Label>{isArabic ? 'نمط صورة البطاقة' : 'Card Image Style'}</Label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={mobileCardStyle === 'fade' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => saveMobileCardStyle('fade')}
-                    className="flex-1 gap-2"
-                  >
-                    <Layers className="h-4 w-4" />
-                    {isArabic ? 'تلاشي' : 'Fade'}
-                  </Button>
-                  <Button
-                    variant={mobileCardStyle === 'full' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => saveMobileCardStyle('full')}
-                    className="flex-1 gap-2"
-                  >
-                    <Image className="h-4 w-4" />
-                    {isArabic ? 'كامل' : 'Full'}
-                  </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => saveMobileCardStyle('fade')} className="flex flex-col gap-2">
+                    <FadeImagePreview selected={mobileCardStyle === 'fade'} />
+                    <span className={`text-xs text-center ${mobileCardStyle === 'fade' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      {isArabic ? 'تلاشي' : 'Fade'}
+                    </span>
+                  </button>
+                  <button onClick={() => saveMobileCardStyle('full')} className="flex flex-col gap-2">
+                    <FullImagePreview selected={mobileCardStyle === 'full'} />
+                    <span className={`text-xs text-center ${mobileCardStyle === 'full' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      {isArabic ? 'كامل' : 'Full'}
+                    </span>
+                  </button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {isArabic 
-                    ? 'تلاشي: تدرج لوني على الصورة. كامل: عرض الصورة بالكامل.' 
-                    : 'Fade: Gradient overlay on image. Full: Show complete image.'}
-                </p>
               </div>
             )}
+
+            {/* My Favorites Card Style */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-primary" />
+                <Label>{isArabic ? 'تخطيط المفضلة' : 'My Favorites Layout'}</Label>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => saveFavoritesCardStyle('classic')} className="flex flex-col gap-2">
+                  <ClassicCardPreview selected={favoritesCardStyle === 'classic'} />
+                  <span className={`text-xs text-center ${favoritesCardStyle === 'classic' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    {isArabic ? 'كلاسيكي' : 'Classic'}
+                  </span>
+                </button>
+                <button onClick={() => saveFavoritesCardStyle('compact')} className="flex flex-col gap-2">
+                  <CompactCardPreview selected={favoritesCardStyle === 'compact'} />
+                  <span className={`text-xs text-center ${favoritesCardStyle === 'compact' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    {isArabic ? 'مدمج' : 'Compact'}
+                  </span>
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isArabic 
+                  ? 'تخصيص مظهر بطاقات المفضلة بشكل منفصل' 
+                  : 'Customize favorites cards independently'}
+              </p>
+            </div>
           </TabsContent>
 
           {/* Dither Background Tab */}
