@@ -31,6 +31,7 @@ interface ProductCarouselProps {
   selectedProductIds?: Set<string>;
   enableExpand?: boolean;
   userProducts?: Product[];
+  useClassicCard?: boolean; // Use horizontal ProductCard layout instead of vertical MobileProductCard
 }
 
 export function ProductCarousel({
@@ -46,7 +47,8 @@ export function ProductCarousel({
   onToggleSelect,
   selectedProductIds = new Set(),
   enableExpand = false,
-  userProducts = []
+  userProducts = [],
+  useClassicCard = false
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
@@ -142,17 +144,34 @@ export function ProductCarousel({
       )}
       
       {isExpanded && (isTablet || isDesktop) ? (
-        // Grid view for expanded state - use MobileProductCard for consistent visual style
-        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : 'grid-cols-4'}`}>
+        // Grid view for expanded state
+        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : useClassicCard ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {products.map(product => (
-            <MobileProductCard
-              key={product.id}
-              product={product}
-              onAddToMyProducts={onAddToMyProducts}
-              onRemoveFromMyProducts={onRemoveFromMyProducts}
-              userProductCount={userProductCount}
-              isInFavorites={isInFavorites(product)}
-            />
+            useClassicCard ? (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onDelete={onDelete}
+                onUpdate={onUpdate}
+                onRefreshPrice={onRefreshPrice}
+                onAddToMyProducts={onAddToMyProducts}
+                onRemoveFromMyProducts={onRemoveFromMyProducts}
+                userProductCount={userProductCount}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedProductIds.has(product.id)}
+                onToggleSelect={onToggleSelect}
+                isInFavorites={isInFavorites(product)}
+              />
+            ) : (
+              <MobileProductCard
+                key={product.id}
+                product={product}
+                onAddToMyProducts={onAddToMyProducts}
+                onRemoveFromMyProducts={onRemoveFromMyProducts}
+                userProductCount={userProductCount}
+                isInFavorites={isInFavorites(product)}
+              />
+            )
           ))}
         </div>
       ) : (
@@ -176,14 +195,31 @@ export function ProductCarousel({
                 >
                   <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
                     {slide.map(product => (
-                      <MobileProductCard
-                        key={product.id}
-                        product={product}
-                        onAddToMyProducts={onAddToMyProducts}
-                        onRemoveFromMyProducts={onRemoveFromMyProducts}
-                        userProductCount={userProductCount}
-                        isInFavorites={isInFavorites(product)}
-                      />
+                      useClassicCard ? (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onDelete={onDelete}
+                          onUpdate={onUpdate}
+                          onRefreshPrice={onRefreshPrice}
+                          onAddToMyProducts={onAddToMyProducts}
+                          onRemoveFromMyProducts={onRemoveFromMyProducts}
+                          userProductCount={userProductCount}
+                          isSelectionMode={isSelectionMode}
+                          isSelected={selectedProductIds.has(product.id)}
+                          onToggleSelect={onToggleSelect}
+                          isInFavorites={isInFavorites(product)}
+                        />
+                      ) : (
+                        <MobileProductCard
+                          key={product.id}
+                          product={product}
+                          onAddToMyProducts={onAddToMyProducts}
+                          onRemoveFromMyProducts={onRemoveFromMyProducts}
+                          userProductCount={userProductCount}
+                          isInFavorites={isInFavorites(product)}
+                        />
+                      )
                     ))}
                   </div>
                 </CarouselItem>
