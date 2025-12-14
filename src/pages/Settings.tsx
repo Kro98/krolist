@@ -46,7 +46,7 @@ export default function Settings() {
   });
   const [titleScrollSpeed, setTitleScrollSpeed] = useState(() => {
     const saved = localStorage.getItem('titleScrollSpeed');
-    return saved ? parseInt(saved) : 5;
+    return saved !== null ? parseInt(saved) : 5;
   });
   const [hasUpdate, setHasUpdate] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);

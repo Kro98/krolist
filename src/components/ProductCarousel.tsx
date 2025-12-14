@@ -67,7 +67,7 @@ export function ProductCarousel({
   });
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(() => {
     const saved = localStorage.getItem('desktopItemsPerRow');
-    return saved === '3' ? 3 : 2;
+    return saved === '2' ? 2 : 3;
   });
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
