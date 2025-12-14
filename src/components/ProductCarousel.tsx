@@ -109,10 +109,10 @@ export function ProductCarousel({
     stopOnMouseEnter: true,
   });
   
-  // Calculate items per slide based on device - tablet always shows 2
+  // Calculate items per slide based on device - tablet shows 2x2 grid (4 items)
   const getItemsPerSlide = () => {
     if (isMobile) return 1;
-    if (isTablet) return 2; // Force 2 items on tablet
+    if (isTablet) return 4; // 2x2 grid on tablet
     return desktopItemsPerRow;
   };
   const itemsPerSlide = getItemsPerSlide();
@@ -224,7 +224,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2 grid-rows-2' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                     {slide.map(product => (
                       ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
                         <ProductCard
