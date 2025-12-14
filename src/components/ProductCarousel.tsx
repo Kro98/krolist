@@ -112,7 +112,7 @@ export function ProductCarousel({
   // Calculate items per slide based on device - tablet shows 2x2 grid (4 items)
   const getItemsPerSlide = () => {
     if (isMobile) return 1;
-    if (isTablet) return 4; // 2x2 grid on tablet
+    if (!isDesktop) return 4; // Tablet (between mobile and desktop) shows 2x2 grid
     return desktopItemsPerRow;
   };
   const itemsPerSlide = getItemsPerSlide();
