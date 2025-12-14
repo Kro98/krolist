@@ -31,7 +31,7 @@ interface ProductCarouselProps {
   selectedProductIds?: Set<string>;
   enableExpand?: boolean;
   userProducts?: Product[];
-  useClassicCard?: boolean; // Use horizontal ProductCard layout instead of vertical MobileProductCard
+  isFavoritesSection?: boolean; // Whether this is the My Favorites section
 }
 
 export function ProductCarousel({
@@ -48,7 +48,7 @@ export function ProductCarousel({
   selectedProductIds = new Set(),
   enableExpand = false,
   userProducts = [],
-  useClassicCard = false
+  isFavoritesSection = false
 }: ProductCarouselProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
@@ -59,6 +59,10 @@ export function ProductCarousel({
   });
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>(() => {
     const saved = localStorage.getItem('cardLayoutStyle');
+    return saved === 'classic' ? 'classic' : 'compact';
+  });
+  const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>(() => {
+    const saved = localStorage.getItem('favoritesCardStyle');
     return saved === 'classic' ? 'classic' : 'compact';
   });
   const isMobile = useIsMobile();
@@ -77,11 +81,16 @@ export function ProductCarousel({
     const handleLayoutChange = (e: CustomEvent) => {
       setCardLayoutStyle(e.detail);
     };
+    const handleFavoritesLayoutChange = (e: CustomEvent) => {
+      setFavoritesCardStyle(e.detail);
+    };
     window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
     window.addEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
+    window.addEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
     return () => {
       window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
       window.removeEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
+      window.removeEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
     };
   }, []);
   
@@ -156,9 +165,9 @@ export function ProductCarousel({
       
       {isExpanded && (isTablet || isDesktop) ? (
         // Grid view for expanded state
-        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : (useClassicCard || cardLayoutStyle === 'classic') ? 'grid-cols-3' : 'grid-cols-4'}`}>
+        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {products.map(product => (
-            (useClassicCard || cardLayoutStyle === 'classic') ? (
+            ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -206,7 +215,7 @@ export function ProductCarousel({
                 >
                   <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
                     {slide.map(product => (
-                      (useClassicCard || cardLayoutStyle === 'classic') ? (
+                      ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
                         <ProductCard
                           key={product.id}
                           product={product}

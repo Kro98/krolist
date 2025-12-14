@@ -474,7 +474,7 @@ export default function Products() {
       {/* User Favorites - Always on top when logged in */}
       {filteredUserProducts.length > 0 && (
         <div className="space-y-4 animate-fade-in">
-          <ProductCarousel title="MY FAVORITES" products={filteredUserProducts} onDelete={handleDelete} onUpdate={handleUpdate} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand />
+          <ProductCarousel title="MY FAVORITES" products={filteredUserProducts} onDelete={handleDelete} onUpdate={handleUpdate} isSelectionMode={isSelectMode} onToggleSelect={handleToggleSelect} selectedProductIds={selectedProducts} enableExpand isFavoritesSection />
           {!refreshStatus.canRefresh && refreshStatus.nextRefreshDate && (
             <p className="text-sm text-muted-foreground text-center">
               Next refresh: {new Date(refreshStatus.nextRefreshDate).toLocaleDateString()}
