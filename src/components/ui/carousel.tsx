@@ -166,7 +166,7 @@ const CarouselItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
 CarouselItem.displayName = "CarouselItem";
 
 const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
-  ({ className, variant = "outline", size = "icon", ...props }, ref) => {
+  ({ className, variant = "ghost", size = "icon", ...props }, ref) => {
     const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
     if (!canScrollPrev) return null;
@@ -177,7 +177,7 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
         variant={variant}
         size={size}
         className={cn(
-          "absolute w-8 rounded-lg",
+          "absolute w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50",
           orientation === "horizontal"
             ? "-left-12 top-0 bottom-0 h-full"
             : "-top-12 left-1/2 -translate-x-1/2 rotate-90 h-10",
@@ -186,7 +186,7 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
         onClick={scrollPrev}
         {...props}
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-4 w-4 text-muted-foreground" />
         <span className="sr-only">Previous slide</span>
       </Button>
     );
@@ -195,7 +195,7 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
 CarouselPrevious.displayName = "CarouselPrevious";
 
 const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
-  ({ className, variant = "outline", size = "icon", ...props }, ref) => {
+  ({ className, variant = "ghost", size = "icon", ...props }, ref) => {
     const { orientation, scrollNext, canScrollNext } = useCarousel();
 
     if (!canScrollNext) return null;
@@ -206,7 +206,7 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
         variant={variant}
         size={size}
         className={cn(
-          "absolute w-8 rounded-lg",
+          "absolute w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50",
           orientation === "horizontal"
             ? "-right-12 top-0 bottom-0 h-full"
             : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90 h-10",
@@ -215,7 +215,7 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
         onClick={scrollNext}
         {...props}
       >
-        <ArrowRight className="h-4 w-4" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground" />
         <span className="sr-only">Next slide</span>
       </Button>
     );
