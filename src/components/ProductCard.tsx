@@ -238,12 +238,13 @@ export function ProductCard({
                 >
                   <X className="h-5 w-5 text-destructive" />
                 </Button>
-              ) : product.isKrolistProduct && onAddToMyProducts ? (
+              ) : product.isKrolistProduct && onAddToMyProducts && !onDelete ? (
+                /* Show heart for Krolist products when not in admin context (no onDelete) */
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0 transition-transform active:scale-90" onClick={handleToggleFavorite} title={isInFavorites ? "Remove from favorites" : (userProductCount >= 24 ? "Product limit reached" : "Add to favorites")}>
                   <Heart className={`h-5 w-5 transition-all duration-200 ${isInFavorites ? 'fill-red-500 text-red-500 animate-in zoom-in-50' : 'text-primary'}`} />
                 </Button>
               ) : (
-                /* Show menu for user products only */
+                /* Show menu for user products OR admin Krolist products */
                 (onDelete || onUpdate) && <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
