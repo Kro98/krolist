@@ -199,16 +199,18 @@ export function ProductCarousel({
                 <Button
                   onClick={() => api?.scrollPrev()}
                   size="icon"
-                  className={`absolute ${language === 'ar' ? 'right-2 lg:-right-16' : 'left-2 lg:-left-16'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
+                  variant="ghost"
+                  className={`absolute ${language === 'ar' ? 'right-2 lg:-right-12' : 'left-2 lg:-left-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                 </Button>
                 <Button
                   onClick={() => api?.scrollNext()}
                   size="icon"
-                  className={`absolute ${language === 'ar' ? 'left-2 lg:-left-16' : 'right-2 lg:-right-16'} top-1/2 -translate-y-1/2 z-10 rounded-full w-10 h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all`}
+                  variant="ghost"
+                  className={`absolute ${language === 'ar' ? 'left-2 lg:-left-12' : 'right-2 lg:-right-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </>
             )}
