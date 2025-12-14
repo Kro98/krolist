@@ -38,11 +38,19 @@ interface KrolistProduct {
 }
 const CATEGORIES = ['Electronics', 'Fashion', 'Automotive', 'Watches', 'EDC', 'Custom'];
 const CURRENCIES = ['SAR', 'AED', 'USD', 'EUR', 'GBP'];
-const AVAILABILITY_STATUSES = [
-  { value: 'available', label: 'Available', color: 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30' },
-  { value: 'currently_unavailable', label: 'Currently Unavailable', color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30' },
-  { value: 'ran_out', label: 'Ran Out', color: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30' },
-];
+const AVAILABILITY_STATUSES = [{
+  value: 'available',
+  label: 'Available',
+  color: 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30'
+}, {
+  value: 'currently_unavailable',
+  label: 'Currently Unavailable',
+  color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30'
+}, {
+  value: 'ran_out',
+  label: 'Ran Out',
+  color: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30'
+}];
 export default function KrolistProductsManager() {
   const {
     t
@@ -503,13 +511,11 @@ export default function KrolistProductsManager() {
       // Skip header
       const dataLines = lines.slice(1).filter(line => line.trim());
       const importedPrices: Record<string, string> = {};
-      
       dataLines.forEach(line => {
         // Better CSV parsing that handles quoted fields with commas
         const fields: string[] = [];
         let field = '';
         let inQuotes = false;
-        
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           if (char === '"') {
@@ -527,7 +533,6 @@ export default function KrolistProductsManager() {
           }
         }
         fields.push(field.trim());
-        
         if (fields.length >= 3) {
           const title = fields[0].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
           const price = fields[2].replace(/^"|"$/g, '').trim();
@@ -536,7 +541,6 @@ export default function KrolistProductsManager() {
           }
         }
       });
-      
       setManualPrices({
         ...manualPrices,
         ...importedPrices
@@ -1088,13 +1092,19 @@ export default function KrolistProductsManager() {
               return acc;
             }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => {
               const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
-              const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A';
+              const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+              }) : 'N/A';
               const currentStatus = manualStatuses[title] || prods[0].availability_status || 'available';
               const statusConfig = AVAILABILITY_STATUSES.find(s => s.value === currentStatus);
               return <Card key={title}>
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-3 mx-[5px] px-[5px]">
                     <div className="flex items-start gap-3">
-                      {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-16 h-16 object-cover rounded flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                      {prods[0].image_url && <img src={prods[0].image_url} alt={title} onError={e => {
+                      e.currentTarget.style.display = 'none';
+                    }} className="w-16 h-16 flex-shrink-0 border-0 rounded-sm opacity-100 object-fill" />}
                        <div className="flex-1 min-w-0">
                         <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors" title={title}>
                           <CardTitle className="text-sm flex items-center gap-1">
@@ -1114,7 +1124,7 @@ export default function KrolistProductsManager() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0 space-y-2">
+                  <CardContent className="pt-0 space-y-2 px-[5px] mx-[2px]">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Previous: {prods[0].current_price} {prods[0].currency}</span>
                       <span>Original: {prods[0].original_price} {prods[0].currency}</span>
@@ -1122,29 +1132,27 @@ export default function KrolistProductsManager() {
                     <div className="flex items-center gap-2">
                       <Label className="text-xs whitespace-nowrap">New Price:</Label>
                       <Input type="number" step="0.01" value={manualPrices[title] || ''} onChange={e => setManualPrices({
-                    ...manualPrices,
-                    [title]: e.target.value
-                  })} className="h-8 text-sm" placeholder={prods[0].current_price.toString()} />
+                      ...manualPrices,
+                      [title]: e.target.value
+                    })} className="h-8 text-sm" placeholder={prods[0].current_price.toString()} />
                       <span className="text-xs text-muted-foreground">{prods[0].currency}</span>
                     </div>
                     {/* Status Selector */}
                     <div className="flex items-center gap-2">
                       <Label className="text-xs whitespace-nowrap">Status:</Label>
                       <Select value={currentStatus} onValueChange={value => setManualStatuses({
-                        ...manualStatuses,
-                        [title]: value
-                      })}>
+                      ...manualStatuses,
+                      [title]: value
+                    })}>
                         <SelectTrigger className="h-8 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {AVAILABILITY_STATUSES.map(status => (
-                            <SelectItem key={status.value} value={status.value}>
+                          {AVAILABILITY_STATUSES.map(status => <SelectItem key={status.value} value={status.value}>
                               <span className={`px-1.5 py-0.5 rounded text-xs border ${status.color}`}>
                                 {status.label}
                               </span>
-                            </SelectItem>
-                          ))}
+                            </SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1176,13 +1184,19 @@ export default function KrolistProductsManager() {
                   acc[product.title].push(product);
                   return acc;
                 }, {} as Record<string, KrolistProduct[]>)).map(([title, prods]) => {
-                    const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
-                    const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A';
-                    const currentStatus = manualStatuses[title] || prods[0].availability_status || 'available';
-                    return <tr key={title} className="hover:bg-accent/50">
+                  const lastUpdated = prods[0].last_checked_at || prods[0].updated_at;
+                  const formattedDate = lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit'
+                  }) : 'N/A';
+                  const currentStatus = manualStatuses[title] || prods[0].availability_status || 'available';
+                  return <tr key={title} className="hover:bg-accent/50">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
-                          {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-12 h-12 object-cover rounded flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                          {prods[0].image_url && <img src={prods[0].image_url} alt={title} className="w-12 h-12 object-cover rounded flex-shrink-0" onError={e => {
+                          e.currentTarget.style.display = 'none';
+                        }} />}
                           <div className="min-w-0">
                             <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                               <p className="font-medium text-sm line-clamp-2 flex items-center gap-1">
@@ -1223,31 +1237,29 @@ export default function KrolistProductsManager() {
                       </td>
                       <td className="p-3">
                         <Input type="number" step="0.01" value={manualPrices[title] || ''} onChange={e => setManualPrices({
-                      ...manualPrices,
-                      [title]: e.target.value
-                    })} className="h-9" placeholder={prods[0].current_price.toString()} />
+                        ...manualPrices,
+                        [title]: e.target.value
+                      })} className="h-9" placeholder={prods[0].current_price.toString()} />
                       </td>
                       <td className="p-3">
                         <Select value={currentStatus} onValueChange={value => setManualStatuses({
-                          ...manualStatuses,
-                          [title]: value
-                        })}>
+                        ...manualStatuses,
+                        [title]: value
+                      })}>
                           <SelectTrigger className="h-9 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {AVAILABILITY_STATUSES.map(status => (
-                              <SelectItem key={status.value} value={status.value}>
+                            {AVAILABILITY_STATUSES.map(status => <SelectItem key={status.value} value={status.value}>
                                 <span className={`px-1.5 py-0.5 rounded text-xs border ${status.color}`}>
                                   {status.label}
                                 </span>
-                              </SelectItem>
-                            ))}
+                              </SelectItem>)}
                           </SelectContent>
                         </Select>
                       </td>
                     </tr>;
-                  })}
+                })}
                 </tbody>
               </table>
             </div>
