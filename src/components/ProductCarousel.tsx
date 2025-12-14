@@ -57,6 +57,10 @@ export function ProductCarousel({
     const saved = localStorage.getItem('carouselSpeed');
     return saved ? parseInt(saved) : 3000;
   });
+  const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>(() => {
+    const saved = localStorage.getItem('cardLayoutStyle');
+    return saved === 'classic' ? 'classic' : 'compact';
+  });
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
   const isDesktop = useMediaQuery("(min-width: 1280px)");
@@ -65,13 +69,20 @@ export function ProductCarousel({
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
   
-  // Listen for speed changes
+  // Listen for speed changes and card layout style changes
   useEffect(() => {
     const handleSpeedChange = (e: CustomEvent) => {
       setCarouselSpeed(e.detail);
     };
+    const handleLayoutChange = (e: CustomEvent) => {
+      setCardLayoutStyle(e.detail);
+    };
     window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
-    return () => window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
+    window.addEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
+    return () => {
+      window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
+      window.removeEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
+    };
   }, []);
   
   const autoplayPlugin = Autoplay({
@@ -145,9 +156,9 @@ export function ProductCarousel({
       
       {isExpanded && (isTablet || isDesktop) ? (
         // Grid view for expanded state
-        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : useClassicCard ? 'grid-cols-3' : 'grid-cols-4'}`}>
+        <div className={`grid gap-4 ${isTablet ? 'grid-cols-2' : (useClassicCard || cardLayoutStyle === 'classic') ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {products.map(product => (
-            useClassicCard ? (
+            (useClassicCard || cardLayoutStyle === 'classic') ? (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -195,7 +206,7 @@ export function ProductCarousel({
                 >
                   <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
                     {slide.map(product => (
-                      useClassicCard ? (
+                      (useClassicCard || cardLayoutStyle === 'classic') ? (
                         <ProductCard
                           key={product.id}
                           product={product}
