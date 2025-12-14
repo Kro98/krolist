@@ -113,6 +113,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
+  const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(2);
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -137,6 +138,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     const savedFavoritesStyle = localStorage.getItem('favoritesCardStyle');
     if (savedFavoritesStyle === 'classic' || savedFavoritesStyle === 'compact') {
       setFavoritesCardStyle(savedFavoritesStyle);
+    }
+    
+    const savedItemsPerRow = localStorage.getItem('desktopItemsPerRow');
+    if (savedItemsPerRow === '2' || savedItemsPerRow === '3') {
+      setDesktopItemsPerRow(parseInt(savedItemsPerRow) as 2 | 3);
     }
   }, []);
 
@@ -164,6 +170,12 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('favoritesCardStyleChanged', { detail: style }));
   };
 
+  const saveDesktopItemsPerRow = (count: 2 | 3) => {
+    setDesktopItemsPerRow(count);
+    localStorage.setItem('desktopItemsPerRow', count.toString());
+    window.dispatchEvent(new CustomEvent('desktopItemsPerRowChanged', { detail: count }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
@@ -172,6 +184,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     saveMobileCardStyle('fade');
     saveCardLayoutStyle('compact');
     saveFavoritesCardStyle('classic');
+    saveDesktopItemsPerRow(2);
   };
 
   const isArabic = language === 'ar';
@@ -356,6 +369,50 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                 {isArabic 
                   ? 'تخصيص مظهر بطاقات المفضلة بشكل منفصل' 
                   : 'Customize favorites cards independently'}
+              </p>
+            </div>
+
+            {/* Desktop Items Per Row */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4 text-primary" />
+                <Label>{isArabic ? 'عناصر لكل صف (سطح المكتب)' : 'Items Per Row (Desktop)'}</Label>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => saveDesktopItemsPerRow(2)} 
+                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                    desktopItemsPerRow === 2 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                  }`}
+                >
+                  <div className="flex gap-2 w-full">
+                    <div className="flex-1 h-8 bg-muted rounded" />
+                    <div className="flex-1 h-8 bg-muted rounded" />
+                  </div>
+                  <span className={`text-xs ${desktopItemsPerRow === 2 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    2 {isArabic ? 'عناصر' : 'Items'}
+                  </span>
+                </button>
+                <button 
+                  onClick={() => saveDesktopItemsPerRow(3)} 
+                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                    desktopItemsPerRow === 3 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                  }`}
+                >
+                  <div className="flex gap-1.5 w-full">
+                    <div className="flex-1 h-8 bg-muted rounded" />
+                    <div className="flex-1 h-8 bg-muted rounded" />
+                    <div className="flex-1 h-8 bg-muted rounded" />
+                  </div>
+                  <span className={`text-xs ${desktopItemsPerRow === 3 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    3 {isArabic ? 'عناصر' : 'Items'}
+                  </span>
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isArabic 
+                  ? 'عدد المنتجات في كل صف على سطح المكتب' 
+                  : 'Number of products per row on desktop'}
               </p>
             </div>
           </TabsContent>
