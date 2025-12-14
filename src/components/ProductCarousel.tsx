@@ -81,10 +81,7 @@ export function ProductCarousel({
   const getItemsPerSlide = () => {
     if (isMobile) return 1;
     if (isTablet) return 2;
-    if (isXLDesktop) return 6;
-    if (isLargeDesktop) return 5;
-    if (isDesktop) return 4;
-    return 3;
+    return 3; // Desktop: always 3
   };
   const itemsPerSlide = getItemsPerSlide();
   
@@ -182,7 +179,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : isXLDesktop ? 'grid-cols-6' : isLargeDesktop ? 'grid-cols-5' : isDesktop ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'}`}>
                     {slide.map(product => (
                       <ProductCard
                         key={product.id}
