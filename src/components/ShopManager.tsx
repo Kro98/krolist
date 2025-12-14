@@ -485,7 +485,7 @@ export function ShopManager() {
         {/* Shop List */}
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="shops">
-            {provided => <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 w-full px-6">
+            {provided => <div ref={provided.innerRef} className="space-y-2 w-full px-[5px]">
                 {filteredShops.map((shop, index) => {
               const campaignCount = getShopCampaignCount(shop.id);
               const getStatusBadge = () => {
