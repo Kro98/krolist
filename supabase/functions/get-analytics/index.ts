@@ -57,7 +57,7 @@ serve(async (req) => {
     // Get top 3 Krolist featured products with highest discount percentage
     const { data: krolistProducts, error: productsError } = await supabaseClient
       .from('krolist_products')
-      .select('id, title, store, current_price, original_price, currency')
+      .select('id, title, store, current_price, original_price, currency, image_url')
       .eq('is_featured', true);
 
     if (productsError) throw productsError;
@@ -118,7 +118,8 @@ serve(async (req) => {
             title: product.title,
             store: product.store,
             current_price: product.current_price,
-            currency: product.currency
+            currency: product.currency,
+            image_url: product.image_url
           }
         };
       })
