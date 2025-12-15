@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users, Tablet } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -98,10 +97,6 @@ export default function Settings() {
     const saved = localStorage.getItem('titleScrollSpeed');
     return saved !== null ? parseInt(saved) : 5;
   });
-  const [useTabletView, setUseTabletView] = useState(() => {
-    return localStorage.getItem('useTabletView') === 'true';
-  });
-  const isMobile = useIsMobile();
   const [hasUpdate, setHasUpdate] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
@@ -288,34 +283,6 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Tablet View Toggle - Mobile Only */}
-              {isMobile && (
-                <div className="p-4 border rounded-lg bg-primary/5 border-primary/20">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Tablet className="h-5 w-5 text-primary" />
-                      <div className="space-y-1">
-                        <Label htmlFor="tablet-view">{language === 'ar' ? 'عرض التابلت' : 'Tablet View'}</Label>
-                        <p className="text-sm text-muted-foreground">
-                          {language === 'ar' 
-                            ? 'تفعيل تخطيط التابلت على الهاتف' 
-                            : 'Enable tablet layout on mobile'}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      id="tablet-view"
-                      checked={useTabletView}
-                      onCheckedChange={(checked) => {
-                        setUseTabletView(checked);
-                        localStorage.setItem('useTabletView', checked.toString());
-                        window.dispatchEvent(new CustomEvent('tabletViewChanged', { detail: checked }));
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
               <div className="flex items-center gap-4">
                 <ThemeToggle />
               </div>
