@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
-import { NotificationControl } from "./NotificationControl";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -153,9 +152,9 @@ export function PWAInstallButton() {
     return count.toString();
   };
 
-  // In PWA mode, show NotificationControl instead
+  // In PWA mode, don't show install button
   if (isPWA) {
-    return <NotificationControl />;
+    return null;
   }
 
   // In browser mode, show download button
