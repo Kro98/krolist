@@ -194,18 +194,20 @@ export function MobileProductCard({
             <span className="text-base font-bold text-foreground">
               {currency} {displayCurrentPrice.toFixed(2)}
             </span>
-            {discountValue > 0 && (
-              <Badge className="bg-success hover:bg-success text-success-foreground text-xs px-1.5 py-0">
-                -{discountValue}%
-              </Badge>
-            )}
           </div>
 
           {/* Original Price */}
           {product.current_price !== product.original_price && (
-            <span className="text-xs text-muted-foreground line-through">
-              {currency} {displayOriginalPrice.toFixed(2)}
-            </span>
+            <div className={`flex items-center gap-1.5 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              <span className="text-xs text-muted-foreground line-through">
+                {currency} {displayOriginalPrice.toFixed(2)}
+              </span>
+              {discountValue > 0 && (
+                <Badge className="bg-success hover:bg-success text-success-foreground text-xs px-1.5 py-0">
+                  -{discountValue}%
+                </Badge>
+              )}
+            </div>
           )}
 
           {/* Badges */}
