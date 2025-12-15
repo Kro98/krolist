@@ -117,8 +117,8 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(3);
-  const [mobileItemsPerSlide, setMobileItemsPerSlide] = useState<1 | 2 | 4>(1);
-  const [titleScrollSpeed, setTitleScrollSpeed] = useState<number>(5);
+  const [mobileItemsPerSlide, setMobileItemsPerSlide] = useState<1 | 2 | 4>(2);
+  const [titleScrollSpeed, setTitleScrollSpeed] = useState<number>(3);
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -213,8 +213,8 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     saveCardLayoutStyle('compact');
     saveFavoritesCardStyle('classic');
     saveDesktopItemsPerRow(3);
-    saveMobileItemsPerSlide(1);
-    saveTitleScrollSpeed(5);
+    saveMobileItemsPerSlide(2);
+    saveTitleScrollSpeed(3);
   };
 
   const isArabic = language === 'ar';
