@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList, Heart, Type } from 'lucide-react';
+import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList, Heart, Type, Tablet } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Preview thumbnail components
 const ClassicCardPreview = ({ selected }: { selected: boolean }) => (
@@ -108,6 +109,7 @@ interface PersonalizeDialogProps {
 export function PersonalizeDialog({ collapsed = false, iconOnly = false }: PersonalizeDialogProps) {
   const { t, language } = useLanguage();
   const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
+  const isMobile = useIsMobile();
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
@@ -115,6 +117,9 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(3);
   const [titleScrollSpeed, setTitleScrollSpeed] = useState<number>(5);
+  const [useTabletView, setUseTabletView] = useState<boolean>(() => {
+    return localStorage.getItem('useTabletView') === 'true';
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem('ditherSettings');
@@ -188,6 +193,12 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('titleScrollSpeedChanged', { detail: speed }));
   };
 
+  const saveTabletView = (enabled: boolean) => {
+    setUseTabletView(enabled);
+    localStorage.setItem('useTabletView', enabled.toString());
+    window.dispatchEvent(new CustomEvent('tabletViewChanged', { detail: enabled }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
@@ -198,6 +209,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     saveFavoritesCardStyle('classic');
     saveDesktopItemsPerRow(3);
     saveTitleScrollSpeed(5);
+    saveTabletView(false);
   };
 
   const isArabic = language === 'ar';
@@ -318,6 +330,27 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
 
           {/* Visual Tab */}
           <TabsContent value="visual" className="space-y-6 py-4">
+            {/* Tablet View Toggle - Mobile Only */}
+            {isMobile && (
+              <div className="space-y-3 p-4 border rounded-lg bg-primary/5 border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Tablet className="h-4 w-4 text-primary" />
+                    <Label>{isArabic ? 'عرض التابلت' : 'Tablet View'}</Label>
+                  </div>
+                  <Switch
+                    checked={useTabletView}
+                    onCheckedChange={saveTabletView}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {isArabic 
+                    ? 'تفعيل تخطيط التابلت على الهاتف لعرض المزيد من المنتجات' 
+                    : 'Enable tablet layout on mobile to see more products'}
+                </p>
+              </div>
+            )}
+
             {/* Card Layout Style */}
             <div className="space-y-3">
               <Label>{isArabic ? 'تخطيط البطاقة' : 'Card Layout'}</Label>
