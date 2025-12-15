@@ -17,6 +17,8 @@ import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { NotificationPopup } from "@/components/NotificationPopup";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -129,6 +131,7 @@ function LayoutContent({ children }: LayoutProps) {
   
   return (
     <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <NotificationPopup />
       <LoginMessageDialog />
       <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
       <AppSidebar />
@@ -142,6 +145,7 @@ function LayoutContent({ children }: LayoutProps) {
           </div>
           <div className="flex items-center gap-2">
             <PWAInstallButton />
+            <NotificationCenter />
             <UserAccountControl />
             <ShoppingCart />
           </div>
