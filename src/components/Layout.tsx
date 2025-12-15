@@ -147,7 +147,8 @@ function LayoutContent({ children }: LayoutProps) {
             <PWAInstallButton />
             <NotificationCenter />
             <UserAccountControl />
-            <ShoppingCart />
+            {/* Cart hidden for now - will be enabled later */}
+            {/* <ShoppingCart /> */}
           </div>
         </header>
         
