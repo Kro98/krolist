@@ -198,6 +198,8 @@ export function ProductCarousel({
                 product={product}
                 onAddToMyProducts={onAddToMyProducts}
                 onRemoveFromMyProducts={onRemoveFromMyProducts}
+                onEdit={product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
+                onDelete={product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
                 userProductCount={userProductCount}
                 isInFavorites={isInFavorites(product)}
                 isFavoritesSection={isFavoritesSection}
@@ -248,6 +250,8 @@ export function ProductCarousel({
                           product={product}
                           onAddToMyProducts={onAddToMyProducts}
                           onRemoveFromMyProducts={onRemoveFromMyProducts}
+                          onEdit={product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
+                          onDelete={product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
                           userProductCount={userProductCount}
                           isInFavorites={isInFavorites(product)}
                           isFavoritesSection={isFavoritesSection}

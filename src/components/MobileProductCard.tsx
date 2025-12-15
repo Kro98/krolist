@@ -1,4 +1,4 @@
-import { Heart, Youtube, X } from "lucide-react";
+import { Heart, Youtube, X, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { sanitizeContent } from "@/lib/sanitize";
 import { useState, useEffect } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export interface MobileProduct {
   id: string;
@@ -27,6 +33,8 @@ interface MobileProductCardProps {
   product: MobileProduct;
   onAddToMyProducts?: (product: MobileProduct) => void;
   onRemoveFromMyProducts?: (product: MobileProduct) => void;
+  onEdit?: (product: MobileProduct) => void;
+  onDelete?: (product: MobileProduct) => void;
   userProductCount?: number;
   isInFavorites?: boolean;
   isFavoritesSection?: boolean;
@@ -36,6 +44,8 @@ export function MobileProductCard({
   product,
   onAddToMyProducts,
   onRemoveFromMyProducts,
+  onEdit,
+  onDelete,
   userProductCount = 0,
   isInFavorites = false,
   isFavoritesSection = false,
@@ -98,8 +108,38 @@ export function MobileProductCard({
             />
           </div>
           
-          {/* Favorite/Remove Button */}
-          {isFavoritesSection && onRemoveFromMyProducts ? (
+          {/* Admin Edit/Delete Menu for Krolist Products */}
+          {product.isKrolistProduct && (onEdit || onDelete) ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2 h-8 w-8 p-0 bg-background shadow-md hover:bg-accent transition-transform active:scale-90"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(product)}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem 
+                    onClick={() => onDelete(product)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : isFavoritesSection && onRemoveFromMyProducts ? (
             <Button
               variant="ghost"
               size="sm"
