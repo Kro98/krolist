@@ -110,12 +110,14 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const { t, language } = useLanguage();
   const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(3);
+  const [mobileItemsPerSlide, setMobileItemsPerSlide] = useState<1 | 2 | 4>(1);
   const [titleScrollSpeed, setTitleScrollSpeed] = useState<number>(5);
 
   useEffect(() => {
@@ -146,6 +148,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     const savedItemsPerRow = localStorage.getItem('desktopItemsPerRow');
     if (savedItemsPerRow === '2' || savedItemsPerRow === '3') {
       setDesktopItemsPerRow(parseInt(savedItemsPerRow) as 2 | 3);
+    }
+    
+    const savedMobileItemsPerSlide = localStorage.getItem('mobileItemsPerSlide');
+    if (savedMobileItemsPerSlide === '1' || savedMobileItemsPerSlide === '2' || savedMobileItemsPerSlide === '4') {
+      setMobileItemsPerSlide(parseInt(savedMobileItemsPerSlide) as 1 | 2 | 4);
     }
     
     const savedTitleScrollSpeed = localStorage.getItem('titleScrollSpeed');
@@ -190,6 +197,12 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('titleScrollSpeedChanged', { detail: speed }));
   };
 
+  const saveMobileItemsPerSlide = (count: 1 | 2 | 4) => {
+    setMobileItemsPerSlide(count);
+    localStorage.setItem('mobileItemsPerSlide', count.toString());
+    window.dispatchEvent(new CustomEvent('mobileItemsPerSlideChanged', { detail: count }));
+  };
+
   const handleReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     setTheme('dark');
@@ -199,6 +212,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     saveCardLayoutStyle('compact');
     saveFavoritesCardStyle('classic');
     saveDesktopItemsPerRow(3);
+    saveMobileItemsPerSlide(1);
     saveTitleScrollSpeed(5);
   };
 
@@ -357,6 +371,66 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                     </span>
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Mobile Items Per Slide - only show on mobile when compact is selected */}
+            {!isDesktop && cardLayoutStyle === 'compact' && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <LayoutGrid className="h-4 w-4 text-primary" />
+                  <Label>{isArabic ? 'عناصر لكل شريحة' : 'Items Per Slide'}</Label>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={() => saveMobileItemsPerSlide(1)} 
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                      mobileItemsPerSlide === 1 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                    }`}
+                  >
+                    <div className="flex gap-1 w-full justify-center">
+                      <div className="w-8 h-10 bg-muted rounded" />
+                    </div>
+                    <span className={`text-xs ${mobileItemsPerSlide === 1 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      1
+                    </span>
+                  </button>
+                  <button 
+                    onClick={() => saveMobileItemsPerSlide(2)} 
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                      mobileItemsPerSlide === 2 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                    }`}
+                  >
+                    <div className="flex gap-1 w-full justify-center">
+                      <div className="w-5 h-10 bg-muted rounded" />
+                      <div className="w-5 h-10 bg-muted rounded" />
+                    </div>
+                    <span className={`text-xs ${mobileItemsPerSlide === 2 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      2
+                    </span>
+                  </button>
+                  <button 
+                    onClick={() => saveMobileItemsPerSlide(4)} 
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                      mobileItemsPerSlide === 4 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                    }`}
+                  >
+                    <div className="grid grid-cols-2 gap-0.5 w-full justify-center">
+                      <div className="w-full h-5 bg-muted rounded" />
+                      <div className="w-full h-5 bg-muted rounded" />
+                      <div className="w-full h-5 bg-muted rounded" />
+                      <div className="w-full h-5 bg-muted rounded" />
+                    </div>
+                    <span className={`text-xs ${mobileItemsPerSlide === 4 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      2×2
+                    </span>
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {isArabic 
+                    ? 'عدد المنتجات في كل شريحة على الهاتف' 
+                    : 'Number of products per slide on mobile'}
+                </p>
               </div>
             )}
 
