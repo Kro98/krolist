@@ -245,12 +245,7 @@ export default function SearchProducts() {
             <div className="relative flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()} placeholder={isGuest ? "Sign up to search products..." : "Search for products, brands, or sellers..."} className={`pl-12 h-14 text-base bg-card border-2 ${searchResults.length > 0 ? 'pr-24' : ''}`} disabled={isGuest || searchesRemaining === 0} />
-                {searchResults.length > 0 && (
-                  <Badge className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-primary text-primary-foreground">
-                    {searchResults.length} results
-                  </Badge>
-                )}
+                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()} placeholder={isGuest ? "Sign up to search products..." : "Search for products, brands, or sellers..."} className="pl-12 h-14 text-base bg-card border-2" disabled={isGuest || searchesRemaining === 0} />
               </div>
               <Button onClick={handleSearch} disabled={isSearching || isGuest || searchesRemaining === 0} className="h-14 px-8 bg-primary hover:bg-primary/90">
                 {isGuest ? "Sign Up to Search" : isSearching ? "Searching..." : "Search"}
