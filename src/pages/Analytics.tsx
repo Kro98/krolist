@@ -33,6 +33,7 @@ interface RecentChange {
     store: string;
     current_price: number;
     currency: string;
+    image_url: string | null;
   };
 }
 
@@ -190,9 +191,22 @@ export default function Analytics() {
                     <div
                       key={change.id}
                       onClick={() => navigate(`/products?highlight=${product.id}`)}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors group"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors group"
                     >
-                      <div className="flex-1">
+                      <div className="h-12 w-12 rounded-md overflow-hidden bg-background flex-shrink-0">
+                        {product.image_url ? (
+                          <img 
+                            src={product.image_url} 
+                            alt={product.title}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <Package className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.title}</div>
                         <div className="text-xs text-muted-foreground">{product.store}</div>
                       </div>
