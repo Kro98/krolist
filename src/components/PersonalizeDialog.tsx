@@ -114,6 +114,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
+  const [fadeIntensity, setFadeIntensity] = useState<number>(70);
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(3);
@@ -133,6 +134,11 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     const savedCardStyle = localStorage.getItem('mobileCardStyle');
     if (savedCardStyle === 'fade' || savedCardStyle === 'full') {
       setMobileCardStyle(savedCardStyle);
+    }
+    
+    const savedFadeIntensity = localStorage.getItem('fadeIntensity');
+    if (savedFadeIntensity) {
+      setFadeIntensity(parseInt(savedFadeIntensity));
     }
     
     const savedLayoutStyle = localStorage.getItem('cardLayoutStyle');
@@ -173,6 +179,12 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('mobileCardStyleChanged', { detail: style }));
   };
 
+  const saveFadeIntensity = (intensity: number) => {
+    setFadeIntensity(intensity);
+    localStorage.setItem('fadeIntensity', intensity.toString());
+    window.dispatchEvent(new CustomEvent('fadeIntensityChanged', { detail: intensity }));
+  };
+
   const saveCardLayoutStyle = (style: 'classic' | 'compact') => {
     setCardLayoutStyle(style);
     localStorage.setItem('cardLayoutStyle', style);
@@ -209,6 +221,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     setUndertone('orange');
     setCustomHue(31);
     saveMobileCardStyle('fade');
+    saveFadeIntensity(70);
     saveCardLayoutStyle('compact');
     saveFavoritesCardStyle('classic');
     saveDesktopItemsPerRow(3);
@@ -353,88 +366,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
               </div>
             </div>
 
-            {/* Mobile Card Style - only show when compact is selected */}
-            {cardLayoutStyle === 'compact' && (
-              <div className="space-y-3">
-                <Label>{isArabic ? 'نمط صورة البطاقة' : 'Card Image Style'}</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => saveMobileCardStyle('fade')} className="flex flex-col gap-2">
-                    <FadeImagePreview selected={mobileCardStyle === 'fade'} />
-                    <span className={`text-xs text-center ${mobileCardStyle === 'fade' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                      {isArabic ? 'تلاشي' : 'Fade'}
-                    </span>
-                  </button>
-                  <button onClick={() => saveMobileCardStyle('full')} className="flex flex-col gap-2">
-                    <FullImagePreview selected={mobileCardStyle === 'full'} />
-                    <span className={`text-xs text-center ${mobileCardStyle === 'full' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                      {isArabic ? 'كامل' : 'Full'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Mobile Items Per Slide - only show on mobile when compact is selected */}
-            {!isDesktop && cardLayoutStyle === 'compact' && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <LayoutGrid className="h-4 w-4 text-primary" />
-                  <Label>{isArabic ? 'عناصر لكل شريحة' : 'Items Per Slide'}</Label>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <button 
-                    onClick={() => saveMobileItemsPerSlide(1)} 
-                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                      mobileItemsPerSlide === 1 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
-                    }`}
-                  >
-                    <div className="flex gap-1 w-full justify-center">
-                      <div className="w-8 h-10 bg-muted rounded" />
-                    </div>
-                    <span className={`text-xs ${mobileItemsPerSlide === 1 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                      1
-                    </span>
-                  </button>
-                  <button 
-                    onClick={() => saveMobileItemsPerSlide(2)} 
-                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                      mobileItemsPerSlide === 2 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
-                    }`}
-                  >
-                    <div className="flex gap-1 w-full justify-center">
-                      <div className="w-5 h-10 bg-muted rounded" />
-                      <div className="w-5 h-10 bg-muted rounded" />
-                    </div>
-                    <span className={`text-xs ${mobileItemsPerSlide === 2 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                      2
-                    </span>
-                  </button>
-                  <button 
-                    onClick={() => saveMobileItemsPerSlide(4)} 
-                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                      mobileItemsPerSlide === 4 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
-                    }`}
-                  >
-                    <div className="grid grid-cols-2 gap-0.5 w-full justify-center">
-                      <div className="w-full h-5 bg-muted rounded" />
-                      <div className="w-full h-5 bg-muted rounded" />
-                      <div className="w-full h-5 bg-muted rounded" />
-                      <div className="w-full h-5 bg-muted rounded" />
-                    </div>
-                    <span className={`text-xs ${mobileItemsPerSlide === 4 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                      2×2
-                    </span>
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {isArabic 
-                    ? 'عدد المنتجات في كل شريحة على الهاتف' 
-                    : 'Number of products per slide on mobile'}
-                </p>
-              </div>
-            )}
-
-            {/* My Favorites Card Style */}
+            {/* My Favorites Card Style - moved under Card Layout */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Heart className="h-4 w-4 text-primary" />
@@ -460,6 +392,112 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                   : 'Customize favorites cards independently'}
               </p>
             </div>
+
+            {/* Compact Options - show when either Card Layout OR Favorites has compact selected */}
+            {(cardLayoutStyle === 'compact' || favoritesCardStyle === 'compact') && (
+              <>
+                {/* Card Image Style */}
+                <div className="space-y-3">
+                  <Label>{isArabic ? 'نمط صورة البطاقة' : 'Card Image Style'}</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => saveMobileCardStyle('fade')} className="flex flex-col gap-2">
+                      <FadeImagePreview selected={mobileCardStyle === 'fade'} />
+                      <span className={`text-xs text-center ${mobileCardStyle === 'fade' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                        {isArabic ? 'تلاشي' : 'Fade'}
+                      </span>
+                    </button>
+                    <button onClick={() => saveMobileCardStyle('full')} className="flex flex-col gap-2">
+                      <FullImagePreview selected={mobileCardStyle === 'full'} />
+                      <span className={`text-xs text-center ${mobileCardStyle === 'full' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                        {isArabic ? 'كامل' : 'Full'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Fade Intensity Slider - only show when fade is selected */}
+                {mobileCardStyle === 'fade' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>{isArabic ? 'شدة التلاشي' : 'Fade Intensity'}</Label>
+                      <span className="text-xs text-muted-foreground">{fadeIntensity}%</span>
+                    </div>
+                    <Slider
+                      value={[fadeIntensity]}
+                      onValueChange={([value]) => saveFadeIntensity(value)}
+                      min={30}
+                      max={100}
+                      step={5}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {isArabic 
+                        ? 'التحكم في مدى تغطية التدرج للصورة' 
+                        : 'Control how much the gradient covers the image'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Mobile Items Per Slide - only show on mobile/tablet */}
+                {!isDesktop && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4 text-primary" />
+                      <Label>{isArabic ? 'عناصر لكل شريحة' : 'Items Per Slide'}</Label>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button 
+                        onClick={() => saveMobileItemsPerSlide(1)} 
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          mobileItemsPerSlide === 1 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                        }`}
+                      >
+                        <div className="flex gap-1 w-full justify-center">
+                          <div className="w-8 h-10 bg-muted rounded" />
+                        </div>
+                        <span className={`text-xs ${mobileItemsPerSlide === 1 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                          1
+                        </span>
+                      </button>
+                      <button 
+                        onClick={() => saveMobileItemsPerSlide(2)} 
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          mobileItemsPerSlide === 2 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                        }`}
+                      >
+                        <div className="flex gap-1 w-full justify-center">
+                          <div className="w-5 h-10 bg-muted rounded" />
+                          <div className="w-5 h-10 bg-muted rounded" />
+                        </div>
+                        <span className={`text-xs ${mobileItemsPerSlide === 2 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                          2
+                        </span>
+                      </button>
+                      <button 
+                        onClick={() => saveMobileItemsPerSlide(4)} 
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          mobileItemsPerSlide === 4 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                        }`}
+                      >
+                        <div className="grid grid-cols-2 gap-0.5 w-full justify-center">
+                          <div className="w-full h-5 bg-muted rounded" />
+                          <div className="w-full h-5 bg-muted rounded" />
+                          <div className="w-full h-5 bg-muted rounded" />
+                          <div className="w-full h-5 bg-muted rounded" />
+                        </div>
+                        <span className={`text-xs ${mobileItemsPerSlide === 4 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                          2×2
+                        </span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {isArabic 
+                        ? 'عدد المنتجات في كل شريحة على الهاتف' 
+                        : 'Number of products per slide on mobile'}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Desktop Items Per Row - Only show on desktop */}
             {isDesktop && (
