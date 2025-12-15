@@ -1,9 +1,8 @@
 // App version - increment by 0.1 with each update
-export const APP_VERSION = "0.4";
+export const APP_VERSION = "0.3";
 
 // Version history for reference
 export const VERSION_HISTORY = [
-  { version: "0.4", date: "2024-12-15", notes: "In-app notification center, removed web push notifications, hidden cart system" },
   { version: "0.3", date: "2024-12-14", notes: "Admin three-dot menu for Krolist products editing" },
   { version: "0.25", date: "2024-12-14", notes: "PWA notification center, moved download to settings" },
   { version: "0.2", date: "2024-12-14", notes: "Updated defaults, tablet view improvements" },
