@@ -53,7 +53,6 @@ export function MobileProductCard({
   const { language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const [cardStyle, setCardStyle] = useState<'fade' | 'full'>('fade');
-  const [fadeIntensity, setFadeIntensity] = useState<number>(1);
 
   useEffect(() => {
     const loadCardStyle = () => {
@@ -61,25 +60,16 @@ export function MobileProductCard({
       if (saved === 'fade' || saved === 'full') {
         setCardStyle(saved);
       }
-      const savedIntensity = localStorage.getItem('fadeIntensity');
-      if (savedIntensity) {
-        setFadeIntensity(parseInt(savedIntensity));
-      }
     };
     loadCardStyle();
     
     const handleStyleChange = (e: CustomEvent) => {
       setCardStyle(e.detail);
     };
-    const handleIntensityChange = (e: CustomEvent) => {
-      setFadeIntensity(e.detail);
-    };
     
     window.addEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
-    window.addEventListener('fadeIntensityChanged', handleIntensityChange as EventListener);
     return () => {
       window.removeEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
-      window.removeEventListener('fadeIntensityChanged', handleIntensityChange as EventListener);
     };
   }, []);
 
@@ -112,14 +102,13 @@ export function MobileProductCard({
               alt={product.title}
               className="w-full h-full object-cover transition-transform duration-300"
             />
-            {/* Gradient overlay with smooth transition and dynamic intensity (0-4 scale, max 20% coverage) */}
+            {/* Gradient overlay */}
             <div 
               className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ease-in-out ${
-                cardStyle === 'fade' && fadeIntensity > 0 ? 'opacity-100' : 'opacity-0'
+                cardStyle === 'fade' ? 'opacity-100' : 'opacity-0'
               }`}
               style={{
-                // Scale: 0=none, 1=5%, 2=10%, 3=15%, 4=20% coverage from bottom
-                background: `linear-gradient(to top, hsl(var(--card)) ${fadeIntensity * 5}%, hsl(var(--card) / 0.3) ${fadeIntensity * 5 + 8}%, hsl(var(--card) / 0.1) ${fadeIntensity * 5 + 15}%, transparent ${fadeIntensity * 5 + 25}%)`
+                background: 'linear-gradient(to top, hsl(var(--card)) 0%, hsl(var(--card) / 0.5) 15%, transparent 40%)'
               }}
             />
           </div>

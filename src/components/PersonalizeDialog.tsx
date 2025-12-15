@@ -114,7 +114,6 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
-  const [fadeIntensity, setFadeIntensity] = useState<number>(1);
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
   const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(3);
@@ -134,11 +133,6 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     const savedCardStyle = localStorage.getItem('mobileCardStyle');
     if (savedCardStyle === 'fade' || savedCardStyle === 'full') {
       setMobileCardStyle(savedCardStyle);
-    }
-    
-    const savedFadeIntensity = localStorage.getItem('fadeIntensity');
-    if (savedFadeIntensity) {
-      setFadeIntensity(parseInt(savedFadeIntensity));
     }
     
     const savedLayoutStyle = localStorage.getItem('cardLayoutStyle');
@@ -177,26 +171,6 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     setMobileCardStyle(style);
     localStorage.setItem('mobileCardStyle', style);
     window.dispatchEvent(new CustomEvent('mobileCardStyleChanged', { detail: style }));
-    // When selecting fade, default to intensity 1 if currently at 0
-    if (style === 'fade' && fadeIntensity === 0) {
-      saveFadeIntensity(1);
-    }
-  };
-
-  const saveFadeIntensity = (intensity: number) => {
-    setFadeIntensity(intensity);
-    localStorage.setItem('fadeIntensity', intensity.toString());
-    window.dispatchEvent(new CustomEvent('fadeIntensityChanged', { detail: intensity }));
-    // Auto-switch to full picture when intensity is 0
-    if (intensity === 0) {
-      setMobileCardStyle('full');
-      localStorage.setItem('mobileCardStyle', 'full');
-      window.dispatchEvent(new CustomEvent('mobileCardStyleChanged', { detail: 'full' }));
-    } else if (mobileCardStyle === 'full' && intensity > 0) {
-      setMobileCardStyle('fade');
-      localStorage.setItem('mobileCardStyle', 'fade');
-      window.dispatchEvent(new CustomEvent('mobileCardStyleChanged', { detail: 'fade' }));
-    }
   };
 
 
@@ -236,7 +210,6 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     setUndertone('orange');
     setCustomHue(31);
     saveMobileCardStyle('fade');
-    saveFadeIntensity(1);
     saveCardLayoutStyle('compact');
     saveFavoritesCardStyle('classic');
     saveDesktopItemsPerRow(3);
@@ -429,30 +402,6 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                     </button>
                   </div>
                 </div>
-
-                {/* Fade Intensity Slider - only show when fade is selected */}
-                {mobileCardStyle === 'fade' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>{isArabic ? 'شدة التلاشي' : 'Fade Intensity'}</Label>
-                      <span className="text-xs text-muted-foreground">{fadeIntensity}</span>
-                    </div>
-                    <Slider
-                      value={[fadeIntensity]}
-                      onValueChange={([value]) => saveFadeIntensity(value)}
-                      min={0}
-                      max={4}
-                      step={1}
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
-                      <span>{isArabic ? 'بلا' : 'None'}</span>
-                      <span>{isArabic ? 'خفيف' : 'Light'}</span>
-                      <span>{isArabic ? 'متوسط' : 'Medium'}</span>
-                      <span>{isArabic ? 'قوي' : 'Strong'}</span>
-                      <span>{isArabic ? 'أقصى' : 'Max'}</span>
-                    </div>
-                  </div>
-                )}
 
                 {/* Mobile Items Per Slide - only show on mobile/tablet */}
                 {!isDesktop && (
