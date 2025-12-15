@@ -53,6 +53,7 @@ export function MobileProductCard({
   const { language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const [cardStyle, setCardStyle] = useState<'fade' | 'full'>('fade');
+  const [fadeIntensity, setFadeIntensity] = useState<number>(70);
 
   useEffect(() => {
     const loadCardStyle = () => {
@@ -60,15 +61,26 @@ export function MobileProductCard({
       if (saved === 'fade' || saved === 'full') {
         setCardStyle(saved);
       }
+      const savedIntensity = localStorage.getItem('fadeIntensity');
+      if (savedIntensity) {
+        setFadeIntensity(parseInt(savedIntensity));
+      }
     };
     loadCardStyle();
     
     const handleStyleChange = (e: CustomEvent) => {
       setCardStyle(e.detail);
     };
+    const handleIntensityChange = (e: CustomEvent) => {
+      setFadeIntensity(e.detail);
+    };
     
     window.addEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
-    return () => window.removeEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
+    window.addEventListener('fadeIntensityChanged', handleIntensityChange as EventListener);
+    return () => {
+      window.removeEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
+      window.removeEventListener('fadeIntensityChanged', handleIntensityChange as EventListener);
+    };
   }, []);
 
   const displayCurrentPrice = convertPriceToDisplay(product.current_price, product.original_currency);
@@ -100,11 +112,14 @@ export function MobileProductCard({
               alt={product.title}
               className="w-full h-full object-cover transition-transform duration-300"
             />
-            {/* Gradient overlay with smooth transition */}
+            {/* Gradient overlay with smooth transition and dynamic intensity */}
             <div 
-              className={`absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent pointer-events-none transition-opacity duration-500 ease-in-out ${
+              className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ease-in-out ${
                 cardStyle === 'fade' ? 'opacity-100' : 'opacity-0'
-              }`} 
+              }`}
+              style={{
+                background: `linear-gradient(to top, hsl(var(--card)) ${fadeIntensity}%, hsl(var(--card) / 0.5) ${fadeIntensity + 15}%, transparent 100%)`
+              }}
             />
           </div>
           
