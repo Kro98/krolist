@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: false,
         clientsClaim: true,
         importScripts: ['sw-push.js'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB limit
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
