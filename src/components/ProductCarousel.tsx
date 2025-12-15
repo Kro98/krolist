@@ -69,6 +69,9 @@ export function ProductCarousel({
     const saved = localStorage.getItem('desktopItemsPerRow');
     return saved === '2' ? 2 : 3;
   });
+  const [useTabletView, setUseTabletView] = useState<boolean>(() => {
+    return localStorage.getItem('useTabletView') === 'true';
+  });
   const isMobile = useIsMobile();
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1279px)");
   const isDesktop = useMediaQuery("(min-width: 1280px)");
@@ -77,7 +80,7 @@ export function ProductCarousel({
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
   
-  // Listen for speed changes and card layout style changes
+  // Listen for speed changes, card layout style changes, and tablet view changes
   useEffect(() => {
     const handleSpeedChange = (e: CustomEvent) => {
       setCarouselSpeed(e.detail);
@@ -91,15 +94,20 @@ export function ProductCarousel({
     const handleItemsPerRowChange = (e: CustomEvent) => {
       setDesktopItemsPerRow(e.detail);
     };
+    const handleTabletViewChange = (e: CustomEvent) => {
+      setUseTabletView(e.detail);
+    };
     window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
     window.addEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
     window.addEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
     window.addEventListener('desktopItemsPerRowChanged', handleItemsPerRowChange as EventListener);
+    window.addEventListener('tabletViewChanged', handleTabletViewChange as EventListener);
     return () => {
       window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
       window.removeEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
       window.removeEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
       window.removeEventListener('desktopItemsPerRowChanged', handleItemsPerRowChange as EventListener);
+      window.removeEventListener('tabletViewChanged', handleTabletViewChange as EventListener);
     };
   }, []);
   
@@ -110,8 +118,11 @@ export function ProductCarousel({
   });
   
   // Calculate items per slide based on device - tablet shows 2x2 grid (4 items)
+  // If mobile but tablet view is enabled, behave like tablet
+  const effectiveTabletView = isMobile && useTabletView;
   const getItemsPerSlide = () => {
-    if (isMobile) return 1;
+    if (isMobile && !useTabletView) return 1;
+    if (effectiveTabletView) return 4; // Mobile with tablet view shows 2x2 grid
     if (!isDesktop) return 4; // Tablet (between mobile and desktop) shows 2x2 grid
     return desktopItemsPerRow;
   };
@@ -226,7 +237,7 @@ export function ProductCarousel({
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                  <div className={`grid gap-4 ${isMobile && !useTabletView ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                     {slide.map(product => (
                       ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
                         <ProductCard
