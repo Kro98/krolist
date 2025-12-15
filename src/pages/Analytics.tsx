@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingDown, TrendingUp, DollarSign, Package, ShoppingCart, Tag, Store, ExternalLink } from "lucide-react";
+import { TrendingDown, TrendingUp, DollarSign, Package, ShoppingCart, Tag, Store, ExternalLink, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import emptyStateIcon from "@/assets/empty-state-icon.png";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine } from "recharts";
 
 interface AnalyticsStats {
   total_products: number;
@@ -25,6 +27,7 @@ interface AnalyticsStats {
 interface RecentChange {
   id: string;
   price: number;
+  original_price: number;
   scraped_at: string;
   discount_percentage: number;
   products: {
@@ -186,44 +189,111 @@ export default function Analytics() {
               {recentChanges.length > 0 ? (
                 recentChanges.map((change) => {
                   const product = change.products;
+                  
+                  // Create chart data showing price drop
+                  const chartData = [
+                    { name: 'Original', price: change.original_price },
+                    { name: 'Current', price: product.current_price },
+                  ];
 
                   return (
-                    <div
-                      key={change.id}
-                      onClick={() => navigate(`/products?highlight=${product.id}`)}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors group"
-                    >
-                      <div className="h-12 w-12 rounded-md overflow-hidden bg-background flex-shrink-0">
-                        {product.image_url ? (
-                          <img 
-                            src={product.image_url} 
-                            alt={product.title}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center">
-                            <Package className="h-6 w-6 text-muted-foreground" />
+                    <Collapsible key={change.id}>
+                      <div className="rounded-lg bg-muted/50 overflow-hidden">
+                        <CollapsibleTrigger asChild>
+                          <div
+                            className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted transition-colors group"
+                          >
+                            <div className="h-12 w-12 rounded-md overflow-hidden bg-background flex-shrink-0">
+                              {product.image_url ? (
+                                <img 
+                                  src={product.image_url} 
+                                  alt={product.title}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center">
+                                  <Package className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.title}</div>
+                              <div className="text-xs text-muted-foreground">{product.store}</div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="flex flex-col items-end">
+                                <div className="text-sm font-medium text-price-decrease">
+                                  {product.currency} {product.current_price.toFixed(2)}
+                                </div>
+                                <div className="text-xs text-price-decrease font-semibold">
+                                  -{change.discount_percentage}%
+                                </div>
+                              </div>
+                              <TrendingDown className="h-4 w-4 text-price-decrease" />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                            </div>
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.title}</div>
-                        <div className="text-xs text-muted-foreground">{product.store}</div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col items-end">
-                          <div className="text-sm font-medium text-price-decrease">
-                            {product.currency} {product.current_price.toFixed(2)}
+                        </CollapsibleTrigger>
+                        
+                        <CollapsibleContent>
+                          <div className="px-3 pb-3 pt-1 border-t border-border/50">
+                            <div className="h-32 w-full">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                                  <XAxis 
+                                    dataKey="name" 
+                                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                  />
+                                  <YAxis 
+                                    hide
+                                    domain={['dataMin - 10', 'dataMax + 10']}
+                                  />
+                                  <Tooltip 
+                                    formatter={(value: number) => [`${product.currency} ${value.toFixed(2)}`, 'Price']}
+                                    contentStyle={{
+                                      backgroundColor: 'hsl(var(--popover))',
+                                      border: '1px solid hsl(var(--border))',
+                                      borderRadius: '8px',
+                                      fontSize: '12px'
+                                    }}
+                                  />
+                                  <ReferenceLine 
+                                    y={change.original_price} 
+                                    stroke="hsl(var(--muted-foreground))" 
+                                    strokeDasharray="3 3"
+                                    label={{ value: `Original: ${product.currency} ${change.original_price.toFixed(2)}`, position: 'top', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                                  />
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="price" 
+                                    stroke="hsl(var(--price-decrease))" 
+                                    strokeWidth={2}
+                                    dot={{ fill: 'hsl(var(--price-decrease))', strokeWidth: 2, r: 4 }}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                            <div className="flex justify-between items-center mt-2 text-xs">
+                              <span className="text-muted-foreground">
+                                Was: <span className="line-through">{product.currency} {change.original_price.toFixed(2)}</span>
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/products?highlight=${product.id}`);
+                                }}
+                                className="text-primary hover:underline flex items-center gap-1"
+                              >
+                                View Product <ExternalLink className="h-3 w-3" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="text-xs text-price-decrease font-semibold">
-                            -{change.discount_percentage}%
-                          </div>
-                        </div>
-                        <TrendingDown className="h-4 w-4 text-price-decrease" />
-                        <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </CollapsibleContent>
                       </div>
-                    </div>
+                    </Collapsible>
                   );
                 })
               ) : (
