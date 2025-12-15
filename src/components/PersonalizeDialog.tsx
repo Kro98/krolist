@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Paintbrush, Sun, Moon, Monitor, Image, Layers, LayoutGrid, LayoutList, Heart, Type } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import {
   Dialog,
   DialogContent,
@@ -108,6 +109,7 @@ interface PersonalizeDialogProps {
 export function PersonalizeDialog({ collapsed = false, iconOnly = false }: PersonalizeDialogProps) {
   const { t, language } = useLanguage();
   const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [settings, setSettings] = useState<DitherSettings>(DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
@@ -385,49 +387,51 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
               </p>
             </div>
 
-            {/* Desktop Items Per Row */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4 text-primary" />
-                <Label>{isArabic ? 'عناصر لكل صف (سطح المكتب)' : 'Items Per Row (Desktop)'}</Label>
+            {/* Desktop Items Per Row - Only show on desktop */}
+            {isDesktop && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <LayoutGrid className="h-4 w-4 text-primary" />
+                  <Label>{isArabic ? 'عناصر لكل صف (سطح المكتب)' : 'Items Per Row (Desktop)'}</Label>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => saveDesktopItemsPerRow(2)} 
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                      desktopItemsPerRow === 2 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                    }`}
+                  >
+                    <div className="flex gap-2 w-full">
+                      <div className="flex-1 h-8 bg-muted rounded" />
+                      <div className="flex-1 h-8 bg-muted rounded" />
+                    </div>
+                    <span className={`text-xs ${desktopItemsPerRow === 2 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      2 {isArabic ? 'عناصر' : 'Items'}
+                    </span>
+                  </button>
+                  <button 
+                    onClick={() => saveDesktopItemsPerRow(3)} 
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                      desktopItemsPerRow === 3 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
+                    }`}
+                  >
+                    <div className="flex gap-1.5 w-full">
+                      <div className="flex-1 h-8 bg-muted rounded" />
+                      <div className="flex-1 h-8 bg-muted rounded" />
+                      <div className="flex-1 h-8 bg-muted rounded" />
+                    </div>
+                    <span className={`text-xs ${desktopItemsPerRow === 3 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                      3 {isArabic ? 'عناصر' : 'Items'}
+                    </span>
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {isArabic 
+                    ? 'عدد المنتجات في كل صف على سطح المكتب' 
+                    : 'Number of products per row on desktop'}
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={() => saveDesktopItemsPerRow(2)} 
-                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                    desktopItemsPerRow === 2 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
-                  }`}
-                >
-                  <div className="flex gap-2 w-full">
-                    <div className="flex-1 h-8 bg-muted rounded" />
-                    <div className="flex-1 h-8 bg-muted rounded" />
-                  </div>
-                  <span className={`text-xs ${desktopItemsPerRow === 2 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                    2 {isArabic ? 'عناصر' : 'Items'}
-                  </span>
-                </button>
-                <button 
-                  onClick={() => saveDesktopItemsPerRow(3)} 
-                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                    desktopItemsPerRow === 3 ? 'border-primary bg-primary/10' : 'border-muted hover:border-muted-foreground/50'
-                  }`}
-                >
-                  <div className="flex gap-1.5 w-full">
-                    <div className="flex-1 h-8 bg-muted rounded" />
-                    <div className="flex-1 h-8 bg-muted rounded" />
-                    <div className="flex-1 h-8 bg-muted rounded" />
-                  </div>
-                  <span className={`text-xs ${desktopItemsPerRow === 3 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                    3 {isArabic ? 'عناصر' : 'Items'}
-                  </span>
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {isArabic 
-                  ? 'عدد المنتجات في كل صف على سطح المكتب' 
-                  : 'Number of products per row on desktop'}
-              </p>
-            </div>
+            )}
 
             {/* Title Scroll Speed */}
             <div className="space-y-3">
