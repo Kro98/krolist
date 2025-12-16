@@ -202,7 +202,7 @@ export default function Events() {
   const { isGuest } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>(defaultEvents);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDates, setSelectedDates] = useState<Date[]>([new Date()]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState({
@@ -271,7 +271,7 @@ export default function Events() {
       return;
     }
 
-    if (!selectedDate) {
+    if (selectedDates.length === 0) {
       toast.error("Please select a date");
       return;
     }
@@ -288,7 +288,7 @@ export default function Events() {
     const newEvent: Event = {
       id: Date.now().toString(),
       name: formData.name,
-      date: selectedDate,
+      date: selectedDates[0],
       time: formData.time,
       description: formData.description,
       location: formData.location,
@@ -322,14 +322,16 @@ export default function Events() {
       emoji: event.emoji,
       reminderMinutes: event.reminderMinutes || 0
     });
-    setSelectedDate(event.date);
+    setSelectedDates([event.date]);
     setIsDialogOpen(true);
   };
   const handleDeleteEvent = (eventId: string) => {
     setEvents(events.filter(event => event.id !== eventId));
     toast.success("Event deleted successfully");
   };
-  const eventsForSelectedDate = selectedDate ? events.filter(event => format(event.date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')) : [];
+  const eventsForSelectedDates = selectedDates.length > 0 ? events.filter(event => 
+    selectedDates.some(date => format(event.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
+  ) : [];
   const upcomingEvents = events.filter(event => event.date >= new Date()).sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
   return <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -437,15 +439,35 @@ export default function Events() {
               Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-4 flex-col lg:flex-row">
+          <CardContent className="flex gap-4 flex-col">
             <Calendar 
-              mode="single" 
-              selected={selectedDate} 
-              onSelect={setSelectedDate} 
+              mode="multiple" 
+              selected={selectedDates} 
+              onSelect={(dates) => setSelectedDates(dates || [])} 
               eventDates={events.map(event => event.date)}
               eventColors={eventColors}
               className="rounded-md border p-4 pointer-events-auto flex-1 w-full" 
             />
+            {/* Event Type Legend */}
+            <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
+              <span className="text-xs text-muted-foreground font-medium">Legend:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-xs text-muted-foreground">Sale</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="text-xs text-muted-foreground">Holiday</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <span className="text-xs text-muted-foreground">Discount</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                <span className="text-xs text-muted-foreground">Personal</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -453,11 +475,15 @@ export default function Events() {
         <Card className="shadow-card border-border animate-fade-in">
           <CardHeader>
             <CardTitle className="text-lg">
-              {selectedDate ? format(selectedDate, 'MMM dd, yyyy') : 'Select a Date'}
+              {selectedDates.length > 0 
+                ? selectedDates.length === 1 
+                  ? format(selectedDates[0], 'MMM dd, yyyy')
+                  : `${selectedDates.length} dates selected`
+                : 'Select a Date'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {eventsForSelectedDate.length > 0 ? eventsForSelectedDate.map(event => <div key={event.id} className="bg-muted/50 rounded-lg p-4 hover:bg-muted/70 transition-all duration-200 border border-border">
+            {eventsForSelectedDates.length > 0 ? eventsForSelectedDates.map(event => <div key={event.id} className="bg-muted/50 rounded-lg p-4 hover:bg-muted/70 transition-all duration-200 border border-border">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">{event.emoji}</span>
