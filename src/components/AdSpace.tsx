@@ -1,6 +1,12 @@
 import { useSidebar } from "@/components/ui/sidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
 
 interface AdSpaceProps {
   position: 'left' | 'right';
@@ -9,16 +15,32 @@ interface AdSpaceProps {
   topOffset?: string;
 }
 
-function AdBanner({ width, label }: { width: string; label: string }) {
+function AdSenseUnit({ slot, format = "auto" }: { slot?: string; format?: string }) {
+  const adRef = useRef<HTMLModElement>(null);
+  const [adLoaded, setAdLoaded] = useState(false);
+
+  useEffect(() => {
+    if (adRef.current && !adLoaded) {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        setAdLoaded(true);
+      } catch (e) {
+        console.error('AdSense error:', e);
+      }
+    }
+  }, [adLoaded]);
+
   return (
-    <div className="h-full bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center gap-3 backdrop-blur-sm overflow-hidden" style={{ width }}>
-      <div className="text-xs text-muted-foreground/60 uppercase tracking-wider">Ad</div>
-      <div className="flex-1 w-[90%] bg-muted/30 rounded-md flex items-center justify-center border border-dashed border-border/50 m-2">
-        <span className="text-muted-foreground/40 text-xs text-center px-2">
-          {label}
-        </span>
-      </div>
-      <div className="text-[10px] text-muted-foreground/40 pb-2">Sponsored</div>
+    <div className="h-full w-full bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden">
+      <ins
+        ref={adRef}
+        className="adsbygoogle"
+        style={{ display: 'block', width: '100%', height: '100%' }}
+        data-ad-client="ca-pub-2793689855806571"
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-full-width-responsive="true"
+      />
     </div>
   );
 }
@@ -39,21 +61,15 @@ export function AdSpace({
   const gap = 8;
   const bannerWidth = 160;
   const bannerGap = 8;
-  const mainContentWidth = 1280; // max-w-7xl
+  const mainContentWidth = 1280;
   
-  // Calculate how many banners can fit based on available space
   useEffect(() => {
     const calculateBanners = () => {
       const screenWidth = window.innerWidth;
       const sidebarWidth = open ? sidebarOpenWidth : sidebarCollapsedWidth;
-      
-      // Available space on each side
-      // Total width - sidebar - main content - gaps
       const availablePerSide = (screenWidth - sidebarWidth - mainContentWidth - (gap * 4)) / 2;
-      
-      // How many banners can fit
       const possibleBanners = Math.floor((availablePerSide + bannerGap) / (bannerWidth + bannerGap));
-      setBannerCount(Math.max(1, Math.min(possibleBanners, 3))); // Max 3 banners per side
+      setBannerCount(Math.max(1, Math.min(possibleBanners, 3)));
     };
     
     calculateBanners();
@@ -64,19 +80,16 @@ export function AdSpace({
   const getLeftPosition = () => {
     if (position === 'right') return undefined;
     if (isRTL) return undefined;
-    
     const sidebarWidth = open ? sidebarOpenWidth : sidebarCollapsedWidth;
     return `${sidebarWidth + gap}px`;
   };
   
   const getRightPosition = () => {
     if (position === 'left') return undefined;
-    
     if (isRTL) {
       const sidebarWidth = open ? sidebarOpenWidth : sidebarCollapsedWidth;
       return `${sidebarWidth + gap}px`;
     }
-    
     return `${gap}px`;
   };
   
@@ -101,11 +114,9 @@ export function AdSpace({
       }}
     >
       {Array.from({ length: bannerCount }).map((_, index) => (
-        <AdBanner 
-          key={index} 
-          width={`${bannerWidth}px`} 
-          label={`Ad ${index + 1}`}
-        />
+        <div key={`${position}-${index}`} style={{ width: `${bannerWidth}px`, height: '100%' }}>
+          <AdSenseUnit format="vertical" />
+        </div>
       ))}
     </div>
   );
