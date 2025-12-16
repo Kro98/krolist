@@ -38,7 +38,7 @@ const searchResultSchema = z.object({
   image: z.string().url().nullable(),
   price: z.number().min(0).max(10000000),
   store: z.string().min(1).max(100),
-  productUrl: z.string().url(),
+  productUrl: z.string().url()
 });
 export default function SearchProducts() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +64,6 @@ export default function SearchProducts() {
       });
       return;
     }
-    
     if (!user) {
       toast.error("Please log in to search products. Click the user icon in the top right.");
       return;
@@ -143,13 +142,12 @@ export default function SearchProducts() {
         image: result.image || null,
         price: seller.price,
         store: seller.store,
-        productUrl: affiliateUrl,
+        productUrl: affiliateUrl
       });
 
       // Detect store currency from URL
       const detectedStore = detectStoreFromUrl(validatedData.productUrl);
       const productCurrency = detectedStore.currency;
-
       const {
         data: savedProduct,
         error
@@ -167,9 +165,7 @@ export default function SearchProducts() {
         currency: productCurrency,
         category: 'General'
       }).select().single();
-      
       if (error) throw error;
-
       if (savedProduct) {
         await supabase.from('price_history').insert({
           product_id: savedProduct.id,
@@ -204,21 +200,13 @@ export default function SearchProducts() {
             <h1 className="text-4xl md:text-5xl font-bold">
               Find Your Perfect Product, Instantly.
             </h1>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate("/how-to-use-search")}
-              className="h-10 w-10"
-            >
+            <Button variant="ghost" size="icon" onClick={() => navigate("/how-to-use-search")} className="h-10 w-10">
               <HelpCircle className="h-6 w-6 text-primary" />
             </Button>
           </div>
           
           {user && searchesRemaining > 0 && <div className="flex items-center justify-center gap-2 mb-4">
-              <Badge variant="secondary" className="text-sm">
-                <Clock className="h-3 w-3 mr-1" />
-                {searchesRemaining} searches remaining today
-              </Badge>
+              
               {resetAt && searchesRemaining < 5 && <Badge variant="outline" className="text-sm">
                   Resets in {formatResetTime()}
                 </Badge>}
@@ -230,12 +218,7 @@ export default function SearchProducts() {
               </p>
               <p className="text-sm text-center">
                 Continue your shopping on{" "}
-                <a 
-                  href={`https://www.amazon.com/s?k=${encodeURIComponent(searchQuery || "products")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline hover:text-primary/80"
-                >
+                <a href={`https://www.amazon.com/s?k=${encodeURIComponent(searchQuery || "products")}`} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
                   Amazon.com
                 </a>
               </p>
@@ -316,20 +299,12 @@ export default function SearchProducts() {
                           </Badge>}
                       </div>
                       
-                      {seller.store.toLowerCase().includes('amazon') ? (
-                        <Button 
-                          size="sm" 
-                          onClick={() => seller.productUrl && window.open(seller.productUrl, '_blank')}
-                          className="bg-gradient-primary"
-                        >
+                      {seller.store.toLowerCase().includes('amazon') ? <Button size="sm" onClick={() => seller.productUrl && window.open(seller.productUrl, '_blank')} className="bg-gradient-primary">
                           Open on Amazon
-                        </Button>
-                      ) : (
-                        <Button size="sm" onClick={() => handleAddToList(result, seller)} className="bg-gradient-primary">
+                        </Button> : <Button size="sm" onClick={() => handleAddToList(result, seller)} className="bg-gradient-primary">
                           <Plus className="h-4 w-4 mr-1" />
                           Track
-                        </Button>
-                      )}
+                        </Button>}
                     </div>)}
                 </div>
               </div>
