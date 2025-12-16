@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestAuth } from "@/contexts/GuestAuthContext";
+import { useAdTrigger } from "@/contexts/AdTriggerContext";
 
 // Validation schema for product updates
 const productUpdateSchema = z.object({
@@ -46,6 +47,7 @@ export default function Products() {
   const {
     openAuthModal
   } = useGuestAuth();
+  const { triggerFavoriteAdd } = useAdTrigger();
   const [products, setProducts] = useState<Product[]>([]);
   const [krolistProducts, setKrolistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -296,6 +298,7 @@ export default function Products() {
         }).eq('id', existingInactive.id);
         if (error) throw error;
         toast.success('Added to favorites!');
+        triggerFavoriteAdd();
         await loadProducts();
         return;
       }
@@ -327,6 +330,7 @@ export default function Products() {
       });
       if (error) throw error;
       toast.success('Added to favorites!');
+      triggerFavoriteAdd();
       await loadProducts();
     } catch (error) {
       toast.error(getSafeErrorMessage(error));
