@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TimePicker } from "@/components/ui/time-picker";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,7 @@ interface Event {
   id: string;
   name: string;
   date: Date;
+  time?: string;
   description: string;
   location: string;
   type: 'discount' | 'sale' | 'holiday' | 'personal';
@@ -189,6 +191,7 @@ export default function Events() {
     name: "",
     description: "",
     location: "",
+    time: "12:00",
     type: "personal" as Event['type'],
     emoji: "📅"
   });
@@ -197,6 +200,7 @@ export default function Events() {
       name: "",
       description: "",
       location: "",
+      time: "12:00",
       type: "personal",
       emoji: "📅"
     });
@@ -226,6 +230,7 @@ export default function Events() {
       id: Date.now().toString(),
       name: formData.name,
       date: selectedDate,
+      time: formData.time,
       description: formData.description,
       location: formData.location,
       type: formData.type,
@@ -251,6 +256,7 @@ export default function Events() {
       name: event.name,
       description: event.description,
       location: event.location,
+      time: event.time || "12:00",
       type: event.type,
       emoji: event.emoji
     });
@@ -308,6 +314,14 @@ export default function Events() {
               </div>
 
               <div className="space-y-2">
+                <Label>Time</Label>
+                <TimePicker 
+                  value={formData.time} 
+                  onChange={(time) => setFormData({...formData, time})} 
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="type">Event Type</Label>
                 <Select value={formData.type} onValueChange={(value: Event['type']) => setFormData({
                 ...formData,
@@ -343,15 +357,13 @@ export default function Events() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex gap-4 flex-col lg:flex-row">
-            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{
-            hasEvent: events.map(event => event.date)
-          }} modifiersStyles={{
-            hasEvent: {
-              backgroundColor: 'hsl(var(--primary))',
-              color: 'hsl(var(--primary-foreground))',
-              fontWeight: 'bold'
-            }
-          }} className="rounded-md border p-4 pointer-events-auto flex-1 w-full [&_.rdp-months]:w-full [&_.rdp-month]:w-full [&_.rdp-table]:w-full [&_.rdp-head_cell]:w-12 [&_.rdp-cell]:w-12 [&_.rdp-cell]:h-12 [&_.rdp-day]:w-12 [&_.rdp-day]:h-12 md:[&_.rdp-head_cell]:w-16 md:[&_.rdp-cell]:w-16 md:[&_.rdp-cell]:h-16 md:[&_.rdp-day]:w-16 md:[&_.rdp-day]:h-16 lg:[&_.rdp-head_cell]:w-20 lg:[&_.rdp-cell]:w-20 lg:[&_.rdp-cell]:h-20 lg:[&_.rdp-day]:w-20 lg:[&_.rdp-day]:h-20" />
+            <Calendar 
+              mode="single" 
+              selected={selectedDate} 
+              onSelect={setSelectedDate} 
+              eventDates={events.map(event => event.date)}
+              className="rounded-md border p-4 pointer-events-auto flex-1 w-full" 
+            />
           </CardContent>
         </Card>
 
@@ -374,6 +386,10 @@ export default function Events() {
                           <Badge variant="outline" className="text-xs">
                             {event.type}
                           </Badge>
+                          {event.time && <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {event.time}
+                            </span>}
                           {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
                               {event.location}

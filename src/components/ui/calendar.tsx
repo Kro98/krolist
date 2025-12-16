@@ -1,13 +1,46 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, DayProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  eventDates?: Date[];
+  eventColors?: Record<string, string>;
+};
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+function Calendar({ 
+  className, 
+  classNames, 
+  showOutsideDays = true, 
+  eventDates = [],
+  eventColors = {},
+  ...props 
+}: CalendarProps) {
+  // Create a map of dates with events for quick lookup
+  const eventDateStrings = React.useMemo(() => {
+    return new Set(eventDates.map(date => date.toDateString()));
+  }, [eventDates]);
+
+  // Custom day component to show event dots
+  const DayWithEvents = React.useCallback(({ date, ...dayProps }: DayProps) => {
+    const hasEvent = eventDateStrings.has(date.toDateString());
+    const dateKey = date.toDateString();
+    const dotColor = eventColors[dateKey] || "bg-primary";
+    
+    return (
+      <div className="relative w-full h-full flex flex-col items-center justify-center">
+        <span>{date.getDate()}</span>
+        {hasEvent && (
+          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+            <span className={cn("w-1.5 h-1.5 rounded-full", dotColor)} />
+          </div>
+        )}
+      </div>
+    );
+  }, [eventDateStrings, eventColors]);
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -62,6 +95,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Day: DayWithEvents,
       }}
       {...props}
     />
