@@ -1,7 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
+import { Heart, Coffee } from "lucide-react";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+
 declare global {
   interface Window {
     kofiWidgetOverlay?: {
@@ -9,12 +9,11 @@ declare global {
     };
   }
 }
+
 export default function Donation() {
   useEffect(() => {
-    // Clear session storage to allow bubble to appear again on page visit
     sessionStorage.removeItem('kofi-dismissed');
     
-    // Load Ko-fi widget script
     const script = document.createElement('script');
     script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';
     script.async = true;
@@ -29,75 +28,44 @@ export default function Donation() {
       }
     };
     document.body.appendChild(script);
+    
     return () => {
-      // Cleanup script on unmount
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
     };
   }, []);
+
+  const handleDonate = () => {
+    window.open('https://ko-fi.com/krolist', '_blank');
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="space-y-6">
-        <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <div className="bg-gradient-primary p-4 rounded-full">
-            <Heart className="h-8 w-8 text-white" />
-          </div>
+    <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
+      <div className="max-w-md text-center space-y-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
+          <Heart className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold">Support Krolist</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Krolist is a passion project built to help people save money on their purchases. 
-          Your support helps keep the app running and enables new features.
-        </p>
-      </div>
-
-      {/* Thank You Message */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-rose-500" />
-            Thank You
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold">Support Krolist</h1>
           <p className="text-muted-foreground">
-            Thank you for considering supporting Krolist! Your generosity means the world to me and helps ensure 
-            that this tool remains free and continues to improve.
+            Your support helps keep Krolist free and enables new features for everyone.
           </p>
-          
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2">What your support helps with:</h3>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Server costs for web scraping and price monitoring</li>
-              <li>Development of new features and improvements</li>
-              <li>Adding support for more stores and regions</li>
-              <li>Enhanced notification systems</li>
-              <li>Mobile app development</li>
-            </ul>
-          </div>
+        </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">Free Forever</Badge>
-            <Badge variant="secondary">No Ads</Badge>
-            <Badge variant="secondary">Open Source</Badge>
-            <Badge variant="secondary">Community Driven</Badge>
-          </div>
+        <Button 
+          onClick={handleDonate}
+          size="lg"
+          className="gap-2"
+        >
+          <Coffee className="h-4 w-4" />
+          Buy me a coffee
+        </Button>
 
-          <p className="text-sm text-muted-foreground">Even if you can't contribute financially, sharing this project with friends who might find it useful is greatly appreciated! ❤️</p>
-        </CardContent>
-      </Card>
-
-      {/* Ko-fi Donate Button */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Support via Ko-fi</CardTitle>
-          <CardDescription>Your donation helps keep this project running</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center">
-          <div id="kofi-widget-container"></div>
-        </CardContent>
-      </Card>
+        <p className="text-sm text-muted-foreground">
+          Thank you for your support! ❤️
+        </p>
       </div>
     </div>
   );
