@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, DayProps } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -33,8 +33,8 @@ function Calendar({
     return map;
   }, [eventDates, eventColors]);
 
-  // Custom day component to show event dots
-  const DayWithEvents = React.useCallback(({ date, ...dayProps }: DayProps) => {
+  // Custom day content component to show event dots (uses DayContent, not Day)
+  const DayContent = React.useCallback(({ date }: { date: Date }) => {
     const dateKey = date.toDateString();
     const colors = eventColorMap.get(dateKey) || [];
     
@@ -42,7 +42,7 @@ function Calendar({
       <div className="relative w-full h-full flex flex-col items-center justify-center">
         <span>{date.getDate()}</span>
         {colors.length > 0 && (
-          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0.5">
             {colors.slice(0, 3).map((color, idx) => (
               <span key={idx} className={cn("w-1.5 h-1.5 rounded-full", color)} />
             ))}
@@ -106,7 +106,7 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Day: DayWithEvents,
+        DayContent: DayContent,
       }}
       {...props}
     />
