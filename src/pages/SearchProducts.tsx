@@ -22,8 +22,8 @@ export default function SearchProducts() {
     const affiliateTag = getAffiliateTag('amazon');
     
     // Build Amazon search URL with affiliate tracking
-    // Format: https://www.amazon.sa/s?k={query}&tag={affiliateTag}
-    const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery.trim())}${affiliateTag ? `&tag=${affiliateTag}` : ''}`;
+    // Format: https://www.amazon.sa/s?k={query}&linkCode=sl2&tag={affiliateTag}
+    const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery.trim())}&linkCode=sl2${affiliateTag ? `&tag=${affiliateTag}` : ''}`;
     window.open(amazonSearchUrl, '_blank');
   };
 
