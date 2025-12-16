@@ -111,16 +111,25 @@ export default function Analytics() {
 
   const priceStatsDisplay = stats ? [
     {
+      title: "Total Favorites Value",
+      value: `${currency} ${stats.total_value.toFixed(2)}`,
+      icon: DollarSign,
+      color: "text-primary",
+      fullWidth: true
+    },
+    {
       title: "dashboard.priceDrops",
       value: `${stats.price_drops}%`,
       icon: TrendingDown,
-      color: "text-price-decrease"
+      color: "text-price-decrease",
+      fullWidth: false
     },
     {
       title: "dashboard.priceIncreases",
       value: `${stats.price_increases}%`,
       icon: TrendingUp,
-      color: "text-price-increase"
+      color: "text-price-increase",
+      fullWidth: false
     }
   ] : [];
 
@@ -317,12 +326,12 @@ export default function Analytics() {
                 return (
                   <div
                     key={stat.title}
-                    className="p-4 rounded-lg bg-muted/50 space-y-2"
+                    className={`p-4 rounded-lg bg-muted/50 space-y-2 ${stat.fullWidth ? 'col-span-2' : ''}`}
                   >
                     <div className="flex items-center gap-2">
                       <Icon className={`h-4 w-4 ${stat.color}`} />
                       <span className="text-sm text-muted-foreground">
-                        {t(stat.title)}
+                        {stat.title.startsWith('dashboard.') ? t(stat.title) : stat.title}
                       </span>
                     </div>
                     <div className="text-2xl font-bold">{stat.value}</div>
