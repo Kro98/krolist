@@ -92,8 +92,8 @@ export const STORES: Record<string, StoreConfig> = {
     // 💰 AFFILIATE LINK - General affiliate shortlink
     affiliateUrl: 'https://amzn.to/4ny9VLJ',
     
-    // 💰 AFFILIATE TAG - Used for search URLs (format: amazon.sa/s?k=query&tag=YOUR_TAG)
-    affiliateTag: 'krolist0f-21',
+    // 💰 AFFILIATE TAG - Used for search URLs (format: amazon.sa/s?k=query&linkCode=sl2&tag=YOUR_TAG)
+    affiliateTag: 'krolist07-21',
     
     defaultCurrency: 'USD',
     supportedCurrencies: ['USD', 'SAR', 'AED', 'EGP'],
