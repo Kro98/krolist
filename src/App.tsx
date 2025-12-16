@@ -10,6 +10,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { GuestAuthProvider } from "@/contexts/GuestAuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { AdTriggerProvider } from "@/contexts/AdTriggerContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Products from "./pages/Products";
 import SearchProducts from "./pages/SearchProducts";
@@ -44,10 +45,11 @@ const App = () => <QueryClientProvider client={queryClient}>
           <NotificationProvider>
             <GuestAuthProvider>
               <CartProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <BrowserRouter>
-                    <Layout>
+                <AdTriggerProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <BrowserRouter>
+                      <Layout>
                       <Routes>
                         <Route path="/" element={<Products />} />
                         <Route path="/products" element={<Products />} />
@@ -67,9 +69,10 @@ const App = () => <QueryClientProvider client={queryClient}>
                         <Route path="/contact-us" element={<ContactUs />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
-                    </Layout>
-                  </BrowserRouter>
-                </TooltipProvider>
+                      </Layout>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </AdTriggerProvider>
               </CartProvider>
             </GuestAuthProvider>
           </NotificationProvider>

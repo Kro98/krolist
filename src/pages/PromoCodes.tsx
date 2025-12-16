@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { formatDistanceToNow, format } from "date-fns";
+import { useAdTrigger } from "@/contexts/AdTriggerContext";
 
 interface PromoCode {
   id: string;
@@ -39,6 +40,7 @@ export default function PromoCodes() {
   const { toast } = useToast();
   const { user, isGuest } = useAuth();
   const navigate = useNavigate();
+  const { triggerPromoCopy } = useAdTrigger();
   
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
@@ -146,6 +148,7 @@ export default function PromoCodes() {
       title: "Code Copied!",
       description: `Promo code "${code}" copied to clipboard`,
     });
+    triggerPromoCopy();
   };
 
   const handleAddCode = async () => {

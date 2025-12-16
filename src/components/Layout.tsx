@@ -12,7 +12,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestAuth } from "@/contexts/GuestAuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,6 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdSpace } from "@/components/AdSpace";
+import { InterstitialAd } from "@/components/InterstitialAd";
+import { useAdTrigger } from "@/contexts/AdTriggerContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,6 +40,41 @@ function LayoutContent({ children }: LayoutProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [updateToastShown, setUpdateToastShown] = useState(false);
+  const { triggerPageOpen, triggerLoadScreen, triggerAuthEvent } = useAdTrigger();
+  const previousPath = useRef(location.pathname);
+  const previousUser = useRef(user);
+  const loadingTriggered = useRef(false);
+
+  // Trigger ad on page navigation
+  useEffect(() => {
+    if (previousPath.current !== location.pathname) {
+      triggerPageOpen();
+      previousPath.current = location.pathname;
+    }
+  }, [location.pathname, triggerPageOpen]);
+
+  // Trigger ad on auth state change (login/logout)
+  useEffect(() => {
+    const wasLoggedIn = previousUser.current !== null;
+    const isLoggedIn = user !== null;
+    
+    // Only trigger if auth state actually changed (not on initial load)
+    if (previousUser.current !== undefined && wasLoggedIn !== isLoggedIn) {
+      triggerAuthEvent();
+    }
+    previousUser.current = user;
+  }, [user, triggerAuthEvent]);
+
+  // Trigger ad on loading screen (every 5 times)
+  useEffect(() => {
+    if (loading && !loadingTriggered.current) {
+      triggerLoadScreen();
+      loadingTriggered.current = true;
+    }
+    if (!loading) {
+      loadingTriggered.current = false;
+    }
+  }, [loading, triggerLoadScreen]);
 
   // Check for service worker updates and show toast
   useEffect(() => {
@@ -124,6 +161,7 @@ function LayoutContent({ children }: LayoutProps) {
   if (isPublicRoute) {
     return <>{children}</>;
   }
+  
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
@@ -132,6 +170,8 @@ function LayoutContent({ children }: LayoutProps) {
   
   return (
     <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Interstitial Ad */}
+      <InterstitialAd />
       {/* Desktop Ad Spaces - Customize width/height as needed */}
       <AdSpace position="left" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
       <AdSpace position="right" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
