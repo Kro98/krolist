@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TimePicker } from "@/components/ui/time-picker";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, Tag, Plus, Edit, Trash2, Clock, Bell, BellOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { format } from "date-fns";
+import { format, differenceInMinutes, isSameDay, parse, addMinutes } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+
+// Event type color mapping
+const EVENT_TYPE_COLORS: Record<string, string> = {
+  sale: "bg-green-500",
+  holiday: "bg-amber-500", 
+  discount: "bg-blue-500",
+  personal: "bg-purple-500"
+};
+
+const EVENT_TYPE_BADGE_COLORS: Record<string, string> = {
+  sale: "bg-green-500/20 text-green-600 border-green-500/30",
+  holiday: "bg-amber-500/20 text-amber-600 border-amber-500/30",
+  discount: "bg-blue-500/20 text-blue-600 border-blue-500/30",
+  personal: "bg-purple-500/20 text-purple-600 border-purple-500/30"
+};
+
 interface Event {
   id: string;
   name: string;
@@ -25,6 +41,8 @@ interface Event {
   type: 'discount' | 'sale' | 'holiday' | 'personal';
   emoji: string;
   isUserCreated: boolean;
+  reminderMinutes?: number;
+  reminderShown?: boolean;
 }
 const defaultEvents: Event[] = [
 // Global Shopping Events
@@ -193,8 +211,48 @@ export default function Events() {
     location: "",
     time: "12:00",
     type: "personal" as Event['type'],
-    emoji: "📅"
+    emoji: "📅",
+    reminderMinutes: 0
   });
+
+  // Check for upcoming event reminders
+  useEffect(() => {
+    const checkReminders = () => {
+      const now = new Date();
+      setEvents(prevEvents => 
+        prevEvents.map(event => {
+          if (!event.reminderMinutes || event.reminderShown) return event;
+          
+          const eventDateTime = event.time 
+            ? parse(event.time, 'HH:mm', event.date)
+            : event.date;
+          
+          const minutesUntil = differenceInMinutes(eventDateTime, now);
+          
+          if (minutesUntil <= event.reminderMinutes && minutesUntil > 0) {
+            toast.info(`🔔 Reminder: ${event.name}`, {
+              description: `Starting in ${minutesUntil} minutes`,
+              duration: 10000
+            });
+            return { ...event, reminderShown: true };
+          }
+          return event;
+        })
+      );
+    };
+
+    const interval = setInterval(checkReminders, 60000); // Check every minute
+    checkReminders(); // Initial check
+    return () => clearInterval(interval);
+  }, []);
+
+  // Generate event colors for calendar
+  const eventColors = events.reduce((acc, event) => {
+    const dateKey = event.date.toDateString();
+    acc[dateKey] = EVENT_TYPE_COLORS[event.type];
+    return acc;
+  }, {} as Record<string, string>);
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -202,7 +260,8 @@ export default function Events() {
       location: "",
       time: "12:00",
       type: "personal",
-      emoji: "📅"
+      emoji: "📅",
+      reminderMinutes: 0
     });
     setEditingEvent(null);
   };
@@ -235,7 +294,9 @@ export default function Events() {
       location: formData.location,
       type: formData.type,
       emoji: formData.emoji,
-      isUserCreated: true
+      isUserCreated: true,
+      reminderMinutes: formData.reminderMinutes,
+      reminderShown: false
     };
     if (editingEvent) {
       setEvents(events.map(event => event.id === editingEvent.id ? {
@@ -258,7 +319,8 @@ export default function Events() {
       location: event.location,
       time: event.time || "12:00",
       type: event.type,
-      emoji: event.emoji
+      emoji: event.emoji,
+      reminderMinutes: event.reminderMinutes || 0
     });
     setSelectedDate(event.date);
     setIsDialogOpen(true);
@@ -331,10 +393,29 @@ export default function Events() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="personal">Personal</SelectItem>
-                    <SelectItem value="discount">Discount</SelectItem>
-                    <SelectItem value="sale">Sale</SelectItem>
-                    <SelectItem value="holiday">Holiday</SelectItem>
+                    <SelectItem value="personal"><span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500" />Personal</span></SelectItem>
+                    <SelectItem value="discount"><span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-500" />Discount</span></SelectItem>
+                    <SelectItem value="sale"><span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500" />Sale</span></SelectItem>
+                    <SelectItem value="holiday"><span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-amber-500" />Holiday</span></SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reminder">Reminder</Label>
+                <Select value={formData.reminderMinutes.toString()} onValueChange={(value) => setFormData({
+                ...formData,
+                reminderMinutes: parseInt(value)
+              })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0"><span className="flex items-center gap-2"><BellOff className="h-3 w-3" />No reminder</span></SelectItem>
+                    <SelectItem value="15"><span className="flex items-center gap-2"><Bell className="h-3 w-3" />15 minutes before</span></SelectItem>
+                    <SelectItem value="30"><span className="flex items-center gap-2"><Bell className="h-3 w-3" />30 minutes before</span></SelectItem>
+                    <SelectItem value="60"><span className="flex items-center gap-2"><Bell className="h-3 w-3" />1 hour before</span></SelectItem>
+                    <SelectItem value="1440"><span className="flex items-center gap-2"><Bell className="h-3 w-3" />1 day before</span></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -362,6 +443,7 @@ export default function Events() {
               selected={selectedDate} 
               onSelect={setSelectedDate} 
               eventDates={events.map(event => event.date)}
+              eventColors={eventColors}
               className="rounded-md border p-4 pointer-events-auto flex-1 w-full" 
             />
           </CardContent>
@@ -383,12 +465,17 @@ export default function Events() {
                         <h4 className="font-semibold text-sm mb-1">{event.name}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className={`text-xs ${EVENT_TYPE_BADGE_COLORS[event.type]}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${EVENT_TYPE_COLORS[event.type]}`} />
                             {event.type}
                           </Badge>
                           {event.time && <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               {event.time}
+                            </span>}
+                          {event.reminderMinutes && event.reminderMinutes > 0 && <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Bell className="h-3 w-3" />
+                              {event.reminderMinutes >= 1440 ? '1 day' : `${event.reminderMinutes}m`}
                             </span>}
                           {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
@@ -446,8 +533,8 @@ export default function Events() {
                             <MapPin className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{event.location}</span>
                           </span>}
-                        <Badge variant="outline" className="text-xs flex-shrink-0">
-                          <Tag className="h-2 w-2 mr-1" />
+                        <Badge variant="outline" className={`text-xs flex-shrink-0 ${EVENT_TYPE_BADGE_COLORS[event.type]}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${EVENT_TYPE_COLORS[event.type]}`} />
                           {event.type}
                         </Badge>
                       </div>
