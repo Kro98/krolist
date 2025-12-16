@@ -18,28 +18,39 @@ function Calendar({
   eventColors = {},
   ...props 
 }: CalendarProps) {
-  // Create a map of dates with events for quick lookup
-  const eventDateStrings = React.useMemo(() => {
-    return new Set(eventDates.map(date => date.toDateString()));
-  }, [eventDates]);
+  // Create a map of dates with event colors for quick lookup
+  const eventColorMap = React.useMemo(() => {
+    const map = new Map<string, string[]>();
+    eventDates.forEach(date => {
+      const key = date.toDateString();
+      const color = eventColors[key] || "bg-primary";
+      const existing = map.get(key) || [];
+      if (!existing.includes(color)) {
+        existing.push(color);
+      }
+      map.set(key, existing);
+    });
+    return map;
+  }, [eventDates, eventColors]);
 
   // Custom day component to show event dots
   const DayWithEvents = React.useCallback(({ date, ...dayProps }: DayProps) => {
-    const hasEvent = eventDateStrings.has(date.toDateString());
     const dateKey = date.toDateString();
-    const dotColor = eventColors[dateKey] || "bg-primary";
+    const colors = eventColorMap.get(dateKey) || [];
     
     return (
       <div className="relative w-full h-full flex flex-col items-center justify-center">
         <span>{date.getDate()}</span>
-        {hasEvent && (
+        {colors.length > 0 && (
           <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
-            <span className={cn("w-1.5 h-1.5 rounded-full", dotColor)} />
+            {colors.slice(0, 3).map((color, idx) => (
+              <span key={idx} className={cn("w-1.5 h-1.5 rounded-full", color)} />
+            ))}
           </div>
         )}
       </div>
     );
-  }, [eventDateStrings, eventColors]);
+  }, [eventColorMap]);
 
   return (
     <DayPicker
