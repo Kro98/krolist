@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { getAffiliateLink } from "@/config/stores";
 
 export default function SearchProducts() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,9 +18,9 @@ export default function SearchProducts() {
       return;
     }
 
-    // Open Amazon search page directly with the query
-    const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery.trim())}`;
-    window.open(amazonSearchUrl, '_blank');
+    // Open Amazon affiliate link - it will redirect to Amazon
+    const amazonAffiliateUrl = getAffiliateLink('amazon');
+    window.open(amazonAffiliateUrl, '_blank');
   };
 
   return (
