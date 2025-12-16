@@ -36,7 +36,7 @@ interface KrolistProduct {
   last_checked_at?: string;
   availability_status?: 'available' | 'currently_unavailable' | 'ran_out';
 }
-const CATEGORIES = ['Electronics', 'Fashion', 'Automotive', 'Watches', 'EDC', 'Custom'];
+const CATEGORIES = ['Electronics', 'Fashion', 'Automotive', 'Watches', 'EDC', 'Kitchen Appliances', 'Custom'];
 const CURRENCIES = ['SAR', 'AED', 'USD', 'EUR', 'GBP'];
 const AVAILABILITY_STATUSES = [{
   value: 'available',
