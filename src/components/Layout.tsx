@@ -132,9 +132,9 @@ function LayoutContent({ children }: LayoutProps) {
   
   return (
     <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Desktop Ad Spaces */}
-      <AdSpace position="left" />
-      <AdSpace position="right" />
+      {/* Desktop Ad Spaces - Customize width/height as needed */}
+      <AdSpace position="left" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
+      <AdSpace position="right" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
       
       <NotificationPopup />
       <LoginMessageDialog />
