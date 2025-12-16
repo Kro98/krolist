@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-
+import { getAffiliateTag } from "@/config/stores";
 
 export default function SearchProducts() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,9 +18,12 @@ export default function SearchProducts() {
       return;
     }
 
-    // Open Amazon search with affiliate tag and search query
-    const affiliateTag = 'krolist0f-21'; // Your Amazon affiliate tag
-    const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery.trim())}&tag=${affiliateTag}`;
+    // Get affiliate tag from centralized config (src/config/stores.ts)
+    const affiliateTag = getAffiliateTag('amazon');
+    
+    // Build Amazon search URL with affiliate tracking
+    // Format: https://www.amazon.sa/s?k={query}&tag={affiliateTag}
+    const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery.trim())}${affiliateTag ? `&tag=${affiliateTag}` : ''}`;
     window.open(amazonSearchUrl, '_blank');
   };
 

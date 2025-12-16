@@ -17,6 +17,7 @@ export interface StoreConfig {
   domains: string[];
   icon: string;
   affiliateUrl: string;
+  affiliateTag?: string; // For stores that support search with affiliate tracking
   defaultCurrency: Currency;
   supportedCurrencies: Currency[];
   brandColor: string;
@@ -88,8 +89,11 @@ export const STORES: Record<string, StoreConfig> = {
     domains: ['amazon.sa', 'amazon.ae', 'amazon.com', 'amazon.co.uk'],
     icon: amazonIcon,
     
-    // 💰 AFFILIATE LINK - Update here when Amazon link changes
+    // 💰 AFFILIATE LINK - General affiliate shortlink
     affiliateUrl: 'https://amzn.to/4ny9VLJ',
+    
+    // 💰 AFFILIATE TAG - Used for search URLs (format: amazon.sa/s?k=query&tag=YOUR_TAG)
+    affiliateTag: 'krolist0f-21',
     
     defaultCurrency: 'USD',
     supportedCurrencies: ['USD', 'SAR', 'AED', 'EGP'],
@@ -236,6 +240,12 @@ export const getStoreByDomain = (url: string): StoreConfig | undefined => {
 export const getAffiliateLink = (storeIdOrName: string): string => {
   const store = getStoreById(storeIdOrName) || getStoreByName(storeIdOrName);
   return store?.affiliateUrl || `https://${storeIdOrName}.com`;
+};
+
+// Get affiliate tag for a store (used for search URLs)
+export const getAffiliateTag = (storeIdOrName: string): string | undefined => {
+  const store = getStoreById(storeIdOrName) || getStoreByName(storeIdOrName);
+  return store?.affiliateTag;
 };
 
 // Get store icon
