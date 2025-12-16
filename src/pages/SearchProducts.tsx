@@ -35,14 +35,6 @@ export default function SearchProducts() {
             <h1 className="text-4xl md:text-5xl font-bold">
               Find Your Perfect Product, Instantly.
             </h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/how-to-use-search")}
-              className="h-10 w-10"
-            >
-              <HelpCircle className="h-6 w-6 text-primary" />
-            </Button>
           </div>
 
           <div className="max-w-3xl mx-auto mt-8">
