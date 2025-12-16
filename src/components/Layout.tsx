@@ -22,6 +22,7 @@ import { NotificationPopup } from "@/components/NotificationPopup";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AdSpace } from "@/components/AdSpace";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -131,6 +132,10 @@ function LayoutContent({ children }: LayoutProps) {
   
   return (
     <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Desktop Ad Spaces */}
+      <AdSpace position="left" />
+      <AdSpace position="right" />
+      
       <NotificationPopup />
       <LoginMessageDialog />
       <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
