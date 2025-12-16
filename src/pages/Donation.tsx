@@ -2,6 +2,7 @@ import { Heart, Coffee, Sparkles, Star, Trophy, Target } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import confetti from "canvas-confetti";
 
 declare global {
   interface Window {
@@ -53,6 +54,32 @@ export default function Donation() {
   }, []);
 
   const handleDonate = () => {
+    // Fire confetti
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#FF5E5B', '#fcbf47', '#00D4AA', '#7C3AED', '#F472B6']
+    });
+    
+    // Fire side confetti
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#FF5E5B', '#fcbf47', '#00D4AA']
+      });
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#FF5E5B', '#fcbf47', '#00D4AA']
+      });
+    }, 150);
+    
     window.open('https://ko-fi.com/krolist', '_blank');
   };
 
