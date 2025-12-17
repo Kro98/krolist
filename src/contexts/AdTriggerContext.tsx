@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AdTriggerContextType {
   showAd: () => void;
@@ -24,10 +26,14 @@ const STORAGE_KEYS = {
   LAST_AD_TIME: 'ad_last_shown_time',
 };
 
-const AD_COOLDOWN_MS = 30000; // 30 seconds cooldown between ads
+const DEFAULT_COOLDOWN_MS = 30000; // 30 seconds default
 
 export function AdTriggerProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [isAdVisible, setIsAdVisible] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
+  const [cooldownMs, setCooldownMs] = useState(DEFAULT_COOLDOWN_MS);
   const [favoriteCount, setFavoriteCount] = useState(() => {
     return parseInt(localStorage.getItem(STORAGE_KEYS.FAVORITE_COUNT) || '0', 10);
   });
@@ -38,16 +44,74 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     return parseInt(localStorage.getItem(STORAGE_KEYS.LOAD_SCREEN_COUNT) || '0', 10);
   });
 
-  // Show the ad (with cooldown check)
+  // Fetch ad settings from database
+  useEffect(() => {
+    const fetchAdSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('ad_settings')
+          .select('setting_key, setting_value');
+
+        if (!error && data) {
+          data.forEach((setting) => {
+            if (setting.setting_key === 'ad_cooldown_seconds') {
+              setCooldownMs(parseInt(setting.setting_value, 10) * 1000);
+            } else if (setting.setting_key === 'ads_disabled_for_admins') {
+              setAdsDisabledForAdmins(setting.setting_value === 'true');
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching ad settings:', error);
+      }
+    };
+
+    fetchAdSettings();
+  }, []);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (!error) {
+          setIsAdmin(!!data);
+        }
+      } catch (error) {
+        console.error('Error checking admin role:', error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminRole();
+  }, [user]);
+
+  // Show the ad (with cooldown check and admin check)
   const showAd = useCallback(() => {
+    // Skip ads for admins if setting is enabled
+    if (isAdmin && adsDisabledForAdmins) {
+      return;
+    }
+
     const lastAdTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_AD_TIME) || '0', 10);
     const now = Date.now();
     
-    if (now - lastAdTime >= AD_COOLDOWN_MS) {
+    if (now - lastAdTime >= cooldownMs) {
       setIsAdVisible(true);
       localStorage.setItem(STORAGE_KEYS.LAST_AD_TIME, now.toString());
     }
-  }, []);
+  }, [isAdmin, adsDisabledForAdmins, cooldownMs]);
 
   const closeAd = useCallback(() => {
     setIsAdVisible(false);
