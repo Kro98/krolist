@@ -25,22 +25,40 @@ import { Button } from "@/components/ui/button";
 import { AdSpace } from "@/components/AdSpace";
 import { InterstitialAd } from "@/components/InterstitialAd";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
-
 interface LayoutProps {
   children: React.ReactNode;
 }
-
-function LayoutContent({ children }: LayoutProps) {
-  const { language } = useLanguage();
-  const { user, loading, isGuest } = useAuth();
-  const { showAuthModal, closeAuthModal } = useGuestAuth();
+function LayoutContent({
+  children
+}: LayoutProps) {
+  const {
+    language
+  } = useLanguage();
+  const {
+    user,
+    loading,
+    isGuest
+  } = useAuth();
+  const {
+    showAuthModal,
+    closeAuthModal
+  } = useGuestAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { open, setOpen } = useSidebar();
+  const {
+    open,
+    setOpen
+  } = useSidebar();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [updateToastShown, setUpdateToastShown] = useState(false);
-  const { triggerPageOpen, triggerLoadScreen, triggerAuthEvent } = useAdTrigger();
+  const {
+    triggerPageOpen,
+    triggerLoadScreen,
+    triggerAuthEvent
+  } = useAdTrigger();
   const previousPath = useRef(location.pathname);
   const previousUser = useRef(user);
   const loadingTriggered = useRef(false);
@@ -57,7 +75,7 @@ function LayoutContent({ children }: LayoutProps) {
   useEffect(() => {
     const wasLoggedIn = previousUser.current !== null;
     const isLoggedIn = user !== null;
-    
+
     // Only trigger if auth state actually changed (not on initial load)
     if (previousUser.current !== undefined && wasLoggedIn !== isLoggedIn) {
       triggerAuthEvent();
@@ -81,11 +99,9 @@ function LayoutContent({ children }: LayoutProps) {
     if ('serviceWorker' in navigator && !updateToastShown) {
       const checkForUpdates = async () => {
         const registration = await navigator.serviceWorker.getRegistration();
-        
         if (registration?.waiting) {
           showUpdateToast();
         }
-
         registration?.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker?.addEventListener('statechange', () => {
@@ -95,38 +111,29 @@ function LayoutContent({ children }: LayoutProps) {
           });
         });
       };
-
       const showUpdateToast = () => {
         if (updateToastShown) return;
         setUpdateToastShown(true);
-        
         toast({
           title: language === 'ar' ? 'تحديث متاح!' : 'Update Available!',
-          description: language === 'ar' 
-            ? 'يتوفر إصدار جديد من التطبيق. قم بالتحديث للحصول على أحدث الميزات.' 
-            : 'A new version is available. Update to get the latest features.',
+          description: language === 'ar' ? 'يتوفر إصدار جديد من التطبيق. قم بالتحديث للحصول على أحدث الميزات.' : 'A new version is available. Update to get the latest features.',
           duration: 10000,
-          action: (
-            <Button 
-              size="sm" 
-              onClick={async () => {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration?.waiting) {
-                  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                  window.location.reload();
-                } else {
-                  window.location.reload();
-                }
-              }}
-              className="bg-primary hover:bg-primary/90"
-            >
+          action: <Button size="sm" onClick={async () => {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration?.waiting) {
+              registration.waiting.postMessage({
+                type: 'SKIP_WAITING'
+              });
+              window.location.reload();
+            } else {
+              window.location.reload();
+            }
+          }} className="bg-primary hover:bg-primary/90">
               <RefreshCw className="h-3 w-3 mr-1" />
               {language === 'ar' ? 'تحديث' : 'Update'}
             </Button>
-          ),
         });
       };
-
       checkForUpdates();
     }
   }, [language, toast, updateToastShown]);
@@ -144,9 +151,8 @@ function LayoutContent({ children }: LayoutProps) {
       }
     },
     threshold: 100,
-    edgeThreshold: 50,
+    edgeThreshold: 50
   });
-
   const handleAddClick = () => {
     navigate('/');
     // Trigger select mode on Products page
@@ -161,15 +167,12 @@ function LayoutContent({ children }: LayoutProps) {
   if (isPublicRoute) {
     return <>{children}</>;
   }
-  
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>;
   }
-  
-  return (
-    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+  return <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       {/* Interstitial Ad */}
       <InterstitialAd />
       {/* Desktop Ad Spaces - Customize width/height as needed */}
@@ -198,7 +201,7 @@ function LayoutContent({ children }: LayoutProps) {
         </header>
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5">
+          <div className="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 py-5 px-[5px]">
             <PageBreadcrumbs />
             {children}
           </div>
@@ -207,16 +210,14 @@ function LayoutContent({ children }: LayoutProps) {
       
       <Toaster />
       <Sonner />
-    </div>
-  );
+    </div>;
 }
-
-export function Layout({ children }: LayoutProps) {
-  return (
-    <TooltipProvider>
+export function Layout({
+  children
+}: LayoutProps) {
+  return <TooltipProvider>
       <SidebarProvider>
         <LayoutContent>{children}</LayoutContent>
       </SidebarProvider>
-    </TooltipProvider>
-  );
+    </TooltipProvider>;
 }
