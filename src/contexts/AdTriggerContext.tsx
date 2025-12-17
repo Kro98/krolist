@@ -31,11 +31,14 @@ const DEFAULT_FAVORITE_THRESHOLD = 2;
 const DEFAULT_REFRESH_THRESHOLD = 3;
 const DEFAULT_LOAD_SCREEN_THRESHOLD = 5;
 
+type AdVisibilityMode = 'all' | 'guests_only' | 'users_only' | 'admins_only' | 'disabled';
+
 export function AdTriggerProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [isAdVisible, setIsAdVisible] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
+  const [visibilityMode, setVisibilityMode] = useState<AdVisibilityMode>('all');
   const [cooldownMs, setCooldownMs] = useState(DEFAULT_COOLDOWN_MS);
   const [favoriteThreshold, setFavoriteThreshold] = useState(DEFAULT_FAVORITE_THRESHOLD);
   const [refreshThreshold, setRefreshThreshold] = useState(DEFAULT_REFRESH_THRESHOLD);
@@ -78,6 +81,8 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
               setCooldownMs(parseInt(setting.setting_value, 10) * 1000);
             } else if (setting.setting_key === 'ads_disabled_for_admins') {
               setAdsDisabledForAdmins(setting.setting_value === 'true');
+            } else if (setting.setting_key === 'ad_visibility_mode') {
+              setVisibilityMode(setting.setting_value as AdVisibilityMode);
             } else if (setting.setting_key === 'favorite_count_threshold') {
               setFavoriteThreshold(parseInt(setting.setting_value, 10));
             } else if (setting.setting_key === 'refresh_count_threshold') {
@@ -140,12 +145,20 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     checkAdminRole();
   }, [user]);
 
-  // Show the ad (with cooldown check and admin check)
+  // Check if user should see ads based on visibility mode
+  const shouldShowAds = useCallback(() => {
+    if (visibilityMode === 'disabled') return false;
+    if (visibilityMode === 'guests_only') return !user;
+    if (visibilityMode === 'users_only') return !!user && !isAdmin;
+    if (visibilityMode === 'admins_only') return isAdmin;
+    // 'all' mode - check admin exemption
+    if (isAdmin && adsDisabledForAdmins) return false;
+    return true;
+  }, [visibilityMode, user, isAdmin, adsDisabledForAdmins]);
+
+  // Show the ad (with cooldown check and visibility check)
   const showAd = useCallback(() => {
-    // Skip ads for admins if setting is enabled
-    if (isAdmin && adsDisabledForAdmins) {
-      return;
-    }
+    if (!shouldShowAds()) return;
 
     const lastAdTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_AD_TIME) || '0', 10);
     const now = Date.now();
@@ -154,7 +167,7 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
       setIsAdVisible(true);
       localStorage.setItem(STORAGE_KEYS.LAST_AD_TIME, now.toString());
     }
-  }, [isAdmin, adsDisabledForAdmins, cooldownMs]);
+  }, [shouldShowAds, cooldownMs]);
 
   const closeAd = useCallback(() => {
     setIsAdVisible(false);
