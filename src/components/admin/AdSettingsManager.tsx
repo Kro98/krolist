@@ -8,12 +8,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Megaphone, Save } from "lucide-react";
 
+const TRIGGER_SETTINGS = [
+  { key: 'trigger_page_open_enabled', label: 'Page Open', description: 'Show ad when opening a page' },
+  { key: 'trigger_auth_event_enabled', label: 'Login/Logout', description: 'Show ad on authentication events' },
+  { key: 'trigger_favorite_add_enabled', label: 'Add Favorites', description: 'Show ad when adding to favorites' },
+  { key: 'trigger_refresh_enabled', label: 'Page Refresh', description: 'Show ad on page refresh' },
+  { key: 'trigger_promo_copy_enabled', label: 'Copy Promo Code', description: 'Show ad when copying promo codes' },
+  { key: 'trigger_shop_open_enabled', label: 'Open Shop', description: 'Show ad when opening shops' },
+  { key: 'trigger_click_enabled', label: 'Click Events', description: 'Show ad on specific clicks' },
+  { key: 'trigger_load_screen_enabled', label: 'Load Screen', description: 'Show ad on loading screens' },
+];
+
 export function AdSettingsManager() {
   const [cooldownSeconds, setCooldownSeconds] = useState(30);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
   const [favoriteThreshold, setFavoriteThreshold] = useState(2);
   const [refreshThreshold, setRefreshThreshold] = useState(3);
   const [loadScreenThreshold, setLoadScreenThreshold] = useState(5);
+  const [triggerStates, setTriggerStates] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -30,6 +42,7 @@ export function AdSettingsManager() {
       if (error) throw error;
 
       if (data) {
+        const newTriggerStates: Record<string, boolean> = {};
         data.forEach((setting) => {
           if (setting.setting_key === 'ad_cooldown_seconds') {
             setCooldownSeconds(parseInt(setting.setting_value, 10));
@@ -41,8 +54,11 @@ export function AdSettingsManager() {
             setRefreshThreshold(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'load_screen_count_threshold') {
             setLoadScreenThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key.startsWith('trigger_')) {
+            newTriggerStates[setting.setting_key] = setting.setting_value === 'true';
           }
         });
+        setTriggerStates(newTriggerStates);
       }
     } catch (error) {
       console.error('Error fetching ad settings:', error);
@@ -61,6 +77,7 @@ export function AdSettingsManager() {
         { key: 'favorite_count_threshold', value: favoriteThreshold.toString() },
         { key: 'refresh_count_threshold', value: refreshThreshold.toString() },
         { key: 'load_screen_count_threshold', value: loadScreenThreshold.toString() },
+        ...Object.entries(triggerStates).map(([key, value]) => ({ key, value: value.toString() })),
       ];
 
       for (const { key, value } of updates) {
@@ -78,6 +95,10 @@ export function AdSettingsManager() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleTriggerToggle = (key: string, checked: boolean) => {
+    setTriggerStates(prev => ({ ...prev, [key]: checked }));
   };
 
   if (loading) {
@@ -101,7 +122,7 @@ export function AdSettingsManager() {
           Ad Settings
         </CardTitle>
         <CardDescription>
-          Configure interstitial ad behavior and trigger thresholds
+          Configure interstitial ad behavior, triggers, and thresholds
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -134,6 +155,24 @@ export function AdSettingsManager() {
         </div>
 
         <div className="border-t pt-4">
+          <h4 className="font-medium mb-4">Ad Triggers</h4>
+          <div className="space-y-3">
+            {TRIGGER_SETTINGS.map(({ key, label, description }) => (
+              <div key={key} className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">{label}</Label>
+                  <p className="text-xs text-muted-foreground">{description}</p>
+                </div>
+                <Switch
+                  checked={triggerStates[key] ?? true}
+                  onCheckedChange={(checked) => handleTriggerToggle(key, checked)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
           <h4 className="font-medium mb-4">Trigger Thresholds</h4>
           
           <div className="space-y-4">
@@ -146,6 +185,7 @@ export function AdSettingsManager() {
                 max={20}
                 value={favoriteThreshold}
                 onChange={(e) => setFavoriteThreshold(parseInt(e.target.value, 10) || 2)}
+                disabled={!triggerStates['trigger_favorite_add_enabled']}
               />
               <p className="text-sm text-muted-foreground">
                 Show ad after this many products added to favorites
@@ -161,6 +201,7 @@ export function AdSettingsManager() {
                 max={20}
                 value={refreshThreshold}
                 onChange={(e) => setRefreshThreshold(parseInt(e.target.value, 10) || 3)}
+                disabled={!triggerStates['trigger_refresh_enabled']}
               />
               <p className="text-sm text-muted-foreground">
                 Show ad after this many page refreshes
@@ -176,6 +217,7 @@ export function AdSettingsManager() {
                 max={20}
                 value={loadScreenThreshold}
                 onChange={(e) => setLoadScreenThreshold(parseInt(e.target.value, 10) || 5)}
+                disabled={!triggerStates['trigger_load_screen_enabled']}
               />
               <p className="text-sm text-muted-foreground">
                 Show ad after this many loading screens
