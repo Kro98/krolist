@@ -27,6 +27,9 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_COOLDOWN_MS = 30000; // 30 seconds default
+const DEFAULT_FAVORITE_THRESHOLD = 2;
+const DEFAULT_REFRESH_THRESHOLD = 3;
+const DEFAULT_LOAD_SCREEN_THRESHOLD = 5;
 
 export function AdTriggerProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -34,6 +37,9 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
   const [cooldownMs, setCooldownMs] = useState(DEFAULT_COOLDOWN_MS);
+  const [favoriteThreshold, setFavoriteThreshold] = useState(DEFAULT_FAVORITE_THRESHOLD);
+  const [refreshThreshold, setRefreshThreshold] = useState(DEFAULT_REFRESH_THRESHOLD);
+  const [loadScreenThreshold, setLoadScreenThreshold] = useState(DEFAULT_LOAD_SCREEN_THRESHOLD);
   const [favoriteCount, setFavoriteCount] = useState(() => {
     return parseInt(localStorage.getItem(STORAGE_KEYS.FAVORITE_COUNT) || '0', 10);
   });
@@ -58,6 +64,12 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
               setCooldownMs(parseInt(setting.setting_value, 10) * 1000);
             } else if (setting.setting_key === 'ads_disabled_for_admins') {
               setAdsDisabledForAdmins(setting.setting_value === 'true');
+            } else if (setting.setting_key === 'favorite_count_threshold') {
+              setFavoriteThreshold(parseInt(setting.setting_value, 10));
+            } else if (setting.setting_key === 'refresh_count_threshold') {
+              setRefreshThreshold(parseInt(setting.setting_value, 10));
+            } else if (setting.setting_key === 'load_screen_count_threshold') {
+              setLoadScreenThreshold(parseInt(setting.setting_value, 10));
             }
           });
         }
@@ -127,31 +139,31 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     showAd();
   }, [showAd]);
 
-  // Trigger: Add to favorites - every 2 products
+  // Trigger: Add to favorites - configurable threshold
   const triggerFavoriteAdd = useCallback(() => {
     const newCount = favoriteCount + 1;
     setFavoriteCount(newCount);
     localStorage.setItem(STORAGE_KEYS.FAVORITE_COUNT, newCount.toString());
     
-    if (newCount >= 2) {
+    if (newCount >= favoriteThreshold) {
       showAd();
       setFavoriteCount(0);
       localStorage.setItem(STORAGE_KEYS.FAVORITE_COUNT, '0');
     }
-  }, [favoriteCount, showAd]);
+  }, [favoriteCount, favoriteThreshold, showAd]);
 
-  // Trigger: Refresh - every 3 refreshes
+  // Trigger: Refresh - configurable threshold
   const triggerRefresh = useCallback(() => {
     const newCount = refreshCount + 1;
     setRefreshCount(newCount);
     localStorage.setItem(STORAGE_KEYS.REFRESH_COUNT, newCount.toString());
     
-    if (newCount >= 3) {
+    if (newCount >= refreshThreshold) {
       showAd();
       setRefreshCount(0);
       localStorage.setItem(STORAGE_KEYS.REFRESH_COUNT, '0');
     }
-  }, [refreshCount, showAd]);
+  }, [refreshCount, refreshThreshold, showAd]);
 
   // Trigger: Copy promo code - always show ad
   const triggerPromoCopy = useCallback(() => {
@@ -168,18 +180,18 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     showAd();
   }, [showAd]);
 
-  // Trigger: Load screen - every 5 times
+  // Trigger: Load screen - configurable threshold
   const triggerLoadScreen = useCallback(() => {
     const newCount = loadScreenCount + 1;
     setLoadScreenCount(newCount);
     localStorage.setItem(STORAGE_KEYS.LOAD_SCREEN_COUNT, newCount.toString());
     
-    if (newCount >= 5) {
+    if (newCount >= loadScreenThreshold) {
       showAd();
       setLoadScreenCount(0);
       localStorage.setItem(STORAGE_KEYS.LOAD_SCREEN_COUNT, '0');
     }
-  }, [loadScreenCount, showAd]);
+  }, [loadScreenCount, loadScreenThreshold, showAd]);
 
   // Track page refresh on mount
   useEffect(() => {

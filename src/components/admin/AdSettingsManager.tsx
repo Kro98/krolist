@@ -11,6 +11,9 @@ import { Megaphone, Save } from "lucide-react";
 export function AdSettingsManager() {
   const [cooldownSeconds, setCooldownSeconds] = useState(30);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
+  const [favoriteThreshold, setFavoriteThreshold] = useState(2);
+  const [refreshThreshold, setRefreshThreshold] = useState(3);
+  const [loadScreenThreshold, setLoadScreenThreshold] = useState(5);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -32,6 +35,12 @@ export function AdSettingsManager() {
             setCooldownSeconds(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'ads_disabled_for_admins') {
             setAdsDisabledForAdmins(setting.setting_value === 'true');
+          } else if (setting.setting_key === 'favorite_count_threshold') {
+            setFavoriteThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'refresh_count_threshold') {
+            setRefreshThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'load_screen_count_threshold') {
+            setLoadScreenThreshold(parseInt(setting.setting_value, 10));
           }
         });
       }
@@ -46,21 +55,21 @@ export function AdSettingsManager() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Update cooldown
-      const { error: cooldownError } = await supabase
-        .from('ad_settings')
-        .update({ setting_value: cooldownSeconds.toString() })
-        .eq('setting_key', 'ad_cooldown_seconds');
+      const updates = [
+        { key: 'ad_cooldown_seconds', value: cooldownSeconds.toString() },
+        { key: 'ads_disabled_for_admins', value: adsDisabledForAdmins.toString() },
+        { key: 'favorite_count_threshold', value: favoriteThreshold.toString() },
+        { key: 'refresh_count_threshold', value: refreshThreshold.toString() },
+        { key: 'load_screen_count_threshold', value: loadScreenThreshold.toString() },
+      ];
 
-      if (cooldownError) throw cooldownError;
-
-      // Update admin ads setting
-      const { error: adminError } = await supabase
-        .from('ad_settings')
-        .update({ setting_value: adsDisabledForAdmins.toString() })
-        .eq('setting_key', 'ads_disabled_for_admins');
-
-      if (adminError) throw adminError;
+      for (const { key, value } of updates) {
+        const { error } = await supabase
+          .from('ad_settings')
+          .update({ setting_value: value })
+          .eq('setting_key', key);
+        if (error) throw error;
+      }
 
       toast.success('Ad settings saved successfully');
     } catch (error) {
@@ -92,7 +101,7 @@ export function AdSettingsManager() {
           Ad Settings
         </CardTitle>
         <CardDescription>
-          Configure interstitial ad behavior
+          Configure interstitial ad behavior and trigger thresholds
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -122,6 +131,57 @@ export function AdSettingsManager() {
             checked={adsDisabledForAdmins}
             onCheckedChange={setAdsDisabledForAdmins}
           />
+        </div>
+
+        <div className="border-t pt-4">
+          <h4 className="font-medium mb-4">Trigger Thresholds</h4>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="favoriteThreshold">Favorites Before Ad</Label>
+              <Input
+                id="favoriteThreshold"
+                type="number"
+                min={1}
+                max={20}
+                value={favoriteThreshold}
+                onChange={(e) => setFavoriteThreshold(parseInt(e.target.value, 10) || 2)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Show ad after this many products added to favorites
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="refreshThreshold">Refreshes Before Ad</Label>
+              <Input
+                id="refreshThreshold"
+                type="number"
+                min={1}
+                max={20}
+                value={refreshThreshold}
+                onChange={(e) => setRefreshThreshold(parseInt(e.target.value, 10) || 3)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Show ad after this many page refreshes
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="loadScreenThreshold">Load Screens Before Ad</Label>
+              <Input
+                id="loadScreenThreshold"
+                type="number"
+                min={1}
+                max={20}
+                value={loadScreenThreshold}
+                onChange={(e) => setLoadScreenThreshold(parseInt(e.target.value, 10) || 5)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Show ad after this many loading screens
+              </p>
+            </div>
+          </div>
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full">

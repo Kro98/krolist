@@ -61,7 +61,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                         <Route path="/donation" element={<Donation />} />
                         <Route path="/admin" element={<Admin />} />
                         <Route path="/categories" element={<CategoryTags />} />
-                        <Route path="/category/:categoryId" element={<CategoryProducts />} className="mx-0 px-0" />
+                        <Route path="/category/:categoryId" element={<CategoryProducts />} />
                         <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
