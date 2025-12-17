@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Image as ImageIcon, Package } from 'lucide-react';
 
@@ -33,6 +34,7 @@ export default function CategoryManager() {
   const [selectedCategoryForProducts, setSelectedCategoryForProducts] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [productCategories, setProductCategories] = useState<Record<string, string[]>>({});
+  const [productSort, setProductSort] = useState<'title' | 'new' | 'shop' | 'tag'>('title');
   
   const [formData, setFormData] = useState({
     title: '',
@@ -432,8 +434,35 @@ export default function CategoryManager() {
               Select which Krolist products should appear in this category
             </DialogDescription>
           </DialogHeader>
+          <div className="flex items-center gap-2 mb-2">
+            <Label className="text-sm">Sort by:</Label>
+            <Select value={productSort} onValueChange={(v) => setProductSort(v as typeof productSort)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="title">Title</SelectItem>
+                <SelectItem value="new">Newest</SelectItem>
+                <SelectItem value="shop">Shop</SelectItem>
+                <SelectItem value="tag">Tag</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="overflow-y-auto max-h-96 space-y-2">
-            {krolistProducts.map((product) => {
+            {[...krolistProducts]
+              .sort((a, b) => {
+                switch (productSort) {
+                  case 'new':
+                    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+                  case 'shop':
+                    return (a.store || '').localeCompare(b.store || '');
+                  case 'tag':
+                    return (a.category || '').localeCompare(b.category || '');
+                  default:
+                    return (a.title || '').localeCompare(b.title || '');
+                }
+              })
+              .map((product) => {
               const categories = productCategories[product.id] || [];
               const categoriesText = categories.length > 0 ? ` - ${categories.join(' & ')}` : '';
               const truncatedTitle = product.title.length > 50 
