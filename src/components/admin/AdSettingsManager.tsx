@@ -137,7 +137,7 @@ export function AdSettingsManager() {
           Configure interstitial ad behavior, triggers, and thresholds
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="p-5 space-y-6">
         <div className="space-y-2">
           <Label>Ad Visibility</Label>
           <Select value={visibilityMode} onValueChange={setVisibilityMode}>
