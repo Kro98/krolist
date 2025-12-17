@@ -40,6 +40,19 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
   const [favoriteThreshold, setFavoriteThreshold] = useState(DEFAULT_FAVORITE_THRESHOLD);
   const [refreshThreshold, setRefreshThreshold] = useState(DEFAULT_REFRESH_THRESHOLD);
   const [loadScreenThreshold, setLoadScreenThreshold] = useState(DEFAULT_LOAD_SCREEN_THRESHOLD);
+  
+  // Trigger enable states
+  const [triggers, setTriggers] = useState({
+    pageOpen: true,
+    authEvent: true,
+    favoriteAdd: true,
+    refresh: true,
+    promoCopy: true,
+    shopOpen: true,
+    click: true,
+    loadScreen: true,
+  });
+
   const [favoriteCount, setFavoriteCount] = useState(() => {
     return parseInt(localStorage.getItem(STORAGE_KEYS.FAVORITE_COUNT) || '0', 10);
   });
@@ -59,6 +72,7 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
           .select('setting_key, setting_value');
 
         if (!error && data) {
+          const newTriggers = { ...triggers };
           data.forEach((setting) => {
             if (setting.setting_key === 'ad_cooldown_seconds') {
               setCooldownMs(parseInt(setting.setting_value, 10) * 1000);
@@ -70,8 +84,25 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
               setRefreshThreshold(parseInt(setting.setting_value, 10));
             } else if (setting.setting_key === 'load_screen_count_threshold') {
               setLoadScreenThreshold(parseInt(setting.setting_value, 10));
+            } else if (setting.setting_key === 'trigger_page_open_enabled') {
+              newTriggers.pageOpen = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_auth_event_enabled') {
+              newTriggers.authEvent = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_favorite_add_enabled') {
+              newTriggers.favoriteAdd = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_refresh_enabled') {
+              newTriggers.refresh = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_promo_copy_enabled') {
+              newTriggers.promoCopy = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_shop_open_enabled') {
+              newTriggers.shopOpen = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_click_enabled') {
+              newTriggers.click = setting.setting_value === 'true';
+            } else if (setting.setting_key === 'trigger_load_screen_enabled') {
+              newTriggers.loadScreen = setting.setting_value === 'true';
             }
           });
+          setTriggers(newTriggers);
         }
       } catch (error) {
         console.error('Error fetching ad settings:', error);
@@ -129,18 +160,19 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     setIsAdVisible(false);
   }, []);
 
-  // Trigger: Page open - always show ad
+  // Trigger: Page open
   const triggerPageOpen = useCallback(() => {
-    showAd();
-  }, [showAd]);
+    if (triggers.pageOpen) showAd();
+  }, [showAd, triggers.pageOpen]);
 
-  // Trigger: Login/logout - always show ad
+  // Trigger: Login/logout
   const triggerAuthEvent = useCallback(() => {
-    showAd();
-  }, [showAd]);
+    if (triggers.authEvent) showAd();
+  }, [showAd, triggers.authEvent]);
 
   // Trigger: Add to favorites - configurable threshold
   const triggerFavoriteAdd = useCallback(() => {
+    if (!triggers.favoriteAdd) return;
     const newCount = favoriteCount + 1;
     setFavoriteCount(newCount);
     localStorage.setItem(STORAGE_KEYS.FAVORITE_COUNT, newCount.toString());
@@ -150,10 +182,11 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
       setFavoriteCount(0);
       localStorage.setItem(STORAGE_KEYS.FAVORITE_COUNT, '0');
     }
-  }, [favoriteCount, favoriteThreshold, showAd]);
+  }, [favoriteCount, favoriteThreshold, showAd, triggers.favoriteAdd]);
 
   // Trigger: Refresh - configurable threshold
   const triggerRefresh = useCallback(() => {
+    if (!triggers.refresh) return;
     const newCount = refreshCount + 1;
     setRefreshCount(newCount);
     localStorage.setItem(STORAGE_KEYS.REFRESH_COUNT, newCount.toString());
@@ -163,25 +196,26 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
       setRefreshCount(0);
       localStorage.setItem(STORAGE_KEYS.REFRESH_COUNT, '0');
     }
-  }, [refreshCount, refreshThreshold, showAd]);
+  }, [refreshCount, refreshThreshold, showAd, triggers.refresh]);
 
-  // Trigger: Copy promo code - always show ad
+  // Trigger: Copy promo code
   const triggerPromoCopy = useCallback(() => {
-    showAd();
-  }, [showAd]);
+    if (triggers.promoCopy) showAd();
+  }, [showAd, triggers.promoCopy]);
 
-  // Trigger: Open shop - always show ad
+  // Trigger: Open shop
   const triggerShopOpen = useCallback(() => {
-    showAd();
-  }, [showAd]);
+    if (triggers.shopOpen) showAd();
+  }, [showAd, triggers.shopOpen]);
 
-  // Trigger: Click - every click shows ad
+  // Trigger: Click
   const triggerClick = useCallback(() => {
-    showAd();
-  }, [showAd]);
+    if (triggers.click) showAd();
+  }, [showAd, triggers.click]);
 
   // Trigger: Load screen - configurable threshold
   const triggerLoadScreen = useCallback(() => {
+    if (!triggers.loadScreen) return;
     const newCount = loadScreenCount + 1;
     setLoadScreenCount(newCount);
     localStorage.setItem(STORAGE_KEYS.LOAD_SCREEN_COUNT, newCount.toString());
@@ -191,7 +225,7 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
       setLoadScreenCount(0);
       localStorage.setItem(STORAGE_KEYS.LOAD_SCREEN_COUNT, '0');
     }
-  }, [loadScreenCount, loadScreenThreshold, showAd]);
+  }, [loadScreenCount, loadScreenThreshold, showAd, triggers.loadScreen]);
 
   // Track page refresh on mount
   useEffect(() => {
