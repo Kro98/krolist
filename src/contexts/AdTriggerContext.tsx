@@ -13,7 +13,8 @@ interface AdTriggerContextType {
   triggerClick: () => void;
   triggerLoadScreen: () => void;
   isAdVisible: boolean;
-  closeAd: () => void;
+  closeAd: (completed: boolean) => void;
+  currentTriggerType: string | null;
 }
 
 const AdTriggerContext = createContext<AdTriggerContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ type AdVisibilityMode = 'all' | 'guests_only' | 'users_only' | 'admins_only' | '
 export function AdTriggerProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [isAdVisible, setIsAdVisible] = useState(false);
+  const [currentTriggerType, setCurrentTriggerType] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
   const [visibilityMode, setVisibilityMode] = useState<AdVisibilityMode>('all');
@@ -150,38 +152,67 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     if (visibilityMode === 'disabled') return false;
     if (visibilityMode === 'guests_only') return !user;
     if (visibilityMode === 'users_only') return !!user && !isAdmin;
-    if (visibilityMode === 'admins_only') return isAdmin;
     // 'all' mode - check admin exemption
     if (isAdmin && adsDisabledForAdmins) return false;
     return true;
   }, [visibilityMode, user, isAdmin, adsDisabledForAdmins]);
 
+  // Get user type for analytics
+  const getUserType = useCallback(() => {
+    if (!user) return 'guest';
+    if (isAdmin) return 'admin';
+    return 'user';
+  }, [user, isAdmin]);
+
+  // Log analytics event
+  const logAdEvent = useCallback(async (triggerType: string, eventType: 'impression' | 'completion' | 'skip') => {
+    try {
+      await supabase.from('ad_analytics').insert({
+        trigger_type: triggerType,
+        event_type: eventType,
+        user_type: getUserType(),
+      });
+    } catch (error) {
+      console.error('Error logging ad event:', error);
+    }
+  }, [getUserType]);
+
   // Show the ad (with cooldown check and visibility check)
-  const showAd = useCallback(() => {
+  const showAdWithTrigger = useCallback((triggerType: string) => {
     if (!shouldShowAds()) return;
 
     const lastAdTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_AD_TIME) || '0', 10);
     const now = Date.now();
     
     if (now - lastAdTime >= cooldownMs) {
+      setCurrentTriggerType(triggerType);
       setIsAdVisible(true);
       localStorage.setItem(STORAGE_KEYS.LAST_AD_TIME, now.toString());
+      logAdEvent(triggerType, 'impression');
     }
-  }, [shouldShowAds, cooldownMs]);
+  }, [shouldShowAds, cooldownMs, logAdEvent]);
 
-  const closeAd = useCallback(() => {
+  const showAd = useCallback(() => {
+    showAdWithTrigger('manual');
+  }, [showAdWithTrigger]);
+
+  const closeAd = useCallback((completed: boolean) => {
+    if (currentTriggerType) {
+      logAdEvent(currentTriggerType, completed ? 'completion' : 'skip');
+    }
     setIsAdVisible(false);
-  }, []);
+    setCurrentTriggerType(null);
+  }, [currentTriggerType, logAdEvent]);
 
   // Trigger: Page open
   const triggerPageOpen = useCallback(() => {
-    if (triggers.pageOpen) showAd();
-  }, [showAd, triggers.pageOpen]);
+    if (triggers.pageOpen) showAdWithTrigger('page_open');
+  }, [showAdWithTrigger, triggers.pageOpen]);
 
   // Trigger: Login/logout
   const triggerAuthEvent = useCallback(() => {
-    if (triggers.authEvent) showAd();
-  }, [showAd, triggers.authEvent]);
+    if (triggers.authEvent) showAdWithTrigger('auth_event');
+  }, [showAdWithTrigger, triggers.authEvent]);
 
   // Trigger: Add to favorites - configurable threshold
   const triggerFavoriteAdd = useCallback(() => {
@@ -191,11 +222,11 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEYS.FAVORITE_COUNT, newCount.toString());
     
     if (newCount >= favoriteThreshold) {
-      showAd();
+      showAdWithTrigger('favorite_add');
       setFavoriteCount(0);
       localStorage.setItem(STORAGE_KEYS.FAVORITE_COUNT, '0');
     }
-  }, [favoriteCount, favoriteThreshold, showAd, triggers.favoriteAdd]);
+  }, [favoriteCount, favoriteThreshold, showAdWithTrigger, triggers.favoriteAdd]);
 
   // Trigger: Refresh - configurable threshold
   const triggerRefresh = useCallback(() => {
@@ -205,26 +236,26 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEYS.REFRESH_COUNT, newCount.toString());
     
     if (newCount >= refreshThreshold) {
-      showAd();
+      showAdWithTrigger('refresh');
       setRefreshCount(0);
       localStorage.setItem(STORAGE_KEYS.REFRESH_COUNT, '0');
     }
-  }, [refreshCount, refreshThreshold, showAd, triggers.refresh]);
+  }, [refreshCount, refreshThreshold, showAdWithTrigger, triggers.refresh]);
 
   // Trigger: Copy promo code
   const triggerPromoCopy = useCallback(() => {
-    if (triggers.promoCopy) showAd();
-  }, [showAd, triggers.promoCopy]);
+    if (triggers.promoCopy) showAdWithTrigger('promo_copy');
+  }, [showAdWithTrigger, triggers.promoCopy]);
 
   // Trigger: Open shop
   const triggerShopOpen = useCallback(() => {
-    if (triggers.shopOpen) showAd();
-  }, [showAd, triggers.shopOpen]);
+    if (triggers.shopOpen) showAdWithTrigger('shop_open');
+  }, [showAdWithTrigger, triggers.shopOpen]);
 
   // Trigger: Click
   const triggerClick = useCallback(() => {
-    if (triggers.click) showAd();
-  }, [showAd, triggers.click]);
+    if (triggers.click) showAdWithTrigger('click');
+  }, [showAdWithTrigger, triggers.click]);
 
   // Trigger: Load screen - configurable threshold
   const triggerLoadScreen = useCallback(() => {
@@ -234,11 +265,11 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEYS.LOAD_SCREEN_COUNT, newCount.toString());
     
     if (newCount >= loadScreenThreshold) {
-      showAd();
+      showAdWithTrigger('load_screen');
       setLoadScreenCount(0);
       localStorage.setItem(STORAGE_KEYS.LOAD_SCREEN_COUNT, '0');
     }
-  }, [loadScreenCount, loadScreenThreshold, showAd, triggers.loadScreen]);
+  }, [loadScreenCount, loadScreenThreshold, showAdWithTrigger, triggers.loadScreen]);
 
   // Track page refresh on mount
   useEffect(() => {
@@ -259,6 +290,7 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
         triggerLoadScreen,
         isAdVisible,
         closeAd,
+        currentTriggerType,
       }}
     >
       {children}

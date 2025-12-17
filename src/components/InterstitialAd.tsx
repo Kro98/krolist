@@ -56,7 +56,7 @@ export function InterstitialAd() {
           <Button
             variant="outline"
             size="icon"
-            onClick={closeAd}
+            onClick={() => closeAd(true)}
             className="rounded-full"
           >
             <X className="h-5 w-5" />

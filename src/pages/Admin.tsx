@@ -16,6 +16,7 @@ import LoginMessagesManager from "./admin/LoginMessagesManager";
 import OrdersManager from "./admin/OrdersManager";
 import { ShopManager } from "@/components/ShopManager";
 import { AdSettingsManager } from "@/components/admin/AdSettingsManager";
+import { AdAnalytics } from "@/components/admin/AdAnalytics";
 export default function Admin() {
   const {
     isAdmin,
@@ -201,7 +202,8 @@ export default function Admin() {
             <OrdersManager />
           </TabsContent>
 
-          <TabsContent value="ads" className="mt-0 md:mt-6">
+          <TabsContent value="ads" className="mt-0 md:mt-6 space-y-6">
+            <AdAnalytics />
             <AdSettingsManager />
           </TabsContent>
         </Tabs>
