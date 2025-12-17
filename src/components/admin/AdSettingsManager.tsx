@@ -192,7 +192,7 @@ export function AdSettingsManager() {
 
         <div className="border-t pt-4">
           <h4 className="font-medium mb-4">Ad Triggers</h4>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {TRIGGER_SETTINGS.map(({ key, label, description }) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="space-y-0.5">
