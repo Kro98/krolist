@@ -24,7 +24,6 @@ const VISIBILITY_OPTIONS = [
   { value: 'all', label: 'All Users', description: 'Show ads to everyone' },
   { value: 'guests_only', label: 'Guests Only', description: 'Only show ads to non-logged in users' },
   { value: 'users_only', label: 'Logged-in Users Only', description: 'Only show ads to authenticated users (non-admin)' },
-  { value: 'admins_only', label: 'Admins Only', description: 'Only show ads to admin users' },
   { value: 'disabled', label: 'Disabled', description: 'No ads for anyone' },
 ];
 
