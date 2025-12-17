@@ -140,7 +140,7 @@ export function AdAnalytics() {
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="p-6 space-y-6">
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-muted/50 rounded-lg p-4 text-center">
