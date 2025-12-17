@@ -21,7 +21,10 @@ const STORAGE_KEYS = {
   REFRESH_COUNT: 'ad_refresh_count',
   CLICK_COUNT: 'ad_click_count',
   LOAD_SCREEN_COUNT: 'ad_load_screen_count',
+  LAST_AD_TIME: 'ad_last_shown_time',
 };
+
+const AD_COOLDOWN_MS = 30000; // 30 seconds cooldown between ads
 
 export function AdTriggerProvider({ children }: { children: ReactNode }) {
   const [isAdVisible, setIsAdVisible] = useState(false);
@@ -35,9 +38,15 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
     return parseInt(localStorage.getItem(STORAGE_KEYS.LOAD_SCREEN_COUNT) || '0', 10);
   });
 
-  // Show the ad
+  // Show the ad (with cooldown check)
   const showAd = useCallback(() => {
-    setIsAdVisible(true);
+    const lastAdTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_AD_TIME) || '0', 10);
+    const now = Date.now();
+    
+    if (now - lastAdTime >= AD_COOLDOWN_MS) {
+      setIsAdVisible(true);
+      localStorage.setItem(STORAGE_KEYS.LAST_AD_TIME, now.toString());
+    }
   }, []);
 
   const closeAd = useCallback(() => {
