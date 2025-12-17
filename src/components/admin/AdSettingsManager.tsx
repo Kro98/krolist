@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Megaphone, Save } from "lucide-react";
@@ -19,7 +20,16 @@ const TRIGGER_SETTINGS = [
   { key: 'trigger_load_screen_enabled', label: 'Load Screen', description: 'Show ad on loading screens' },
 ];
 
+const VISIBILITY_OPTIONS = [
+  { value: 'all', label: 'All Users', description: 'Show ads to everyone' },
+  { value: 'guests_only', label: 'Guests Only', description: 'Only show ads to non-logged in users' },
+  { value: 'users_only', label: 'Logged-in Users Only', description: 'Only show ads to authenticated users (non-admin)' },
+  { value: 'admins_only', label: 'Admins Only', description: 'Only show ads to admin users' },
+  { value: 'disabled', label: 'Disabled', description: 'No ads for anyone' },
+];
+
 export function AdSettingsManager() {
+  const [visibilityMode, setVisibilityMode] = useState('all');
   const [cooldownSeconds, setCooldownSeconds] = useState(30);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
   const [favoriteThreshold, setFavoriteThreshold] = useState(2);
@@ -54,6 +64,8 @@ export function AdSettingsManager() {
             setRefreshThreshold(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'load_screen_count_threshold') {
             setLoadScreenThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'ad_visibility_mode') {
+            setVisibilityMode(setting.setting_value);
           } else if (setting.setting_key.startsWith('trigger_')) {
             newTriggerStates[setting.setting_key] = setting.setting_value === 'true';
           }
@@ -72,6 +84,7 @@ export function AdSettingsManager() {
     setSaving(true);
     try {
       const updates = [
+        { key: 'ad_visibility_mode', value: visibilityMode },
         { key: 'ad_cooldown_seconds', value: cooldownSeconds.toString() },
         { key: 'ads_disabled_for_admins', value: adsDisabledForAdmins.toString() },
         { key: 'favorite_count_threshold', value: favoriteThreshold.toString() },
@@ -127,6 +140,27 @@ export function AdSettingsManager() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
+          <Label>Ad Visibility</Label>
+          <Select value={visibilityMode} onValueChange={setVisibilityMode}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select who sees ads" />
+            </SelectTrigger>
+            <SelectContent>
+              {VISIBILITY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <div className="flex flex-col">
+                    <span>{option.label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">
+            {VISIBILITY_OPTIONS.find(o => o.value === visibilityMode)?.description}
+          </p>
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="cooldown">Ad Cooldown (seconds)</Label>
           <Input
             id="cooldown"
@@ -135,24 +169,27 @@ export function AdSettingsManager() {
             max={300}
             value={cooldownSeconds}
             onChange={(e) => setCooldownSeconds(parseInt(e.target.value, 10) || 30)}
+            disabled={visibilityMode === 'disabled'}
           />
           <p className="text-sm text-muted-foreground">
             Minimum time between ads (5-300 seconds)
           </p>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label>Disable Ads for Admins</Label>
-            <p className="text-sm text-muted-foreground">
-              Admin users won't see any ads
-            </p>
+        {visibilityMode === 'all' && (
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Disable Ads for Admins</Label>
+              <p className="text-sm text-muted-foreground">
+                Admin users won't see any ads
+              </p>
+            </div>
+            <Switch
+              checked={adsDisabledForAdmins}
+              onCheckedChange={setAdsDisabledForAdmins}
+            />
           </div>
-          <Switch
-            checked={adsDisabledForAdmins}
-            onCheckedChange={setAdsDisabledForAdmins}
-          />
-        </div>
+        )}
 
         <div className="border-t pt-4">
           <h4 className="font-medium mb-4">Ad Triggers</h4>
