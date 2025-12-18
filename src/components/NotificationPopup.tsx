@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell } from 'lucide-react';
+import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -65,6 +65,17 @@ export function NotificationPopup() {
     );
     setTimeout(() => {
       setActivePopups(prev => prev.filter(p => p.notification.id !== id));
+    }, 300);
+  };
+
+  const handleDismissAll = () => {
+    // Animate all out
+    setActivePopups(prev => 
+      prev.map(p => ({ ...p, translateY: -100, opacity: 0 }))
+    );
+    setTimeout(() => {
+      activePopups.forEach(p => markAsRead(p.notification.id));
+      setActivePopups([]);
     }, 300);
   };
 
@@ -148,6 +159,21 @@ export function NotificationPopup() {
       className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none flex flex-col gap-2"
       style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
     >
+      {/* Dismiss All button - shown when 2+ notifications */}
+      {activePopups.length >= 2 && (
+        <div className="max-w-md mx-auto w-full flex justify-center animate-fade-in">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="pointer-events-auto h-8 px-4 shadow-md"
+            onClick={handleDismissAll}
+          >
+            <XCircle className="h-4 w-4 mr-1.5" />
+            {isArabic ? 'تجاهل الكل' : 'Dismiss All'} ({activePopups.length})
+          </Button>
+        </div>
+      )}
+
       {activePopups.map((popup) => {
         const title = isArabic && popup.notification.titleAr ? popup.notification.titleAr : popup.notification.title;
         const message = isArabic && popup.notification.messageAr ? popup.notification.messageAr : popup.notification.message;
