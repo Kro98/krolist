@@ -4,85 +4,55 @@ import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+interface PopupNotification {
+  notification: AppNotification;
+  translateY: number;
+}
+
 export function NotificationPopup() {
   const { language } = useLanguage();
   const { notifications, markAsRead, dismissNotification } = useNotifications();
-  const [currentPopup, setCurrentPopup] = useState<AppNotification | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [translateY, setTranslateY] = useState(-100);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startY, setStartY] = useState(0);
+  const [activePopups, setActivePopups] = useState<PopupNotification[]>([]);
+  const [shownIds, setShownIds] = useState<Set<string>>(new Set());
 
   const isArabic = language === 'ar';
 
-  // Show popup for unread notifications
+  // Show popup for new unread notifications - persist until dismissed
   useEffect(() => {
-    const unreadNotifications = notifications.filter(n => !n.isRead);
-    const latestUnread = unreadNotifications[0];
+    const unreadNotifications = notifications.filter(n => !n.isRead && !shownIds.has(n.id));
     
-    if (latestUnread && (!currentPopup || currentPopup.id !== latestUnread.id)) {
-      // Check if this notification was shown recently (within last 5 seconds)
-      const shownKey = `notification_shown_${latestUnread.id}`;
-      const wasShown = sessionStorage.getItem(shownKey);
+    if (unreadNotifications.length > 0) {
+      const newPopups: PopupNotification[] = unreadNotifications.map(n => ({
+        notification: n,
+        translateY: 0
+      }));
       
-      if (!wasShown) {
-        sessionStorage.setItem(shownKey, 'true');
-        setCurrentPopup(latestUnread);
-        setIsVisible(true);
-        setTranslateY(0);
-
-        // Auto-dismiss after 8 seconds
-        const timer = setTimeout(() => {
-          handleDismiss();
-        }, 8000);
-
-        return () => clearTimeout(timer);
-      }
+      setActivePopups(prev => [...newPopups, ...prev].slice(0, 5)); // Max 5 stacked
+      setShownIds(prev => {
+        const updated = new Set(prev);
+        unreadNotifications.forEach(n => updated.add(n.id));
+        return updated;
+      });
     }
-  }, [notifications]);
+  }, [notifications, shownIds]);
 
-  const handleDismiss = () => {
-    setTranslateY(-100);
+  const handleDismiss = (id: string) => {
+    setActivePopups(prev => 
+      prev.map(p => p.notification.id === id ? { ...p, translateY: -100 } : p)
+    );
     setTimeout(() => {
-      setIsVisible(false);
-      setCurrentPopup(null);
+      setActivePopups(prev => prev.filter(p => p.notification.id !== id));
     }, 300);
   };
 
-  const handleMarkAsRead = () => {
-    if (currentPopup) {
-      markAsRead(currentPopup.id);
-      handleDismiss();
-    }
+  const handleMarkAsRead = (id: string) => {
+    markAsRead(id);
+    handleDismiss(id);
   };
 
-  const handleRemove = () => {
-    if (currentPopup) {
-      dismissNotification(currentPopup.id);
-      handleDismiss();
-    }
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setStartY(e.touches[0].clientY);
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const diff = e.touches[0].clientY - startY;
-    if (diff < 0) {
-      setTranslateY(diff);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    if (translateY < -50) {
-      handleDismiss();
-    } else {
-      setTranslateY(0);
-    }
+  const handleRemove = (id: string) => {
+    dismissNotification(id);
+    handleDismiss(id);
   };
 
   const getIcon = (type: AppNotification['type']) => {
@@ -100,78 +70,81 @@ export function NotificationPopup() {
     }
   };
 
-  if (!isVisible || !currentPopup) return null;
-
-  const title = isArabic && currentPopup.titleAr ? currentPopup.titleAr : currentPopup.title;
-  const message = isArabic && currentPopup.messageAr ? currentPopup.messageAr : currentPopup.message;
+  if (activePopups.length === 0) return null;
 
   return (
     <div 
-      className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none"
+      className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none flex flex-col gap-2"
       style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
     >
-      <div
-        className={`max-w-md mx-auto bg-card border border-border rounded-xl shadow-lg pointer-events-auto transition-transform ${
-          isDragging ? '' : 'duration-300 ease-out'
-        }`}
-        style={{ transform: `translateY(${translateY}%)` }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Swipe indicator */}
-        <div className="flex justify-center py-2">
-          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
-        </div>
+      {activePopups.map((popup) => {
+        const title = isArabic && popup.notification.titleAr ? popup.notification.titleAr : popup.notification.title;
+        const message = isArabic && popup.notification.messageAr ? popup.notification.messageAr : popup.notification.message;
 
-        <div className="px-4 pb-4">
-          <div className="flex gap-3">
-            {/* Icon */}
-            <div className="flex-shrink-0">
-              {getIcon(currentPopup.type)}
+        return (
+          <div
+            key={popup.notification.id}
+            className="max-w-md mx-auto w-full bg-card border border-border rounded-xl shadow-lg pointer-events-auto transition-all duration-300 ease-out"
+            style={{ 
+              transform: `translateY(${popup.translateY}%)`,
+              opacity: popup.translateY < 0 ? 0 : 1
+            }}
+          >
+            {/* Swipe indicator */}
+            <div className="flex justify-center py-2">
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
             </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-foreground">
-                {title}
-              </h4>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                {message}
-              </p>
+            <div className="px-4 pb-4">
+              <div className="flex gap-3">
+                {/* Icon */}
+                <div className="flex-shrink-0">
+                  {getIcon(popup.notification.type)}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">
+                    {title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                    {message}
+                  </p>
+                </div>
+
+                {/* Close button */}
+                <button
+                  onClick={() => handleDismiss(popup.notification.id)}
+                  className="flex-shrink-0 p-1 hover:bg-muted rounded-full transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 mt-3">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex-1 h-9"
+                  onClick={() => handleMarkAsRead(popup.notification.id)}
+                >
+                  <Check className="h-4 w-4 mr-1.5" />
+                  {isArabic ? 'موافق' : 'OK'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9"
+                  onClick={() => handleRemove(popup.notification.id)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-
-            {/* Close button */}
-            <button
-              onClick={handleDismiss}
-              className="flex-shrink-0 p-1 hover:bg-muted rounded-full transition-colors"
-            >
-              <X className="h-4 w-4 text-muted-foreground" />
-            </button>
           </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 mt-3">
-            <Button
-              variant="default"
-              size="sm"
-              className="flex-1 h-9"
-              onClick={handleMarkAsRead}
-            >
-              <Check className="h-4 w-4 mr-1.5" />
-              {isArabic ? 'موافق' : 'OK'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9"
-              onClick={handleRemove}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
