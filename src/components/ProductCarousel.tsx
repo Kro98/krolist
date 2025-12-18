@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,6 +16,42 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
+
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
+
+// In-carousel ad component that matches product card size
+function CarouselAdUnit({ className = "" }: { className?: string }) {
+  const adRef = useRef<HTMLModElement>(null);
+  const [adLoaded, setAdLoaded] = useState(false);
+
+  useEffect(() => {
+    if (adRef.current && !adLoaded) {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        setAdLoaded(true);
+      } catch (e) {
+        console.error('AdSense error:', e);
+      }
+    }
+  }, [adLoaded]);
+
+  return (
+    <div className={`w-full h-full bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden ${className}`}>
+      <ins
+        ref={adRef}
+        className="adsbygoogle"
+        style={{ display: 'block', width: '100%', height: '100%' }}
+        data-ad-client="ca-pub-2793689855806571"
+        data-ad-format="fluid"
+        data-ad-layout-key="-6t+ed+2i-1n-4w"
+      />
+    </div>
+  );
+}
 
 interface ProductCarouselProps {
   title: string;
@@ -136,11 +172,31 @@ export function ProductCarousel({
   };
   const itemsPerSlide = getItemsPerSlide();
   
+  // Check if we should show ads (mobile/tablet + compact layout)
+  const currentStyle = isFavoritesSection ? favoritesCardStyle : cardLayoutStyle;
+  const shouldShowAds = (isMobile || isTablet) && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
+  
   // Group products into slides - for tablet, ensure we always try to fill 4 items
-  const slides: Product[][] = [];
+  // Insert ad slides every 5 product slides for mobile/tablet compact view
+  type SlideContent = { type: 'products'; products: Product[] } | { type: 'ad' };
+  const slidesWithAds: SlideContent[] = [];
+  const productSlides: Product[][] = [];
+  
   for (let i = 0; i < products.length; i += itemsPerSlide) {
-    slides.push(products.slice(i, i + itemsPerSlide));
+    productSlides.push(products.slice(i, i + itemsPerSlide));
   }
+  
+  // Insert ads every 5 slides
+  productSlides.forEach((slide, index) => {
+    slidesWithAds.push({ type: 'products', products: slide });
+    // Add ad after every 5th slide (index 4, 9, 14, etc.) if ads are enabled
+    if (shouldShowAds && (index + 1) % 5 === 0 && index < productSlides.length - 1) {
+      slidesWithAds.push({ type: 'ad' });
+    }
+  });
+  
+  // Legacy slides array for pagination (just product slides count)
+  const slides = productSlides;
   
   // Update current slide when API changes
   useEffect(() => {
@@ -240,50 +296,60 @@ export function ProductCarousel({
             className="w-full"
           >
             <CarouselContent className={language === 'ar' ? '-mr-2 md:-mr-4' : '-ml-2 md:-ml-4'}>
-              {slides.map((slide, slideIndex) => (
+              {slidesWithAds.map((slideContent, slideIndex) => (
                 <CarouselItem
                   key={slideIndex}
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
-                  <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
-                    {slide.map(product => (
-                      ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          onDelete={onDelete}
-                          onUpdate={onUpdate}
-                          onRefreshPrice={onRefreshPrice}
-                          onAddToMyProducts={onAddToMyProducts}
-                          onRemoveFromMyProducts={onRemoveFromMyProducts}
-                          userProductCount={userProductCount}
-                          isSelectionMode={isSelectionMode}
-                          isSelected={selectedProductIds.has(product.id)}
-                          onToggleSelect={onToggleSelect}
-                          isInFavorites={isInFavorites(product)}
-                          isFavoritesSection={isFavoritesSection}
-                        />
-                      ) : (
-                        <MobileProductCard
-                          key={product.id}
-                          product={product}
-                          onAddToMyProducts={onAddToMyProducts}
-                          onRemoveFromMyProducts={onRemoveFromMyProducts}
-                          onEdit={product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
-                          onDelete={product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
-                          userProductCount={userProductCount}
-                          isInFavorites={isInFavorites(product)}
-                          isFavoritesSection={isFavoritesSection}
-                        />
-                      )
-                    ))}
-                  </div>
+                  {slideContent.type === 'ad' ? (
+                    // Ad slide - matches 2x2 grid layout
+                    <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'}`}>
+                      {Array.from({ length: isMobile ? mobileItemsPerSlide : 4 }).map((_, adIndex) => (
+                        <CarouselAdUnit key={`ad-${slideIndex}-${adIndex}`} className="min-h-[180px] aspect-[3/4]" />
+                      ))}
+                    </div>
+                  ) : (
+                    // Product slide
+                    <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                      {slideContent.products.map(product => (
+                        ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            onDelete={onDelete}
+                            onUpdate={onUpdate}
+                            onRefreshPrice={onRefreshPrice}
+                            onAddToMyProducts={onAddToMyProducts}
+                            onRemoveFromMyProducts={onRemoveFromMyProducts}
+                            userProductCount={userProductCount}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={selectedProductIds.has(product.id)}
+                            onToggleSelect={onToggleSelect}
+                            isInFavorites={isInFavorites(product)}
+                            isFavoritesSection={isFavoritesSection}
+                          />
+                        ) : (
+                          <MobileProductCard
+                            key={product.id}
+                            product={product}
+                            onAddToMyProducts={onAddToMyProducts}
+                            onRemoveFromMyProducts={onRemoveFromMyProducts}
+                            onEdit={product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
+                            onDelete={product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
+                            userProductCount={userProductCount}
+                            isInFavorites={isInFavorites(product)}
+                            isFavoritesSection={isFavoritesSection}
+                          />
+                        )
+                      ))}
+                    </div>
+                  )}
                 </CarouselItem>
               ))}
             </CarouselContent>
             
             {/* Navigation arrows - desktop only, hidden on tablet */}
-            {slides.length > 1 && isDesktop && (
+            {slidesWithAds.length > 1 && isDesktop && (
               <>
                 <Button
                   onClick={() => api?.scrollPrev()}
@@ -306,9 +372,9 @@ export function ProductCarousel({
           </Carousel>
           
           {/* Pagination dots */}
-          {slides.length > 1 && (
+          {slidesWithAds.length > 1 && (
             <div className="flex justify-center gap-2 mt-4">
-              {slides.map((_, index) => (
+              {slidesWithAds.map((_, index) => (
                 <button
                   key={index}
                   className={`h-2 rounded-full transition-all ${
