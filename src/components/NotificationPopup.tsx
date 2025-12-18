@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
@@ -7,6 +7,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface PopupNotification {
   notification: AppNotification;
   translateY: number;
+  opacity: number;
+  isEntering: boolean;
+  isDragging: boolean;
 }
 
 export function NotificationPopup() {
@@ -14,6 +17,7 @@ export function NotificationPopup() {
   const { notifications, markAsRead, dismissNotification } = useNotifications();
   const [activePopups, setActivePopups] = useState<PopupNotification[]>([]);
   const [shownIds, setShownIds] = useState<Set<string>>(new Set());
+  const dragStartRef = useRef<{ id: string; startY: number } | null>(null);
 
   const isArabic = language === 'ar';
 
@@ -24,21 +28,40 @@ export function NotificationPopup() {
     if (unreadNotifications.length > 0) {
       const newPopups: PopupNotification[] = unreadNotifications.map(n => ({
         notification: n,
-        translateY: 0
+        translateY: -100, // Start off-screen for entrance animation
+        opacity: 0,
+        isEntering: true,
+        isDragging: false
       }));
       
-      setActivePopups(prev => [...newPopups, ...prev].slice(0, 5)); // Max 5 stacked
+      setActivePopups(prev => [...newPopups, ...prev].slice(0, 5));
       setShownIds(prev => {
         const updated = new Set(prev);
         unreadNotifications.forEach(n => updated.add(n.id));
         return updated;
+      });
+
+      // Trigger entrance animation
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          setActivePopups(prev => 
+            prev.map(p => 
+              unreadNotifications.some(n => n.id === p.notification.id)
+                ? { ...p, translateY: 0, opacity: 1, isEntering: false }
+                : p
+            )
+          );
+        }, 50);
       });
     }
   }, [notifications, shownIds]);
 
   const handleDismiss = (id: string) => {
     setActivePopups(prev => 
-      prev.map(p => p.notification.id === id ? { ...p, translateY: -100 } : p)
+      prev.map(p => p.notification.id === id 
+        ? { ...p, translateY: -100, opacity: 0 } 
+        : p
+      )
     );
     setTimeout(() => {
       setActivePopups(prev => prev.filter(p => p.notification.id !== id));
@@ -53,6 +76,54 @@ export function NotificationPopup() {
   const handleRemove = (id: string) => {
     dismissNotification(id);
     handleDismiss(id);
+  };
+
+  // Touch handlers for swipe-to-dismiss
+  const handleTouchStart = (e: React.TouchEvent, id: string) => {
+    dragStartRef.current = { id, startY: e.touches[0].clientY };
+    setActivePopups(prev => 
+      prev.map(p => p.notification.id === id ? { ...p, isDragging: true } : p)
+    );
+  };
+
+  const handleTouchMove = (e: React.TouchEvent, id: string) => {
+    if (!dragStartRef.current || dragStartRef.current.id !== id) return;
+    
+    const diff = e.touches[0].clientY - dragStartRef.current.startY;
+    // Only allow upward swipe
+    if (diff < 0) {
+      const translateY = Math.max(diff, -150);
+      const opacity = Math.max(1 + (diff / 150), 0);
+      setActivePopups(prev => 
+        prev.map(p => p.notification.id === id 
+          ? { ...p, translateY, opacity } 
+          : p
+        )
+      );
+    }
+  };
+
+  const handleTouchEnd = (id: string) => {
+    const popup = activePopups.find(p => p.notification.id === id);
+    if (!popup) return;
+
+    setActivePopups(prev => 
+      prev.map(p => p.notification.id === id ? { ...p, isDragging: false } : p)
+    );
+
+    // If swiped more than 60px up, dismiss
+    if (popup.translateY < -60) {
+      handleDismiss(id);
+    } else {
+      // Snap back
+      setActivePopups(prev => 
+        prev.map(p => p.notification.id === id 
+          ? { ...p, translateY: 0, opacity: 1 } 
+          : p
+        )
+      );
+    }
+    dragStartRef.current = null;
   };
 
   const getIcon = (type: AppNotification['type']) => {
@@ -84,21 +155,26 @@ export function NotificationPopup() {
         return (
           <div
             key={popup.notification.id}
-            className="max-w-md mx-auto w-full bg-card border border-border rounded-xl shadow-lg pointer-events-auto transition-all duration-300 ease-out"
+            className={`max-w-md mx-auto w-full bg-card border border-border rounded-xl shadow-lg pointer-events-auto ${
+              popup.isDragging ? '' : 'transition-all duration-300 ease-out'
+            }`}
             style={{ 
-              transform: `translateY(${popup.translateY}%)`,
-              opacity: popup.translateY < 0 ? 0 : 1
+              transform: `translateY(${popup.translateY}px)`,
+              opacity: popup.opacity
             }}
+            onTouchStart={(e) => handleTouchStart(e, popup.notification.id)}
+            onTouchMove={(e) => handleTouchMove(e, popup.notification.id)}
+            onTouchEnd={() => handleTouchEnd(popup.notification.id)}
           >
             {/* Swipe indicator */}
-            <div className="flex justify-center py-2">
+            <div className="flex justify-center py-2 cursor-grab active:cursor-grabbing">
               <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
             </div>
 
             <div className="px-4 pb-4">
               <div className="flex gap-3">
-                {/* Icon */}
-                <div className="flex-shrink-0">
+                {/* Icon with pulse animation */}
+                <div className="flex-shrink-0 animate-scale-in">
                   {getIcon(popup.notification.type)}
                 </div>
 
