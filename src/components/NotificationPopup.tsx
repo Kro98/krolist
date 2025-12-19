@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell, XCircle } from 'lucide-react';
+import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell, XCircle, Tag, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -147,6 +147,10 @@ export function NotificationPopup() {
         return <Smartphone className="h-6 w-6 text-blue-500" />;
       case 'order_update':
         return <ShoppingBag className="h-6 w-6 text-orange-500" />;
+      case 'promo_code':
+        return <Tag className="h-6 w-6 text-green-500" />;
+      case 'event':
+        return <Calendar className="h-6 w-6 text-purple-500" />;
       default:
         return <Bell className="h-6 w-6" />;
     }
