@@ -400,6 +400,19 @@ export default function KrolistProductsManager() {
           error
         } = await supabase.from('krolist_products').insert([productData]);
         if (error) throw error;
+        
+        // Create global notification for new product
+        const timestamp = new Date().toISOString();
+        await supabase.from('global_notifications').upsert({
+          id: 'new_product_notification',
+          type: 'new_product',
+          title: 'New Product Added',
+          title_ar: 'تمت إضافة منتج جديد',
+          message: `New products available! Last updated: ${new Date().toLocaleDateString()}`,
+          message_ar: `منتجات جديدة متاحة! آخر تحديث: ${new Date().toLocaleDateString('ar')}`,
+          data: { productTitle: formData.title, timestamp }
+        }, { onConflict: 'id' });
+        
         toast({
           title: t('admin.productAdded')
         });
@@ -592,6 +605,20 @@ export default function KrolistProductsManager() {
           }
         }
       }
+      
+      // Create global notification for price update
+      if (updateCount > 0) {
+        const timestamp = new Date().toISOString();
+        await supabase.from('global_notifications').insert({
+          type: 'price_update',
+          title: 'Prices Updated',
+          title_ar: 'تم تحديث الأسعار',
+          message: `Product prices have been updated on ${new Date().toLocaleDateString()}`,
+          message_ar: `تم تحديث أسعار المنتجات في ${new Date().toLocaleDateString('ar')}`,
+          data: { updatedCount: updateCount, timestamp }
+        });
+      }
+      
       if (errors.length > 0) {
         toast({
           title: 'Partial success',

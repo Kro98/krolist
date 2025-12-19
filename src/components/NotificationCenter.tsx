@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Package, TrendingDown, Smartphone, ShoppingBag, X, Check, Trash2 } from 'lucide-react';
+import { Bell, Package, TrendingDown, Smartphone, ShoppingBag, X, Check, Trash2, Tag, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,7 +15,7 @@ import { NotificationItem } from './NotificationItem';
 
 export function NotificationCenter() {
   const { language } = useLanguage();
-  const { notifications, unreadCount, markAllAsRead, clearAll } = useNotifications();
+  const { notifications, unreadCount, markAllAsRead, clearAll, hasNewGlobalNotification } = useNotifications();
   const [open, setOpen] = useState(false);
   const isArabic = language === 'ar';
 
@@ -29,6 +29,10 @@ export function NotificationCenter() {
         return <Smartphone className="h-5 w-5 text-blue-500" />;
       case 'order_update':
         return <ShoppingBag className="h-5 w-5 text-orange-500" />;
+      case 'promo_code':
+        return <Tag className="h-5 w-5 text-green-500" />;
+      case 'event':
+        return <Calendar className="h-5 w-5 text-purple-500" />;
       default:
         return <Bell className="h-5 w-5" />;
     }
@@ -43,9 +47,15 @@ export function NotificationCenter() {
         onClick={() => setOpen(true)}
       >
         <Bell className="h-5 w-5" />
+        {(unreadCount > 0 || hasNewGlobalNotification) && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
+          </span>
+        )}
         {unreadCount > 0 && (
           <Badge 
-            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-destructive text-destructive-foreground"
+            className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-destructive text-destructive-foreground"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </Badge>

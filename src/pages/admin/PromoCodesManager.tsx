@@ -126,6 +126,17 @@ export default function PromoCodesManager() {
           .insert([promoData]);
 
         if (error) throw error;
+        
+        // Create global notification for new promo code
+        await supabase.from('global_notifications').insert({
+          type: 'promo_code',
+          title: 'New Promo Code Added!',
+          title_ar: 'تمت إضافة كود خصم جديد!',
+          message: `${formData.store}: ${formData.code}`,
+          message_ar: `${formData.store}: ${formData.code}`,
+          data: { store: formData.store, code: formData.code }
+        });
+        
         toast({ title: t('admin.promoCodeAdded') });
       }
 

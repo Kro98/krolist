@@ -173,6 +173,39 @@ export type Database = {
         }
         Relationships: []
       }
+      global_notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          message_ar: string | null
+          title: string
+          title_ar: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          message_ar?: string | null
+          title: string
+          title_ar?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          message_ar?: string | null
+          title?: string
+          title_ar?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       krolist_products: {
         Row: {
           availability_status: string | null
