@@ -23,8 +23,8 @@ declare global {
   }
 }
 
-// In-carousel ad component that matches product card size
-function CarouselAdUnit({ className = "" }: { className?: string }) {
+// Single in-carousel ad component that fills the entire slide space
+function CarouselAdSlide({ itemsPerSlide }: { itemsPerSlide: number }) {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
 
@@ -39,15 +39,23 @@ function CarouselAdUnit({ className = "" }: { className?: string }) {
     }
   }, [adLoaded]);
 
+  // Calculate aspect ratio based on items layout - match compact card dimensions
+  const getAspectRatio = () => {
+    if (itemsPerSlide === 1) return 'aspect-[3/4]'; // Single card
+    if (itemsPerSlide === 2) return 'aspect-[6/4]'; // 2 cards side by side (wider)
+    return 'aspect-[6/8]'; // 2x2 grid (square-ish)
+  };
+
   return (
-    <div className={`w-full h-full bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden ${className}`}>
+    <div className={`w-full ${getAspectRatio()} bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden`}>
       <ins
         ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%' }}
         data-ad-client="ca-pub-2793689855806571"
+        data-ad-slot="auto"
         data-ad-format="fluid"
-        data-ad-layout-key="-6t+ed+2i-1n-4w"
+        data-full-width-responsive="true"
       />
     </div>
   );
@@ -302,12 +310,8 @@ export function ProductCarousel({
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
                   {slideContent.type === 'ad' ? (
-                    // Ad slide - matches 2x2 grid layout
-                    <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'}`}>
-                      {Array.from({ length: isMobile ? mobileItemsPerSlide : 4 }).map((_, adIndex) => (
-                        <CarouselAdUnit key={`ad-${slideIndex}-${adIndex}`} className="min-h-[180px] aspect-[3/4]" />
-                      ))}
-                    </div>
+                    // Ad slide - single container matching the slide size
+                    <CarouselAdSlide itemsPerSlide={itemsPerSlide} />
                   ) : (
                     // Product slide
                     <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
