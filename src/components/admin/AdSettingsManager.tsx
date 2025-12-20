@@ -31,6 +31,7 @@ export function AdSettingsManager() {
   const [visibilityMode, setVisibilityMode] = useState('all');
   const [cooldownSeconds, setCooldownSeconds] = useState(30);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
+  const [carouselAdsEnabled, setCarouselAdsEnabled] = useState(true);
   const [favoriteThreshold, setFavoriteThreshold] = useState(2);
   const [refreshThreshold, setRefreshThreshold] = useState(3);
   const [loadScreenThreshold, setLoadScreenThreshold] = useState(5);
@@ -57,6 +58,8 @@ export function AdSettingsManager() {
             setCooldownSeconds(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'ads_disabled_for_admins') {
             setAdsDisabledForAdmins(setting.setting_value === 'true');
+          } else if (setting.setting_key === 'carousel_ads_enabled') {
+            setCarouselAdsEnabled(setting.setting_value === 'true');
           } else if (setting.setting_key === 'favorite_count_threshold') {
             setFavoriteThreshold(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'refresh_count_threshold') {
@@ -86,6 +89,7 @@ export function AdSettingsManager() {
         { key: 'ad_visibility_mode', value: visibilityMode },
         { key: 'ad_cooldown_seconds', value: cooldownSeconds.toString() },
         { key: 'ads_disabled_for_admins', value: adsDisabledForAdmins.toString() },
+        { key: 'carousel_ads_enabled', value: carouselAdsEnabled.toString() },
         { key: 'favorite_count_threshold', value: favoriteThreshold.toString() },
         { key: 'refresh_count_threshold', value: refreshThreshold.toString() },
         { key: 'load_screen_count_threshold', value: loadScreenThreshold.toString() },
@@ -189,6 +193,20 @@ export function AdSettingsManager() {
             />
           </div>
         )}
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>Carousel Ads</Label>
+            <p className="text-sm text-muted-foreground">
+              Show ads between product slides in carousels
+            </p>
+          </div>
+          <Switch
+            checked={carouselAdsEnabled}
+            onCheckedChange={setCarouselAdsEnabled}
+            disabled={visibilityMode === 'disabled'}
+          />
+        </div>
 
         <div className="border-t pt-4">
           <h4 className="font-medium mb-4">Ad Triggers</h4>

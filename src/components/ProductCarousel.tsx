@@ -16,6 +16,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
+import { supabase } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {
@@ -135,6 +136,28 @@ export function ProductCarousel({
   const isXLDesktop = useMediaQuery("(min-width: 1536px)");
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
+  const [carouselAdsEnabled, setCarouselAdsEnabled] = useState(true);
+  
+  // Fetch carousel ads setting
+  useEffect(() => {
+    const fetchAdSetting = async () => {
+      try {
+        const { data } = await supabase
+          .from('ad_settings')
+          .select('setting_value')
+          .eq('setting_key', 'carousel_ads_enabled')
+          .maybeSingle();
+        
+        if (data) {
+          setCarouselAdsEnabled(data.setting_value === 'true');
+        }
+      } catch (error) {
+        console.error('Error fetching carousel ads setting:', error);
+      }
+    };
+    
+    fetchAdSetting();
+  }, []);
   
   // Listen for speed changes and card layout style changes
   useEffect(() => {
@@ -189,9 +212,9 @@ export function ProductCarousel({
   };
   const itemsPerSlide = getItemsPerSlide();
   
-  // Check if we should show ads (mobile/tablet + compact layout)
+  // Check if we should show ads (mobile/tablet + compact layout + carousel ads enabled)
   const currentStyle = isFavoritesSection ? favoritesCardStyle : cardLayoutStyle;
-  const shouldShowAds = (isMobile || isTablet) && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
+  const shouldShowAds = carouselAdsEnabled && (isMobile || isTablet) && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
   
   // Group products into slides - for tablet, ensure we always try to fill 4 items
   // Insert ad slides every 5 product slides for mobile/tablet compact view
