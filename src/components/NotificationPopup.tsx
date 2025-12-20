@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell, XCircle, Tag, Calendar } from 'lucide-react';
+import { X, Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell, Tag, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,40 +21,38 @@ export function NotificationPopup() {
 
   const isArabic = language === 'ar';
 
-  // Show popup for new unread notifications - persist until dismissed
+  // Show only ONE popup at a time for new unread notifications
   useEffect(() => {
+    // Only show a popup if there are no active popups
+    if (activePopups.length > 0) return;
+    
     const unreadNotifications = notifications.filter(n => !n.isRead && !shownIds.has(n.id));
     
     if (unreadNotifications.length > 0) {
-      const newPopups: PopupNotification[] = unreadNotifications.map(n => ({
-        notification: n,
-        translateY: -100, // Start off-screen for entrance animation
+      // Only take the first (most recent) notification
+      const nextNotification = unreadNotifications[0];
+      
+      const newPopup: PopupNotification = {
+        notification: nextNotification,
+        translateY: -100,
         opacity: 0,
         isEntering: true,
         isDragging: false
-      }));
+      };
       
-      setActivePopups(prev => [...newPopups, ...prev].slice(0, 5));
-      setShownIds(prev => {
-        const updated = new Set(prev);
-        unreadNotifications.forEach(n => updated.add(n.id));
-        return updated;
-      });
+      setActivePopups([newPopup]);
+      setShownIds(prev => new Set([...prev, nextNotification.id]));
 
       // Trigger entrance animation
       requestAnimationFrame(() => {
         setTimeout(() => {
           setActivePopups(prev => 
-            prev.map(p => 
-              unreadNotifications.some(n => n.id === p.notification.id)
-                ? { ...p, translateY: 0, opacity: 1, isEntering: false }
-                : p
-            )
+            prev.map(p => ({ ...p, translateY: 0, opacity: 1, isEntering: false }))
           );
         }, 50);
       });
     }
-  }, [notifications, shownIds]);
+  }, [notifications, shownIds, activePopups.length]);
 
   const handleDismiss = (id: string) => {
     setActivePopups(prev => 
@@ -68,16 +66,6 @@ export function NotificationPopup() {
     }, 300);
   };
 
-  const handleDismissAll = () => {
-    // Animate all out
-    setActivePopups(prev => 
-      prev.map(p => ({ ...p, translateY: -100, opacity: 0 }))
-    );
-    setTimeout(() => {
-      activePopups.forEach(p => markAsRead(p.notification.id));
-      setActivePopups([]);
-    }, 300);
-  };
 
   const handleMarkAsRead = (id: string) => {
     markAsRead(id);
@@ -163,20 +151,6 @@ export function NotificationPopup() {
       className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none flex flex-col gap-2"
       style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
     >
-      {/* Dismiss All button - shown when 2+ notifications */}
-      {activePopups.length >= 2 && (
-        <div className="max-w-md mx-auto w-full flex justify-center animate-fade-in">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="pointer-events-auto h-8 px-4 shadow-md"
-            onClick={handleDismissAll}
-          >
-            <XCircle className="h-4 w-4 mr-1.5" />
-            {isArabic ? 'تجاهل الكل' : 'Dismiss All'} ({activePopups.length})
-          </Button>
-        </div>
-      )}
 
       {activePopups.map((popup) => {
         const title = isArabic && popup.notification.titleAr ? popup.notification.titleAr : popup.notification.title;
