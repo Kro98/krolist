@@ -105,7 +105,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const globalNotifications: AppNotification[] = data.map((n: any) => ({
+          // Deduplicate by type - keep only the latest notification of each type
+          const latestByType = new Map<string, any>();
+          data.forEach((n: any) => {
+            const existing = latestByType.get(n.type);
+            if (!existing || new Date(n.created_at) > new Date(existing.created_at)) {
+              latestByType.set(n.type, n);
+            }
+          });
+          
+          const deduplicatedData = Array.from(latestByType.values());
+          
+          const globalNotifications: AppNotification[] = deduplicatedData.map((n: any) => ({
             id: `global_${n.id}`,
             type: n.type as AppNotification['type'],
             title: n.title,
@@ -119,18 +130,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           }));
 
           // Check if there are new unseen notifications
-          const hasNew = data.some((n: any) => !seenGlobalIds.has(n.id));
+          const hasNew = deduplicatedData.some((n: any) => !seenGlobalIds.has(n.id));
           setHasNewGlobalNotification(hasNew);
 
           // Merge with existing notifications, avoiding duplicates
           setNotifications(prev => {
-            const existingIds = new Set(prev.filter(n => !n.isGlobal).map(n => n.id));
-            const existingGlobalIds = new Set(prev.filter(n => n.isGlobal).map(n => n.id));
-            
-            const newGlobalNotifications = globalNotifications.filter(
-              n => !existingGlobalIds.has(n.id)
-            );
-            
             const localNotifications = prev.filter(n => !n.isGlobal);
             
             return [...globalNotifications, ...localNotifications]
@@ -170,7 +174,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             isGlobal: true
           };
           
-          setNotifications(prev => [newNotification, ...prev].slice(0, 50));
+          // Replace existing notification of same type with the new one
+          setNotifications(prev => {
+            const filtered = prev.filter(n => !(n.isGlobal && n.type === newNotification.type));
+            return [newNotification, ...filtered].slice(0, 50);
+          });
           setHasNewGlobalNotification(true);
         }
       )
