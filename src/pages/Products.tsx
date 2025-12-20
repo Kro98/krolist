@@ -131,11 +131,11 @@ export default function Products() {
       });
       if (userError) throw userError;
 
-      // Load Krolist curated products
+      // Load Krolist curated products (only available ones)
       const {
         data: krolistData,
         error: krolistError
-      } = await supabase.from('krolist_products').select('*').eq('is_featured', true).order('created_at', {
+      } = await supabase.from('krolist_products').select('*').eq('is_featured', true).eq('availability_status', 'available').order('created_at', {
         ascending: false
       });
       if (krolistError) {
