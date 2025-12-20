@@ -27,16 +27,22 @@ declare global {
 function CarouselAdSlide({ itemsPerSlide }: { itemsPerSlide: number }) {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (adRef.current && !adLoaded) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        setAdLoaded(true);
-      } catch (e) {
-        console.error('AdSense error:', e);
+    // Small delay to ensure the container is rendered with proper dimensions
+    const timer = setTimeout(() => {
+      if (adRef.current && !adLoaded && containerRef.current) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          setAdLoaded(true);
+        } catch (e) {
+          console.error('AdSense error:', e);
+        }
       }
-    }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [adLoaded]);
 
   // Calculate aspect ratio based on items layout - match compact card dimensions
@@ -47,15 +53,18 @@ function CarouselAdSlide({ itemsPerSlide }: { itemsPerSlide: number }) {
   };
 
   return (
-    <div className={`w-full ${getAspectRatio()} bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden`}>
+    <div 
+      ref={containerRef}
+      className={`w-full ${getAspectRatio()} bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden`}
+    >
       <ins
         ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%' }}
         data-ad-client="ca-pub-2793689855806571"
-        data-ad-slot="auto"
+        data-ad-slot="1234567890"
         data-ad-format="fluid"
-        data-full-width-responsive="true"
+        data-ad-layout-key="-6t+ed+2i-1n-4w"
       />
     </div>
   );
