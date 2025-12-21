@@ -70,22 +70,51 @@ export default function OrdersManager() {
   };
 
   const handleViewOrder = async (order: Order) => {
-    // Mark as viewed if first time
+    // Show the order first, then auto-scrub customer data after first view
+    setSelectedOrder(order);
+    setNotesValue(order.notes || "");
+    setShowDialog(true);
+    
+    // If this is the first view and data hasn't been cleared, mark as viewed and auto-scrub
     if (!order.admin_viewed_at && !order.customer_data_cleared) {
-      const { error } = await supabase
+      // First mark as viewed
+      await supabase
         .from('orders')
         .update({ admin_viewed_at: new Date().toISOString() })
         .eq('id', order.id);
 
-      if (!error) {
-        order.admin_viewed_at = new Date().toISOString();
-        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, admin_viewed_at: order.admin_viewed_at } : o));
-      }
+      // Auto-scrub customer data after a short delay to allow admin to see it once
+      setTimeout(async () => {
+        const { error } = await supabase
+          .from('orders')
+          .update({ 
+            customer_name: '[CLEARED]',
+            customer_phone: '[CLEARED]',
+            customer_data_cleared: true
+          })
+          .eq('id', order.id);
+
+        if (!error) {
+          toast({ 
+            title: 'Customer data auto-cleared',
+            description: 'Contact info has been scrubbed for security after first view'
+          });
+          
+          setOrders(prev => prev.map(o => 
+            o.id === order.id 
+              ? { ...o, customer_name: '[CLEARED]', customer_phone: '[CLEARED]', customer_data_cleared: true, admin_viewed_at: new Date().toISOString() } 
+              : o
+          ));
+          
+          setSelectedOrder(prev => prev ? { 
+            ...prev, 
+            customer_name: '[CLEARED]', 
+            customer_phone: '[CLEARED]', 
+            customer_data_cleared: true 
+          } : null);
+        }
+      }, 3000); // 3 second delay to allow admin to copy the info if needed
     }
-    
-    setSelectedOrder(order);
-    setNotesValue(order.notes || "");
-    setShowDialog(true);
   };
 
   const handleClearCustomerData = async () => {
