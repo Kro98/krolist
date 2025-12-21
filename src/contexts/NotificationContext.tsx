@@ -15,6 +15,7 @@ export interface AppNotification {
   createdAt: Date;
   data?: Record<string, any>;
   isGlobal?: boolean;
+  globalId?: string; // Store the actual global notification ID for DB sync
 }
 
 interface NotificationContextType {
@@ -26,12 +27,11 @@ interface NotificationContextType {
   dismissNotification: (id: string) => void;
   clearAll: () => void;
   hasNewGlobalNotification: boolean;
+  isGuest: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'krolist_notifications';
-const SEEN_GLOBAL_KEY = 'krolist_seen_global_notifications';
 const SEEN_EVENTS_KEY = 'krolist_seen_events';
 
 // Default events that should trigger notifications today
@@ -49,48 +49,45 @@ const DEFAULT_EVENTS = [
 ];
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [seenGlobalIds, setSeenGlobalIds] = useState<Set<string>>(new Set());
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
   const [hasNewGlobalNotification, setHasNewGlobalNotification] = useState(false);
+  const [isLoadingReads, setIsLoadingReads] = useState(true);
 
-  // Load notifications and seen IDs from localStorage
+  // Fetch user's read notifications from database
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setNotifications(parsed.map((n: any) => ({
-          ...n,
-          createdAt: new Date(n.createdAt)
-        })));
-      } catch (e) {
-        console.error('Failed to parse notifications:', e);
+    const fetchReadNotifications = async () => {
+      if (!user) {
+        setReadNotificationIds(new Set());
+        setIsLoadingReads(false);
+        return;
       }
-    }
 
-    const seenGlobal = localStorage.getItem(SEEN_GLOBAL_KEY);
-    if (seenGlobal) {
       try {
-        setSeenGlobalIds(new Set(JSON.parse(seenGlobal)));
-      } catch (e) {
-        console.error('Failed to parse seen global IDs:', e);
+        const { data, error } = await supabase
+          .from('user_notification_reads')
+          .select('notification_id')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        const readIds = new Set(data?.map(r => r.notification_id) || []);
+        setReadNotificationIds(readIds);
+      } catch (error) {
+        console.error('Failed to fetch read notifications:', error);
+      } finally {
+        setIsLoadingReads(false);
       }
-    }
-  }, []);
+    };
 
-  // Save notifications to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-  }, [notifications]);
-
-  // Save seen global IDs to localStorage
-  useEffect(() => {
-    localStorage.setItem(SEEN_GLOBAL_KEY, JSON.stringify([...seenGlobalIds]));
-  }, [seenGlobalIds]);
+    fetchReadNotifications();
+  }, [user]);
 
   // Fetch global notifications
   useEffect(() => {
+    if (isLoadingReads) return;
+
     const fetchGlobalNotifications = async () => {
       try {
         // Fetch notifications from the last 7 days
@@ -119,19 +116,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           
           const globalNotifications: AppNotification[] = deduplicatedData.map((n: any) => ({
             id: `global_${n.id}`,
+            globalId: n.id,
             type: n.type as AppNotification['type'],
             title: n.title,
             titleAr: n.title_ar,
             message: n.message,
             messageAr: n.message_ar,
-            isRead: seenGlobalIds.has(n.id),
+            isRead: readNotificationIds.has(n.id),
             createdAt: new Date(n.created_at),
             data: n.data,
             isGlobal: true
           }));
 
           // Check if there are new unseen notifications
-          const hasNew = deduplicatedData.some((n: any) => !seenGlobalIds.has(n.id));
+          const hasNew = deduplicatedData.some((n: any) => !readNotificationIds.has(n.id));
           setHasNewGlobalNotification(hasNew);
 
           // Merge with existing notifications, avoiding duplicates
@@ -164,6 +162,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           const data = payload.new as any;
           const newNotification: AppNotification = {
             id: `global_${data.id}`,
+            globalId: data.id,
             type: data.type as AppNotification['type'],
             title: data.title,
             titleAr: data.title_ar,
@@ -188,10 +187,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [seenGlobalIds]);
+  }, [readNotificationIds, isLoadingReads]);
 
-  // Check for today's events and add notifications
+  // Check for today's events and add notifications (only for authenticated users)
   useEffect(() => {
+    if (!user) return;
+
     const checkTodayEvents = () => {
       const today = new Date();
       const seenEventsStr = localStorage.getItem(SEEN_EVENTS_KEY);
@@ -238,7 +239,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
 
     checkTodayEvents();
-  }, []);
+  }, [user]);
 
   // Listen for order notifications if user is logged in
   useEffect(() => {
@@ -283,14 +284,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setNotifications(prev => [newNotification, ...prev].slice(0, 50));
   }, []);
 
-  const markAsRead = useCallback((id: string) => {
-    // If it's a global notification, track it in seenGlobalIds
-    if (id.startsWith('global_')) {
+  // Mark as read - saves to database for authenticated users
+  const markAsRead = useCallback(async (id: string) => {
+    // If it's a global notification and user is logged in, save to database
+    if (id.startsWith('global_') && user) {
       const globalId = id.replace('global_', '');
-      setSeenGlobalIds(prev => new Set([...prev, globalId]));
+      
+      try {
+        await supabase
+          .from('user_notification_reads')
+          .insert({
+            user_id: user.id,
+            notification_id: globalId
+          });
+        
+        setReadNotificationIds(prev => new Set([...prev, globalId]));
+      } catch (error) {
+        console.error('Failed to save read status:', error);
+      }
     }
     
-    // If it's an event notification, mark it as seen
+    // If it's an event notification, mark it as seen locally
     if (id.startsWith('event_')) {
       const todayStr = format(new Date(), 'yyyy-MM-dd');
       const seenEventsStr = localStorage.getItem(SEEN_EVENTS_KEY);
@@ -304,16 +318,33 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       prev.map(n => n.id === id ? { ...n, isRead: true } : n)
     );
     setHasNewGlobalNotification(false);
-  }, []);
+  }, [user]);
 
-  const markAllAsRead = useCallback(() => {
-    // Mark all global notifications as seen
-    const globalIds = notifications
-      .filter(n => n.isGlobal)
-      .map(n => n.id.replace('global_', ''));
-    setSeenGlobalIds(prev => new Set([...prev, ...globalIds]));
+  const markAllAsRead = useCallback(async () => {
+    if (user) {
+      // Mark all global notifications as read in database
+      const globalNotifications = notifications.filter(n => n.isGlobal && n.globalId && !readNotificationIds.has(n.globalId));
+      
+      if (globalNotifications.length > 0) {
+        try {
+          const inserts = globalNotifications.map(n => ({
+            user_id: user.id,
+            notification_id: n.globalId!
+          }));
+          
+          await supabase
+            .from('user_notification_reads')
+            .insert(inserts);
+          
+          const newReadIds = new Set([...readNotificationIds, ...globalNotifications.map(n => n.globalId!)]);
+          setReadNotificationIds(newReadIds);
+        } catch (error) {
+          console.error('Failed to mark all as read:', error);
+        }
+      }
+    }
     
-    // Mark all event notifications as seen
+    // Mark all event notifications as seen locally
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     const seenEventsStr = localStorage.getItem(SEEN_EVENTS_KEY);
     const seenEvents: Record<string, string> = seenEventsStr ? JSON.parse(seenEventsStr) : {};
@@ -327,57 +358,23 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     setHasNewGlobalNotification(false);
-  }, [notifications]);
+  }, [notifications, user, readNotificationIds]);
 
-  const dismissNotification = useCallback((id: string) => {
-    // If it's a global notification, track it in seenGlobalIds
-    if (id.startsWith('global_')) {
-      const globalId = id.replace('global_', '');
-      setSeenGlobalIds(prev => new Set([...prev, globalId]));
-    }
-    
-    // If it's an event notification, mark it as seen
-    if (id.startsWith('event_')) {
-      const todayStr = format(new Date(), 'yyyy-MM-dd');
-      const seenEventsStr = localStorage.getItem(SEEN_EVENTS_KEY);
-      const seenEvents: Record<string, string> = seenEventsStr ? JSON.parse(seenEventsStr) : {};
-      const eventKey = id.replace('event_', '').replace(`_${todayStr}`, '');
-      seenEvents[`${eventKey}_${todayStr}`] = todayStr;
-      localStorage.setItem(SEEN_EVENTS_KEY, JSON.stringify(seenEvents));
-    }
+  const dismissNotification = useCallback(async (id: string) => {
+    // Dismissing is the same as marking as read
+    await markAsRead(id);
     
     setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+  }, [markAsRead]);
 
-  const clearAll = useCallback(() => {
-    // Mark all global notifications as seen before clearing
-    const globalIds = notifications
-      .filter(n => n.isGlobal)
-      .map(n => n.id.replace('global_', ''));
+  const clearAll = useCallback(async () => {
+    // Mark all as read first
+    await markAllAsRead();
     
-    // Update seen global IDs and persist immediately
-    const newSeenGlobalIds = new Set([...seenGlobalIds, ...globalIds]);
-    setSeenGlobalIds(newSeenGlobalIds);
-    localStorage.setItem(SEEN_GLOBAL_KEY, JSON.stringify([...newSeenGlobalIds]));
-    
-    // Mark all event notifications as seen
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const seenEventsStr = localStorage.getItem(SEEN_EVENTS_KEY);
-    const seenEvents: Record<string, string> = seenEventsStr ? JSON.parse(seenEventsStr) : {};
-    
-    notifications.forEach(n => {
-      if (n.id.startsWith('event_')) {
-        const eventKey = n.id.replace('event_', '').replace(`_${todayStr}`, '');
-        seenEvents[`${eventKey}_${todayStr}`] = todayStr;
-      }
-    });
-    localStorage.setItem(SEEN_EVENTS_KEY, JSON.stringify(seenEvents));
-    
-    // Clear notifications and persist immediately
+    // Clear notifications from state
     setNotifications([]);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     setHasNewGlobalNotification(false);
-  }, [notifications, seenGlobalIds]);
+  }, [markAllAsRead]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -390,7 +387,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       markAllAsRead,
       dismissNotification,
       clearAll,
-      hasNewGlobalNotification
+      hasNewGlobalNotification,
+      isGuest: isGuest || !user
     }}>
       {children}
     </NotificationContext.Provider>
