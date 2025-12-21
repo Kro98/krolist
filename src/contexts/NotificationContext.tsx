@@ -354,7 +354,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const globalIds = notifications
       .filter(n => n.isGlobal)
       .map(n => n.id.replace('global_', ''));
-    setSeenGlobalIds(prev => new Set([...prev, ...globalIds]));
+    
+    // Update seen global IDs and persist immediately
+    const newSeenGlobalIds = new Set([...seenGlobalIds, ...globalIds]);
+    setSeenGlobalIds(newSeenGlobalIds);
+    localStorage.setItem(SEEN_GLOBAL_KEY, JSON.stringify([...newSeenGlobalIds]));
     
     // Mark all event notifications as seen
     const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -369,9 +373,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     });
     localStorage.setItem(SEEN_EVENTS_KEY, JSON.stringify(seenEvents));
     
+    // Clear notifications and persist immediately
     setNotifications([]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     setHasNewGlobalNotification(false);
-  }, [notifications]);
+  }, [notifications, seenGlobalIds]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
