@@ -770,6 +770,38 @@ export type Database = {
           },
         ]
       }
+      user_notification_reads: {
+        Row: {
+          created_at: string
+          id: string
+          notification_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "global_notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_refresh_logs: {
         Row: {
           created_at: string
