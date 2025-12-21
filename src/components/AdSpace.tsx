@@ -37,7 +37,7 @@ function AdSenseUnit({ slot, format = "auto" }: { slot?: string; format?: string
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%' }}
         data-ad-client="ca-pub-2793689855806571"
-        data-ad-slot={slot}
+        data-ad-slot={slot || "1996237166"}
         data-ad-format={format}
         data-full-width-responsive="true"
       />
