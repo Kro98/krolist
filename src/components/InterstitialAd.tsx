@@ -75,7 +75,7 @@ export function InterstitialAd() {
           className="adsbygoogle"
           style={{ display: 'block', width: '336px', height: '280px' }}
           data-ad-client="ca-pub-2793689855806571"
-          data-ad-slot="1996237166"
+          data-ad-slot=""
           data-ad-format="rectangle"
         />
       </div>
