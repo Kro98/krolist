@@ -355,6 +355,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       .map(n => n.id.replace('global_', ''));
     setSeenGlobalIds(prev => new Set([...prev, ...globalIds]));
     
+    // Mark all event notifications as seen
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const seenEventsStr = localStorage.getItem(SEEN_EVENTS_KEY);
+    const seenEvents: Record<string, string> = seenEventsStr ? JSON.parse(seenEventsStr) : {};
+    
+    notifications.forEach(n => {
+      if (n.id.startsWith('event_')) {
+        const eventKey = n.id.replace('event_', '').replace(`_${todayStr}`, '');
+        seenEvents[`${eventKey}_${todayStr}`] = todayStr;
+      }
+    });
+    localStorage.setItem(SEEN_EVENTS_KEY, JSON.stringify(seenEvents));
+    
     setNotifications([]);
     setHasNewGlobalNotification(false);
   }, [notifications]);

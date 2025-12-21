@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Package, TrendingDown, Smartphone, ShoppingBag, X, Check, Trash2, Tag, Calendar } from 'lucide-react';
+import { Bell, Package, TrendingDown, Smartphone, ShoppingBag, Trash2, Tag, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,7 +15,7 @@ import { NotificationItem } from './NotificationItem';
 
 export function NotificationCenter() {
   const { language } = useLanguage();
-  const { notifications, unreadCount, markAllAsRead, clearAll, hasNewGlobalNotification } = useNotifications();
+  const { notifications, unreadCount, clearAll, hasNewGlobalNotification } = useNotifications();
   const [open, setOpen] = useState(false);
   const isArabic = language === 'ar';
 
@@ -76,26 +76,15 @@ export function NotificationCenter() {
                 )}
               </DialogTitle>
               {notifications.length > 0 && (
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={markAllAsRead}
-                    className="h-8 px-2 text-xs"
-                  >
-                    <Check className="h-3.5 w-3.5 mr-1" />
-                    {isArabic ? 'قراءة الكل' : 'Read all'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearAll}
-                    className="h-8 px-2 text-xs text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1" />
-                    {isArabic ? 'مسح' : 'Clear'}
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAll}
+                  className="h-8 px-2 text-xs text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  {isArabic ? 'مسح الكل' : 'Clear all'}
+                </Button>
               )}
             </div>
           </DialogHeader>
