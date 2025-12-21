@@ -63,7 +63,7 @@ function CarouselAdSlide({ itemsPerSlide }: { itemsPerSlide: number }) {
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%' }}
         data-ad-client="ca-pub-2793689855806571"
-        data-ad-slot="1234567890"
+        data-ad-slot="1996237166"
         data-ad-format="fluid"
         data-ad-layout-key="-6t+ed+2i-1n-4w"
       />
