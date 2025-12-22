@@ -15,7 +15,7 @@ import { useGuestAuth } from "@/contexts/GuestAuthContext";
 import { useEffect, useState, useRef } from "react";
 import { PageBreadcrumbs } from "@/components/PageBreadcrumbs";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobileOrTablet } from "@/hooks/use-mobile";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { NotificationPopup } from "@/components/NotificationPopup";
@@ -49,7 +49,7 @@ function LayoutContent({
     open,
     setOpen
   } = useSidebar();
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileOrTablet();
   const {
     toast
   } = useToast();
