@@ -32,6 +32,8 @@ export function AdSettingsManager() {
   const [cooldownSeconds, setCooldownSeconds] = useState(30);
   const [adsDisabledForAdmins, setAdsDisabledForAdmins] = useState(true);
   const [carouselAdsEnabled, setCarouselAdsEnabled] = useState(true);
+  const [infeedAdFrequencyMobile, setInfeedAdFrequencyMobile] = useState(5);
+  const [infeedAdFrequencyDesktop, setInfeedAdFrequencyDesktop] = useState(8);
   const [favoriteThreshold, setFavoriteThreshold] = useState(2);
   const [refreshThreshold, setRefreshThreshold] = useState(3);
   const [loadScreenThreshold, setLoadScreenThreshold] = useState(5);
@@ -60,6 +62,10 @@ export function AdSettingsManager() {
             setAdsDisabledForAdmins(setting.setting_value === 'true');
           } else if (setting.setting_key === 'carousel_ads_enabled') {
             setCarouselAdsEnabled(setting.setting_value === 'true');
+          } else if (setting.setting_key === 'infeed_ad_frequency_mobile') {
+            setInfeedAdFrequencyMobile(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'infeed_ad_frequency_desktop') {
+            setInfeedAdFrequencyDesktop(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'favorite_count_threshold') {
             setFavoriteThreshold(parseInt(setting.setting_value, 10));
           } else if (setting.setting_key === 'refresh_count_threshold') {
@@ -90,6 +96,8 @@ export function AdSettingsManager() {
         { key: 'ad_cooldown_seconds', value: cooldownSeconds.toString() },
         { key: 'ads_disabled_for_admins', value: adsDisabledForAdmins.toString() },
         { key: 'carousel_ads_enabled', value: carouselAdsEnabled.toString() },
+        { key: 'infeed_ad_frequency_mobile', value: infeedAdFrequencyMobile.toString() },
+        { key: 'infeed_ad_frequency_desktop', value: infeedAdFrequencyDesktop.toString() },
         { key: 'favorite_count_threshold', value: favoriteThreshold.toString() },
         { key: 'refresh_count_threshold', value: refreshThreshold.toString() },
         { key: 'load_screen_count_threshold', value: loadScreenThreshold.toString() },
@@ -207,6 +215,40 @@ export function AdSettingsManager() {
             disabled={visibilityMode === 'disabled'}
           />
         </div>
+
+        {carouselAdsEnabled && visibilityMode !== 'disabled' && (
+          <div className="pl-4 border-l-2 border-primary/20 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="infeedMobile">Mobile: Products per Ad Slide</Label>
+              <Input
+                id="infeedMobile"
+                type="number"
+                min={2}
+                max={20}
+                value={infeedAdFrequencyMobile}
+                onChange={(e) => setInfeedAdFrequencyMobile(parseInt(e.target.value, 10) || 5)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Show an ad slide after every X product slides on mobile
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="infeedDesktop">PC/Tablet: Products per Inline Ad</Label>
+              <Input
+                id="infeedDesktop"
+                type="number"
+                min={2}
+                max={20}
+                value={infeedAdFrequencyDesktop}
+                onChange={(e) => setInfeedAdFrequencyDesktop(parseInt(e.target.value, 10) || 8)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Show an inline ad card after every X products on PC/tablet carousel
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="border-t pt-4">
           <h4 className="font-medium mb-4">Ad Triggers</h4>

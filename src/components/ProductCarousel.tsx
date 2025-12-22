@@ -172,26 +172,35 @@ export function ProductCarousel({
   const isTabletOrAbove = useMediaQuery('(min-width: 768px)');
   const { t, language } = useLanguage();
   const [carouselAdsEnabled, setCarouselAdsEnabled] = useState(true);
+  const [infeedAdFrequencyMobile, setInfeedAdFrequencyMobile] = useState(5);
+  const [infeedAdFrequencyDesktop, setInfeedAdFrequencyDesktop] = useState(8);
   
-  // Fetch carousel ads setting
+  // Fetch carousel ads settings
   useEffect(() => {
-    const fetchAdSetting = async () => {
+    const fetchAdSettings = async () => {
       try {
         const { data } = await supabase
           .from('ad_settings')
-          .select('setting_value')
-          .eq('setting_key', 'carousel_ads_enabled')
-          .maybeSingle();
+          .select('setting_key, setting_value')
+          .in('setting_key', ['carousel_ads_enabled', 'infeed_ad_frequency_mobile', 'infeed_ad_frequency_desktop']);
         
         if (data) {
-          setCarouselAdsEnabled(data.setting_value === 'true');
+          data.forEach((setting) => {
+            if (setting.setting_key === 'carousel_ads_enabled') {
+              setCarouselAdsEnabled(setting.setting_value === 'true');
+            } else if (setting.setting_key === 'infeed_ad_frequency_mobile') {
+              setInfeedAdFrequencyMobile(parseInt(setting.setting_value, 10) || 5);
+            } else if (setting.setting_key === 'infeed_ad_frequency_desktop') {
+              setInfeedAdFrequencyDesktop(parseInt(setting.setting_value, 10) || 8);
+            }
+          });
         }
       } catch (error) {
-        console.error('Error fetching carousel ads setting:', error);
+        console.error('Error fetching carousel ads settings:', error);
       }
     };
     
-    fetchAdSetting();
+    fetchAdSettings();
   }, []);
   
   // Listen for speed changes and card layout style changes
@@ -253,22 +262,22 @@ export function ProductCarousel({
   const shouldShowMobileAds = carouselAdsEnabled && isMobile && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
   const shouldShowDesktopInlineAds = carouselAdsEnabled && (isTablet || isDesktop) && !isExpanded;
   
-  // For PC/tablet carousel: inject ad cards inline with products (every 8 products)
+  // For PC/tablet carousel: inject ad cards inline with products
   type ProductOrAd = { type: 'product'; product: Product } | { type: 'ad' };
   const productsWithAds: ProductOrAd[] = [];
   
   if (shouldShowDesktopInlineAds) {
     products.forEach((product, index) => {
       productsWithAds.push({ type: 'product', product });
-      // Insert ad after every 8th product
-      if ((index + 1) % 8 === 0 && index < products.length - 1) {
+      // Insert ad after every X products (configurable via admin settings)
+      if ((index + 1) % infeedAdFrequencyDesktop === 0 && index < products.length - 1) {
         productsWithAds.push({ type: 'ad' });
       }
     });
   }
   
   // Group products into slides - for tablet, ensure we always try to fill 4 items
-  // Insert ad slides every 5 product slides for mobile compact view
+  // Insert ad slides for mobile compact view (configurable frequency)
   type SlideContent = { type: 'products'; products: Product[] } | { type: 'ad' } | { type: 'mixed'; items: ProductOrAd[] };
   const slidesWithAds: SlideContent[] = [];
   const productSlides: Product[][] = [];
@@ -285,11 +294,11 @@ export function ProductCarousel({
       productSlides.push(products.slice(i, i + itemsPerSlide));
     }
     
-    // Insert ads every 5 slides for mobile
+    // Insert ads based on configurable frequency for mobile
     productSlides.forEach((slide, index) => {
       slidesWithAds.push({ type: 'products', products: slide });
-      // Add ad after every 5th slide (index 4, 9, 14, etc.) if ads are enabled
-      if (shouldShowMobileAds && (index + 1) % 5 === 0 && index < productSlides.length - 1) {
+      // Add ad after every X slides (configurable via admin settings)
+      if (shouldShowMobileAds && (index + 1) % infeedAdFrequencyMobile === 0 && index < productSlides.length - 1) {
         slidesWithAds.push({ type: 'ad' });
       }
     });
