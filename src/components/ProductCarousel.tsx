@@ -354,8 +354,8 @@ export function ProductCarousel({
                   isFavoritesSection={isFavoritesSection}
                 />
               )}
-              {/* In-feed ad after every 6 products for PC/tablet expanded view */}
-              {carouselAdsEnabled && (index + 1) % 6 === 0 && index < products.length - 1 && (
+              {/* In-feed ad after every 8 products for PC/tablet expanded view */}
+              {carouselAdsEnabled && (index + 1) % 8 === 0 && index < products.length - 1 && (
                 <div className="col-span-full">
                   <InFeedAdUnit />
                 </div>
