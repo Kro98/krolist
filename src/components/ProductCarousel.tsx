@@ -71,8 +71,8 @@ function CarouselAdSlide({ itemsPerSlide }: { itemsPerSlide: number }) {
   );
 }
 
-// In-feed ad component for grid/expanded views (PC and tablet)
-function InFeedAdUnit() {
+// In-feed ad component for carousel grid (PC and tablet) - same size as product cards
+function InFeedAdCard() {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
 
@@ -92,13 +92,13 @@ function InFeedAdUnit() {
   }, [adLoaded]);
 
   return (
-    <div className="w-full min-h-[200px] bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden">
+    <div className="w-full h-full min-h-[280px] bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden">
       <ins
         ref={adRef}
         className="adsbygoogle"
-        style={{ display: 'block', width: '100%', height: '100%', minHeight: '200px' }}
+        style={{ display: 'block', width: '100%', height: '100%' }}
         data-ad-client="ca-pub-2793689855806571"
-        data-ad-slot="1996237166"
+        data-ad-slot="3691272849"
         data-ad-format="fluid"
         data-ad-layout-key="-6t+ed+2i-1n-4w"
       />
@@ -247,28 +247,53 @@ export function ProductCarousel({
   };
   const itemsPerSlide = getItemsPerSlide();
   
-  // Check if we should show ads (mobile/tablet + compact layout + carousel ads enabled)
+  // Check if we should show ads in carousel
   const currentStyle = isFavoritesSection ? favoritesCardStyle : cardLayoutStyle;
-  const shouldShowAds = carouselAdsEnabled && (isMobile || isTablet) && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
+  // Mobile: show full-slide ads | PC/Tablet: show inline card-sized ads
+  const shouldShowMobileAds = carouselAdsEnabled && isMobile && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
+  const shouldShowDesktopInlineAds = carouselAdsEnabled && (isTablet || isDesktop) && !isExpanded;
+  
+  // For PC/tablet carousel: inject ad cards inline with products (every 8 products)
+  type ProductOrAd = { type: 'product'; product: Product } | { type: 'ad' };
+  const productsWithAds: ProductOrAd[] = [];
+  
+  if (shouldShowDesktopInlineAds) {
+    products.forEach((product, index) => {
+      productsWithAds.push({ type: 'product', product });
+      // Insert ad after every 8th product
+      if ((index + 1) % 8 === 0 && index < products.length - 1) {
+        productsWithAds.push({ type: 'ad' });
+      }
+    });
+  }
   
   // Group products into slides - for tablet, ensure we always try to fill 4 items
-  // Insert ad slides every 5 product slides for mobile/tablet compact view
-  type SlideContent = { type: 'products'; products: Product[] } | { type: 'ad' };
+  // Insert ad slides every 5 product slides for mobile compact view
+  type SlideContent = { type: 'products'; products: Product[] } | { type: 'ad' } | { type: 'mixed'; items: ProductOrAd[] };
   const slidesWithAds: SlideContent[] = [];
   const productSlides: Product[][] = [];
   
-  for (let i = 0; i < products.length; i += itemsPerSlide) {
-    productSlides.push(products.slice(i, i + itemsPerSlide));
-  }
-  
-  // Insert ads every 5 slides
-  productSlides.forEach((slide, index) => {
-    slidesWithAds.push({ type: 'products', products: slide });
-    // Add ad after every 5th slide (index 4, 9, 14, etc.) if ads are enabled
-    if (shouldShowAds && (index + 1) % 5 === 0 && index < productSlides.length - 1) {
-      slidesWithAds.push({ type: 'ad' });
+  if (shouldShowDesktopInlineAds) {
+    // For PC/tablet: group productsWithAds into slides
+    for (let i = 0; i < productsWithAds.length; i += itemsPerSlide) {
+      const slideItems = productsWithAds.slice(i, i + itemsPerSlide);
+      slidesWithAds.push({ type: 'mixed', items: slideItems });
     }
-  });
+  } else {
+    // For mobile or when ads disabled: use original grouping
+    for (let i = 0; i < products.length; i += itemsPerSlide) {
+      productSlides.push(products.slice(i, i + itemsPerSlide));
+    }
+    
+    // Insert ads every 5 slides for mobile
+    productSlides.forEach((slide, index) => {
+      slidesWithAds.push({ type: 'products', products: slide });
+      // Add ad after every 5th slide (index 4, 9, 14, etc.) if ads are enabled
+      if (shouldShowMobileAds && (index + 1) % 5 === 0 && index < productSlides.length - 1) {
+        slidesWithAds.push({ type: 'ad' });
+      }
+    });
+  }
   
   // Legacy slides array for pagination (just product slides count)
   const slides = productSlides;
@@ -354,12 +379,6 @@ export function ProductCarousel({
                   isFavoritesSection={isFavoritesSection}
                 />
               )}
-              {/* In-feed ad after every 8 products for PC/tablet expanded view */}
-              {carouselAdsEnabled && (index + 1) % 8 === 0 && index < products.length - 1 && (
-                <div className="col-span-full">
-                  <InFeedAdUnit />
-                </div>
-              )}
             </React.Fragment>
           ))}
         </div>
@@ -383,10 +402,47 @@ export function ProductCarousel({
                   className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
                   {slideContent.type === 'ad' ? (
-                    // Ad slide - single container matching the slide size
+                    // Ad slide - single container matching the slide size (mobile only)
                     <CarouselAdSlide itemsPerSlide={itemsPerSlide} />
+                  ) : slideContent.type === 'mixed' ? (
+                    // Mixed slide with products and inline ads (PC/tablet)
+                    <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                      {slideContent.items.map((item, itemIndex) => (
+                        item.type === 'ad' ? (
+                          <InFeedAdCard key={`ad-${itemIndex}`} />
+                        ) : ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
+                          <ProductCard
+                            key={item.product.id}
+                            product={item.product}
+                            onDelete={onDelete}
+                            onUpdate={onUpdate}
+                            onRefreshPrice={onRefreshPrice}
+                            onAddToMyProducts={onAddToMyProducts}
+                            onRemoveFromMyProducts={onRemoveFromMyProducts}
+                            userProductCount={userProductCount}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={selectedProductIds.has(item.product.id)}
+                            onToggleSelect={onToggleSelect}
+                            isInFavorites={isInFavorites(item.product)}
+                            isFavoritesSection={isFavoritesSection}
+                          />
+                        ) : (
+                          <MobileProductCard
+                            key={item.product.id}
+                            product={item.product}
+                            onAddToMyProducts={onAddToMyProducts}
+                            onRemoveFromMyProducts={onRemoveFromMyProducts}
+                            onEdit={item.product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
+                            onDelete={item.product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
+                            userProductCount={userProductCount}
+                            isInFavorites={isInFavorites(item.product)}
+                            isFavoritesSection={isFavoritesSection}
+                          />
+                        )
+                      ))}
+                    </div>
                   ) : (
-                    // Product slide
+                    // Product slide (mobile/default)
                     <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                       {slideContent.products.map(product => (
                         ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
