@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -62,6 +62,41 @@ function CarouselAdSlide({ itemsPerSlide }: { itemsPerSlide: number }) {
         ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%' }}
+        data-ad-client="ca-pub-2793689855806571"
+        data-ad-slot="1996237166"
+        data-ad-format="fluid"
+        data-ad-layout-key="-6t+ed+2i-1n-4w"
+      />
+    </div>
+  );
+}
+
+// In-feed ad component for grid/expanded views (PC and tablet)
+function InFeedAdUnit() {
+  const adRef = useRef<HTMLModElement>(null);
+  const [adLoaded, setAdLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (adRef.current && !adLoaded) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          setAdLoaded(true);
+        } catch (e) {
+          console.error('AdSense error:', e);
+        }
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [adLoaded]);
+
+  return (
+    <div className="w-full min-h-[200px] bg-card/50 border border-border/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden">
+      <ins
+        ref={adRef}
+        className="adsbygoogle"
+        style={{ display: 'block', width: '100%', height: '100%', minHeight: '200px' }}
         data-ad-client="ca-pub-2793689855806571"
         data-ad-slot="1996237166"
         data-ad-format="fluid"
@@ -288,38 +323,44 @@ export function ProductCarousel({
       )}
       
       {isExpanded && isTabletOrAbove ? (
-        // Grid view for expanded state
+        // Grid view for expanded state with in-feed ads
         <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'xl:grid-cols-3' : ''} ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'xl:grid-cols-4' : ''}`}>
-          {products.map(product => (
-            ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onDelete={onDelete}
-                onUpdate={onUpdate}
-                onRefreshPrice={onRefreshPrice}
-                onAddToMyProducts={onAddToMyProducts}
-                onRemoveFromMyProducts={onRemoveFromMyProducts}
-                userProductCount={userProductCount}
-                isSelectionMode={isSelectionMode}
-                isSelected={selectedProductIds.has(product.id)}
-                onToggleSelect={onToggleSelect}
-                isInFavorites={isInFavorites(product)}
-                isFavoritesSection={isFavoritesSection}
-              />
-            ) : (
-              <MobileProductCard
-                key={product.id}
-                product={product}
-                onAddToMyProducts={onAddToMyProducts}
-                onRemoveFromMyProducts={onRemoveFromMyProducts}
-                onEdit={product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
-                onDelete={product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
-                userProductCount={userProductCount}
-                isInFavorites={isInFavorites(product)}
-                isFavoritesSection={isFavoritesSection}
-              />
-            )
+          {products.map((product, index) => (
+            <React.Fragment key={product.id}>
+              {((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
+                <ProductCard
+                  product={product}
+                  onDelete={onDelete}
+                  onUpdate={onUpdate}
+                  onRefreshPrice={onRefreshPrice}
+                  onAddToMyProducts={onAddToMyProducts}
+                  onRemoveFromMyProducts={onRemoveFromMyProducts}
+                  userProductCount={userProductCount}
+                  isSelectionMode={isSelectionMode}
+                  isSelected={selectedProductIds.has(product.id)}
+                  onToggleSelect={onToggleSelect}
+                  isInFavorites={isInFavorites(product)}
+                  isFavoritesSection={isFavoritesSection}
+                />
+              ) : (
+                <MobileProductCard
+                  product={product}
+                  onAddToMyProducts={onAddToMyProducts}
+                  onRemoveFromMyProducts={onRemoveFromMyProducts}
+                  onEdit={product.isKrolistProduct && onUpdate ? (p) => onUpdate(p.id, p) : undefined}
+                  onDelete={product.isKrolistProduct && onDelete ? (p) => onDelete(p.id) : undefined}
+                  userProductCount={userProductCount}
+                  isInFavorites={isInFavorites(product)}
+                  isFavoritesSection={isFavoritesSection}
+                />
+              )}
+              {/* In-feed ad after every 6 products for PC/tablet expanded view */}
+              {carouselAdsEnabled && (index + 1) % 6 === 0 && index < products.length - 1 && (
+                <div className="col-span-full">
+                  <InFeedAdUnit />
+                </div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       ) : (
