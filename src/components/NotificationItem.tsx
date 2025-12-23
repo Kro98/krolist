@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, Check } from 'lucide-react';
+import { X, Check, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -113,7 +113,10 @@ export function NotificationItem({ notification, icon }: NotificationItemProps) 
       }`}
     >
       {/* Swipe background indicators */}
-      <div className="absolute inset-0 bg-destructive/20" />
+      <div className="absolute inset-0 flex items-center justify-between px-4 bg-muted/50">
+        <Trash2 className={`h-5 w-5 text-muted-foreground transition-opacity ${translateX > 30 ? 'opacity-100' : 'opacity-0'}`} />
+        <Trash2 className={`h-5 w-5 text-muted-foreground transition-opacity ${translateX < -30 ? 'opacity-100' : 'opacity-0'}`} />
+      </div>
 
       {/* Notification content */}
       <div
