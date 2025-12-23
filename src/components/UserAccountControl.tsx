@@ -72,6 +72,23 @@ export function UserAccountControl() {
     window.location.href = '/admin';
   };
 
+  // For guests, directly open auth modal instead of dropdown
+  if (!user || isGuest) {
+    return (
+      <>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="relative"
+          onClick={() => setShowAuthModal(true)}
+        >
+          <User className="h-5 w-5" />
+        </Button>
+        <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
+      </>
+    );
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -81,36 +98,27 @@ export function UserAccountControl() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 bg-popover">
-          {!user || isGuest ? (
-            <DropdownMenuItem onClick={() => setShowAuthModal(true)} className="cursor-pointer">
-              <LogIn className="mr-2 h-4 w-4" />
-              {t('auth.login') || 'Log In'}
-            </DropdownMenuItem>
-          ) : (
-            <>
-              <div className="px-2 py-2 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-foreground truncate font-medium">
-                    {username || user.email}
-                  </span>
-                </div>
-                <Badge 
-                  variant={isAdmin ? "default" : "secondary"} 
-                  className={`text-xs flex items-center gap-1 w-fit ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
-                  onClick={isAdmin ? handleAdminClick : undefined}
-                >
-                  {isAdmin && <Shield className="h-3 w-3" />}
-                  {isAdmin ? t('user.admin') : t('user.user')}
-                </Badge>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                {t('auth.signOut') || 'Log Out'}
-              </DropdownMenuItem>
-            </>
-          )}
+          <div className="px-2 py-2 space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground truncate font-medium">
+                {username || user.email}
+              </span>
+            </div>
+            <Badge 
+              variant={isAdmin ? "default" : "secondary"} 
+              className={`text-xs flex items-center gap-1 w-fit ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+              onClick={isAdmin ? handleAdminClick : undefined}
+            >
+              {isAdmin && <Shield className="h-3 w-3" />}
+              {isAdmin ? t('user.admin') : t('user.user')}
+            </Badge>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+            <LogOut className="mr-2 h-4 w-4" />
+            {t('auth.signOut') || 'Log Out'}
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
