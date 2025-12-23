@@ -113,10 +113,7 @@ export function NotificationItem({ notification, icon }: NotificationItemProps) 
       }`}
     >
       {/* Swipe background indicators */}
-      <div className="absolute inset-0 flex items-center justify-between px-4 bg-destructive/20">
-        <X className="h-5 w-5 text-destructive" />
-        <X className="h-5 w-5 text-destructive" />
-      </div>
+      <div className="absolute inset-0 bg-destructive/20" />
 
       {/* Notification content */}
       <div
