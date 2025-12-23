@@ -149,13 +149,13 @@ export default function DesktopAuth({
         <div className="mt-10 space-y-5">
           {/* Links - Horizontal for desktop */}
           <div className="flex justify-center gap-8 text-base">
-            <Link to="/auth/contact-us" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
+            <Link to="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
               Contact Us
             </Link>
-            <Link to="/auth/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
+            <Link to="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
               Privacy Policy
             </Link>
-            <Link to="/auth/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
+            <Link to="/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors hover:underline">
               Terms of Service
             </Link>
           </div>
