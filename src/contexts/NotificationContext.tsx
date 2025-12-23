@@ -33,7 +33,7 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 const SEEN_EVENTS_KEY = 'krolist_seen_events';
-
+const DISMISSED_POPUPS_KEY = 'krolist_dismissed_popups';
 // Default events that should trigger notifications today
 const DEFAULT_EVENTS = [
   { id: "amazon-prime-day", name: "Amazon Prime Day", date: "2025-07-15", emoji: "📦" },
@@ -371,10 +371,23 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     // Mark all as read first
     await markAllAsRead();
     
+    // Save all notification IDs as dismissed in localStorage
+    try {
+      const stored = localStorage.getItem(DISMISSED_POPUPS_KEY);
+      const parsed = stored ? JSON.parse(stored) : {};
+      const now = Date.now();
+      notifications.forEach(n => {
+        parsed[n.id] = now;
+      });
+      localStorage.setItem(DISMISSED_POPUPS_KEY, JSON.stringify(parsed));
+    } catch (e) {
+      console.error('Failed to save dismissed popups:', e);
+    }
+    
     // Clear notifications from state
     setNotifications([]);
     setHasNewGlobalNotification(false);
-  }, [markAllAsRead]);
+  }, [markAllAsRead, notifications]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 

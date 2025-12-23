@@ -13,11 +13,49 @@ interface PopupNotification {
   isDragging: boolean;
 }
 
+const DISMISSED_POPUPS_KEY = 'krolist_dismissed_popups';
+
+// Get dismissed popup IDs from localStorage
+const getDismissedPopupIds = (): Set<string> => {
+  try {
+    const stored = localStorage.getItem(DISMISSED_POPUPS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Clean up old entries (older than 7 days)
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const cleaned: Record<string, number> = {};
+      Object.entries(parsed).forEach(([id, timestamp]) => {
+        if (now - (timestamp as number) < sevenDays) {
+          cleaned[id] = timestamp as number;
+        }
+      });
+      localStorage.setItem(DISMISSED_POPUPS_KEY, JSON.stringify(cleaned));
+      return new Set(Object.keys(cleaned));
+    }
+  } catch (e) {
+    console.error('Failed to parse dismissed popups:', e);
+  }
+  return new Set();
+};
+
+// Save dismissed popup ID to localStorage
+const saveDismissedPopupId = (id: string) => {
+  try {
+    const stored = localStorage.getItem(DISMISSED_POPUPS_KEY);
+    const parsed = stored ? JSON.parse(stored) : {};
+    parsed[id] = Date.now();
+    localStorage.setItem(DISMISSED_POPUPS_KEY, JSON.stringify(parsed));
+  } catch (e) {
+    console.error('Failed to save dismissed popup:', e);
+  }
+};
+
 export function NotificationPopup() {
   const { language } = useLanguage();
   const { notifications, markAsRead, dismissNotification, isGuest } = useNotifications();
   const [activePopups, setActivePopups] = useState<PopupNotification[]>([]);
-  const [shownIds, setShownIds] = useState<Set<string>>(new Set());
+  const [shownIds, setShownIds] = useState<Set<string>>(() => getDismissedPopupIds());
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const dragStartRef = useRef<{ id: string; startY: number } | null>(null);
@@ -74,11 +112,13 @@ export function NotificationPopup() {
   };
 
   const handleMarkAsRead = (id: string) => {
+    saveDismissedPopupId(id);
     markAsRead(id);
     handleDismiss(id);
   };
 
   const handleRemove = (id: string) => {
+    saveDismissedPopupId(id);
     dismissNotification(id);
     handleDismiss(id);
   };
