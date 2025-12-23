@@ -108,8 +108,10 @@ export function NotificationItem({ notification, icon }: NotificationItemProps) 
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden rounded-lg transition-all duration-200 ${
-        isExiting ? 'h-0 opacity-0 mb-0' : 'h-auto opacity-100'
+      className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
+        isExiting 
+          ? 'h-0 opacity-0 mb-0 scale-95 translate-x-4' 
+          : 'h-auto opacity-100 scale-100 translate-x-0'
       }`}
     >
       {/* Swipe background indicators */}
