@@ -224,13 +224,13 @@ export default function TabletAuth({
         <div className="mt-7 space-y-4">
           {/* Links - Two columns for tablet */}
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-            <Link to="/auth/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">
               Contact Us
             </Link>
-            <Link to="/auth/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/auth/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors">
               Terms of Service
             </Link>
           </div>
