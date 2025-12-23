@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, LogIn, LogOut, Shield } from 'lucide-react';
+import { User, LogOut, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
