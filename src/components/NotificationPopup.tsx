@@ -3,7 +3,7 @@ import { Check, Package, TrendingDown, Smartphone, ShoppingBag, Bell, Tag, Calen
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { AuthModal } from '@/components/AuthModal';
 
 interface PopupNotification {
   notification: AppNotification;
@@ -16,10 +16,10 @@ interface PopupNotification {
 export function NotificationPopup() {
   const { language } = useLanguage();
   const { notifications, markAsRead, dismissNotification, isGuest } = useNotifications();
-  const navigate = useNavigate();
   const [activePopups, setActivePopups] = useState<PopupNotification[]>([]);
   const [shownIds, setShownIds] = useState<Set<string>>(new Set());
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const dragStartRef = useRef<{ id: string; startY: number } | null>(null);
   const isArabic = language === 'ar';
 
@@ -85,7 +85,7 @@ export function NotificationPopup() {
 
   const handleSignIn = () => {
     setShowGuestPrompt(false);
-    navigate('/auth');
+    setShowAuthModal(true);
   };
 
   const handleDismissGuestPrompt = () => {
@@ -142,43 +142,46 @@ export function NotificationPopup() {
   // Show guest sign-in prompt
   if (showGuestPrompt) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none flex flex-col gap-2" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
-        <div className="max-w-md mx-auto w-full bg-card border border-border rounded-xl shadow-lg pointer-events-auto animate-in slide-in-from-top duration-300">
-          <div className="flex justify-center py-2">
-            <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
-          </div>
-          <div className="px-4 pb-4">
-            <div className="flex gap-3">
-              <div className="flex-shrink-0">
-                <Bell className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-foreground">
-                  {isArabic ? 'تفعيل الإشعارات' : 'Enable Notifications'}
-                </h4>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {isArabic 
-                    ? 'سجل دخولك للحصول على إشعارات حول العروض والتحديثات على جميع أجهزتك'
-                    : 'Sign in to receive notifications about deals and updates across all your devices'}
-                </p>
-              </div>
+      <>
+        <div className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none flex flex-col gap-2" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+          <div className="max-w-md mx-auto w-full bg-card border border-border rounded-xl shadow-lg pointer-events-auto animate-in slide-in-from-top duration-300">
+            <div className="flex justify-center py-2">
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
             </div>
-            <div className="flex gap-2 mt-3">
-              <Button variant="outline" size="sm" className="flex-1 h-9" onClick={handleDismissGuestPrompt}>
-                {isArabic ? 'لاحقاً' : 'Later'}
-              </Button>
-              <Button variant="default" size="sm" className="flex-1 h-9" onClick={handleSignIn}>
-                <LogIn className="h-4 w-4 mr-1.5" />
-                {isArabic ? 'تسجيل الدخول' : 'Sign In'}
-              </Button>
+            <div className="px-4 pb-4">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <Bell className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">
+                    {isArabic ? 'تفعيل الإشعارات' : 'Enable Notifications'}
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isArabic 
+                      ? 'سجل دخولك للحصول على إشعارات حول العروض والتحديثات على جميع أجهزتك'
+                      : 'Sign in to receive notifications about deals and updates across all your devices'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button variant="outline" size="sm" className="flex-1 h-9" onClick={handleDismissGuestPrompt}>
+                  {isArabic ? 'لاحقاً' : 'Later'}
+                </Button>
+                <Button variant="default" size="sm" className="flex-1 h-9" onClick={handleSignIn}>
+                  <LogIn className="h-4 w-4 mr-1.5" />
+                  {isArabic ? 'تسجيل الدخول' : 'Sign In'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
+      </>
     );
   }
 
-  if (activePopups.length === 0) return null;
+  if (activePopups.length === 0) return <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] px-4 pt-4 pointer-events-none flex flex-col gap-2" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
@@ -217,6 +220,7 @@ export function NotificationPopup() {
           </div>
         );
       })}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 }
