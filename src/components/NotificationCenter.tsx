@@ -11,13 +11,25 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { NotificationItem } from './NotificationItem';
+import { AuthModal } from '@/components/AuthModal';
 
 export function NotificationCenter() {
   const { language } = useLanguage();
+  const { user, isGuest } = useAuth();
   const { notifications, unreadCount, clearAll, hasNewGlobalNotification } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const isArabic = language === 'ar';
+
+  const handleBellClick = () => {
+    if (!user || isGuest) {
+      setShowAuthModal(true);
+    } else {
+      setOpen(true);
+    }
+  };
 
   const getNotificationIcon = (type: AppNotification['type']) => {
     switch (type) {
@@ -44,7 +56,7 @@ export function NotificationCenter() {
         variant="outline"
         size="icon"
         className="relative"
-        onClick={() => setOpen(true)}
+        onClick={handleBellClick}
       >
         <Bell className="h-5 w-5" />
         {(unreadCount > 0 || hasNewGlobalNotification) && (
@@ -116,6 +128,8 @@ export function NotificationCenter() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </>
   );
 }
