@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, Check, Trash2 } from 'lucide-react';
+import { Check, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
