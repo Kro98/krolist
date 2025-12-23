@@ -17,6 +17,7 @@ export function NotificationItem({ notification, icon }: NotificationItemProps) 
   const [isDragging, setIsDragging] = useState(false);
   const [translateX, setTranslateX] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const [showReadConfirm, setShowReadConfirm] = useState(false);
   const startXRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -93,7 +94,11 @@ export function NotificationItem({ notification, icon }: NotificationItemProps) 
 
   const handleMarkAsRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    markAsRead(notification.id);
+    setShowReadConfirm(true);
+    setTimeout(() => {
+      markAsRead(notification.id);
+      setShowReadConfirm(false);
+    }, 600);
   };
 
   const handleDismiss = (e: React.MouseEvent) => {
@@ -134,8 +139,17 @@ export function NotificationItem({ notification, icon }: NotificationItemProps) 
         onMouseDown={handleMouseDown}
       >
         {/* Unread indicator */}
-        {!notification.isRead && (
+        {!notification.isRead && !showReadConfirm && (
           <div className="absolute top-3 left-3 w-2 h-2 rounded-full bg-primary animate-pulse" />
+        )}
+
+        {/* Read confirmation checkmark */}
+        {showReadConfirm && (
+          <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-lg z-10 animate-fade-in">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Check className="h-6 w-6 text-primary animate-scale-in" />
+            </div>
+          </div>
         )}
 
         {/* Icon */}
