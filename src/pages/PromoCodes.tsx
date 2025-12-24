@@ -17,6 +17,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import { formatDistanceToNow, format } from "date-fns";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PromoCode {
   id: string;
@@ -41,6 +42,7 @@ export default function PromoCodes() {
   const { user, isGuest } = useAuth();
   const navigate = useNavigate();
   const { triggerPromoCopy } = useAdTrigger();
+  const { t, language } = useLanguage();
   
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
@@ -86,8 +88,8 @@ export default function PromoCodes() {
     } catch (error) {
       console.error('Error fetching promo codes:', error);
       toast({
-        title: "Error",
-        description: "Failed to load promo codes",
+        title: t('error'),
+        description: t('promo.failedToLoad'),
         variant: "destructive"
       });
     } finally {
@@ -130,23 +132,23 @@ export default function PromoCodes() {
       const now = new Date();
       const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       
-      if (daysLeft < 0) return { text: 'Expired', variant: 'destructive' as const };
-      if (daysLeft === 0) return { text: 'Expires today', variant: 'destructive' as const };
-      if (daysLeft === 1) return { text: '1 day left', variant: 'secondary' as const };
-      if (daysLeft <= 7) return { text: `${daysLeft} days left`, variant: 'secondary' as const };
-      if (daysLeft <= 30) return { text: `${daysLeft} days left`, variant: 'default' as const };
+      if (daysLeft < 0) return { text: t('promo.expired'), variant: 'destructive' as const };
+      if (daysLeft === 0) return { text: t('promo.expiresToday'), variant: 'destructive' as const };
+      if (daysLeft === 1) return { text: t('promo.dayLeft'), variant: 'secondary' as const };
+      if (daysLeft <= 7) return { text: `${daysLeft} ${t('promo.daysLeft')}`, variant: 'secondary' as const };
+      if (daysLeft <= 30) return { text: `${daysLeft} ${t('promo.daysLeft')}`, variant: 'default' as const };
       
       return { text: formatDistanceToNow(expiry, { addSuffix: true }), variant: 'default' as const };
     } catch {
-      return { text: 'Unknown', variant: 'secondary' as const };
+      return { text: t('promo.unknown'), variant: 'secondary' as const };
     }
   };
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast({
-      title: "Code Copied!",
-      description: `Promo code "${code}" copied to clipboard`,
+      title: t('promo.codeCopied'),
+      description: `${t('promo.codeCopiedDesc')} "${code}"`,
     });
     triggerPromoCopy();
   };
@@ -154,8 +156,8 @@ export default function PromoCodes() {
   const handleAddCode = async () => {
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to add promo codes",
+        title: t('promo.authRequired'),
+        description: t('promo.signInToAdd'),
         variant: "destructive"
       });
       return;
@@ -165,8 +167,8 @@ export default function PromoCodes() {
 
     if (!newCode || !selectedShop || !newDescription || (selectedShop === 'other' && !customShopName)) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields",
+        title: t('promo.missingInfo'),
+        description: t('promo.fillAllFields'),
         variant: "destructive"
       });
       return;
@@ -175,8 +177,8 @@ export default function PromoCodes() {
     // Check limit
     if (promoCodes.length >= 24) {
       toast({
-        title: "Limit Reached",
-        description: "You can only save up to 24 promo codes",
+        title: t('promo.limitReached'),
+        description: t('promo.limitReachedDesc'),
         variant: "destructive"
       });
       return;
@@ -201,8 +203,8 @@ export default function PromoCodes() {
       if (error) throw error;
 
       toast({
-        title: "Promo Code Added!",
-        description: "Your promo code has been saved to your collection",
+        title: t('promo.codeAdded'),
+        description: t('promo.codeAddedDesc'),
       });
 
       setNewCode("");
@@ -215,8 +217,8 @@ export default function PromoCodes() {
     } catch (error: any) {
       console.error('Error adding promo code:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to add promo code",
+        title: t('error'),
+        description: error.message || t('promo.failedToAdd'),
         variant: "destructive"
       });
     }
@@ -246,8 +248,8 @@ export default function PromoCodes() {
       if (error) throw error;
 
       toast({
-        title: "Promo Code Updated!",
-        description: "Your changes have been saved",
+        title: t('promo.codeUpdated'),
+        description: t('promo.changesSaved'),
       });
 
       setIsEditDialogOpen(false);
@@ -256,8 +258,8 @@ export default function PromoCodes() {
     } catch (error: any) {
       console.error('Error updating promo code:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update promo code",
+        title: t('error'),
+        description: error.message || t('promo.failedToUpdate'),
         variant: "destructive"
       });
     }
@@ -273,16 +275,16 @@ export default function PromoCodes() {
       if (error) throw error;
 
       toast({
-        title: "Promo Code Deleted",
-        description: "The promo code has been removed from your collection",
+        title: t('promo.codeDeleted'),
+        description: t('promo.codeDeletedDesc'),
       });
 
       fetchPromoCodes();
     } catch (error: any) {
       console.error('Error deleting promo code:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete promo code",
+        title: t('error'),
+        description: error.message || t('promo.failedToDelete'),
         variant: "destructive"
       });
     }
@@ -291,8 +293,8 @@ export default function PromoCodes() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Promo Codes</h1>
-        <p className="text-muted-foreground">Manage your collection of discount codes and coupons</p>
+        <h1 className="text-3xl font-bold">{t('promo.title')}</h1>
+        <p className="text-muted-foreground">{t('promo.subtitle')}</p>
       </div>
 
       {/* Add New Promo Code - Hidden for guests */}
@@ -306,10 +308,10 @@ export default function PromoCodes() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Plus className="h-5 w-5 text-primary" />
-                  Add New Promo Code
+                  {t('promo.addNew')}
                 </CardTitle>
                 <CardDescription>
-                  Save promo codes you find online for easy access when shopping
+                  {t('promo.addNewDesc')}
                 </CardDescription>
               </div>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -321,20 +323,20 @@ export default function PromoCodes() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="code">Promo Code</Label>
+                  <Label htmlFor="code">{t('promo.code')}</Label>
                   <Input
                     id="code"
-                    placeholder="SAVE20"
+                    placeholder={t('promo.codePlaceholder')}
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
                     maxLength={20}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="shop">Shop</Label>
+                  <Label htmlFor="shop">{t('promo.shop')}</Label>
                   <Select value={selectedShop} onValueChange={setSelectedShop}>
                     <SelectTrigger id="shop">
-                      <SelectValue placeholder="Select a shop" />
+                      <SelectValue placeholder={t('promo.selectShop')} />
                     </SelectTrigger>
                     <SelectContent>
                       {AVAILABLE_SHOPS.map((shop) => (
@@ -347,10 +349,10 @@ export default function PromoCodes() {
                 </div>
                 {selectedShop === 'other' && (
                   <div className="space-y-2">
-                    <Label htmlFor="customShop">Custom Shop Name</Label>
+                    <Label htmlFor="customShop">{t('promo.customShopName')}</Label>
                     <Input
                       id="customShop"
-                      placeholder="Enter shop name"
+                      placeholder={t('promo.enterShopName')}
                       value={customShopName}
                       onChange={(e) => setCustomShopName(e.target.value)}
                       maxLength={20}
@@ -358,10 +360,10 @@ export default function PromoCodes() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t('promo.description')}</Label>
                   <Input
                     id="description"
-                    placeholder="20% off electronics"
+                    placeholder={t('promo.descriptionPlaceholder')}
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
                     maxLength={120}
@@ -372,7 +374,7 @@ export default function PromoCodes() {
                 onClick={handleAddCode}
                 className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
               >
-                Add Code
+                {t('promo.addCode')}
               </Button>
             </CardContent>
           )}
@@ -382,9 +384,9 @@ export default function PromoCodes() {
           <CardContent className="p-6">
             <div className="text-center py-4">
               <Gift className="h-12 w-12 text-primary mx-auto mb-3" />
-              <h3 className="text-lg font-semibold mb-2">Want to Save Your Own Promo Codes?</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('promo.wantToSave')}</h3>
               <p className="text-muted-foreground mb-4">
-                Create an account to save and manage your personal promo codes collection. Click the user icon in the top right to sign up or log in.
+                {t('promo.createAccountToSave')}
               </p>
             </div>
           </CardContent>
@@ -423,7 +425,7 @@ export default function PromoCodes() {
                             </Badge>
                             <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                               <RotateCcw className="h-3 w-3 mr-1" />
-                              Reusable
+                              {t('promo.reusable')}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
@@ -431,7 +433,7 @@ export default function PromoCodes() {
                           </p>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                             <Calendar className="h-3 w-3" />
-                            <span>Expires: {format(new Date(promo.expires), 'MMM dd, yyyy')}</span>
+                            <span>{t('promo.expires')}: {format(new Date(promo.expires), 'MMM dd, yyyy')}</span>
                           </div>
                           <div className="mb-2">
                             <Badge 
@@ -451,7 +453,7 @@ export default function PromoCodes() {
                             className="w-full max-w-32"
                           >
                             <Copy className="h-4 w-4 mr-2" />
-                            Copy
+                            {t('promo.copy')}
                           </Button>
                         </div>
                       </div>
@@ -478,23 +480,23 @@ export default function PromoCodes() {
                       {promo.code}
                     </div>
                   </div>
-                  <div className="flex gap-2 mb-3 flex-wrap">
+                    <div className="flex gap-2 mb-3 flex-wrap">
                     <Badge variant={promo.used && !promo.reusable ? "secondary" : "default"}>
                       {promo.store}
                     </Badge>
                     {promo.reusable ? (
                       <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                         <RotateCcw className="h-3 w-3 mr-1" />
-                        Reusable
+                        {t('promo.reusable')}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
-                        One-time use
+                        {t('promo.oneTimeUse')}
                       </Badge>
                     )}
                     {promo.used && (
                       <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
-                        Used
+                        {t('promo.used')}
                       </Badge>
                     )}
                   </div>
@@ -502,7 +504,7 @@ export default function PromoCodes() {
                     {promo.description}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Expires: {new Date(promo.expires).toLocaleDateString()}
+                    {t('promo.expires')}: {new Date(promo.expires).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
@@ -522,7 +524,7 @@ export default function PromoCodes() {
                     className="w-full col-span-2"
                   >
                     <Copy className="h-4 w-4 mr-1" />
-                    Copy
+                    {t('promo.copy')}
                   </Button>
                   <Button
                     size="sm"
@@ -545,16 +547,16 @@ export default function PromoCodes() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5 text-primary" />
-              Edit Promo Code
+              {t('promo.editPromo')}
             </DialogTitle>
             <DialogDescription>
-              Update your promo code details below
+              {t('promo.editPromoDesc')}
             </DialogDescription>
           </DialogHeader>
           {editingPromo && (
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-code">Promo Code</Label>
+                <Label htmlFor="edit-code">{t('promo.code')}</Label>
                 <Input
                   id="edit-code"
                   value={editingPromo.code}
@@ -562,7 +564,7 @@ export default function PromoCodes() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-store">Store</Label>
+                <Label htmlFor="edit-store">{t('promo.store')}</Label>
                 <Input
                   id="edit-store"
                   value={editingPromo.store}
@@ -570,7 +572,7 @@ export default function PromoCodes() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description">{t('promo.description')}</Label>
                 <Input
                   id="edit-description"
                   value={editingPromo.description}
@@ -578,7 +580,7 @@ export default function PromoCodes() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-expires">Expires</Label>
+                <Label htmlFor="edit-expires">{t('promo.expires')}</Label>
                 <Input
                   id="edit-expires"
                   type="date"
@@ -597,16 +599,16 @@ export default function PromoCodes() {
                     {editingPromo.reusable && (
                       <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                         <RotateCcw className="h-3 w-3 mr-1" />
-                        Reusable
+                        {t('promo.reusable')}
                       </Badge>
                     )}
                     {!editingPromo.reusable && (
-                      <span className="text-sm text-muted-foreground">Make Reusable</span>
+                      <span className="text-sm text-muted-foreground">{t('promo.makeReusable')}</span>
                     )}
                   </Label>
                 </div>
                 <Button onClick={handleSaveEdit} className="bg-gradient-primary">
-                  Save Changes
+                  {t('promo.saveChanges')}
                 </Button>
               </div>
             </div>
@@ -618,9 +620,9 @@ export default function PromoCodes() {
       {promoCodes.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">No personal promo codes yet</h3>
+          <h3 className="text-lg font-medium mb-2">{t('promo.noPersonalCodes')}</h3>
           <p className="text-muted-foreground mb-4">
-            Start saving promo codes you find online for easy access when shopping
+            {t('promo.startSaving')}
           </p>
         </div>
       )}
