@@ -212,12 +212,12 @@ export default function Settings() {
 
         if (emailError) throw emailError;
         
-        sonner.success("Profile updated! Please check your new email to confirm the change.");
+        sonner.success(t('settings.profileUpdatedEmail'));
       } else {
-        sonner.success("Profile updated successfully!");
+        sonner.success(t('settings.profileUpdated'));
       }
     } catch (error: any) {
-      sonner.error(error.message || "Failed to update profile");
+      sonner.error(error.message || t('settings.failedUpdate'));
     } finally {
       setLoading(false);
     }
@@ -227,10 +227,8 @@ export default function Settings() {
   const handleEnableNotifications = async () => {
     if (!("Notification" in window)) {
       toast({
-        title: language === "ar" ? "غير مدعوم" : "Not Supported",
-        description: language === "ar" 
-          ? "المتصفح لا يدعم الإشعارات" 
-          : "Your browser doesn't support notifications",
+        title: t('settings.notSupported'),
+        description: t('settings.browserNoNotifications'),
         variant: "destructive",
       });
       return;
@@ -241,10 +239,8 @@ export default function Settings() {
 
     if (permission === "granted") {
       toast({
-        title: language === "ar" ? "تم التفعيل" : "Notifications Enabled",
-        description: language === "ar" 
-          ? "سيتم إعلامك بالتحديثات الجديدة" 
-          : "You'll be notified about updates",
+        title: t('settings.notificationsEnabled'),
+        description: t('settings.notifiedAboutUpdates'),
       });
     }
   };
@@ -279,7 +275,7 @@ export default function Settings() {
                 {t('settings.appearance')}
               </CardTitle>
               <CardDescription>
-                Click for light or dark view
+                {t('settings.appearanceDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -291,27 +287,27 @@ export default function Settings() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="undertone">Undertone Color</Label>
+                  <Label htmlFor="undertone">{t('settings.undertoneColor')}</Label>
                   <Select value={undertone} onValueChange={(value: any) => setUndertone(value)}>
                     <SelectTrigger id="undertone">
-                      <SelectValue placeholder="Select undertone" />
+                      <SelectValue placeholder={t('settings.selectUndertone')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="orange">Orange</SelectItem>
-                      <SelectItem value="blue">Blue</SelectItem>
-                      <SelectItem value="green">Green</SelectItem>
-                      <SelectItem value="purple">Purple</SelectItem>
-                      <SelectItem value="red">Red</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
+                      <SelectItem value="orange">{t('settings.undertone.orange')}</SelectItem>
+                      <SelectItem value="blue">{t('settings.undertone.blue')}</SelectItem>
+                      <SelectItem value="green">{t('settings.undertone.green')}</SelectItem>
+                      <SelectItem value="purple">{t('settings.undertone.purple')}</SelectItem>
+                      <SelectItem value="red">{t('settings.undertone.red')}</SelectItem>
+                      <SelectItem value="custom">{t('settings.undertone.custom')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="flex items-end justify-between">
                   <div className="space-y-1">
-                    <Label htmlFor="image-zoom">Image Zoom on Hover</Label>
+                    <Label htmlFor="image-zoom">{t('settings.imageZoom')}</Label>
                     <p className="text-sm text-muted-foreground">
-                      Enable zoom effect
+                      {t('settings.imageZoomDesc')}
                     </p>
                   </div>
                   <Switch
@@ -327,7 +323,7 @@ export default function Settings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="carousel-speed" className="flex items-center justify-between">
-                    <span>Carousel Auto-Scroll Speed</span>
+                    <span>{t('settings.carouselSpeed')}</span>
                     <span className="text-sm text-muted-foreground">{(carouselSpeed / 1000).toFixed(1)}s</span>
                   </Label>
                   <input
@@ -345,12 +341,12 @@ export default function Settings() {
                     }}
                     className="w-full accent-primary"
                   />
-                  <p className="text-xs text-muted-foreground">Lower = faster scrolling</p>
+                  <p className="text-xs text-muted-foreground">{t('settings.carouselSpeedDesc')}</p>
                 </div>
                 
                 <div className="space-y-3">
                   <Label htmlFor="title-scroll-speed" className="flex items-center justify-between">
-                    <span>Product Title Scroll Speed</span>
+                    <span>{t('settings.titleScrollSpeed')}</span>
                     <span className="text-sm text-muted-foreground">{titleScrollSpeed}s</span>
                   </Label>
                   <input
@@ -368,7 +364,7 @@ export default function Settings() {
                     }}
                     className="w-full accent-primary"
                   />
-                  <p className="text-xs text-muted-foreground">Lower = faster scrolling</p>
+                  <p className="text-xs text-muted-foreground">{t('settings.carouselSpeedDesc')}</p>
                 </div>
               </div>
               
@@ -376,7 +372,7 @@ export default function Settings() {
               {undertone === 'custom' && (
                 <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
                   <Label htmlFor="hue-picker" className="flex items-center justify-between">
-                    <span>Custom Hue ({customHue}°)</span>
+                    <span>{t('settings.customHue')} ({customHue}°)</span>
                     <div 
                       className="w-6 h-6 rounded-full border-2 border-background shadow-sm"
                       style={{ backgroundColor: `hsl(${customHue}, 85%, 55%)` }}
@@ -414,7 +410,7 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary" />
-              Language & Currency
+              {t('settings.languageCurrency')}
             </CardTitle>
             <CardDescription>
               {t('settings.languageDesc')}
@@ -474,10 +470,10 @@ export default function Settings() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t('settings.username')}</Label>
                 <Input 
                   id="username" 
-                  placeholder="Your Username" 
+                  placeholder={t('settings.usernamePlaceholder')} 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -489,7 +485,7 @@ export default function Settings() {
               className="bg-gradient-primary hover:shadow-hover"
             >
               <Save className="h-4 w-4 mr-2" />
-              {loading ? "Updating..." : "Update Account"}
+              {loading ? t('settings.updating') : t('settings.updateAccount')}
             </Button>
           </CardContent>
         </Card>
@@ -508,27 +504,27 @@ export default function Settings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Info className="h-5 w-5 text-primary" />
-                  {language === 'ar' ? 'معلومات التطبيق' : 'App Info'}
+                  {t('settings.appInfo')}
                 </CardTitle>
                 <CardDescription>
-                  {language === 'ar' ? 'الإصدار والتحديثات' : 'Version and updates'}
+                  {t('settings.versionUpdates')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Version and Update */}
                 <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="font-medium">{language === 'ar' ? 'الإصدار الحالي' : 'Current Version'}</p>
+                    <p className="font-medium">{t('settings.currentVersion')}</p>
                     <p className="text-2xl font-bold text-primary">v{APP_VERSION}</p>
                   </div>
                   {hasUpdate ? (
                     <Button onClick={handleUpdate} className="bg-gradient-primary">
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      {language === 'ar' ? 'تثبيت التحديث' : 'Install Update'}
+                      {t('settings.installUpdate')}
                     </Button>
                   ) : (
                     <span className="text-sm text-muted-foreground">
-                      {language === 'ar' ? 'أحدث إصدار' : 'Up to date'}
+                      {t('settings.upToDate')}
                     </span>
                   )}
                 </div>
@@ -538,9 +534,9 @@ export default function Settings() {
                 {/* Install Count */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">{language === 'ar' ? 'عدد التثبيتات' : 'Total Installs'}</p>
+                    <p className="font-medium">{t('settings.totalInstalls')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {language === 'ar' ? 'المستخدمون الذين قاموا بتثبيت التطبيق' : 'Users who installed the app'}
+                      {t('settings.usersInstalled')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 text-lg font-bold text-primary">
@@ -554,20 +550,20 @@ export default function Settings() {
                 {/* Update Notifications */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">{language === 'ar' ? 'إشعارات التحديثات' : 'Update Notifications'}</p>
+                    <p className="font-medium">{t('settings.updateNotifications')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {language === 'ar' ? 'احصل على إشعار عند توفر تحديث جديد' : 'Get notified when a new update is available'}
+                      {t('settings.updateNotificationsDesc')}
                     </p>
                   </div>
                   {notificationsEnabled ? (
                     <div className="flex items-center gap-2 text-sm text-green-500">
                       <Bell className="h-4 w-4" />
-                      {language === 'ar' ? 'مفعل' : 'Enabled'}
+                      {t('settings.enabled')}
                     </div>
                   ) : (
                     <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
                       <Bell className="h-4 w-4 mr-2" />
-                      {language === 'ar' ? 'تفعيل' : 'Enable'}
+                      {t('settings.enable')}
                     </Button>
                   )}
                 </div>
