@@ -541,24 +541,6 @@ export default function Settings() {
                   onCheckedChange={(checked) => updateNotifPref('eventReminders', checked)}
                 />
               </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Package className="h-4 w-4 text-indigo-500" />
-                  <div>
-                    <p className="font-medium">{t('settings.orderUpdates') || 'Order Updates'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.orderUpdatesDesc') || 'Get notified about your order status changes'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifPrefs.orderUpdates}
-                  onCheckedChange={(checked) => updateNotifPref('orderUpdates', checked)}
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
