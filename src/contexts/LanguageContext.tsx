@@ -165,6 +165,14 @@ const translations = {
     'settings.updateNotificationsDesc': 'Get notified when a new update is available',
     'settings.enabled': 'Enabled',
     'settings.enable': 'Enable',
+    'settings.promoAlerts': 'Promo Code Alerts',
+    'settings.promoAlertsDesc': 'Get notified about new promo codes and deals',
+    'settings.appUpdateAlerts': 'App Update Alerts',
+    'settings.appUpdateAlertsDesc': 'Get notified when new app features are available',
+    'settings.eventReminders': 'Event Reminders',
+    'settings.eventRemindersDesc': 'Get reminded about shopping events like Black Friday',
+    'settings.orderUpdates': 'Order Updates',
+    'settings.orderUpdatesDesc': 'Get notified about your order status changes',
     
     // Common
     'loading': 'Loading...',
@@ -740,6 +748,14 @@ const translations = {
     'settings.updateNotificationsDesc': 'احصل على إشعار عند توفر تحديث جديد',
     'settings.enabled': 'مفعل',
     'settings.enable': 'تفعيل',
+    'settings.promoAlerts': 'تنبيهات أكواد الخصم',
+    'settings.promoAlertsDesc': 'احصل على إشعارات عن أكواد الخصم والعروض الجديدة',
+    'settings.appUpdateAlerts': 'تنبيهات تحديث التطبيق',
+    'settings.appUpdateAlertsDesc': 'احصل على إشعار عند توفر ميزات جديدة',
+    'settings.eventReminders': 'تذكيرات الفعاليات',
+    'settings.eventRemindersDesc': 'تذكير بفعاليات التسوق مثل الجمعة البيضاء',
+    'settings.orderUpdates': 'تحديثات الطلبات',
+    'settings.orderUpdatesDesc': 'احصل على إشعارات عن تغييرات حالة طلباتك',
     
     // Products Page
     'products.myProducts': 'منتجاتي',

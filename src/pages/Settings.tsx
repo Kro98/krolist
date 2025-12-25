@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users } from "lucide-react";
+import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Package } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast as sonner } from "sonner";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { APP_VERSION } from "@/config/version";
+import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 
 // Animated counter hook
 function useAnimatedCounter(targetValue: number | null, duration: number = 800) {
@@ -83,6 +84,7 @@ export default function Settings() {
   } = useTheme();
   const { user } = useAuth();
   const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
+  const { preferences: notifPrefs, updatePreference: updateNotifPref } = useNotificationPreferences();
   const [notifications, setNotifications] = useState(true);
   const [priceDropAlerts, setPriceDropAlerts] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(false);
@@ -453,6 +455,110 @@ export default function Settings() {
                   <SelectItem value="AED">{t('currency.AED')}</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notification Preferences */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              {t('settings.notifications')}
+            </CardTitle>
+            <CardDescription>
+              {t('settings.notificationsDesc')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <TrendingDown className="h-4 w-4 text-green-500" />
+                  <div>
+                    <p className="font-medium">{t('settings.priceDropAlerts')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.priceDropAlertsDesc')}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.priceUpdates}
+                  onCheckedChange={(checked) => updateNotifPref('priceUpdates', checked)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Tag className="h-4 w-4 text-orange-500" />
+                  <div>
+                    <p className="font-medium">{t('settings.promoAlerts') || 'Promo Code Alerts'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.promoAlertsDesc') || 'Get notified about new promo codes and deals'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.promoAlerts}
+                  onCheckedChange={(checked) => updateNotifPref('promoAlerts', checked)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="h-4 w-4 text-blue-500" />
+                  <div>
+                    <p className="font-medium">{t('settings.appUpdateAlerts') || 'App Update Alerts'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.appUpdateAlertsDesc') || 'Get notified when new app features are available'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.appUpdates}
+                  onCheckedChange={(checked) => updateNotifPref('appUpdates', checked)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-4 w-4 text-purple-500" />
+                  <div>
+                    <p className="font-medium">{t('settings.eventReminders') || 'Event Reminders'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.eventRemindersDesc') || 'Get reminded about shopping events like Black Friday'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.eventReminders}
+                  onCheckedChange={(checked) => updateNotifPref('eventReminders', checked)}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Package className="h-4 w-4 text-indigo-500" />
+                  <div>
+                    <p className="font-medium">{t('settings.orderUpdates') || 'Order Updates'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.orderUpdatesDesc') || 'Get notified about your order status changes'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.orderUpdates}
+                  onCheckedChange={(checked) => updateNotifPref('orderUpdates', checked)}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

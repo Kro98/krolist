@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { format, isSameDay } from 'date-fns';
+import { getNotificationPreferences } from '@/hooks/useNotificationPreferences';
 
 export interface AppNotification {
   id: string;
@@ -157,7 +158,28 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           
           const deduplicatedData = Array.from(latestByType.values());
           
-          const globalNotifications: AppNotification[] = deduplicatedData.map((n: any) => ({
+          // Get notification preferences to filter
+          const prefs = getNotificationPreferences();
+          
+          // Filter based on user preferences
+          const filteredData = deduplicatedData.filter((n: any) => {
+            switch (n.type) {
+              case 'price_update':
+                return prefs.priceUpdates;
+              case 'promo_code':
+                return prefs.promoAlerts;
+              case 'app_update':
+                return prefs.appUpdates;
+              case 'event':
+                return prefs.eventReminders;
+              case 'order_update':
+                return prefs.orderUpdates;
+              default:
+                return true;
+            }
+          });
+          
+          const globalNotifications: AppNotification[] = filteredData.map((n: any) => ({
             id: `global_${n.id}`,
             globalId: n.id,
             type: n.type as AppNotification['type'],
@@ -171,8 +193,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             isGlobal: true
           }));
 
-          // Check if there are new unseen notifications
-          const hasNew = deduplicatedData.some((n: any) => !readNotificationIds.has(n.id));
+          // Check if there are new unseen notifications (from filtered list)
+          const hasNew = filteredData.some((n: any) => !readNotificationIds.has(n.id));
           setHasNewGlobalNotification(hasNew);
 
           // Merge with existing notifications, avoiding duplicates
@@ -203,6 +225,30 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         },
         (payload) => {
           const data = payload.new as any;
+          
+          // Check if this notification type is enabled
+          const prefs = getNotificationPreferences();
+          let shouldShow = true;
+          switch (data.type) {
+            case 'price_update':
+              shouldShow = prefs.priceUpdates;
+              break;
+            case 'promo_code':
+              shouldShow = prefs.promoAlerts;
+              break;
+            case 'app_update':
+              shouldShow = prefs.appUpdates;
+              break;
+            case 'event':
+              shouldShow = prefs.eventReminders;
+              break;
+            case 'order_update':
+              shouldShow = prefs.orderUpdates;
+              break;
+          }
+          
+          if (!shouldShow) return;
+          
           const newNotification: AppNotification = {
             id: `global_${data.id}`,
             globalId: data.id,
@@ -235,6 +281,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // Check for today's events and add notifications (only for authenticated users)
   useEffect(() => {
     if (!user) return;
+    
+    // Check if event reminders are enabled
+    const prefs = getNotificationPreferences();
+    if (!prefs.eventReminders) return;
 
     const checkTodayEvents = () => {
       const today = new Date();
