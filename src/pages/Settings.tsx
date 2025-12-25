@@ -246,16 +246,27 @@ export default function Settings() {
   };
 
   const handleUpdate = async () => {
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration?.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    if (!('serviceWorker' in navigator)) return;
+
+    const registration = await navigator.serviceWorker.getRegistration();
+
+    // If there's a waiting SW, activate it first then reload when controller changes.
+    if (registration?.waiting) {
+      const onControllerChange = () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
         window.location.reload();
-      } else {
-        await registration?.update();
-        window.location.reload();
-      }
+      };
+
+      navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+      // Safety fallback.
+      setTimeout(() => window.location.reload(), 2500);
+      return;
     }
+
+    await registration?.update();
+    window.location.reload();
   };
 
   return (
