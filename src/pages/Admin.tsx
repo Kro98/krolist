@@ -53,11 +53,6 @@ export default function Admin() {
     label: t('admin.loginMessages'),
     icon: MessageSquare
   }, {
-    value: "orders",
-    label: "Orders",
-    icon: Package,
-    badge: orderCount
-  }, {
     value: "ads",
     label: "Ads",
     icon: Megaphone
@@ -140,9 +135,6 @@ export default function Admin() {
                 }}>
                       <Icon className="h-4 w-4 mr-2" />
                       {tab.label}
-                      {tab.badge && tab.badge > 0 && <span className="ml-auto h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                          {tab.badge}
-                        </span>}
                     </Button>;
               })}
               </div>
@@ -171,9 +163,6 @@ export default function Admin() {
             return <TabsTrigger key={tab.value} value={tab.value} className="relative">
                   <Icon className="h-4 w-4 mr-2" />
                   <span>{tab.label}</span>
-                  {tab.badge && tab.badge > 0 && <span className="ml-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                      {tab.badge}
-                    </span>}
                 </TabsTrigger>;
           })}
           </TabsList>
@@ -198,10 +187,6 @@ export default function Admin() {
             <LoginMessagesManager />
           </TabsContent>
 
-          <TabsContent value="orders" className="mt-0 md:mt-6">
-            <OrdersManager />
-          </TabsContent>
-
           <TabsContent value="ads" className="mt-0 md:mt-6 space-y-6">
             <AdAnalytics />
             <AdSettingsManager />
@@ -211,7 +196,7 @@ export default function Admin() {
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="grid grid-cols-7 gap-1 p-2">
+        <div className="grid grid-cols-6 gap-1 p-2">
           {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.value;
@@ -220,9 +205,6 @@ export default function Admin() {
                 <span className={cn("text-[10px] mt-1 font-medium truncate max-w-full", isActive && "font-semibold")}>
                   {tab.label.split(' ')[0]}
                 </span>
-                {tab.badge && tab.badge > 0 && <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold">
-                    {tab.badge}
-                  </span>}
               </button>;
         })}
         </div>
