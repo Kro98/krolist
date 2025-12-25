@@ -34,6 +34,44 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 const SEEN_EVENTS_KEY = 'krolist_seen_events';
 const DISMISSED_POPUPS_KEY = 'krolist_dismissed_popups';
+const LOCAL_READ_GLOBAL_KEY_PREFIX = 'krolist_read_global_notifications_';
+
+const saveDismissedPopupId = (id: string) => {
+  try {
+    const stored = localStorage.getItem(DISMISSED_POPUPS_KEY);
+    const parsed = stored ? JSON.parse(stored) : {};
+    parsed[id] = Date.now();
+    localStorage.setItem(DISMISSED_POPUPS_KEY, JSON.stringify(parsed));
+  } catch (e) {
+    console.error('Failed to save dismissed popup:', e);
+  }
+};
+
+const getLocalReadGlobalIds = (userId?: string | null): Set<string> => {
+  if (!userId) return new Set();
+  try {
+    const stored = localStorage.getItem(`${LOCAL_READ_GLOBAL_KEY_PREFIX}${userId}`);
+    if (!stored) return new Set();
+    const parsed = JSON.parse(stored) as Record<string, number>;
+    return new Set(Object.keys(parsed));
+  } catch (e) {
+    console.error('Failed to parse local read globals:', e);
+    return new Set();
+  }
+};
+
+const addLocalReadGlobalId = (userId: string, globalId: string) => {
+  try {
+    const key = `${LOCAL_READ_GLOBAL_KEY_PREFIX}${userId}`;
+    const stored = localStorage.getItem(key);
+    const parsed = stored ? (JSON.parse(stored) as Record<string, number>) : {};
+    parsed[globalId] = Date.now();
+    localStorage.setItem(key, JSON.stringify(parsed));
+  } catch (e) {
+    console.error('Failed to save local read global:', e);
+  }
+};
+
 // Default events that should trigger notifications today
 const DEFAULT_EVENTS = [
   { id: "amazon-prime-day", name: "Amazon Prime Day", date: "2025-07-15", emoji: "📦" },
@@ -64,6 +102,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         return;
       }
 
+      // Always merge DB reads with a local fallback (covers offline/RLS issues)
+      const localReadIds = getLocalReadGlobalIds(user.id);
+
       try {
         const { data, error } = await supabase
           .from('user_notification_reads')
@@ -72,10 +113,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
         if (error) throw error;
 
-        const readIds = new Set(data?.map(r => r.notification_id) || []);
-        setReadNotificationIds(readIds);
+        const dbReadIds = new Set(data?.map(r => r.notification_id) || []);
+        const merged = new Set<string>([...dbReadIds, ...localReadIds]);
+        setReadNotificationIds(merged);
       } catch (error) {
         console.error('Failed to fetch read notifications:', error);
+        setReadNotificationIds(localReadIds);
       } finally {
         setIsLoadingReads(false);
       }
@@ -286,24 +329,37 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Mark as read - saves to database for authenticated users
   const markAsRead = useCallback(async (id: string) => {
+    // Prevent popups from reappearing even if DB sync fails
+    saveDismissedPopupId(id);
+
     // If it's a global notification and user is logged in, save to database
     if (id.startsWith('global_') && user) {
       const globalId = id.replace('global_', '');
-      
+
+      // Local fallback (so it stays read across reloads even if DB call fails)
+      addLocalReadGlobalId(user.id, globalId);
+
       try {
-        await supabase
+        const { error } = await supabase
           .from('user_notification_reads')
           .insert({
             user_id: user.id,
-            notification_id: globalId
+            notification_id: globalId,
           });
-        
+
+        // Ignore duplicate key errors if the row already exists
+        if (error && (error as any).code !== '23505') {
+          throw error;
+        }
+
         setReadNotificationIds(prev => new Set([...prev, globalId]));
       } catch (error) {
         console.error('Failed to save read status:', error);
+        // Still treat it as read locally
+        setReadNotificationIds(prev => new Set([...prev, globalId]));
       }
     }
-    
+
     // If it's an event notification, mark it as seen locally
     if (id.startsWith('event_')) {
       const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -314,9 +370,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       localStorage.setItem(SEEN_EVENTS_KEY, JSON.stringify(seenEvents));
     }
 
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-    );
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: true } : n)));
     setHasNewGlobalNotification(false);
   }, [user]);
 
