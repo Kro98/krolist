@@ -123,7 +123,22 @@ All colors MUST be HSL.
     --shadow-card: 0 4px 6px -1px hsl(31 98% 51% / 0.1), 0 2px 4px -2px hsl(31 98% 51% / 0.1);
     --shadow-hover: 0 10px 15px -3px hsl(31 98% 51% / 0.15), 0 4px 6px -4px hsl(31 98% 51% / 0.1);
 
+    /* Modern Design Tokens */
     --radius: 0.5rem;
+    --radius-modern: 0.75rem;
+    --transition-fast: 150ms;
+    --transition-normal: 250ms;
+    --transition-slow: 350ms;
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Modern shadows */
+    --shadow-xs: 0 1px 2px hsl(215 25% 15% / 0.04);
+    --shadow-sm: 0 2px 4px hsl(215 25% 15% / 0.06);
+    --shadow-md: 0 4px 8px hsl(215 25% 15% / 0.08), 0 2px 4px hsl(215 25% 15% / 0.04);
+    --shadow-lg: 0 8px 16px hsl(215 25% 15% / 0.1), 0 4px 8px hsl(215 25% 15% / 0.05);
+    --shadow-glow: 0 0 20px hsl(31 98% 51% / 0.15);
 
     --sidebar-background: 0 0% 98%;
 
@@ -190,6 +205,13 @@ All colors MUST be HSL.
     /* Shadows - dark mode */
     --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
     --shadow-hover: 0 10px 15px -3px hsl(31 98% 51% / 0.2), 0 4px 6px -4px hsl(31 98% 51% / 0.1);
+
+    /* Modern shadows - dark mode */
+    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.1);
+    --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.15);
+    --shadow-md: 0 4px 8px hsl(0 0% 0% / 0.2), 0 2px 4px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 8px 16px hsl(0 0% 0% / 0.25), 0 4px 8px hsl(0 0% 0% / 0.15);
+    --shadow-glow: 0 0 20px hsl(31 98% 51% / 0.25);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -325,4 +347,118 @@ input[type="range"].hue-slider::-moz-range-track {
   85%, 100% {
     transform: translateX(0);
   }
+}
+
+/* Modern Mode Styles */
+.modern {
+  /* Apply smoother typography */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.modern * {
+  transition-timing-function: var(--ease-smooth);
+}
+
+/* Modern animations */
+@keyframes modern-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modern-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modern-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modern-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px hsl(var(--primary) / 0.15);
+  }
+}
+
+@keyframes modern-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes modern-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Modern mode utility classes */
+.modern .animate-modern-fade {
+  animation: modern-fade-in 0.3s var(--ease-smooth) forwards;
+}
+
+.modern .animate-modern-scale {
+  animation: modern-scale-in 0.25s var(--ease-spring) forwards;
+}
+
+.modern .animate-modern-slide {
+  animation: modern-slide-up 0.35s var(--ease-smooth) forwards;
+}
+
+.modern .hover-lift {
+  transition: transform 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
+}
+
+.modern .hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.modern .hover-glow:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.modern .shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: modern-shimmer 1.5s infinite;
+}
+
+/* Classic Mode - maintains original styling */
+.classic * {
+  transition-duration: 0.2s !important;
 }

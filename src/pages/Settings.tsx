@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Package } from "lucide-react";
+import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Package, Wand2 } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -80,7 +80,9 @@ export default function Settings() {
     undertone,
     setUndertone,
     customHue,
-    setCustomHue
+    setCustomHue,
+    isClassicMode,
+    setIsClassicMode
   } = useTheme();
   const { user } = useAuth();
   const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
@@ -292,6 +294,30 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Classic Mode Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-md bg-primary/10">
+                    <Wand2 className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <Label htmlFor="classic-mode" className="text-sm font-medium">
+                      {language === 'ar' ? 'الوضع الكلاسيكي' : 'Classic Mode'}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'ar' ? 'استخدم التصميم الأصلي' : 'Use the original design style'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="classic-mode"
+                  checked={isClassicMode}
+                  onCheckedChange={setIsClassicMode}
+                />
+              </div>
+              
+              <Separator />
+              
               <div className="flex items-center gap-4">
                 <ThemeToggle />
               </div>
