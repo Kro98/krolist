@@ -92,7 +92,7 @@ export function MobileProductCard({
   };
 
   return (
-    <Card className="bg-card border border-border shadow-card hover:shadow-hover transition-all duration-300 overflow-hidden relative">
+    <Card className="bg-card border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 ease-out overflow-hidden relative hover:-translate-y-1 hover:border-primary/20 group">
       <CardContent className="p-0">
         {/* Image Container */}
         <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="block relative">
@@ -100,7 +100,7 @@ export function MobileProductCard({
             <img
               src={product.image_url || '/placeholder.svg'}
               alt={product.title}
-              className="w-full h-full object-cover transition-transform duration-300"
+              className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
             />
             {/* Gradient overlay */}
             <div 
@@ -111,13 +111,15 @@ export function MobileProductCard({
                 background: 'linear-gradient(to top, hsl(var(--card)) 0%, hsl(var(--card) / 0.5) 15%, transparent 40%)'
               }}
             />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             {/* YouTube Review Button - Top Left */}
             {product.youtube_url && (
               <Button
                 size="sm"
                 variant="outline"
-                className="absolute top-2 left-2 h-7 px-1.5 py-0 gap-1 bg-background/80 backdrop-blur-sm border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                className="absolute top-2 left-2 h-7 px-1.5 py-0 gap-1 bg-background/80 backdrop-blur-sm border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-transform duration-200 hover:scale-105"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
