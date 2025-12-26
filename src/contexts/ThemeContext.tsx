@@ -11,6 +11,8 @@ interface ThemeContextType {
   setUndertone: (undertone: Undertone) => void;
   customHue: number;
   setCustomHue: (hue: number) => void;
+  isClassicMode: boolean;
+  setIsClassicMode: (value: boolean) => void;
 }
 
 const undertoneColors: Record<Undertone, string> = {
@@ -36,6 +38,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [customHue, setCustomHue] = useState<number>(() => {
     const saved = localStorage.getItem('customHue');
     return saved ? parseInt(saved) : 31;
+  });
+
+  const [isClassicMode, setIsClassicMode] = useState<boolean>(() => {
+    return localStorage.getItem('classicMode') === 'true';
   });
 
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
@@ -85,8 +91,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('customHue', customHue.toString());
   }, [customHue]);
 
+  useEffect(() => {
+    localStorage.setItem('classicMode', isClassicMode.toString());
+    const root = window.document.documentElement;
+    if (isClassicMode) {
+      root.classList.add('classic');
+      root.classList.remove('modern');
+    } else {
+      root.classList.add('modern');
+      root.classList.remove('classic');
+    }
+  }, [isClassicMode]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, actualTheme, undertone, setUndertone, customHue, setCustomHue }}>
+    <ThemeContext.Provider value={{ theme, setTheme, actualTheme, undertone, setUndertone, customHue, setCustomHue, isClassicMode, setIsClassicMode }}>
       {children}
     </ThemeContext.Provider>
   );
