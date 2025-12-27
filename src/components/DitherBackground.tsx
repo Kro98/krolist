@@ -23,7 +23,7 @@ const DitherBackground = memo(function DitherBackground({
 }: DitherBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
-  const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const mouseRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,6 +31,18 @@ const DitherBackground = memo(function DitherBackground({
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Bayer matrix for dithering
+    const bayer = [
+      [0, 48, 12, 60, 3, 51, 15, 63],
+      [32, 16, 44, 28, 35, 19, 47, 31],
+      [8, 56, 4, 52, 11, 59, 7, 55],
+      [40, 24, 36, 20, 43, 27, 39, 23],
+      [2, 50, 14, 62, 1, 49, 13, 61],
+      [34, 18, 46, 30, 33, 17, 45, 29],
+      [10, 58, 6, 54, 9, 57, 5, 53],
+      [42, 26, 38, 22, 41, 25, 37, 21],
+    ];
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -65,80 +77,46 @@ const DitherBackground = memo(function DitherBackground({
         return;
       }
 
-      const t = disableAnimation ? 0 : (timestamp - startTime) * waveSpeed * 0.001;
+      const img = ctx.createImageData(w, h);
+      const data = img.data;
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-      ctx.clearRect(0, 0, w, h);
+      const t = disableAnimation ? 0 : (timestamp - startTime) * waveSpeed;
 
-      // Hexagon grid parameters
-      const hexSize = 20 + waveFrequency * 5;
-      const hexHeight = hexSize * Math.sqrt(3);
-      const hexWidth = hexSize * 2;
-      
-      const cols = Math.ceil(w / (hexWidth * 0.75)) + 2;
-      const rows = Math.ceil(h / hexHeight) + 2;
+      let k = 0;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          // Wave pattern
+          const wave = Math.sin(x * 0.01 * waveFrequency + t * 0.002) * waveAmplitude + 
+                       Math.sin(y * 0.01 * waveFrequency + t * 0.0015) * waveAmplitude;
 
-      for (let row = -1; row < rows; row++) {
-        for (let col = -1; col < cols; col++) {
-          const offsetX = (row % 2) * (hexWidth * 0.375);
-          const cx = col * hexWidth * 0.75 + offsetX;
-          const cy = row * hexHeight * 0.5;
-
-          // Distance from center for radial effect
-          const dx = cx - w / 2;
-          const dy = cy - h / 2;
-          const distFromCenter = Math.sqrt(dx * dx + dy * dy);
-          
-          // Animated pulse based on distance and time
-          const pulse = Math.sin(distFromCenter * 0.015 - t * 2) * waveAmplitude;
-          
-          // Wave traveling diagonally
-          const diagonalWave = Math.sin((cx + cy) * 0.01 * waveFrequency + t * 1.5) * waveAmplitude;
-          
-          // Combined brightness
-          let brightness = 0.3 + pulse * 0.4 + diagonalWave * 0.3;
+          let brightness = (wave + 1) * 0.5;
 
           // Mouse interaction
           if (enableMouseInteraction) {
-            const mx = mouseRef.current.x * w;
-            const my = mouseRef.current.y * h;
-            const mouseDist = Math.sqrt((cx - mx) ** 2 + (cy - my) ** 2);
-            const mouseEffect = Math.max(0, 1 - mouseDist / (mouseRadius * w));
-            brightness += mouseEffect * 0.5;
+            const dx = x / w - mouseRef.current.x;
+            const dy = y / h - mouseRef.current.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < mouseRadius) {
+              brightness += (1 - dist / mouseRadius) * 0.3;
+            }
           }
 
-          brightness = Math.max(0.05, Math.min(0.8, brightness));
-          
-          // Quantize for dither effect
+          // Quantize brightness based on colorNum
           brightness = Math.floor(brightness * colorNum) / colorNum;
 
-          // Draw hexagon
-          const scale = 0.85 + pulse * 0.1;
-          const size = hexSize * scale * 0.5;
-          
-          ctx.beginPath();
-          for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i - Math.PI / 6;
-            const hx = cx + size * Math.cos(angle);
-            const hy = cy + size * Math.sin(angle);
-            if (i === 0) ctx.moveTo(hx, hy);
-            else ctx.lineTo(hx, hy);
-          }
-          ctx.closePath();
+          // Dither threshold
+          const threshold = bayer[y % 8][x % 8] / 64;
+          const v = brightness > threshold ? 255 : 0;
 
-          // Fill with color
-          const r = Math.floor(255 * waveColor[0] * brightness);
-          const g = Math.floor(255 * waveColor[1] * brightness);
-          const b = Math.floor(255 * waveColor[2] * brightness);
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.15)`;
-          ctx.fill();
-          
-          // Stroke for structure
-          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.25)`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
+          // Apply wave color
+          data[k++] = Math.floor(v * waveColor[0]); // R
+          data[k++] = Math.floor(v * waveColor[1]); // G
+          data[k++] = Math.floor(v * waveColor[2]); // B
+          data[k++] = 40; // Alpha (semi-transparent)
         }
       }
+
+      ctx.putImageData(img, 0, 0);
       
       if (!disableAnimation) {
         animationRef.current = requestAnimationFrame(render);
