@@ -69,55 +69,77 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
   });
 
   // Fetch ad settings from database
-  useEffect(() => {
-    const fetchAdSettings = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('ad_settings')
-          .select('setting_key, setting_value');
+  const fetchAdSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ad_settings')
+        .select('setting_key, setting_value');
 
-        if (!error && data) {
-          const newTriggers = { ...triggers };
-          data.forEach((setting) => {
-            if (setting.setting_key === 'ad_cooldown_seconds') {
-              setCooldownMs(parseInt(setting.setting_value, 10) * 1000);
-            } else if (setting.setting_key === 'ads_disabled_for_admins') {
-              setAdsDisabledForAdmins(setting.setting_value === 'true');
-            } else if (setting.setting_key === 'ad_visibility_mode') {
-              setVisibilityMode(setting.setting_value as AdVisibilityMode);
-            } else if (setting.setting_key === 'favorite_count_threshold') {
-              setFavoriteThreshold(parseInt(setting.setting_value, 10));
-            } else if (setting.setting_key === 'refresh_count_threshold') {
-              setRefreshThreshold(parseInt(setting.setting_value, 10));
-            } else if (setting.setting_key === 'load_screen_count_threshold') {
-              setLoadScreenThreshold(parseInt(setting.setting_value, 10));
-            } else if (setting.setting_key === 'trigger_page_open_enabled') {
-              newTriggers.pageOpen = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_auth_event_enabled') {
-              newTriggers.authEvent = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_favorite_add_enabled') {
-              newTriggers.favoriteAdd = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_refresh_enabled') {
-              newTriggers.refresh = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_promo_copy_enabled') {
-              newTriggers.promoCopy = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_shop_open_enabled') {
-              newTriggers.shopOpen = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_click_enabled') {
-              newTriggers.click = setting.setting_value === 'true';
-            } else if (setting.setting_key === 'trigger_load_screen_enabled') {
-              newTriggers.loadScreen = setting.setting_value === 'true';
-            }
-          });
-          setTriggers(newTriggers);
-        }
-      } catch (error) {
-        console.error('Error fetching ad settings:', error);
+      if (!error && data) {
+        const newTriggers = {
+          pageOpen: true,
+          authEvent: true,
+          favoriteAdd: true,
+          refresh: true,
+          promoCopy: true,
+          shopOpen: true,
+          click: true,
+          loadScreen: true,
+        };
+        
+        data.forEach((setting) => {
+          if (setting.setting_key === 'ad_cooldown_seconds') {
+            setCooldownMs(parseInt(setting.setting_value, 10) * 1000);
+          } else if (setting.setting_key === 'ads_disabled_for_admins') {
+            setAdsDisabledForAdmins(setting.setting_value === 'true');
+          } else if (setting.setting_key === 'ad_visibility_mode') {
+            setVisibilityMode(setting.setting_value as AdVisibilityMode);
+          } else if (setting.setting_key === 'favorite_count_threshold') {
+            setFavoriteThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'refresh_count_threshold') {
+            setRefreshThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'load_screen_count_threshold') {
+            setLoadScreenThreshold(parseInt(setting.setting_value, 10));
+          } else if (setting.setting_key === 'trigger_page_open_enabled') {
+            newTriggers.pageOpen = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_auth_event_enabled') {
+            newTriggers.authEvent = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_favorite_add_enabled') {
+            newTriggers.favoriteAdd = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_refresh_enabled') {
+            newTriggers.refresh = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_promo_copy_enabled') {
+            newTriggers.promoCopy = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_shop_open_enabled') {
+            newTriggers.shopOpen = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_click_enabled') {
+            newTriggers.click = setting.setting_value === 'true';
+          } else if (setting.setting_key === 'trigger_load_screen_enabled') {
+            newTriggers.loadScreen = setting.setting_value === 'true';
+          }
+        });
+        setTriggers(newTriggers);
       }
-    };
-
-    fetchAdSettings();
+    } catch (error) {
+      console.error('Error fetching ad settings:', error);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAdSettings();
+    
+    // Subscribe to changes in ad_settings table
+    const channel = supabase
+      .channel('ad_settings_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ad_settings' }, () => {
+        fetchAdSettings();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAdSettings]);
 
   // Check if user is admin
   useEffect(() => {

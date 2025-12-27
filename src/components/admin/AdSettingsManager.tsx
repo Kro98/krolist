@@ -104,12 +104,18 @@ export function AdSettingsManager() {
         ...Object.entries(triggerStates).map(([key, value]) => ({ key, value: value.toString() })),
       ];
 
+      // Use upsert to handle both insert and update cases
       for (const { key, value } of updates) {
         const { error } = await supabase
           .from('ad_settings')
-          .update({ setting_value: value })
-          .eq('setting_key', key);
-        if (error) throw error;
+          .upsert(
+            { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
+            { onConflict: 'setting_key' }
+          );
+        if (error) {
+          console.error(`Error saving setting ${key}:`, error);
+          throw error;
+        }
       }
 
       toast.success('Ad settings saved successfully');
