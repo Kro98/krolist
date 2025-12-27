@@ -3,9 +3,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginMessageDialog } from "@/components/LoginMessageDialog";
 import { AuthModal } from "@/components/AuthModal";
-import { ShoppingCart } from "@/components/ShoppingCart";
 import { UserAccountControl } from "@/components/UserAccountControl";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,7 +42,6 @@ function LayoutContent({
     showAuthModal,
     closeAuthModal
   } = useGuestAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const {
     open,
@@ -179,11 +177,6 @@ function LayoutContent({
     threshold: 100,
     edgeThreshold: 50
   });
-  const handleAddClick = () => {
-    navigate('/');
-    // Trigger select mode on Products page
-    window.dispatchEvent(new CustomEvent('triggerSelectMode'));
-  };
 
   // Public routes that don't require authentication
   const publicRoutes = ['/auth', '/auth/privacy-policy', '/auth/terms-of-service', '/auth/contact-us', '/privacy-policy', '/terms-of-service', '/contact-us'];
