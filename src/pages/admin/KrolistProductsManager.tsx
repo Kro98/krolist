@@ -1179,7 +1179,16 @@ export default function KrolistProductsManager() {
                       <Input type="number" step="0.01" value={manualPrices[title] || ''} onChange={e => setManualPrices({
                       ...manualPrices,
                       [title]: e.target.value
-                    })} className="h-8 text-sm" placeholder={prods[0].current_price.toString()} />
+                    })} onPaste={e => {
+                      e.preventDefault();
+                      const pastedText = e.clipboardData.getData('text');
+                      const numbersOnly = pastedText.replace(/[^\d.]/g, '');
+                      const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
+                      setManualPrices({
+                        ...manualPrices,
+                        [title]: cleanedValue
+                      });
+                    }} className="h-8 text-sm" placeholder={prods[0].current_price.toString()} />
                       <span className="text-xs text-muted-foreground">{prods[0].currency}</span>
                     </div>
                     {/* Status Selector */}
@@ -1284,7 +1293,16 @@ export default function KrolistProductsManager() {
                         <Input type="number" step="0.01" value={manualPrices[title] || ''} onChange={e => setManualPrices({
                         ...manualPrices,
                         [title]: e.target.value
-                      })} className="h-9" placeholder={prods[0].current_price.toString()} />
+                      })} onPaste={e => {
+                        e.preventDefault();
+                        const pastedText = e.clipboardData.getData('text');
+                        const numbersOnly = pastedText.replace(/[^\d.]/g, '');
+                        const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
+                        setManualPrices({
+                          ...manualPrices,
+                          [title]: cleanedValue
+                        });
+                      }} className="h-9" placeholder={prods[0].current_price.toString()} />
                       </td>
                       <td className="p-3">
                         <Select value={currentStatus} onValueChange={value => setManualStatuses({
