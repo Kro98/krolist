@@ -32,18 +32,6 @@ const DitherBackground = memo(function DitherBackground({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Bayer 8x8 dither matrix for classic dither look
-    const bayer8x8 = [
-      [0, 32, 8, 40, 2, 34, 10, 42],
-      [48, 16, 56, 24, 50, 18, 58, 26],
-      [12, 44, 4, 36, 14, 46, 6, 38],
-      [60, 28, 52, 20, 62, 30, 54, 22],
-      [3, 35, 11, 43, 1, 33, 9, 41],
-      [51, 19, 59, 27, 49, 17, 57, 25],
-      [15, 47, 7, 39, 13, 45, 5, 37],
-      [63, 31, 55, 23, 61, 29, 53, 21]
-    ];
-
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width;
@@ -77,55 +65,80 @@ const DitherBackground = memo(function DitherBackground({
         return;
       }
 
-      const img = ctx.createImageData(w, h);
-      const data = img.data;
+      const t = disableAnimation ? 0 : (timestamp - startTime) * waveSpeed * 0.001;
 
-      const t = disableAnimation ? 0 : (timestamp - startTime) * waveSpeed;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+      ctx.clearRect(0, 0, w, h);
 
-      let k = 0;
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          // Layered wave pattern - creates flowing diagonal stripes
-          const wave1 = Math.sin((x + y) * 0.02 * waveFrequency + t * 0.003) * waveAmplitude;
-          const wave2 = Math.sin((x - y) * 0.015 * waveFrequency + t * 0.002) * waveAmplitude * 0.7;
-          const wave3 = Math.sin(x * 0.025 * waveFrequency + t * 0.004) * waveAmplitude * 0.5;
-          const wave4 = Math.cos(y * 0.02 * waveFrequency - t * 0.0025) * waveAmplitude * 0.4;
+      // Hexagon grid parameters
+      const hexSize = 20 + waveFrequency * 5;
+      const hexHeight = hexSize * Math.sqrt(3);
+      const hexWidth = hexSize * 2;
+      
+      const cols = Math.ceil(w / (hexWidth * 0.75)) + 2;
+      const rows = Math.ceil(h / hexHeight) + 2;
+
+      for (let row = -1; row < rows; row++) {
+        for (let col = -1; col < cols; col++) {
+          const offsetX = (row % 2) * (hexWidth * 0.375);
+          const cx = col * hexWidth * 0.75 + offsetX;
+          const cy = row * hexHeight * 0.5;
+
+          // Distance from center for radial effect
+          const dx = cx - w / 2;
+          const dy = cy - h / 2;
+          const distFromCenter = Math.sqrt(dx * dx + dy * dy);
           
-          // Circular ripple from center
-          const cx = x - w / 2;
-          const cy = y - h / 2;
-          const dist = Math.sqrt(cx * cx + cy * cy);
-          const ripple = Math.sin(dist * 0.03 * waveFrequency - t * 0.002) * waveAmplitude * 0.6;
+          // Animated pulse based on distance and time
+          const pulse = Math.sin(distFromCenter * 0.015 - t * 2) * waveAmplitude;
+          
+          // Wave traveling diagonally
+          const diagonalWave = Math.sin((cx + cy) * 0.01 * waveFrequency + t * 1.5) * waveAmplitude;
+          
+          // Combined brightness
+          let brightness = 0.3 + pulse * 0.4 + diagonalWave * 0.3;
 
-          let brightness = (wave1 + wave2 + wave3 + wave4 + ripple + 1) * 0.5;
-
-          // Mouse interaction - creates expanding glow
+          // Mouse interaction
           if (enableMouseInteraction) {
-            const dx = x / w - mouseRef.current.x;
-            const dy = y / h - mouseRef.current.y;
-            const mouseDist = Math.sqrt(dx * dx + dy * dy);
-            if (mouseDist < mouseRadius) {
-              brightness += (1 - mouseDist / mouseRadius) * 0.4;
-            }
+            const mx = mouseRef.current.x * w;
+            const my = mouseRef.current.y * h;
+            const mouseDist = Math.sqrt((cx - mx) ** 2 + (cy - my) ** 2);
+            const mouseEffect = Math.max(0, 1 - mouseDist / (mouseRadius * w));
+            brightness += mouseEffect * 0.5;
           }
 
-          // Clamp and quantize
-          brightness = Math.max(0, Math.min(1, brightness));
+          brightness = Math.max(0.05, Math.min(0.8, brightness));
+          
+          // Quantize for dither effect
           brightness = Math.floor(brightness * colorNum) / colorNum;
 
-          // Classic Bayer dithering
-          const threshold = bayer8x8[y % 8][x % 8] / 64;
-          const v = brightness > threshold ? 255 : 0;
+          // Draw hexagon
+          const scale = 0.85 + pulse * 0.1;
+          const size = hexSize * scale * 0.5;
+          
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i - Math.PI / 6;
+            const hx = cx + size * Math.cos(angle);
+            const hy = cy + size * Math.sin(angle);
+            if (i === 0) ctx.moveTo(hx, hy);
+            else ctx.lineTo(hx, hy);
+          }
+          ctx.closePath();
 
-          // Apply color
-          data[k++] = Math.floor(v * waveColor[0]);
-          data[k++] = Math.floor(v * waveColor[1]);
-          data[k++] = Math.floor(v * waveColor[2]);
-          data[k++] = 45; // Alpha
+          // Fill with color
+          const r = Math.floor(255 * waveColor[0] * brightness);
+          const g = Math.floor(255 * waveColor[1] * brightness);
+          const b = Math.floor(255 * waveColor[2] * brightness);
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.15)`;
+          ctx.fill();
+          
+          // Stroke for structure
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.25)`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
         }
       }
-
-      ctx.putImageData(img, 0, 0);
       
       if (!disableAnimation) {
         animationRef.current = requestAnimationFrame(render);
