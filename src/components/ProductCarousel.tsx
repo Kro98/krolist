@@ -201,6 +201,18 @@ export function ProductCarousel({
     };
     
     fetchAdSettings();
+    
+    // Subscribe to changes in ad_settings table
+    const channel = supabase
+      .channel('carousel_ad_settings_changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ad_settings' }, () => {
+        fetchAdSettings();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
   
   // Listen for speed changes and card layout style changes
