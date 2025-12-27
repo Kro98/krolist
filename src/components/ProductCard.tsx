@@ -367,7 +367,16 @@ export function ProductCard({
                 <Input id="edit-price" type="number" step="0.01" value={editForm.price} onChange={e => setEditForm({
                 ...editForm,
                 price: e.target.value
-              })} placeholder={t('products.enterPrice')} />
+              })} onPaste={e => {
+                e.preventDefault();
+                const pastedText = e.clipboardData.getData('text');
+                const numbersOnly = pastedText.replace(/[^\d.]/g, '');
+                const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
+                setEditForm({
+                  ...editForm,
+                  price: cleanedValue
+                });
+              }} placeholder={t('products.enterPrice')} />
               </div>
               <div>
                 <Label htmlFor="edit-currency">{t('products.currency')}</Label>
