@@ -357,6 +357,13 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                     step="0.01"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedText = e.clipboardData.getData('text');
+                      const numbersOnly = pastedText.replace(/[^\d.]/g, '');
+                      const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
+                      setPrice(cleanedValue);
+                    }}
                     placeholder="0.00"
                     required
                   />
