@@ -138,6 +138,33 @@ const defaultEvents: Event[] = [
   type: "holiday",
   emoji: "🎄",
   isUserCreated: false
+}, {
+  id: "mothers-day",
+  name: "Mother's Day Sales",
+  date: new Date("2025-05-11"),
+  description: "Special discounts for Mother's Day gifts",
+  location: "Worldwide",
+  type: "holiday",
+  emoji: "💐",
+  isUserCreated: false
+}, {
+  id: "easter-sales",
+  name: "Easter Sales",
+  date: new Date("2025-04-20"),
+  description: "Spring holiday shopping deals",
+  location: "Worldwide",
+  type: "holiday",
+  emoji: "🐰",
+  isUserCreated: false
+}, {
+  id: "new-year-sales",
+  name: "New Year Sales",
+  date: new Date("2025-01-01"),
+  description: "New year clearance and fresh start deals",
+  location: "Worldwide",
+  type: "sale",
+  emoji: "🎆",
+  isUserCreated: false
 },
 // National Days and Regional Events
 {
@@ -193,6 +220,339 @@ const defaultEvents: Event[] = [
   location: "Japan",
   type: "holiday",
   emoji: "🌸",
+  isUserCreated: false
+}, {
+  id: "eid-al-fitr",
+  name: "Eid Al-Fitr Sales",
+  date: new Date("2025-03-30"),
+  description: "End of Ramadan celebration discounts",
+  location: "Middle East, Worldwide",
+  type: "holiday",
+  emoji: "🌙",
+  isUserCreated: false
+}, {
+  id: "eid-al-adha",
+  name: "Eid Al-Adha Sales",
+  date: new Date("2025-06-06"),
+  description: "Festival of Sacrifice shopping deals",
+  location: "Middle East, Worldwide",
+  type: "holiday",
+  emoji: "🐑",
+  isUserCreated: false
+}, {
+  id: "ramadan-sales",
+  name: "Ramadan Sales",
+  date: new Date("2025-03-01"),
+  description: "Special offers during the holy month",
+  location: "Middle East, Worldwide",
+  type: "discount",
+  emoji: "☪️",
+  isUserCreated: false
+}, {
+  id: "chinese-new-year",
+  name: "Chinese New Year Sales",
+  date: new Date("2025-01-29"),
+  description: "Lunar New Year shopping festival",
+  location: "China, Southeast Asia",
+  type: "holiday",
+  emoji: "🐉",
+  isUserCreated: false
+}, {
+  id: "brazil-independence",
+  name: "Brazil Independence Day",
+  date: new Date("2025-09-07"),
+  description: "Brazilian national day sales",
+  location: "Brazil",
+  type: "discount",
+  emoji: "🇧🇷",
+  isUserCreated: false
+}, {
+  id: "mexico-independence",
+  name: "Mexico Independence Day",
+  date: new Date("2025-09-16"),
+  description: "Mexican national celebration sales",
+  location: "Mexico",
+  type: "discount",
+  emoji: "🇲🇽",
+  isUserCreated: false
+}, {
+  id: "bastille-day",
+  name: "Bastille Day Sales",
+  date: new Date("2025-07-14"),
+  description: "French national day shopping deals",
+  location: "France",
+  type: "discount",
+  emoji: "🇫🇷",
+  isUserCreated: false
+}, {
+  id: "german-unity-day",
+  name: "German Unity Day",
+  date: new Date("2025-10-03"),
+  description: "German national day retail discounts",
+  location: "Germany",
+  type: "discount",
+  emoji: "🇩🇪",
+  isUserCreated: false
+}, {
+  id: "australia-day",
+  name: "Australia Day Sales",
+  date: new Date("2025-01-26"),
+  description: "Australian national day shopping event",
+  location: "Australia",
+  type: "discount",
+  emoji: "🇦🇺",
+  isUserCreated: false
+}, {
+  id: "republic-day-india",
+  name: "Republic Day Sales",
+  date: new Date("2025-01-26"),
+  description: "Indian Republic Day shopping offers",
+  location: "India",
+  type: "discount",
+  emoji: "🇮🇳",
+  isUserCreated: false
+}, {
+  id: "independence-day-india",
+  name: "India Independence Day",
+  date: new Date("2025-08-15"),
+  description: "Indian Independence Day sales",
+  location: "India",
+  type: "discount",
+  emoji: "🇮🇳",
+  isUserCreated: false
+}, {
+  id: "qatar-national-day",
+  name: "Qatar National Day",
+  date: new Date("2025-12-18"),
+  description: "Qatar national celebration discounts",
+  location: "Qatar",
+  type: "discount",
+  emoji: "🇶🇦",
+  isUserCreated: false
+}, {
+  id: "kuwait-national-day",
+  name: "Kuwait National Day",
+  date: new Date("2025-02-25"),
+  description: "Kuwait national day sales",
+  location: "Kuwait",
+  type: "discount",
+  emoji: "🇰🇼",
+  isUserCreated: false
+}, {
+  id: "bahrain-national-day",
+  name: "Bahrain National Day",
+  date: new Date("2025-12-16"),
+  description: "Bahrain national celebration offers",
+  location: "Bahrain",
+  type: "discount",
+  emoji: "🇧🇭",
+  isUserCreated: false
+}, {
+  id: "oman-national-day",
+  name: "Oman National Day",
+  date: new Date("2025-11-18"),
+  description: "Oman national day shopping deals",
+  location: "Oman",
+  type: "discount",
+  emoji: "🇴🇲",
+  isUserCreated: false
+}, {
+  id: "egypt-revolution-day",
+  name: "Egypt Revolution Day",
+  date: new Date("2025-07-23"),
+  description: "Egyptian national celebration sales",
+  location: "Egypt",
+  type: "discount",
+  emoji: "🇪🇬",
+  isUserCreated: false
+}, {
+  id: "turkey-republic-day",
+  name: "Turkey Republic Day",
+  date: new Date("2025-10-29"),
+  description: "Turkish national day discounts",
+  location: "Turkey",
+  type: "discount",
+  emoji: "🇹🇷",
+  isUserCreated: false
+}, {
+  id: "malaysia-merdeka",
+  name: "Malaysia Merdeka Day",
+  date: new Date("2025-08-31"),
+  description: "Malaysian Independence Day sales",
+  location: "Malaysia",
+  type: "discount",
+  emoji: "🇲🇾",
+  isUserCreated: false
+}, {
+  id: "indonesia-independence",
+  name: "Indonesia Independence Day",
+  date: new Date("2025-08-17"),
+  description: "Indonesian national day shopping",
+  location: "Indonesia",
+  type: "discount",
+  emoji: "🇮🇩",
+  isUserCreated: false
+}, {
+  id: "philippines-independence",
+  name: "Philippines Independence Day",
+  date: new Date("2025-06-12"),
+  description: "Filipino national day sales",
+  location: "Philippines",
+  type: "discount",
+  emoji: "🇵🇭",
+  isUserCreated: false
+}, {
+  id: "thailand-king-birthday",
+  name: "Thailand King's Birthday",
+  date: new Date("2025-07-28"),
+  description: "Thai national holiday sales",
+  location: "Thailand",
+  type: "holiday",
+  emoji: "🇹🇭",
+  isUserCreated: false
+}, {
+  id: "vietnam-national-day",
+  name: "Vietnam National Day",
+  date: new Date("2025-09-02"),
+  description: "Vietnamese national celebration",
+  location: "Vietnam",
+  type: "discount",
+  emoji: "🇻🇳",
+  isUserCreated: false
+}, {
+  id: "south-korea-liberation",
+  name: "Korea Liberation Day",
+  date: new Date("2025-08-15"),
+  description: "Korean national day shopping",
+  location: "South Korea",
+  type: "discount",
+  emoji: "🇰🇷",
+  isUserCreated: false
+}, {
+  id: "chuseok",
+  name: "Chuseok Festival",
+  date: new Date("2025-10-06"),
+  description: "Korean harvest festival sales",
+  location: "South Korea",
+  type: "holiday",
+  emoji: "🥮",
+  isUserCreated: false
+}, {
+  id: "mid-autumn-festival",
+  name: "Mid-Autumn Festival",
+  date: new Date("2025-10-06"),
+  description: "Chinese Moon Festival sales",
+  location: "China, East Asia",
+  type: "holiday",
+  emoji: "🥮",
+  isUserCreated: false
+}, {
+  id: "thanksgiving",
+  name: "Thanksgiving Sales",
+  date: new Date("2025-11-27"),
+  description: "Pre-Black Friday shopping deals",
+  location: "United States",
+  type: "sale",
+  emoji: "🦃",
+  isUserCreated: false
+}, {
+  id: "labor-day-us",
+  name: "Labor Day Sales",
+  date: new Date("2025-09-01"),
+  description: "End of summer sales event",
+  location: "United States",
+  type: "sale",
+  emoji: "⚒️",
+  isUserCreated: false
+}, {
+  id: "memorial-day",
+  name: "Memorial Day Sales",
+  date: new Date("2025-05-26"),
+  description: "Start of summer shopping deals",
+  location: "United States",
+  type: "sale",
+  emoji: "🇺🇸",
+  isUserCreated: false
+}, {
+  id: "presidents-day",
+  name: "Presidents Day Sales",
+  date: new Date("2025-02-17"),
+  description: "Winter clearance and discounts",
+  location: "United States",
+  type: "sale",
+  emoji: "🏛️",
+  isUserCreated: false
+}, {
+  id: "st-patricks-day",
+  name: "St. Patrick's Day Sales",
+  date: new Date("2025-03-17"),
+  description: "Irish celebration shopping deals",
+  location: "Ireland, Worldwide",
+  type: "holiday",
+  emoji: "☘️",
+  isUserCreated: false
+}, {
+  id: "halloween-sales",
+  name: "Halloween Sales",
+  date: new Date("2025-10-31"),
+  description: "Spooky season shopping deals",
+  location: "Worldwide",
+  type: "holiday",
+  emoji: "🎃",
+  isUserCreated: false
+}, {
+  id: "white-day",
+  name: "White Day Sales",
+  date: new Date("2025-03-14"),
+  description: "Japanese gift-giving holiday",
+  location: "Japan, South Korea",
+  type: "holiday",
+  emoji: "🤍",
+  isUserCreated: false
+}, {
+  id: "jordan-independence",
+  name: "Jordan Independence Day",
+  date: new Date("2025-05-25"),
+  description: "Jordanian national day sales",
+  location: "Jordan",
+  type: "discount",
+  emoji: "🇯🇴",
+  isUserCreated: false
+}, {
+  id: "morocco-throne-day",
+  name: "Morocco Throne Day",
+  date: new Date("2025-07-30"),
+  description: "Moroccan national celebration",
+  location: "Morocco",
+  type: "discount",
+  emoji: "🇲🇦",
+  isUserCreated: false
+}, {
+  id: "pakistan-independence",
+  name: "Pakistan Independence Day",
+  date: new Date("2025-08-14"),
+  description: "Pakistani national day sales",
+  location: "Pakistan",
+  type: "discount",
+  emoji: "🇵🇰",
+  isUserCreated: false
+}, {
+  id: "nigeria-independence",
+  name: "Nigeria Independence Day",
+  date: new Date("2025-10-01"),
+  description: "Nigerian national celebration",
+  location: "Nigeria",
+  type: "discount",
+  emoji: "🇳🇬",
+  isUserCreated: false
+}, {
+  id: "south-africa-heritage",
+  name: "South Africa Heritage Day",
+  date: new Date("2025-09-24"),
+  description: "South African national day",
+  location: "South Africa",
+  type: "discount",
+  emoji: "🇿🇦",
   isUserCreated: false
 }];
 export default function Events() {
