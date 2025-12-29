@@ -294,24 +294,24 @@ export function AppSidebar() {
         )}
         
         {/* Search Products Button - positioned at top */}
-        <div className="relative z-10 px-2 pt-4 pb-2">
+        <div className={`relative z-10 pt-4 pb-2 ${collapsed ? 'px-1' : 'px-2'}`}>
           <NavLink to="/search-products" onClick={handleNavClick}>
-            <div className="flex items-center justify-center gap-2 bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 py-2.5 px-3 border border-white/20 backdrop-blur-md">
-              <PlusCircle className="h-4 w-4" />
+            <div className={`flex items-center justify-center bg-gradient-primary text-white rounded-lg hover:shadow-hover transition-all duration-200 border border-white/20 backdrop-blur-md ${collapsed ? 'p-2' : 'gap-2 py-2.5 px-3'}`}>
+              <PlusCircle className={collapsed ? "h-5 w-5" : "h-4 w-4"} />
               {!collapsed && <span className="font-medium">{t('products.searchProducts')}</span>}
             </div>
           </NavLink>
         </div>
 
-        <SidebarContent className="relative z-10 bg-transparent px-2">
+        <SidebarContent className={`relative z-10 bg-transparent ${collapsed ? 'px-1' : 'px-2'}`}>
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/80">{t('nav.dashboard')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {filteredMainItems.map(item => <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink to={item.url} end className={getNavCls} onClick={handleNavClick}>
-                        <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                    <SidebarMenuButton asChild className={collapsed ? "justify-center" : ""}>
+                      <NavLink to={item.url} end className={({isActive}) => `${getNavCls({isActive})} ${collapsed ? 'justify-center p-2' : ''}`} onClick={handleNavClick}>
+                        <item.icon className="h-5 w-5 shrink-0" />
                         {!collapsed && (
                           <div className="flex items-center gap-2 flex-1">
                             <span>{t(item.title)}</span>
@@ -403,9 +403,9 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {otherItems.filter(item => item.title !== 'nav.settings').map(item => <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavCls} onClick={handleNavClick}>
-                        <item.icon className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                    <SidebarMenuButton asChild className={collapsed ? "justify-center" : ""}>
+                      <NavLink to={item.url} className={({isActive}) => `${getNavCls({isActive})} ${collapsed ? 'justify-center p-2' : ''}`} onClick={handleNavClick}>
+                        <item.icon className="h-5 w-5 shrink-0" />
                         {!collapsed && <span>{t(item.title)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
@@ -413,10 +413,10 @@ export function AppSidebar() {
                 
                 {/* Settings Button with Personalize Icon */}
                 <SidebarMenuItem>
-                  <div className="flex items-center w-full">
-                    <SidebarMenuButton asChild className="flex-1">
-                      <NavLink to="/settings" className={getNavCls} onClick={handleNavClick}>
-                        <Settings className={collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} />
+                  <div className={`flex items-center w-full ${collapsed ? 'justify-center' : ''}`}>
+                    <SidebarMenuButton asChild className={collapsed ? "justify-center" : "flex-1"}>
+                      <NavLink to="/settings" className={({isActive}) => `${getNavCls({isActive})} ${collapsed ? 'justify-center p-2' : ''}`} onClick={handleNavClick}>
+                        <Settings className="h-5 w-5 shrink-0" />
                         {!collapsed && <span>{t('nav.settings')}</span>}
                       </NavLink>
                     </SidebarMenuButton>
