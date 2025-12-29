@@ -69,7 +69,7 @@ export function AdSpace({
       const sidebarWidth = open ? sidebarOpenWidth : sidebarCollapsedWidth;
       const availablePerSide = (screenWidth - sidebarWidth - mainContentWidth - (gap * 4)) / 2;
       const possibleBanners = Math.floor((availablePerSide + bannerGap) / (bannerWidth + bannerGap));
-      setBannerCount(Math.max(1, Math.min(possibleBanners, 3)));
+      setBannerCount(Math.max(1, Math.min(possibleBanners, 6)));
     };
     
     calculateBanners();
