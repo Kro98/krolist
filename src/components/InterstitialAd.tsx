@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
 
 declare global {
@@ -14,12 +12,12 @@ export function InterstitialAd() {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
   const [countdown, setCountdown] = useState(5);
-  const [canClose, setCanClose] = useState(false);
+  const [canSkipEarly, setCanSkipEarly] = useState(false);
 
   useEffect(() => {
     if (isAdVisible) {
       setCountdown(5);
-      setCanClose(false);
+      setCanSkipEarly(false);
       setAdLoaded(false);
       
       // Load ad
@@ -47,30 +45,43 @@ export function InterstitialAd() {
     }
   }, [countdown, isAdVisible, closeAd]);
 
+  // Enable early skip after 2 seconds
+  useEffect(() => {
+    if (!isAdVisible) return;
+    
+    const timer = setTimeout(() => {
+      setCanSkipEarly(true);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [isAdVisible]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only allow skip if canSkipEarly is true and click is not on the ad
+    if (canSkipEarly && e.target === e.currentTarget) {
+      closeAd(true);
+    }
+  };
+
   if (!isAdVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center p-4">
-      {/* Close button */}
+    <div 
+      className={`fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 ${canSkipEarly ? 'cursor-pointer' : ''}`}
+      onClick={handleBackdropClick}
+    >
+      {/* Countdown indicator */}
       <div className="absolute top-4 right-4">
-        {canClose ? (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => closeAd(true)}
-            className="rounded-full"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-            {countdown}
-          </div>
-        )}
+        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+          {countdown}
+        </div>
       </div>
 
       {/* Ad container */}
-      <div className="w-full max-w-[336px] h-[280px] bg-card border border-border rounded-lg flex items-center justify-center overflow-hidden">
+      <div 
+        className="w-full max-w-[336px] h-[280px] bg-card border border-border rounded-lg flex items-center justify-center overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <ins
           ref={adRef}
           className="adsbygoogle"
@@ -82,8 +93,11 @@ export function InterstitialAd() {
       </div>
 
       {/* Skip text */}
-      <p className="mt-4 text-sm text-muted-foreground">
-        {canClose ? "You can close this ad now" : `Ad closes in ${countdown} seconds`}
+      <p className="mt-4 text-sm text-muted-foreground text-center">
+        {canSkipEarly 
+          ? "Tap anywhere to skip" 
+          : `Skip available in ${Math.max(0, 2 - (5 - countdown))}s`
+        }
       </p>
     </div>
   );
