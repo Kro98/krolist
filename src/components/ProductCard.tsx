@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, RefreshCw, Edit, Youtube, Plus, ShoppingCart as ShoppingCartIcon, Heart, X } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Youtube, Heart, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
-import { useCart } from "@/contexts/CartContext";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
@@ -75,9 +74,6 @@ export function ProductCard({
     currency,
     convertPriceToDisplay
   } = useConvertedPrice();
-  const {
-    addToCart
-  } = useCart();
   const {
     isZoomEnabled
   } = useImageZoom();

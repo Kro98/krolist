@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ProductCard, type Product } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { CategoriesCarousel } from "@/components/CategoriesCarousel";
-import { useCart } from "@/contexts/CartContext";
-import { Plus, Search, Filter, RefreshCw, Heart } from "lucide-react";
+import { Search, Filter, RefreshCw, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NavLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,9 +37,6 @@ export default function Products() {
     t,
     language
   } = useLanguage();
-  const {
-    addToCart
-  } = useCart();
   const {
     isGuest
   } = useAuth();
@@ -188,12 +184,6 @@ export default function Products() {
     setSelectedProducts(new Set());
     setIsSelectMode(false);
     setShowSelectionActions(false);
-  };
-  const handleAddSelectedToCart = () => {
-    const productsToAdd = [...filteredUserProducts, ...filteredKrolistProducts].filter(p => selectedProducts.has(p.id));
-    productsToAdd.forEach(product => addToCart(product));
-    toast.success(t('cart.itemsAdded').replace('{count}', productsToAdd.length.toString()));
-    handleCancelSelection();
   };
   const handleUpdate = async (id: string, updates: Partial<Product>) => {
     try {
@@ -522,9 +512,6 @@ export default function Products() {
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleCancelSelection}>
                     {t('products.cancelSelection')}
-                  </Button>
-                  <Button size="sm" onClick={handleAddSelectedToCart} className="bg-primary hover:bg-primary/90">
-                    Add to Cart
                   </Button>
                 </div>
               </div>
