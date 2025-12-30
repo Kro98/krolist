@@ -286,68 +286,78 @@ export default function CategoryManager() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {categories.map((category) => (
-          <Card key={category.id}>
-            <CardHeader>
-              {category.icon_url ? (
-                <div className="flex items-center gap-4">
+          <Card key={category.id} className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:border-primary/30">
+            <div className="flex h-full">
+              {/* Image Section - Left Side */}
+              <div className="relative w-32 sm:w-40 flex-shrink-0 bg-muted/30">
+                {category.icon_url ? (
                   <img 
                     src={category.icon_url} 
                     alt={category.title}
-                    className="w-16 h-16 rounded-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <CardTitle>{category.title}</CardTitle>
-                </div>
-              ) : (
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                  {category.title}
-                </CardTitle>
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="mb-3 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{productCounts[category.id] || 0}</span> products
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
+                  </div>
+                )}
+                {/* Active Status Indicator */}
+                <div className={`absolute top-2 left-2 w-3 h-3 rounded-full ${category.is_active ? 'bg-success' : 'bg-muted-foreground'} ring-2 ring-background`} />
               </div>
-              <div className="flex gap-2 justify-between items-center mb-3">
-                <div className="flex gap-2">
+
+              {/* Content Section - Right Side */}
+              <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                {/* Title & Product Count */}
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-lg truncate">{category.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{productCounts[category.id] || 0}</span> products
+                  </p>
+                </div>
+
+                {/* Actions - Vertical Stack */}
+                <div className="flex items-center gap-2 mt-4">
                   <Button 
                     size="sm" 
+                    variant="secondary"
+                    onClick={() => handleManageProducts(category)}
+                    className="flex-1 h-9"
+                  >
+                    <Package className="h-4 w-4 mr-1.5" />
+                    <span className="hidden sm:inline">Products</span>
+                  </Button>
+                  <Button 
+                    size="icon" 
                     variant="outline"
                     onClick={() => handleOpenDialog(category)}
+                    className="h-9 w-9"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button 
-                    size="sm" 
-                    variant="destructive"
+                    size="icon" 
+                    variant="outline"
                     onClick={() => handleDelete(category.id)}
+                    className="h-9 w-9 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
+                  <Switch
+                    checked={category.is_active}
+                    onCheckedChange={async (checked) => {
+                      await supabase
+                        .from('category_collections')
+                        .update({ is_active: checked })
+                        .eq('id', category.id);
+                      fetchCategories();
+                    }}
+                    className="ml-auto"
+                  />
                 </div>
-                <Switch
-                  checked={category.is_active}
-                  onCheckedChange={async (checked) => {
-                    await supabase
-                      .from('category_collections')
-                      .update({ is_active: checked })
-                      .eq('id', category.id);
-                    fetchCategories();
-                  }}
-                />
               </div>
-              <Button 
-                size="sm" 
-                variant="secondary"
-                onClick={() => handleManageProducts(category)}
-                className="w-full"
-              >
-                <Package className="h-4 w-4 mr-2" />
-                Manage Products
-              </Button>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>
