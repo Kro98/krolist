@@ -34,7 +34,7 @@ export function InterstitialAd() {
     }
   }, [isAdVisible]);
 
-  // Countdown timer
+  // Countdown timer - auto close when done
   useEffect(() => {
     if (!isAdVisible) return;
     
@@ -42,9 +42,10 @@ export function InterstitialAd() {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      setCanClose(true);
+      // Auto close the ad when countdown reaches zero
+      closeAd(true);
     }
-  }, [countdown, isAdVisible]);
+  }, [countdown, isAdVisible, closeAd]);
 
   if (!isAdVisible) return null;
 
