@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Gift, Plus, Edit, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
+import { Gift, Plus, Edit, RotateCcw, ChevronDown, ChevronUp, ImagePlus, X, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PromoTicketCard from "@/components/PromoTicketCard";
+import ImageCropper from "@/components/ImageCropper";
 
 interface PromoCode {
   id: string;
@@ -28,6 +29,7 @@ interface PromoCode {
   expires: string;
   used: boolean;
   reusable: boolean;
+  custom_image_url?: string;
 }
 
 export default function PromoCodes() {
@@ -44,6 +46,21 @@ export default function PromoCodes() {
   const navigate = useNavigate();
   const { triggerPromoCopy } = useAdTrigger();
   const { t, language } = useLanguage();
+  
+  // Image upload states
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
+  const [croppedImagePreview, setCroppedImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Edit image states
+  const [editSelectedImageSrc, setEditSelectedImageSrc] = useState<string | null>(null);
+  const [isEditCropperOpen, setIsEditCropperOpen] = useState(false);
+  const [editCroppedImageBlob, setEditCroppedImageBlob] = useState<Blob | null>(null);
+  const [editCroppedImagePreview, setEditCroppedImagePreview] = useState<string | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
   
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
@@ -83,7 +100,8 @@ export default function PromoCodes() {
           description: item.description,
           expires: item.expires,
           used: item.used,
-          reusable: item.reusable
+          reusable: item.reusable,
+          custom_image_url: item.custom_image_url || undefined
         })));
       }
     } catch (error) {
@@ -119,12 +137,87 @@ export default function PromoCodes() {
           description: item.description,
           expires: item.expires,
           used: item.used,
-          reusable: item.reusable
+          reusable: item.reusable,
+          custom_image_url: item.custom_image_url || undefined
         })));
       }
     } catch (error) {
       console.error('Error fetching Krolist promo codes:', error);
     }
+  };
+
+  // Image handling functions
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: t('error'),
+        description: t('promo.invalidImageType') || 'Please select an image file',
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (isEdit) {
+        setEditSelectedImageSrc(reader.result as string);
+        setIsEditCropperOpen(true);
+      } else {
+        setSelectedImageSrc(reader.result as string);
+        setIsCropperOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = (blob: Blob, isEdit = false) => {
+    const previewUrl = URL.createObjectURL(blob);
+    if (isEdit) {
+      setEditCroppedImageBlob(blob);
+      setEditCroppedImagePreview(previewUrl);
+    } else {
+      setCroppedImageBlob(blob);
+      setCroppedImagePreview(previewUrl);
+    }
+  };
+
+  const clearImage = (isEdit = false) => {
+    if (isEdit) {
+      setEditCroppedImageBlob(null);
+      setEditCroppedImagePreview(null);
+      setEditSelectedImageSrc(null);
+      if (editFileInputRef.current) editFileInputRef.current.value = '';
+    } else {
+      setCroppedImageBlob(null);
+      setCroppedImagePreview(null);
+      setSelectedImageSrc(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadImage = async (blob: Blob, userId: string): Promise<string | null> => {
+    const fileName = `${userId}/${Date.now()}-store-image.jpg`;
+    
+    const { data, error } = await supabase.storage
+      .from('promo-store-images')
+      .upload(fileName, blob, {
+        contentType: 'image/jpeg',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('promo-store-images')
+      .getPublicUrl(data.path);
+
+    return publicUrlData.publicUrl;
   };
 
   const getTimeUntilExpiration = (expiresDate: string) => {
@@ -185,7 +278,16 @@ export default function PromoCodes() {
       return;
     }
 
+    setIsUploadingImage(true);
+    
     try {
+      let customImageUrl: string | null = null;
+      
+      // Upload image if one was cropped
+      if (croppedImageBlob) {
+        customImageUrl = await uploadImage(croppedImageBlob, user.id);
+      }
+
       const { data, error } = await supabase
         .from('promo_codes')
         .insert({
@@ -193,10 +295,11 @@ export default function PromoCodes() {
           code: newCode,
           store: storeName,
           description: newDescription,
-          store_url: '', // No longer storing URLs
+          store_url: '',
           expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           used: false,
-          reusable: false
+          reusable: false,
+          custom_image_url: customImageUrl
         })
         .select()
         .single();
@@ -212,6 +315,7 @@ export default function PromoCodes() {
       setSelectedShop("");
       setCustomShopName("");
       setNewDescription("");
+      clearImage();
       
       // Refresh the list
       fetchPromoCodes();
@@ -222,6 +326,8 @@ export default function PromoCodes() {
         description: error.message || t('promo.failedToAdd'),
         variant: "destructive"
       });
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -231,9 +337,18 @@ export default function PromoCodes() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editingPromo) return;
+    if (!editingPromo || !user) return;
 
+    setIsUploadingImage(true);
+    
     try {
+      let customImageUrl = editingPromo.custom_image_url;
+      
+      // Upload new image if one was cropped
+      if (editCroppedImageBlob) {
+        customImageUrl = await uploadImage(editCroppedImageBlob, user.id);
+      }
+
       const { error } = await supabase
         .from('promo_codes')
         .update({
@@ -242,7 +357,8 @@ export default function PromoCodes() {
           description: editingPromo.description,
           expires: editingPromo.expires,
           used: editingPromo.used,
-          reusable: editingPromo.reusable
+          reusable: editingPromo.reusable,
+          custom_image_url: customImageUrl
         })
         .eq('id', editingPromo.id);
 
@@ -255,6 +371,7 @@ export default function PromoCodes() {
 
       setIsEditDialogOpen(false);
       setEditingPromo(null);
+      clearImage(true);
       fetchPromoCodes();
     } catch (error: any) {
       console.error('Error updating promo code:', error);
@@ -263,6 +380,8 @@ export default function PromoCodes() {
         description: error.message || t('promo.failedToUpdate'),
         variant: "destructive"
       });
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -322,7 +441,7 @@ export default function PromoCodes() {
           </CardHeader>
           {isAddFormVisible && (
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="code">{t('promo.code')}</Label>
                   <Input
@@ -371,11 +490,65 @@ export default function PromoCodes() {
                   />
                 </div>
               </div>
+              
+              {/* Image Upload Section */}
+              <div className="mt-4 space-y-2">
+                <Label>{t('promo.storeImage') || 'Store Image (Optional)'}</Label>
+                <div className="flex items-center gap-4">
+                  {croppedImagePreview ? (
+                    <div className="relative">
+                      <img 
+                        src={croppedImagePreview} 
+                        alt="Store preview" 
+                        className="w-20 h-20 object-cover rounded-lg border-2 border-primary/30"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={() => clearImage()}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="h-20 w-20 flex flex-col items-center justify-center gap-1 border-dashed"
+                    >
+                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{t('promo.addImage') || 'Add'}</span>
+                    </Button>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageSelect(e, false)}
+                  />
+                  <p className="text-xs text-muted-foreground flex-1">
+                    {t('promo.imageHint') || 'Add a custom store logo or image for your promo code ticket'}
+                  </p>
+                </div>
+              </div>
+              
               <Button
                 onClick={handleAddCode}
+                disabled={isUploadingImage}
                 className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
               >
-                {t('promo.addCode')}
+                {isUploadingImage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {t('promo.uploading') || 'Uploading...'}
+                  </>
+                ) : (
+                  t('promo.addCode')
+                )}
               </Button>
             </CardContent>
           )}
@@ -439,8 +612,13 @@ export default function PromoCodes() {
       </div>
 
       {/* Edit Promo Code Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+        setIsEditDialogOpen(open);
+        if (!open) {
+          clearImage(true);
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5 text-primary" />
@@ -485,7 +663,61 @@ export default function PromoCodes() {
                   onChange={(e) => setEditingPromo({...editingPromo, expires: e.target.value})}
                 />
               </div>
-              <div className="flex items-center justify-between">
+              
+              {/* Edit Image Upload Section */}
+              <div className="space-y-2">
+                <Label>{t('promo.storeImage') || 'Store Image'}</Label>
+                <div className="flex items-center gap-4">
+                  {(editCroppedImagePreview || editingPromo.custom_image_url) ? (
+                    <div className="relative">
+                      <img 
+                        src={editCroppedImagePreview || editingPromo.custom_image_url} 
+                        alt="Store preview" 
+                        className="w-16 h-16 object-cover rounded-lg border-2 border-primary/30"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-5 w-5"
+                        onClick={() => {
+                          clearImage(true);
+                          setEditingPromo({...editingPromo, custom_image_url: undefined});
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => editFileInputRef.current?.click()}
+                      className="h-16 w-16 flex flex-col items-center justify-center gap-1 border-dashed"
+                    >
+                      <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">{t('promo.addImage') || 'Add'}</span>
+                    </Button>
+                  )}
+                  <input
+                    ref={editFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageSelect(e, true)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => editFileInputRef.current?.click()}
+                  >
+                    {t('promo.changeImage') || 'Change'}
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={editingPromo.reusable}
@@ -504,14 +736,53 @@ export default function PromoCodes() {
                     )}
                   </Label>
                 </div>
-                <Button onClick={handleSaveEdit} className="bg-gradient-primary">
-                  {t('promo.saveChanges')}
+                <Button 
+                  onClick={handleSaveEdit} 
+                  disabled={isUploadingImage}
+                  className="bg-gradient-primary"
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {t('promo.saving') || 'Saving...'}
+                    </>
+                  ) : (
+                    t('promo.saveChanges')
+                  )}
                 </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Image Cropper for Add Form */}
+      {selectedImageSrc && (
+        <ImageCropper
+          isOpen={isCropperOpen}
+          onClose={() => {
+            setIsCropperOpen(false);
+            setSelectedImageSrc(null);
+          }}
+          imageSrc={selectedImageSrc}
+          onCropComplete={(blob) => handleCropComplete(blob, false)}
+          aspectRatio={1}
+        />
+      )}
+
+      {/* Image Cropper for Edit Form */}
+      {editSelectedImageSrc && (
+        <ImageCropper
+          isOpen={isEditCropperOpen}
+          onClose={() => {
+            setIsEditCropperOpen(false);
+            setEditSelectedImageSrc(null);
+          }}
+          imageSrc={editSelectedImageSrc}
+          onCropComplete={(blob) => handleCropComplete(blob, true)}
+          aspectRatio={1}
+        />
+      )}
 
       {/* Empty State */}
       {promoCodes.length === 0 && !isLoading && (

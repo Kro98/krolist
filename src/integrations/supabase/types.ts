@@ -598,6 +598,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          custom_image_url: string | null
           description: string
           expires: string
           id: string
@@ -612,6 +613,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          custom_image_url?: string | null
           description: string
           expires: string
           id?: string
@@ -626,6 +628,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          custom_image_url?: string | null
           description?: string
           expires?: string
           id?: string
