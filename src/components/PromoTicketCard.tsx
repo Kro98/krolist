@@ -4,6 +4,7 @@ import { Copy, RotateCcw, Clock, Calendar, Edit, Trash2, Scissors } from "lucide
 import { format } from "date-fns";
 import { getStoreIcon, getStoreById } from "@/config/stores";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect } from "react";
 
 interface PromoTicketCardProps {
   promo: {
@@ -14,6 +15,7 @@ interface PromoTicketCardProps {
     expires: string;
     used: boolean;
     reusable: boolean;
+    custom_image_url?: string;
   };
   isKrolist?: boolean;
   onCopy: (code: string) => void;
@@ -31,11 +33,22 @@ export default function PromoTicketCard({
   getTimeUntilExpiration,
 }: PromoTicketCardProps) {
   const { t } = useLanguage();
-  const storeIcon = getStoreIcon(promo.store);
+  const storeIcon = promo.custom_image_url || getStoreIcon(promo.store);
   const storeConfig = getStoreById(promo.store.toLowerCase());
+  const [hasAnimated, setHasAnimated] = useState(false);
+  
+  // Trigger animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => setHasAnimated(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Get brand color class based on store
   const getBrandGradient = () => {
+    // If custom image, use a neutral gradient
+    if (promo.custom_image_url) {
+      return 'from-slate-700/90 via-slate-800/85 to-slate-900/90';
+    }
     const brandColor = storeConfig?.brandColor || 'primary';
     const gradients: Record<string, string> = {
       purple: 'from-purple-600/90 via-purple-700/85 to-purple-900/90',
@@ -52,13 +65,44 @@ export default function PromoTicketCard({
   const isUsed = promo.used && !promo.reusable;
 
   return (
-    <div className={`relative group ${isUsed ? 'opacity-60' : ''}`}>
+    <div 
+      className={`relative group ${isUsed ? 'opacity-60' : ''}`}
+      style={{
+        animation: hasAnimated ? 'none' : 'ticket-appear 0.5s ease-out forwards',
+        opacity: hasAnimated ? 1 : 0,
+      }}
+    >
       {/* Ticket shape with perforated edges */}
       <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
-        {/* Background with store icon */}
+        {/* Shimmer overlay on first appear */}
+        <div 
+          className="absolute inset-0 z-20 pointer-events-none overflow-hidden"
+          style={{
+            opacity: hasAnimated ? 0 : 1,
+            transition: 'opacity 0.5s ease-out 0.3s',
+          }}
+        >
+          <div 
+            className="absolute inset-0 w-[50%] h-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+            style={{
+              animation: 'ticket-shimmer 0.8s ease-out forwards',
+              animationDelay: '0.2s',
+            }}
+          />
+        </div>
+
+        {/* Background with store icon or custom image */}
         <div className={`absolute inset-0 bg-gradient-to-br ${getBrandGradient()}`}>
-          {/* Large store icon as watermark */}
-          {storeIcon && (
+          {/* Custom image as full background */}
+          {promo.custom_image_url && (
+            <img 
+              src={promo.custom_image_url} 
+              alt={promo.store}
+              className="absolute inset-0 w-full h-full object-cover opacity-40"
+            />
+          )}
+          {/* Large store icon as watermark (only for non-custom images) */}
+          {storeIcon && !promo.custom_image_url && (
             <div className="absolute -right-8 -bottom-8 opacity-20">
               <img 
                 src={storeIcon} 
