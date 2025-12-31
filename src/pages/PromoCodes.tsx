@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Gift, Plus, Copy, Edit, RotateCcw, Trash2, Clock, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Gift, Plus, Edit, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import PromoTicketCard from "@/components/PromoTicketCard";
 
 interface PromoCode {
   id: string;
@@ -407,58 +408,12 @@ export default function PromoCodes() {
             <CarouselContent className="-ml-2 md:-ml-4">
               {krolistPromoCodes.map((promo) => (
                 <CarouselItem key={promo.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                  <Card className="shadow-card hover:shadow-hover transition-all duration-300 border-2 border-primary/30 h-full">
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        <div>
-                          <div className="mb-3">
-                            <div className="bg-primary/10 px-6 py-2 rounded-lg font-mono font-bold text-primary text-2xl inline-block">
-                              {promo.code}
-                            </div>
-                          </div>
-                          <div className="flex gap-2 mb-3 flex-wrap">
-                            <Badge variant="default">
-                              {promo.store}
-                            </Badge>
-                            <Badge variant="outline" className="bg-primary/20 text-primary border-primary/40">
-                              Krolist
-                            </Badge>
-                            <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                              <RotateCcw className="h-3 w-3 mr-1" />
-                              {t('promo.reusable')}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {promo.description}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                            <Calendar className="h-3 w-3" />
-                            <span>{t('promo.expires')}: {format(new Date(promo.expires), 'MMM dd, yyyy')}</span>
-                          </div>
-                          <div className="mb-2">
-                            <Badge 
-                              variant={getTimeUntilExpiration(promo.expires).variant}
-                              className="text-xs"
-                            >
-                              <Clock className="h-3 w-3 mr-1" />
-                              {getTimeUntilExpiration(promo.expires).text}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="flex justify-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCopyCode(promo.code)}
-                            className="w-full max-w-32"
-                          >
-                            <Copy className="h-4 w-4 mr-2" />
-                            {t('promo.copy')}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <PromoTicketCard
+                    promo={promo}
+                    isKrolist={true}
+                    onCopy={handleCopyCode}
+                    getTimeUntilExpiration={getTimeUntilExpiration}
+                  />
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -469,75 +424,17 @@ export default function PromoCodes() {
       )}
 
       {/* User Promo Codes List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {promoCodes.map((promo) => (
-          <Card key={promo.id} className={`shadow-card hover:shadow-hover transition-all duration-300 ${promo.used && !promo.reusable ? 'opacity-60' : ''}`}>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-3">
-                    <div className="bg-primary/10 px-3 py-1 rounded-lg font-mono font-bold text-primary text-sm inline-block">
-                      {promo.code}
-                    </div>
-                  </div>
-                    <div className="flex gap-2 mb-3 flex-wrap">
-                    <Badge variant={promo.used && !promo.reusable ? "secondary" : "default"}>
-                      {promo.store}
-                    </Badge>
-                    {promo.reusable ? (
-                      <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        {t('promo.reusable')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
-                        {t('promo.oneTimeUse')}
-                      </Badge>
-                    )}
-                    {promo.used && (
-                      <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
-                        {t('promo.used')}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {promo.description}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('promo.expires')}: {new Date(promo.expires).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEditPromo(promo)}
-                    className="w-full"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopyCode(promo.code)}
-                    disabled={promo.used && !promo.reusable}
-                    className="w-full col-span-2"
-                  >
-                    <Copy className="h-4 w-4 mr-1" />
-                    {t('promo.copy')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDeletePromo(promo.id)}
-                    className="text-destructive hover:bg-destructive/10 w-full col-span-3"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PromoTicketCard
+            key={promo.id}
+            promo={promo}
+            isKrolist={false}
+            onCopy={handleCopyCode}
+            onEdit={handleEditPromo}
+            onDelete={handleDeletePromo}
+            getTimeUntilExpiration={getTimeUntilExpiration}
+          />
         ))}
       </div>
 
