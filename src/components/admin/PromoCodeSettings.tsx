@@ -16,6 +16,7 @@ interface PromoCodeSettingsData {
   default_background_image: string;
   show_decorative_dots: boolean;
   shimmer_enabled: boolean;
+  confetti_enabled: boolean;
 }
 
 const defaultSettings: PromoCodeSettingsData = {
@@ -24,6 +25,7 @@ const defaultSettings: PromoCodeSettingsData = {
   default_background_image: '',
   show_decorative_dots: true,
   shimmer_enabled: true,
+  confetti_enabled: true,
 };
 
 export default function PromoCodeSettings() {
@@ -54,7 +56,8 @@ export default function PromoCodeSettings() {
           'promo_gradient_end',
           'promo_background_image',
           'promo_show_dots',
-          'promo_shimmer_enabled'
+          'promo_shimmer_enabled',
+          'promo_confetti_enabled'
         ]);
 
       if (error) throw error;
@@ -71,6 +74,7 @@ export default function PromoCodeSettings() {
           default_background_image: settingsMap['promo_background_image'] || '',
           show_decorative_dots: settingsMap['promo_show_dots'] !== 'false',
           shimmer_enabled: settingsMap['promo_shimmer_enabled'] !== 'false',
+          confetti_enabled: settingsMap['promo_confetti_enabled'] !== 'false',
         });
 
         if (settingsMap['promo_background_image']) {
@@ -157,6 +161,7 @@ export default function PromoCodeSettings() {
         { setting_key: 'promo_background_image', setting_value: backgroundImageUrl, description: 'Default background image for promo tickets' },
         { setting_key: 'promo_show_dots', setting_value: String(settings.show_decorative_dots), description: 'Show decorative dots on promo tickets' },
         { setting_key: 'promo_shimmer_enabled', setting_value: String(settings.shimmer_enabled), description: 'Enable shimmer animation on promo tickets' },
+        { setting_key: 'promo_confetti_enabled', setting_value: String(settings.confetti_enabled), description: 'Enable confetti animation when copying promo codes' },
       ];
 
       for (const setting of settingsToSave) {
@@ -331,6 +336,16 @@ export default function PromoCodeSettings() {
               <Switch
                 checked={settings.shimmer_enabled}
                 onCheckedChange={(checked) => setSettings(prev => ({ ...prev, shimmer_enabled: checked }))}
+              />
+            </div>
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+              <div className="space-y-0.5">
+                <Label>Confetti on Copy</Label>
+                <p className="text-sm text-muted-foreground">Show confetti celebration when copying promo codes</p>
+              </div>
+              <Switch
+                checked={settings.confetti_enabled}
+                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, confetti_enabled: checked }))}
               />
             </div>
           </div>
