@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Copy } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Settings } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { STORES } from "@/config/stores";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PromoCodeSettings from "@/components/admin/PromoCodeSettings";
 
 interface KrolistPromoCode {
   id: string;
@@ -104,7 +106,7 @@ export default function PromoCodesManager() {
       code: formData.code,
       store: formData.store,
       description: formData.description,
-      store_url: '', // No longer storing URLs
+      store_url: '',
       expires: formData.expires,
       reusable: formData.reusable,
       is_krolist: true,
@@ -187,77 +189,93 @@ export default function PromoCodesManager() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold">{t('admin.krolistPromoCodes')}</h2>
-          <p className="text-muted-foreground">{t('admin.krolistPromoCodesDesc')}</p>
-        </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t('admin.addPromoCode')}
-        </Button>
-      </div>
+      <Tabs defaultValue="codes" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="codes">Promo Codes</TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {promoCodes.map((promoCode) => (
-          <Card key={promoCode.id} className={isExpired(promoCode.expires) ? 'opacity-60' : ''}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{promoCode.code}</CardTitle>
-                  <CardDescription>{promoCode.store}</CardDescription>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopyCode(promoCode.code)}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">{promoCode.description}</p>
-                
-                <div className="flex flex-wrap gap-2">
-                  {promoCode.reusable && (
-                    <Badge variant="secondary">Reusable</Badge>
-                  )}
-                  {isExpired(promoCode.expires) ? (
-                    <Badge variant="destructive">Expired</Badge>
-                  ) : (
-                    <Badge variant="outline">
-                      Expires: {new Date(promoCode.expires).toLocaleDateString()}
-                    </Badge>
-                  )}
-                </div>
+        <TabsContent value="codes" className="mt-6 space-y-6">
+          <div>
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold">{t('admin.krolistPromoCodes')}</h2>
+              <p className="text-muted-foreground">{t('admin.krolistPromoCodesDesc')}</p>
+            </div>
+            <Button onClick={() => handleOpenDialog()}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('admin.addPromoCode')}
+            </Button>
+          </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenDialog(promoCode)}
-                    className="flex-1"
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    {t('edit')}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(promoCode.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {promoCodes.map((promoCode) => (
+              <Card key={promoCode.id} className={isExpired(promoCode.expires) ? 'opacity-60' : ''}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{promoCode.code}</CardTitle>
+                      <CardDescription>{promoCode.store}</CardDescription>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopyCode(promoCode.code)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">{promoCode.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {promoCode.reusable && (
+                        <Badge variant="secondary">Reusable</Badge>
+                      )}
+                      {isExpired(promoCode.expires) ? (
+                        <Badge variant="destructive">Expired</Badge>
+                      ) : (
+                        <Badge variant="outline">
+                          Expires: {new Date(promoCode.expires).toLocaleDateString()}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenDialog(promoCode)}
+                        className="flex-1"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        {t('edit')}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(promoCode.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <PromoCodeSettings />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>

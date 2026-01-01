@@ -38,6 +38,8 @@ export default function PromoCodes() {
   const [newDescription, setNewDescription] = useState("");
   const [selectedShop, setSelectedShop] = useState<string>("");
   const [customShopName, setCustomShopName] = useState("");
+  const [newExpiresDate, setNewExpiresDate] = useState("");
+  const [newIsReusable, setNewIsReusable] = useState(false);
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -288,6 +290,11 @@ export default function PromoCodes() {
         customImageUrl = await uploadImage(croppedImageBlob, user.id);
       }
 
+      // Calculate expiry date - use user-provided date or default to 1 year
+      const expiryDate = newExpiresDate 
+        ? newExpiresDate 
+        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from('promo_codes')
         .insert({
@@ -296,9 +303,9 @@ export default function PromoCodes() {
           store: storeName,
           description: newDescription,
           store_url: '',
-          expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          expires: expiryDate,
           used: false,
-          reusable: false,
+          reusable: newIsReusable,
           custom_image_url: customImageUrl
         })
         .select()
@@ -315,6 +322,8 @@ export default function PromoCodes() {
       setSelectedShop("");
       setCustomShopName("");
       setNewDescription("");
+      setNewExpiresDate("");
+      setNewIsReusable(false);
       clearImage();
       
       // Refresh the list
@@ -488,6 +497,43 @@ export default function PromoCodes() {
                     onChange={(e) => setNewDescription(e.target.value)}
                     maxLength={120}
                   />
+                </div>
+              </div>
+              
+              {/* Expiration Date and Reusable Options */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="expires">{t('promo.expirationDate') || 'Expiration Date'}</Label>
+                  <Input
+                    id="expires"
+                    type="date"
+                    value={newExpiresDate}
+                    onChange={(e) => setNewExpiresDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('promo.expirationHint') || 'Leave empty for 1 year validity'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('promo.usageType') || 'Usage Type'}</Label>
+                  <div className="flex items-center gap-3 h-10">
+                    <Switch
+                      id="reusable-toggle-add"
+                      checked={newIsReusable}
+                      onCheckedChange={setNewIsReusable}
+                    />
+                    <Label htmlFor="reusable-toggle-add" className="cursor-pointer">
+                      {newIsReusable ? (
+                        <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          {t('promo.reusable') || 'Reusable'}
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{t('promo.oneTimeUse') || 'One-time use'}</span>
+                      )}
+                    </Label>
+                  </div>
                 </div>
               </div>
               
