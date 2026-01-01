@@ -20,6 +20,8 @@ import { useAdTrigger } from "@/contexts/AdTriggerContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PromoTicketCard from "@/components/PromoTicketCard";
 import ImageCropper from "@/components/ImageCropper";
+import confetti from "canvas-confetti";
+import { usePromoSettings } from "@/hooks/usePromoSettings";
 
 interface PromoCode {
   id: string;
@@ -48,6 +50,7 @@ export default function PromoCodes() {
   const navigate = useNavigate();
   const { triggerPromoCopy } = useAdTrigger();
   const { t, language } = useLanguage();
+  const { settings: promoSettings } = usePromoSettings();
   
   // Image upload states
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
@@ -240,12 +243,42 @@ export default function PromoCodes() {
     }
   };
 
+  const triggerConfetti = () => {
+    // Fire confetti from both sides
+    const defaults = {
+      spread: 60,
+      ticks: 100,
+      gravity: 0.8,
+      decay: 0.94,
+      startVelocity: 30,
+      colors: ['#7c3aed', '#a855f7', '#c084fc', '#e879f9', '#f0abfc', '#fcd34d', '#fbbf24']
+    };
+
+    confetti({
+      ...defaults,
+      particleCount: 40,
+      origin: { x: 0.3, y: 0.7 }
+    });
+
+    confetti({
+      ...defaults,
+      particleCount: 40,
+      origin: { x: 0.7, y: 0.7 }
+    });
+  };
+
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast({
       title: t('promo.codeCopied'),
       description: `${t('promo.codeCopiedDesc')} "${code}"`,
     });
+    
+    // Trigger confetti if enabled
+    if (promoSettings.confettiEnabled) {
+      triggerConfetti();
+    }
+    
     triggerPromoCopy();
   };
 
