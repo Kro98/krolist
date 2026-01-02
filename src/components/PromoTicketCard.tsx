@@ -135,11 +135,11 @@ export default function PromoTicketCard({
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               {storeIcon && (
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center p-2 shadow-inner">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl overflow-hidden shadow-inner">
                   <img 
                     src={storeIcon} 
                     alt={promo.store}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
