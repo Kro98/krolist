@@ -461,46 +461,69 @@ export default function PromoCodes() {
 
       {/* Add New Promo Code - Hidden for guests */}
       {!isGuest ? (
-        <Card className="shadow-card">
-          <CardHeader 
-            className="cursor-pointer select-none" 
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl transform translate-x-20 -translate-y-20" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl transform -translate-x-10 translate-y-10" />
+          
+          {/* Header */}
+          <div 
+            className="relative cursor-pointer select-none p-5 pb-0"
             onClick={() => setIsAddFormVisible(!isAddFormVisible)}
           >
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-primary" />
-                  {t('promo.addNew')}
-                </CardTitle>
-                <CardDescription>
-                  {t('promo.addNewDesc')}
-                </CardDescription>
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
+                  <Plus className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">{t('promo.addNew')}</h2>
+                  <p className="text-sm text-muted-foreground">{t('promo.addNewDesc')}</p>
+                </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                {isAddFormVisible ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-10 w-10 rounded-full bg-muted/50 hover:bg-muted"
+              >
+                {isAddFormVisible ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
               </Button>
             </div>
-          </CardHeader>
+          </div>
+          
           {isAddFormVisible && (
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative p-5 pt-6 space-y-6">
+              {/* Main inputs row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Promo Code Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="code">{t('promo.code')}</Label>
-                  <Input
-                    id="code"
-                    placeholder={t('promo.codePlaceholder')}
-                    value={newCode}
-                    onChange={(e) => setNewCode(e.target.value)}
-                    maxLength={20}
-                  />
+                  <Label htmlFor="code" className="text-sm font-medium flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
+                    {t('promo.code')}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="code"
+                      placeholder={t('promo.codePlaceholder')}
+                      value={newCode}
+                      onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                      maxLength={20}
+                      className="h-12 text-lg font-mono uppercase tracking-wider bg-background/80 border-2 border-muted focus:border-primary/50 rounded-xl pl-4"
+                    />
+                  </div>
                 </div>
+                
+                {/* Shop Select */}
                 <div className="space-y-2">
-                  <Label htmlFor="shop">{t('promo.shop')}</Label>
+                  <Label htmlFor="shop" className="text-sm font-medium flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
+                    {t('promo.shop')}
+                  </Label>
                   <Select value={selectedShop} onValueChange={setSelectedShop}>
-                    <SelectTrigger id="shop">
+                    <SelectTrigger id="shop" className="h-12 bg-background/80 border-2 border-muted focus:border-primary/50 rounded-xl">
                       <SelectValue placeholder={t('promo.selectShop')} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-popover border-border">
                       {AVAILABLE_SHOPS.map((shop) => (
                         <SelectItem key={shop.id} value={shop.id}>
                           {shop.name}
@@ -509,83 +532,107 @@ export default function PromoCodes() {
                     </SelectContent>
                   </Select>
                 </div>
-                {selectedShop === 'other' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="customShop">{t('promo.customShopName')}</Label>
-                    <Input
-                      id="customShop"
-                      placeholder={t('promo.enterShopName')}
-                      value={customShopName}
-                      onChange={(e) => setCustomShopName(e.target.value)}
-                      maxLength={20}
-                    />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label htmlFor="description">{t('promo.description')}</Label>
-                  <Input
-                    id="description"
-                    placeholder={t('promo.descriptionPlaceholder')}
-                    value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
-                    maxLength={120}
-                  />
-                </div>
               </div>
               
-              {/* Expiration Date and Reusable Options */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expires">{t('promo.expirationDate') || 'Expiration Date'}</Label>
+              {/* Custom shop name */}
+              {selectedShop === 'other' && (
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                  <Label htmlFor="customShop" className="text-sm font-medium">{t('promo.customShopName')}</Label>
+                  <Input
+                    id="customShop"
+                    placeholder={t('promo.enterShopName')}
+                    value={customShopName}
+                    onChange={(e) => setCustomShopName(e.target.value)}
+                    maxLength={20}
+                    className="h-12 bg-background/80 border-2 border-muted focus:border-primary/50 rounded-xl"
+                  />
+                </div>
+              )}
+              
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-sm font-medium flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+                  {t('promo.description')}
+                </Label>
+                <Input
+                  id="description"
+                  placeholder={t('promo.descriptionPlaceholder')}
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  maxLength={120}
+                  className="h-12 bg-background/80 border-2 border-muted focus:border-primary/50 rounded-xl"
+                />
+              </div>
+              
+              {/* Options Row - Expiration, Reusable, Image */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Expiration Date Card */}
+                <div className="p-4 rounded-2xl bg-background/60 border border-border/50 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <div className="p-1.5 rounded-lg bg-blue-500/10">
+                      <Gift className="h-4 w-4 text-blue-500" />
+                    </div>
+                    {t('promo.expirationDate') || 'Expires'}
+                  </div>
                   <Input
                     id="expires"
                     type="date"
                     value={newExpiresDate}
                     onChange={(e) => setNewExpiresDate(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
+                    className="h-10 bg-muted/50 border-0 rounded-lg text-sm"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {t('promo.expirationHint') || 'Leave empty for 1 year validity'}
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('promo.expirationHint') || 'Leave empty for 1 year'}
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('promo.usageType') || 'Usage Type'}</Label>
-                  <div className="flex items-center gap-3 h-10">
+                
+                {/* Reusable Toggle Card */}
+                <div className="p-4 rounded-2xl bg-background/60 border border-border/50 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                      <RotateCcw className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    {t('promo.usageType') || 'Usage'}
+                  </div>
+                  <div className="flex items-center gap-3">
                     <Switch
                       id="reusable-toggle-add"
                       checked={newIsReusable}
                       onCheckedChange={setNewIsReusable}
                     />
-                    <Label htmlFor="reusable-toggle-add" className="cursor-pointer">
-                      {newIsReusable ? (
-                        <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          {t('promo.reusable') || 'Reusable'}
-                        </Badge>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">{t('promo.oneTimeUse') || 'One-time use'}</span>
-                      )}
-                    </Label>
+                    {newIsReusable ? (
+                      <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
+                        {t('promo.reusable') || 'Reusable'}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">{t('promo.oneTimeUse') || 'One-time'}</span>
+                    )}
                   </div>
                 </div>
-              </div>
-              
-              {/* Image Upload Section */}
-              <div className="mt-4 space-y-2">
-                <Label>{t('promo.storeImage') || 'Store Image (Optional)'}</Label>
-                <div className="flex items-center gap-4">
+                
+                {/* Image Upload Card */}
+                <div className="p-4 rounded-2xl bg-background/60 border border-border/50 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <div className="p-1.5 rounded-lg bg-purple-500/10">
+                      <ImagePlus className="h-4 w-4 text-purple-500" />
+                    </div>
+                    {t('promo.storeImage') || 'Image'}
+                  </div>
+                  
                   {croppedImagePreview ? (
-                    <div className="relative">
+                    <div className="relative inline-block">
                       <img 
                         src={croppedImagePreview} 
                         alt="Store preview" 
-                        className="w-20 h-20 object-cover rounded-lg border-2 border-primary/30"
+                        className="w-16 h-16 object-cover rounded-xl border-2 border-primary/30 shadow-sm"
                       />
                       <Button
                         type="button"
                         variant="destructive"
                         size="icon"
-                        className="absolute -top-2 -right-2 h-6 w-6"
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full"
                         onClick={() => clearImage()}
                       >
                         <X className="h-3 w-3" />
@@ -594,12 +641,11 @@ export default function PromoCodes() {
                   ) : (
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => fileInputRef.current?.click()}
-                      className="h-20 w-20 flex flex-col items-center justify-center gap-1 border-dashed"
+                      className="h-16 w-16 p-0 rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5"
                     >
-                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{t('promo.addImage') || 'Add'}</span>
+                      <Plus className="h-5 w-5 text-muted-foreground" />
                     </Button>
                   )}
                   <input
@@ -609,29 +655,30 @@ export default function PromoCodes() {
                     className="hidden"
                     onChange={(e) => handleImageSelect(e, false)}
                   />
-                  <p className="text-xs text-muted-foreground flex-1">
-                    {t('promo.imageHint') || 'Add a custom store logo or image for your promo code ticket'}
-                  </p>
                 </div>
               </div>
               
+              {/* Submit Button */}
               <Button
                 onClick={handleAddCode}
                 disabled={isUploadingImage}
-                className="mt-4 bg-gradient-primary hover:shadow-hover transition-all duration-200"
+                className="w-full h-14 text-base font-semibold rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 {isUploadingImage ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                     {t('promo.uploading') || 'Uploading...'}
                   </>
                 ) : (
-                  t('promo.addCode')
+                  <>
+                    <Plus className="h-5 w-5 mr-2" />
+                    {t('promo.addCode')}
+                  </>
                 )}
               </Button>
-            </CardContent>
+            </div>
           )}
-        </Card>
+        </div>
       ) : (
         <Card className="shadow-card border-2 border-primary/30">
           <CardContent className="p-6">
