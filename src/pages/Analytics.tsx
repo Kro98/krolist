@@ -282,27 +282,64 @@ function DealCard({ change, index, navigate }: { change: RecentChange; index: nu
   );
 }
 
-// Store Progress Bar
-function StoreProgressBar({ store, count, maxCount, index }: { store: string; count: number; maxCount: number; index: number }) {
-  const percentage = (count / maxCount) * 100;
+// Store Card Component
+function StoreCard({ store, count, maxCount, index, totalProducts }: { 
+  store: string; 
+  count: number; 
+  maxCount: number; 
+  index: number;
+  totalProducts: number;
+}) {
+  const percentage = Math.round((count / totalProducts) * 100);
+  const isTop = index === 0;
   
+  // Generate a consistent color based on store name
+  const colors = [
+    { bg: "from-primary/15 to-primary/5", border: "border-primary/20", text: "text-primary", bar: "from-primary to-primary/60" },
+    { bg: "from-blue-500/15 to-blue-500/5", border: "border-blue-500/20", text: "text-blue-500", bar: "from-blue-500 to-blue-500/60" },
+    { bg: "from-purple-500/15 to-purple-500/5", border: "border-purple-500/20", text: "text-purple-500", bar: "from-purple-500 to-purple-500/60" },
+    { bg: "from-emerald-500/15 to-emerald-500/5", border: "border-emerald-500/20", text: "text-emerald-500", bar: "from-emerald-500 to-emerald-500/60" },
+    { bg: "from-rose-500/15 to-rose-500/5", border: "border-rose-500/20", text: "text-rose-500", bar: "from-rose-500 to-rose-500/60" },
+    { bg: "from-amber-500/15 to-amber-500/5", border: "border-amber-500/20", text: "text-amber-500", bar: "from-amber-500 to-amber-500/60" },
+  ];
+  const color = colors[index % colors.length];
+
   return (
     <div 
-      className="space-y-2"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className={`group relative overflow-hidden rounded-2xl border ${color.border} bg-gradient-to-br ${color.bg} 
+        p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
+      style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Store className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">{store}</span>
+      {isTop && (
+        <div className="absolute top-2 right-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+            Top
+          </span>
         </div>
-        <span className="text-sm font-bold text-foreground">{count}</span>
+      )}
+      
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`p-2.5 rounded-xl bg-background/80 backdrop-blur-sm shadow-sm`}>
+          <Store className={`h-5 w-5 ${color.text}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm truncate">{store}</p>
+          <p className="text-xs text-muted-foreground">{percentage}% of favorites</p>
+        </div>
       </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${percentage}%` }}
-        />
+      
+      <div className="space-y-2">
+        <div className="flex items-end justify-between">
+          <span className={`text-3xl font-bold ${color.text}`}>{count}</span>
+          <span className="text-xs text-muted-foreground mb-1">products</span>
+        </div>
+        
+        <div className="h-1.5 bg-background/60 rounded-full overflow-hidden">
+          <div 
+            className={`h-full bg-gradient-to-r ${color.bar} rounded-full transition-all duration-700 ease-out`}
+            style={{ width: `${(count / maxCount) * 100}%` }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -562,16 +599,17 @@ export default function Analytics() {
               <h2 className="text-lg font-semibold">Products by Store</h2>
             </div>
             
-            <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-5">
+            <div className="grid grid-cols-2 gap-3">
               {Object.entries(stats.storeBreakdown)
                 .sort(([, a], [, b]) => b - a)
                 .map(([store, count], index) => (
-                  <StoreProgressBar 
+                  <StoreCard 
                     key={store} 
                     store={store} 
                     count={count} 
                     maxCount={maxStoreCount}
                     index={index}
+                    totalProducts={stats.favoriteProducts}
                   />
                 ))}
             </div>
