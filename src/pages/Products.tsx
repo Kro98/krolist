@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestAuth } from "@/contexts/GuestAuthContext";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
+import { FunnyLoadingText } from "@/components/FunnyLoadingText";
 
 // Validation schema for product updates
 const productUpdateSchema = z.object({
@@ -373,9 +374,11 @@ export default function Products() {
     return acc;
   }, {} as Record<string, typeof filteredKrolistProducts>);
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">Loading products...</div>
-      </div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <FunnyLoadingText />
+      </div>
+    );
   }
   return <div className="space-y-6">
       {/* Search, Filter, and Select Tools */}

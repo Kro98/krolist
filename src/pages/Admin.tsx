@@ -17,6 +17,7 @@ import OrdersManager from "./admin/OrdersManager";
 import { ShopManager } from "@/components/ShopManager";
 import { AdSettingsManager } from "@/components/admin/AdSettingsManager";
 import { AdAnalytics } from "@/components/admin/AdAnalytics";
+import { FunnyLoadingText } from "@/components/FunnyLoadingText";
 export default function Admin() {
   const {
     isAdmin,
@@ -89,12 +90,11 @@ export default function Admin() {
     }
   }, [isAdmin, roleLoading, navigate, toast, t]);
   if (roleLoading) {
-    return <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Shield className="h-12 w-12 mx-auto mb-4 text-primary animate-pulse" />
-          <p className="text-muted-foreground">{t('loading')}</p>
-        </div>
-      </div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <FunnyLoadingText />
+      </div>
+    );
   }
   if (!isAdmin) {
     return <div className="flex items-center justify-center min-h-screen">

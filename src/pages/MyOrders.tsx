@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Package, Clock, CheckCircle, XCircle, Bell, Mail, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FunnyLoadingText } from "@/components/FunnyLoadingText";
 
 interface Order {
   id: string;
@@ -196,8 +197,8 @@ export default function MyOrders() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="text-center">Loading...</div>
+      <div className="container mx-auto py-8 px-4 flex items-center justify-center min-h-[400px]">
+        <FunnyLoadingText />
       </div>
     );
   }
