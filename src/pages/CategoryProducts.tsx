@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Package } from 'lucide-react';
+import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 
 interface Product {
   id: string;
@@ -82,7 +83,7 @@ export default function CategoryProducts() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">{t('loading')}</p>
+        <FunnyLoadingText />
       </div>
     );
   }

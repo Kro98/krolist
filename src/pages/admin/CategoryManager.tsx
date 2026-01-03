@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Image as ImageIcon, Package } from 'lucide-react';
+import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 
 interface CategoryCollection {
   id: string;
@@ -270,7 +271,11 @@ export default function CategoryManager() {
   };
 
   if (isLoading) {
-    return <div>{t('loading')}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <FunnyLoadingText />
+      </div>
+    );
   }
 
   return (

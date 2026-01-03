@@ -16,6 +16,7 @@ import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, Mo
 import { STORES, getEnabledStores } from '@/config/stores';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 interface KrolistProduct {
   id: string;
   title: string;
@@ -642,7 +643,11 @@ export default function KrolistProductsManager() {
     }
   };
   if (isLoading) {
-    return <div>{t('loading')}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <FunnyLoadingText />
+      </div>
+    );
   }
   return <div className="space-y-6">
       <div>

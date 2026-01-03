@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PromoCodeSettings from "@/components/admin/PromoCodeSettings";
+import { FunnyLoadingText } from "@/components/FunnyLoadingText";
 
 interface KrolistPromoCode {
   id: string;
@@ -184,7 +185,11 @@ export default function PromoCodesManager() {
   };
 
   if (isLoading) {
-    return <div>{t('loading')}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <FunnyLoadingText />
+      </div>
+    );
   }
 
   return (

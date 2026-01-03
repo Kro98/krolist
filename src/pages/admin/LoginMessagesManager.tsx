@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, MessageSquare } from 'lucide-react';
+import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 
 interface LoginMessage {
   id: string;
@@ -158,7 +159,11 @@ export default function LoginMessagesManager() {
   };
 
   if (isLoading) {
-    return <div>{t('loading')}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <FunnyLoadingText />
+      </div>
+    );
   }
 
   return (

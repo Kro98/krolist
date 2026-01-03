@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tag } from 'lucide-react';
+import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 
 interface CategoryCollection {
   id: string;
@@ -63,7 +64,7 @@ export default function CategoryTags() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">{t('loading')}</p>
+        <FunnyLoadingText />
       </div>
     );
   }
