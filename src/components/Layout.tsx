@@ -18,6 +18,7 @@ import { useIsMobileOrTablet } from "@/hooks/use-mobile";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { NotificationPopup } from "@/components/NotificationPopup";
+import { FloatingInstallPrompt } from "@/components/FloatingInstallPrompt";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -199,6 +200,7 @@ function LayoutContent({
       <AdSpace position="right" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
       
       <NotificationPopup />
+      <FloatingInstallPrompt />
       <LoginMessageDialog />
       <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
       <AppSidebar />
