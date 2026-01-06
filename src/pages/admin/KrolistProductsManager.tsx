@@ -66,6 +66,7 @@ export default function KrolistProductsManager() {
   const [showManualPriceDialog, setShowManualPriceDialog] = useState(false);
   const [manualPrices, setManualPrices] = useState<Record<string, string>>({});
   const [manualStatuses, setManualStatuses] = useState<Record<string, string>>({});
+  const [clickedTitles, setClickedTitles] = useState<Set<string>>(new Set());
   const [newListTitle, setNewListTitle] = useState('');
   const [selectedProductsToCopy, setSelectedProductsToCopy] = useState<string[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
@@ -466,7 +467,12 @@ export default function KrolistProductsManager() {
     });
     setManualPrices(initialPrices);
     setManualStatuses(initialStatuses);
+    setClickedTitles(new Set());
     setShowManualPriceDialog(true);
+  };
+
+  const handleTitleClick = (title: string) => {
+    setClickedTitles(prev => new Set(prev).add(title));
   };
   const handleExportPrices = () => {
     // Group products by title
@@ -1156,9 +1162,16 @@ export default function KrolistProductsManager() {
                       e.currentTarget.style.display = 'none';
                     }} className="w-16 h-16 flex-shrink-0 border-0 rounded-sm opacity-100 object-fill" />}
                        <div className="flex-1 min-w-0">
-                        <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors" title={title}>
+                        <a 
+                          href={prods[0].product_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className={`transition-colors ${clickedTitles.has(title) ? 'text-muted-foreground' : 'hover:text-primary'}`}
+                          title={title}
+                          onClick={() => handleTitleClick(title)}
+                        >
                           <CardTitle className="text-sm flex items-center gap-1">
-                            {title.length > 30 ? `${title.substring(0, 30)}...` : title}
+                            {title.length > 25 ? `${title.substring(0, 25)}...` : title}
                             <ExternalLink className="h-3 w-3 flex-shrink-0" />
                           </CardTitle>
                         </a>
@@ -1257,7 +1270,13 @@ export default function KrolistProductsManager() {
                           e.currentTarget.style.display = 'none';
                         }} />}
                           <div className="min-w-0">
-                            <a href={prods[0].product_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                            <a 
+                              href={prods[0].product_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className={`transition-colors ${clickedTitles.has(title) ? 'text-muted-foreground' : 'hover:text-primary'}`}
+                              onClick={() => handleTitleClick(title)}
+                            >
                               <p className="font-medium text-sm line-clamp-2 flex items-center gap-1">
                                 {title}
                                 <ExternalLink className="h-3 w-3 flex-shrink-0" />
