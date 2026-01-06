@@ -1,14 +1,9 @@
 import { Currency } from "@/lib/currencyConversion";
 
-// Import shop brand icons
+// Import shop brand icons (only core stores - others added via admin)
 import sheinIcon from "@/assets/shop-icons/shein-icon.png";
 import noonIcon from "@/assets/shop-icons/noon-icon.png";
 import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
-import ikeaIcon from "@/assets/shop-icons/ikea-icon.png";
-import abyatIcon from "@/assets/shop-icons/abyat-icon.png";
-import namshiIcon from "@/assets/shop-icons/namshi-icon.png";
-import trendyolIcon from "@/assets/shop-icons/trendyol-icon.png";
-import asosIcon from "@/assets/shop-icons/asos-icon.png";
 
 export interface StoreConfig {
   id: string;
@@ -100,106 +95,6 @@ export const STORES: Record<string, StoreConfig> = {
     brandColor: 'blue',
     enabled: true,
     comingSoon: false
-  },
-  
-  // ========================================
-  // 🔗 IKEA AFFILIATE CONFIGURATION
-  // ========================================
-  ikea: {
-    id: 'ikea',
-    name: 'IKEA',
-    displayName: 'IKEA',
-    domains: ['ikea.com'],
-    icon: ikeaIcon,
-    
-    // 💰 AFFILIATE LINK - Update here when IKEA link is available
-    affiliateUrl: 'https://www.ikea.com/ref/affiliate123',
-    
-    defaultCurrency: 'SAR',
-    supportedCurrencies: ['SAR', 'AED', 'USD', 'EGP'],
-    brandColor: 'yellow',
-    enabled: true,
-    comingSoon: true
-  },
-  
-  // ========================================
-  // 🔗 ABYAT AFFILIATE CONFIGURATION
-  // ========================================
-  abyat: {
-    id: 'abyat',
-    name: 'Abyat',
-    displayName: 'ABYAT',
-    domains: ['abyat.com'],
-    icon: abyatIcon,
-    
-    // 💰 AFFILIATE LINK - Update here when Abyat link is available
-    affiliateUrl: 'https://www.abyat.com/?ref=affiliate123',
-    
-    defaultCurrency: 'SAR',
-    supportedCurrencies: ['SAR', 'AED', 'EGP'],
-    brandColor: 'red',
-    enabled: true,
-    comingSoon: true
-  },
-  
-  // ========================================
-  // 🔗 NAMSHI AFFILIATE CONFIGURATION
-  // ========================================
-  namshi: {
-    id: 'namshi',
-    name: 'Namshi',
-    displayName: 'NAMSHI',
-    domains: ['namshi.com'],
-    icon: namshiIcon,
-    
-    // 💰 AFFILIATE LINK - Update here when Namshi link is available
-    affiliateUrl: 'https://www.namshi.com/?ref=affiliate123',
-    
-    defaultCurrency: 'SAR',
-    supportedCurrencies: ['SAR', 'AED'],
-    brandColor: 'pink',
-    enabled: true,
-    comingSoon: true
-  },
-  
-  // ========================================
-  // 🔗 TRENDYOL AFFILIATE CONFIGURATION
-  // ========================================
-  trendyol: {
-    id: 'trendyol',
-    name: 'Trendyol',
-    displayName: 'TRENDYOL',
-    domains: ['trendyol.com'],
-    icon: trendyolIcon,
-    
-    // 💰 AFFILIATE LINK - Update here when Trendyol link is available
-    affiliateUrl: 'https://www.trendyol.com/?ref=affiliate123',
-    
-    defaultCurrency: 'SAR',
-    supportedCurrencies: ['SAR', 'USD'],
-    brandColor: 'orange',
-    enabled: true,
-    comingSoon: true
-  },
-  
-  // ========================================
-  // 🔗 ASOS AFFILIATE CONFIGURATION
-  // ========================================
-  asos: {
-    id: 'asos',
-    name: 'ASOS',
-    displayName: 'ASOS',
-    domains: ['asos.com'],
-    icon: asosIcon,
-    
-    // 💰 AFFILIATE LINK - Update here when ASOS link is available
-    affiliateUrl: 'https://www.asos.com/?ref=affiliate123',
-    
-    defaultCurrency: 'USD',
-    supportedCurrencies: ['USD', 'SAR', 'AED', 'EGP'],
-    brandColor: 'slate',
-    enabled: true,
-    comingSoon: true
   }
 };
 
