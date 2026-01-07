@@ -596,10 +596,15 @@ export type Database = {
       }
       promo_codes: {
         Row: {
+          card_background: string | null
+          card_color: string | null
           code: string
           created_at: string
+          custom_icon_url: string | null
           custom_image_url: string | null
+          custom_shop_name: string | null
           description: string
+          display_order: number | null
           expires: string
           id: string
           is_krolist: boolean | null
@@ -611,10 +616,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          card_background?: string | null
+          card_color?: string | null
           code: string
           created_at?: string
+          custom_icon_url?: string | null
           custom_image_url?: string | null
+          custom_shop_name?: string | null
           description: string
+          display_order?: number | null
           expires: string
           id?: string
           is_krolist?: boolean | null
@@ -626,10 +636,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          card_background?: string | null
+          card_color?: string | null
           code?: string
           created_at?: string
+          custom_icon_url?: string | null
           custom_image_url?: string | null
+          custom_shop_name?: string | null
           description?: string
+          display_order?: number | null
           expires?: string
           id?: string
           is_krolist?: boolean | null

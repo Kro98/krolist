@@ -32,6 +32,10 @@ interface PromoCode {
   used: boolean;
   reusable: boolean;
   custom_image_url?: string;
+  custom_shop_name?: string;
+  custom_icon_url?: string;
+  card_color?: string;
+  card_background?: string;
 }
 
 export default function PromoCodes() {
@@ -143,7 +147,11 @@ export default function PromoCodes() {
           expires: item.expires,
           used: item.used,
           reusable: item.reusable,
-          custom_image_url: item.custom_image_url || undefined
+          custom_image_url: item.custom_image_url || undefined,
+          custom_shop_name: item.custom_shop_name || undefined,
+          custom_icon_url: item.custom_icon_url || undefined,
+          card_color: item.card_color || undefined,
+          card_background: item.card_background || undefined
         })));
       }
     } catch (error) {
