@@ -16,6 +16,10 @@ interface PromoTicketCardProps {
     used: boolean;
     reusable: boolean;
     custom_image_url?: string;
+    custom_shop_name?: string;
+    custom_icon_url?: string;
+    card_color?: string;
+    card_background?: string;
   };
   isKrolist?: boolean;
   onCopy: (code: string) => void;
@@ -33,8 +37,9 @@ export default function PromoTicketCard({
   getTimeUntilExpiration,
 }: PromoTicketCardProps) {
   const { t } = useLanguage();
-  const storeIcon = promo.custom_image_url || getStoreIcon(promo.store);
+  const storeIcon = promo.custom_icon_url || promo.custom_image_url || getStoreIcon(promo.store);
   const storeConfig = getStoreById(promo.store.toLowerCase());
+  const displayName = promo.custom_shop_name || promo.store;
   const [hasAnimated, setHasAnimated] = useState(false);
   
   // Trigger animation on mount
@@ -43,23 +48,24 @@ export default function PromoTicketCard({
     return () => clearTimeout(timer);
   }, []);
   
-  // Get brand color class based on store
-  const getBrandGradient = () => {
-    // If custom image, use a neutral gradient
-    if (promo.custom_image_url) {
-      return 'from-slate-700/90 via-slate-800/85 to-slate-900/90';
+  // Get gradient based on custom color or brand
+  const getGradientStyle = () => {
+    // If custom card_color is provided, use it
+    if (promo.card_color) {
+      return { background: `linear-gradient(135deg, ${promo.card_color}, ${promo.card_color}88)` };
     }
+    // Otherwise use brand color
     const brandColor = storeConfig?.brandColor || 'primary';
     const gradients: Record<string, string> = {
-      purple: 'from-purple-600/90 via-purple-700/85 to-purple-900/90',
-      orange: 'from-orange-500/90 via-orange-600/85 to-orange-800/90',
-      blue: 'from-blue-600/90 via-blue-700/85 to-blue-900/90',
-      yellow: 'from-yellow-500/90 via-yellow-600/85 to-yellow-800/90',
-      red: 'from-red-500/90 via-red-600/85 to-red-800/90',
-      pink: 'from-pink-500/90 via-pink-600/85 to-pink-800/90',
-      slate: 'from-slate-600/90 via-slate-700/85 to-slate-900/90',
+      purple: 'linear-gradient(135deg, rgb(124, 58, 237), rgb(91, 33, 182))',
+      orange: 'linear-gradient(135deg, rgb(249, 115, 22), rgb(194, 65, 12))',
+      blue: 'linear-gradient(135deg, rgb(59, 130, 246), rgb(29, 78, 216))',
+      yellow: 'linear-gradient(135deg, rgb(234, 179, 8), rgb(161, 98, 7))',
+      red: 'linear-gradient(135deg, rgb(239, 68, 68), rgb(185, 28, 28))',
+      pink: 'linear-gradient(135deg, rgb(236, 72, 153), rgb(190, 24, 93))',
+      slate: 'linear-gradient(135deg, rgb(71, 85, 105), rgb(30, 41, 59))',
     };
-    return gradients[brandColor] || 'from-primary/90 via-primary/85 to-primary/90';
+    return { background: gradients[brandColor] || 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))' };
   };
 
   const isUsed = promo.used && !promo.reusable;
@@ -92,21 +98,29 @@ export default function PromoTicketCard({
         </div>
 
         {/* Background with store icon or custom image */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${getBrandGradient()}`}>
-          {/* Custom image as full background */}
-          {promo.custom_image_url && (
+        <div className="absolute inset-0" style={getGradientStyle()}>
+          {/* Custom background image */}
+          {promo.card_background && (
+            <img 
+              src={promo.card_background} 
+              alt={displayName}
+              className="absolute inset-0 w-full h-full object-cover opacity-40"
+            />
+          )}
+          {/* Legacy custom_image_url support */}
+          {!promo.card_background && promo.custom_image_url && (
             <img 
               src={promo.custom_image_url} 
-              alt={promo.store}
+              alt={displayName}
               className="absolute inset-0 w-full h-full object-cover opacity-40"
             />
           )}
           {/* Large store icon as watermark (only for non-custom images) */}
-          {storeIcon && !promo.custom_image_url && (
+          {storeIcon && !promo.custom_image_url && !promo.card_background && !promo.custom_icon_url && (
             <div className="absolute -right-8 -bottom-8 opacity-20">
               <img 
                 src={storeIcon} 
-                alt={promo.store}
+                alt={displayName}
                 className="w-40 h-40 object-contain"
               />
             </div>
@@ -133,19 +147,19 @@ export default function PromoTicketCard({
         <div className="relative z-10 p-5">
           {/* Top section - Code & Store */}
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
               {storeIcon && (
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl overflow-hidden shadow-inner">
                   <img 
                     src={storeIcon} 
-                    alt={promo.store}
+                    alt={displayName}
                     className="w-full h-full object-cover"
                   />
                 </div>
               )}
               <div>
                 <p className="text-white/70 text-xs uppercase tracking-wider font-medium">
-                  {promo.store}
+                  {displayName}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   {isKrolist && (
