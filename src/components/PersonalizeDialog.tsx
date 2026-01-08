@@ -111,7 +111,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
   const [activeSection, setActiveSection] = useState<ActiveSection>('theme');
   const [mobileCardStyle, setMobileCardStyle] = useState<'fade' | 'full'>('fade');
   const [cardLayoutStyle, setCardLayoutStyle] = useState<'classic' | 'compact'>('compact');
-  const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>('classic');
+  // Favorites always uses classic style - no toggle needed
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(3);
   const [mobileItemsPerSlide, setMobileItemsPerSlide] = useState<1 | 2 | 4>(2);
   const [titleScrollSpeed, setTitleScrollSpeed] = useState<number>(3);
@@ -138,10 +138,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
       setCardLayoutStyle(savedLayoutStyle);
     }
     
-    const savedFavoritesStyle = localStorage.getItem('favoritesCardStyle');
-    if (savedFavoritesStyle === 'classic' || savedFavoritesStyle === 'compact') {
-      setFavoritesCardStyle(savedFavoritesStyle);
-    }
+    // Favorites always uses classic - no need to load from storage
     
     const savedItemsPerRow = localStorage.getItem('desktopItemsPerRow');
     if (savedItemsPerRow === '2' || savedItemsPerRow === '3') {
@@ -177,11 +174,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     window.dispatchEvent(new CustomEvent('cardLayoutStyleChanged', { detail: style }));
   };
 
-  const saveFavoritesCardStyle = (style: 'classic' | 'compact') => {
-    setFavoritesCardStyle(style);
-    localStorage.setItem('favoritesCardStyle', style);
-    window.dispatchEvent(new CustomEvent('favoritesCardStyleChanged', { detail: style }));
-  };
+  // Favorites always uses classic style - function removed
 
   const saveDesktopItemsPerRow = (count: 2 | 3) => {
     setDesktopItemsPerRow(count);
@@ -208,7 +201,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
     setCustomHue(31);
     saveMobileCardStyle('fade');
     saveCardLayoutStyle('compact');
-    saveFavoritesCardStyle('classic');
+    // Favorites always uses classic - no need to reset
     saveDesktopItemsPerRow(3);
     saveMobileItemsPerSlide(2);
     saveTitleScrollSpeed(3);
@@ -449,54 +442,10 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                 </div>
               </div>
 
-              {/* Favorites Layout */}
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-1.5">
-                  <Heart className="h-3 w-3 text-primary" />
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {isArabic ? 'تخطيط المفضلة' : 'Favorites Style'}
-                  </label>
-                </div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {[
-                    { value: 'classic' as const, label: isArabic ? 'كلاسيكي' : 'Classic', preview: ClassicCardPreview },
-                    { value: 'compact' as const, label: isArabic ? 'مدمج' : 'Compact', preview: CompactCardPreview },
-                  ].map((layout) => {
-                    const isActive = favoritesCardStyle === layout.value;
-                    const Preview = layout.preview;
-                    return (
-                      <button
-                        key={layout.value}
-                        onClick={() => saveFavoritesCardStyle(layout.value)}
-                        className={cn(
-                          "relative p-2.5 rounded-xl border-2 transition-all duration-200",
-                          isActive
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border/40 hover:border-border hover:bg-muted/20"
-                        )}
-                      >
-                        <Preview />
-                        <div className="flex items-center justify-center mt-2">
-                          <span className={cn(
-                            "text-[11px] font-medium",
-                            isActive ? "text-primary" : "text-muted-foreground"
-                          )}>
-                            {layout.label}
-                          </span>
-                        </div>
-                        {isActive && (
-                          <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Favorites always uses Classic style - no toggle needed */}
 
               {/* Compact Options */}
-              {(cardLayoutStyle === 'compact' || favoritesCardStyle === 'compact') && (
+              {cardLayoutStyle === 'compact' && (
                 <div className="space-y-2.5">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {isArabic ? 'نمط الصورة' : 'Image Style'}

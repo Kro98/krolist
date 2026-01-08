@@ -150,10 +150,8 @@ export function ProductCarousel({
     const saved = localStorage.getItem('cardLayoutStyle');
     return saved === 'classic' ? 'classic' : 'compact';
   });
-  const [favoritesCardStyle, setFavoritesCardStyle] = useState<'classic' | 'compact'>(() => {
-    const saved = localStorage.getItem('favoritesCardStyle');
-    return saved === 'classic' ? 'classic' : 'compact';
-  });
+  // Favorites always uses classic style - no toggle
+  const favoritesCardStyle = 'classic' as const;
   const [desktopItemsPerRow, setDesktopItemsPerRow] = useState<2 | 3>(() => {
     const saved = localStorage.getItem('desktopItemsPerRow');
     return saved === '2' ? 2 : 3;
@@ -223,9 +221,7 @@ export function ProductCarousel({
     const handleLayoutChange = (e: CustomEvent) => {
       setCardLayoutStyle(e.detail);
     };
-    const handleFavoritesLayoutChange = (e: CustomEvent) => {
-      setFavoritesCardStyle(e.detail);
-    };
+    // Favorites layout change listener removed - always uses classic
     const handleItemsPerRowChange = (e: CustomEvent) => {
       setDesktopItemsPerRow(e.detail);
     };
@@ -234,13 +230,13 @@ export function ProductCarousel({
     };
     window.addEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
     window.addEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
-    window.addEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
+    // favoritesCardStyleChanged listener removed - always uses classic
     window.addEventListener('desktopItemsPerRowChanged', handleItemsPerRowChange as EventListener);
     window.addEventListener('mobileItemsPerSlideChanged', handleMobileItemsPerSlideChange as EventListener);
     return () => {
       window.removeEventListener('carouselSpeedChanged', handleSpeedChange as EventListener);
       window.removeEventListener('cardLayoutStyleChanged', handleLayoutChange as EventListener);
-      window.removeEventListener('favoritesCardStyleChanged', handleFavoritesLayoutChange as EventListener);
+      // favoritesCardStyleChanged listener cleanup removed
       window.removeEventListener('desktopItemsPerRowChanged', handleItemsPerRowChange as EventListener);
       window.removeEventListener('mobileItemsPerSlideChanged', handleMobileItemsPerSlideChange as EventListener);
     };
