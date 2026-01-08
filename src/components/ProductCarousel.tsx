@@ -10,6 +10,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { ProductCard, type Product } from "@/components/ProductCard";
+import { FavoriteCard } from "@/components/FavoriteCard";
 import { MobileProductCard } from "@/components/MobileProductCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -366,10 +367,20 @@ export function ProductCarousel({
       
       {isExpanded && isTabletOrAbove ? (
         // Grid view for expanded state with in-feed ads
-        <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? 'xl:grid-cols-3' : ''} ${!isTablet && desktopItemsPerRow === 3 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'xl:grid-cols-4' : ''}`}>
+        <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
           {products.map((product, index) => (
             <React.Fragment key={product.id}>
-              {((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
+              {isFavoritesSection ? (
+                <FavoriteCard
+                  product={product}
+                  onDelete={onDelete}
+                  onUpdate={onUpdate}
+                  onRemoveFromMyProducts={onRemoveFromMyProducts}
+                  isSelectionMode={isSelectionMode}
+                  isSelected={selectedProductIds.has(product.id)}
+                  onToggleSelect={onToggleSelect}
+                />
+              ) : ((cardLayoutStyle) === 'classic') ? (
                 <ProductCard
                   product={product}
                   onDelete={onDelete}
@@ -427,7 +438,18 @@ export function ProductCarousel({
                       {slideContent.items.map((item, itemIndex) => (
                         item.type === 'ad' ? (
                           <InFeedAdCard key={`ad-${itemIndex}`} />
-                        ) : ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
+                        ) : isFavoritesSection ? (
+                          <FavoriteCard
+                            key={item.product.id}
+                            product={item.product}
+                            onDelete={onDelete}
+                            onUpdate={onUpdate}
+                            onRemoveFromMyProducts={onRemoveFromMyProducts}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={selectedProductIds.has(item.product.id)}
+                            onToggleSelect={onToggleSelect}
+                          />
+                        ) : (cardLayoutStyle === 'classic') ? (
                           <ProductCard
                             key={item.product.id}
                             product={item.product}
@@ -460,9 +482,20 @@ export function ProductCarousel({
                     </div>
                   ) : (
                     // Product slide (mobile/default)
-                    <div className={`grid gap-4 ${isMobile ? (mobileItemsPerSlide >= 2 && ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'compact') ? 'grid-cols-2' : 'grid-cols-1') : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                    <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                       {slideContent.products.map(product => (
-                        ((isFavoritesSection ? favoritesCardStyle : cardLayoutStyle) === 'classic') ? (
+                        isFavoritesSection ? (
+                          <FavoriteCard
+                            key={product.id}
+                            product={product}
+                            onDelete={onDelete}
+                            onUpdate={onUpdate}
+                            onRemoveFromMyProducts={onRemoveFromMyProducts}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={selectedProductIds.has(product.id)}
+                            onToggleSelect={onToggleSelect}
+                          />
+                        ) : (cardLayoutStyle === 'classic') ? (
                           <ProductCard
                             key={product.id}
                             product={product}
