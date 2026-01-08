@@ -135,13 +135,13 @@ export default function PromoCodesManager() {
   };
 
   const uploadImage = async (blob: Blob, folder: string): Promise<string> => {
-    const fileName = `admin/${folder}/${Date.now()}.jpg`;
+    const fileName = `${folder}/${Date.now()}.jpg`;
     const { data, error } = await supabase.storage
-      .from('promo-store-images')
+      .from('promo-code-images')
       .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
 
     if (error) throw error;
-    const { data: publicUrlData } = supabase.storage.from('promo-store-images').getPublicUrl(data.path);
+    const { data: publicUrlData } = supabase.storage.from('promo-code-images').getPublicUrl(data.path);
     return publicUrlData.publicUrl;
   };
 
