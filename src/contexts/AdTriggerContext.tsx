@@ -171,11 +171,17 @@ export function AdTriggerProvider({ children }: { children: ReactNode }) {
 
   // Check if user should see ads based on visibility mode
   const shouldShowAds = useCallback(() => {
+    // First check admin exemption - this takes priority
+    if (isAdmin && adsDisabledForAdmins) {
+      console.log('Ads disabled for admin user');
+      return false;
+    }
+    
     if (visibilityMode === 'disabled') return false;
     if (visibilityMode === 'guests_only') return !user;
     if (visibilityMode === 'users_only') return !!user && !isAdmin;
-    // 'all' mode - check admin exemption
-    if (isAdmin && adsDisabledForAdmins) return false;
+    if (visibilityMode === 'admins_only') return isAdmin;
+    // 'all' mode
     return true;
   }, [visibilityMode, user, isAdmin, adsDisabledForAdmins]);
 
