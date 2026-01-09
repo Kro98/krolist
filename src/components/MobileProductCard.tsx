@@ -96,11 +96,11 @@ export function MobileProductCard({
       <CardContent className="p-0">
         {/* Image Container */}
         <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="block relative">
-          <div className="relative aspect-square overflow-hidden">
+          <div className="relative aspect-square overflow-hidden bg-muted">
             <img
               src={product.image_url || '/placeholder.svg'}
               alt={product.title}
-              className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
+              className="w-full h-full object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
             />
             {/* Gradient overlay */}
             <div 

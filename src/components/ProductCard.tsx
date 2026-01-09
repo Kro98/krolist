@@ -196,13 +196,13 @@ export function ProductCard({
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 px-0 my-[20px] py-0">
-            <div className="relative overflow-hidden rounded-xl">
+            <div className="relative overflow-hidden rounded-xl bg-muted">
               <img 
                 src={product.image_url || '/placeholder.svg'} 
                 alt={product.title} 
-                className="w-24 h-24 md:w-28 md:h-28 object-cover border border-border/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105" 
+                className="w-24 h-24 md:w-28 md:h-28 object-contain border border-border/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </div>
             
             {!product.isKrolistProduct && <div className="text-[10px] text-muted-foreground text-center">
