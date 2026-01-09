@@ -96,7 +96,7 @@ export function MobileProductCard({
       <CardContent className="p-0">
         {/* Image Container */}
         <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="block relative">
-          <div className="relative aspect-square overflow-hidden bg-muted">
+          <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted via-muted/80 to-muted/60">
             <img
               src={product.image_url || '/placeholder.svg'}
               alt={product.title}
