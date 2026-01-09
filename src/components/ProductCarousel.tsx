@@ -367,7 +367,7 @@ export function ProductCarousel({
       
       {isExpanded && isTabletOrAbove ? (
         // Grid view for expanded state with in-feed ads
-        <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+        <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 && !isFavoritesSection ? 'xl:grid-cols-3' : ''}`}>
           {products.map((product, index) => (
             <React.Fragment key={product.id}>
               {isFavoritesSection ? (
@@ -434,7 +434,7 @@ export function ProductCarousel({
                     <CarouselAdSlide itemsPerSlide={itemsPerSlide} />
                   ) : slideContent.type === 'mixed' ? (
                     // Mixed slide with products and inline ads (PC/tablet)
-                    <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                    <div className={`grid gap-4 grid-cols-2 ${!isTablet && desktopItemsPerRow === 3 && !isFavoritesSection ? 'xl:grid-cols-3' : ''}`}>
                       {slideContent.items.map((item, itemIndex) => (
                         item.type === 'ad' ? (
                           <InFeedAdCard key={`ad-${itemIndex}`} />
