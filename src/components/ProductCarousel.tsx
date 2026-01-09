@@ -265,11 +265,11 @@ export function ProductCarousel({
   };
   const itemsPerSlide = getItemsPerSlide();
   
-  // Check if we should show ads in carousel
+  // Check if we should show ads in carousel - never show ads in favorites section
   const currentStyle = isFavoritesSection ? favoritesCardStyle : cardLayoutStyle;
   // Mobile: show full-slide ads | PC/Tablet: show inline card-sized ads
-  const shouldShowMobileAds = carouselAdsEnabled && isMobile && currentStyle === 'compact' && mobileItemsPerSlide >= 2;
-  const shouldShowDesktopInlineAds = carouselAdsEnabled && (isTablet || isDesktop) && !isExpanded;
+  const shouldShowMobileAds = carouselAdsEnabled && isMobile && currentStyle === 'compact' && mobileItemsPerSlide >= 2 && !isFavoritesSection;
+  const shouldShowDesktopInlineAds = carouselAdsEnabled && (isTablet || isDesktop) && !isExpanded && !isFavoritesSection;
   
   // For PC/tablet carousel: inject ad cards inline with products
   type ProductOrAd = { type: 'product'; product: Product } | { type: 'ad' };
