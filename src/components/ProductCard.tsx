@@ -196,7 +196,7 @@ export function ProductCard({
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 px-0 my-[20px] py-0">
-            <div className="relative overflow-hidden rounded-xl bg-muted">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted via-muted/80 to-muted/60">
               <img 
                 src={product.image_url || '/placeholder.svg'} 
                 alt={product.title} 
