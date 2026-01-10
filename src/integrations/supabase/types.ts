@@ -216,6 +216,7 @@ export type Database = {
           current_price: number
           description: string | null
           id: string
+          image_fit: string | null
           image_url: string | null
           is_featured: boolean | null
           last_checked_at: string | null
@@ -236,6 +237,7 @@ export type Database = {
           current_price: number
           description?: string | null
           id?: string
+          image_fit?: string | null
           image_url?: string | null
           is_featured?: boolean | null
           last_checked_at?: string | null
@@ -256,6 +258,7 @@ export type Database = {
           current_price?: number
           description?: string | null
           id?: string
+          image_fit?: string | null
           image_url?: string | null
           is_featured?: boolean | null
           last_checked_at?: string | null
@@ -522,6 +525,7 @@ export type Database = {
           description: string | null
           external_id: string | null
           id: string
+          image_fit: string | null
           image_url: string | null
           is_active: boolean | null
           last_checked_at: string | null
@@ -541,6 +545,7 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           id?: string
+          image_fit?: string | null
           image_url?: string | null
           is_active?: boolean | null
           last_checked_at?: string | null
@@ -560,6 +565,7 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           id?: string
+          image_fit?: string | null
           image_url?: string | null
           is_active?: boolean | null
           last_checked_at?: string | null

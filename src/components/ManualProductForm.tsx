@@ -39,6 +39,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
   const [category, setCategory] = useState("");
   const [categoryType, setCategoryType] = useState("");
   const [customCategory, setCustomCategory] = useState("");
+  const [imageFit, setImageFit] = useState<"contain" | "cover">("contain");
   const [isFetching, setIsFetching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasAutoFilled, setHasAutoFilled] = useState(false);
@@ -202,6 +203,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
           store: formData.store,
           product_url: formData.productUrl,
           category: formData.category,
+          image_fit: imageFit,
           is_active: true,
         })
         .select()
@@ -404,13 +406,42 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                     <img 
                       src={imageUrl} 
                       alt="Product preview" 
-                      className="w-32 h-32 object-cover rounded mx-auto"
+                      className={`w-32 h-32 rounded mx-auto bg-white ${imageFit === 'cover' ? 'object-cover' : 'object-contain'}`}
                       onError={(e) => {
                         e.currentTarget.src = '/placeholder.svg';
                       }}
                     />
                   </div>
                 )}
+                
+                {/* Image Fit Toggle */}
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-xs text-muted-foreground">Display:</span>
+                  <div className="flex gap-1 p-0.5 bg-muted rounded-md">
+                    <button
+                      type="button"
+                      onClick={() => setImageFit("contain")}
+                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                        imageFit === "contain" 
+                          ? "bg-background text-foreground shadow-sm" 
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Full Image
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageFit("cover")}
+                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                        imageFit === "cover" 
+                          ? "bg-background text-foreground shadow-sm" 
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Cropped
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Store and Category */}

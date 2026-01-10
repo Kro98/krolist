@@ -27,6 +27,7 @@ export interface MobileProduct {
   currency: string;
   youtube_url?: string | null;
   isKrolistProduct?: boolean;
+  image_fit?: string | null;
 }
 
 interface MobileProductCardProps {
@@ -100,7 +101,9 @@ export function MobileProductCard({
             <img
               src={product.image_url || '/placeholder.svg'}
               alt={product.title}
-              className="w-full h-full object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
+              className={`w-full h-full transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105 ${
+                product.image_fit === 'cover' ? 'object-cover' : 'object-contain'
+              }`}
             />
             {/* Gradient overlay */}
             <div 
