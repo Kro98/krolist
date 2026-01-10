@@ -33,6 +33,7 @@ export interface Product {
   youtube_url?: string | null;
   collection_title?: string | null;
   isKrolistProduct?: boolean;
+  image_fit?: string | null;
   price_history?: Array<{
     price: number;
     scraped_at: string;
@@ -200,7 +201,9 @@ export function ProductCard({
               <img 
                 src={product.image_url || '/placeholder.svg'} 
                 alt={product.title} 
-                className="w-24 h-24 md:w-28 md:h-28 object-contain border border-border/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105" 
+                className={`w-24 h-24 md:w-28 md:h-28 border border-border/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105 ${
+                  product.image_fit === 'cover' ? 'object-cover' : 'object-contain'
+                }`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </div>
