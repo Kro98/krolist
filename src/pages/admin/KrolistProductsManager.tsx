@@ -662,31 +662,9 @@ export default function KrolistProductsManager() {
           <p className="text-muted-foreground">{t('admin.krolistProductsDesc')}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button disabled={isRefreshing} variant="outline" className="flex-1 md:flex-none">
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span className="hidden md:inline md:ml-2">Refresh Prices</span>
-                <ChevronDown className="h-4 w-4 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleRefreshPrices('all')}>
-                Refresh All Collections
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {Object.keys(productsByCollection).map(collection => <DropdownMenuItem key={collection} onClick={() => handleRefreshPrices(collection)}>
-                  Refresh {collection}
-                </DropdownMenuItem>)}
-            </DropdownMenuContent>
-          </DropdownMenu>
           <Button onClick={handleOpenManualPriceDialog} variant="outline" className="flex-1 md:flex-none">
             <Edit className="h-4 w-4" />
             <span className="hidden md:inline md:ml-2">Manual Prices</span>
-          </Button>
-          <Button onClick={() => setShowNewListDialog(true)} variant="outline" className="flex-1 md:flex-none">
-            <Plus className="h-4 w-4" />
-            <span className="hidden md:inline md:ml-2">New List</span>
           </Button>
           <Button onClick={() => handleOpenDialog()} className="flex-1 md:flex-none">
             <Plus className="h-4 w-4" />
@@ -710,6 +688,10 @@ export default function KrolistProductsManager() {
                   {products.filter(p => p.collection_title === collection).length}
                 </Badge>}
             </Button>)}
+          <Button onClick={() => setShowNewListDialog(true)} variant="outline" size="sm">
+            <Plus className="h-4 w-4" />
+            <span className="ml-1">New List</span>
+          </Button>
         </div>
       </details>
       
@@ -721,6 +703,10 @@ export default function KrolistProductsManager() {
                 {products.filter(p => p.collection_title === collection).length}
               </Badge>}
           </Button>)}
+        <Button onClick={() => setShowNewListDialog(true)} variant="outline" size="sm">
+          <Plus className="h-4 w-4" />
+          <span className="ml-1">New List</span>
+        </Button>
       </div>
 
       {/* Products grouped by collection */}
