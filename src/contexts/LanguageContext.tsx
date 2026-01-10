@@ -275,6 +275,7 @@ const translations = {
     'admin.shopManagement': 'Shop Management',
     'admin.shopManagementDesc': 'Manage available shops and affiliate links',
     'admin.addProduct': 'Add Product',
+    'admin.manualPrices': 'Manual Prices',
     'admin.editProduct': 'Edit Product',
     'admin.addPromoCode': 'Add Promo Code',
     'admin.editPromoCode': 'Edit Promo Code',
@@ -1015,6 +1016,8 @@ const translations = {
     'admin.newsUpdatesDesc': 'إدارة الأخبار والإعلانات',
     'admin.shopManagement': 'إدارة المتاجر',
     'admin.shopManagementDesc': 'إدارة المتاجر المتاحة وروابط الشراكة',
+    'admin.addProduct': 'إضافة منتج',
+    'admin.manualPrices': 'تحديث الأسعار',
     
     // Dashboard/Analytics (continued)
     'dashboard.title': 'التحليلات',

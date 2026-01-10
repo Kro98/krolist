@@ -663,12 +663,12 @@ export default function KrolistProductsManager() {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button onClick={handleOpenManualPriceDialog} variant="outline" className="flex-1 md:flex-none">
-            <Edit className="h-4 w-4" />
-            <span className="hidden md:inline md:ml-2">Manual Prices</span>
+            <Edit className="h-4 w-4 mr-2" />
+            {t('admin.manualPrices')}
           </Button>
           <Button onClick={() => handleOpenDialog()} className="flex-1 md:flex-none">
-            <Plus className="h-4 w-4" />
-            <span className="hidden md:inline md:ml-2">{t('admin.addProduct')}</span>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('admin.addProduct')}
           </Button>
         </div>
       </div>
