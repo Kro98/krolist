@@ -86,7 +86,7 @@ export function ProductCard({
   const titleRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollDuration, setScrollDuration] = useState(0);
-  
+
   // Listen for title scroll speed changes
   useEffect(() => {
     const handleSpeedChange = (e: CustomEvent) => {
@@ -95,9 +95,8 @@ export function ProductCard({
     window.addEventListener('titleScrollSpeedChanged', handleSpeedChange as EventListener);
     return () => window.removeEventListener('titleScrollSpeedChanged', handleSpeedChange as EventListener);
   }, []);
-  
   const [scrollDistance, setScrollDistance] = useState(0);
-  
+
   // Calculate scroll distance and duration based on title width and speed
   useEffect(() => {
     const calculateScroll = () => {
@@ -116,12 +115,11 @@ export function ProductCard({
         }
       }
     };
-    
+
     // Use setTimeout to ensure DOM is ready
     const timer = setTimeout(calculateScroll, 100);
     return () => clearTimeout(timer);
   }, [product.title, titleScrollSpeed]);
-  
   const [editForm, setEditForm] = useState({
     title: product.title,
     description: product.description || '',
@@ -192,19 +190,13 @@ export function ProductCard({
       onToggleSelect(product);
     }
   };
-  return <Card className={`bg-card border-2 ${isSelected ? 'border-primary ring-2 ring-primary' : 'border-border/50'} shadow-sm hover:shadow-lg transition-all duration-300 ease-out group relative overflow-hidden ${isSelectionMode ? 'cursor-pointer' : ''} hover:-translate-y-1 hover:border-primary/20`} onClick={handleCardClick}>
-      <CardContent className="p-4 mx-0 py-[5px] px-[5px]">
+  return <Card onClick={handleCardClick} className="">
+      <CardContent className="p-4 py-[5px] px-[6px] mx-px">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 px-0 my-[20px] py-0">
             <div className="relative overflow-hidden rounded-xl bg-white">
-              <img 
-                src={product.image_url || '/placeholder.svg'} 
-                alt={product.title} 
-                className={`w-24 h-24 md:w-28 md:h-28 border border-border/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105 ${
-                  product.image_fit === 'cover' ? 'object-cover' : 'object-contain'
-                }`}
-              />
+              <img src={product.image_url || '/placeholder.svg'} alt={product.title} className={`w-24 h-24 md:w-28 md:h-28 border border-border/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105 ${product.image_fit === 'cover' ? 'object-cover' : 'object-contain'}`} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </div>
             
@@ -219,37 +211,22 @@ export function ProductCard({
             <div className={`flex items-start justify-between mb-2 gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
               <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 overflow-hidden">
                 <div ref={containerRef} className="title-scroll-container overflow-hidden">
-                  <span 
-                    ref={titleRef}
-                    className="title-scroll-text font-semibold text-base hover:text-primary transition-colors hover:underline inline-block whitespace-nowrap"
-                    style={scrollDuration > 0 ? { 
-                      '--scroll-duration': `${scrollDuration}s`,
-                      '--scroll-distance': `${scrollDistance}px`
-                    } as React.CSSProperties : undefined}
-                  >
+                  <span ref={titleRef} className="title-scroll-text font-semibold text-base hover:text-primary transition-colors hover:underline inline-block whitespace-nowrap" style={scrollDuration > 0 ? {
+                  '--scroll-duration': `${scrollDuration}s`,
+                  '--scroll-distance': `${scrollDistance}px`
+                } as React.CSSProperties : undefined}>
                     {sanitizeContent(product.title)}
                   </span>
                 </div>
               </a>
               {/* Show X icon for favorites section to remove */}
-              {isFavoritesSection && onRemoveFromMyProducts ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 hover:bg-destructive/10 flex-shrink-0 transition-transform active:scale-90" 
-                  onClick={() => onRemoveFromMyProducts(product)} 
-                  title="Remove from favorites"
-                >
+              {isFavoritesSection && onRemoveFromMyProducts ? <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-destructive/10 flex-shrink-0 transition-transform active:scale-90" onClick={() => onRemoveFromMyProducts(product)} title="Remove from favorites">
                   <X className="h-5 w-5 text-destructive" />
-                </Button>
-              ) : product.isKrolistProduct && onAddToMyProducts && !onDelete ? (
-                /* Show heart for Krolist products when not in admin context (no onDelete) */
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0 transition-transform active:scale-90" onClick={handleToggleFavorite} title={isInFavorites ? "Remove from favorites" : (userProductCount >= 24 ? "Product limit reached" : "Add to favorites")}>
+                </Button> : product.isKrolistProduct && onAddToMyProducts && !onDelete ? (/* Show heart for Krolist products when not in admin context (no onDelete) */
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 flex-shrink-0 transition-transform active:scale-90" onClick={handleToggleFavorite} title={isInFavorites ? "Remove from favorites" : userProductCount >= 24 ? "Product limit reached" : "Add to favorites"}>
                   <Heart className={`h-5 w-5 transition-all duration-200 ${isInFavorites ? 'fill-red-500 text-red-500 animate-in zoom-in-50' : 'text-primary'}`} />
-                </Button>
-              ) : (
-                /* Show menu for user products OR admin Krolist products */
-                (onDelete || onUpdate) && <DropdownMenu>
+                </Button>) : (/* Show menu for user products OR admin Krolist products */
+            (onDelete || onUpdate) && <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
                       <MoreVertical className="h-4 w-4" />
@@ -257,12 +234,12 @@ export function ProductCard({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'} className="bg-background border-2 border-border z-50">
                     {onUpdate && <DropdownMenuItem onClick={() => {
-                      if (product.isKrolistProduct) {
-                        onUpdate(product.id, {});
-                      } else {
-                        setShowEditDialog(true);
-                      }
-                    }}>
+                  if (product.isKrolistProduct) {
+                    onUpdate(product.id, {});
+                  } else {
+                    setShowEditDialog(true);
+                  }
+                }}>
                       <Edit className="h-4 w-4 mr-2" />
                       {t('products.edit')}
                     </DropdownMenuItem>}
@@ -271,8 +248,7 @@ export function ProductCard({
                       {t('products.delete')}
                     </DropdownMenuItem>}
                   </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                </DropdownMenu>)}
             </div>
             
             {/* Description */}
