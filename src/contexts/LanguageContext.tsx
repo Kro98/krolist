@@ -583,6 +583,13 @@ const translations = {
     'privacyPolicy': 'Privacy Policy',
     'termsOfService': 'Terms of Service',
     'contactUs': 'Contact Us',
+    
+    // Donation
+    'donation.title': 'Support Krolist',
+    'donation.subtitle': 'Help us keep Krolist free, fast, and full of features for everyone.',
+    'donation.buyMeCoffee': 'Buy me a coffee',
+    'donation.thankYou': 'Every contribution helps us grow',
+    'donation.paymentMethods': 'We accept',
   },
   ar: {
     // Common
@@ -1080,6 +1087,13 @@ const translations = {
     'privacyPolicy': 'سياسة الخصوصية',
     'termsOfService': 'شروط الخدمة',
     'contactUs': 'اتصل بنا',
+    
+    // Donation
+    'donation.title': 'ادعم كروليست',
+    'donation.subtitle': 'ساعدنا في الحفاظ على كروليست مجانياً وسريعاً ومليئاً بالميزات للجميع.',
+    'donation.buyMeCoffee': 'اشتري لي قهوة',
+    'donation.thankYou': 'كل مساهمة تساعدنا على النمو',
+    'donation.paymentMethods': 'نقبل',
   }
 };
 
