@@ -85,28 +85,28 @@ interface SettingRowProps {
 function SettingRow({ icon, iconColor = "text-primary", title, description, children, className }: SettingRowProps) {
   return (
     <div className={cn(
-      "group flex items-center justify-between p-4 rounded-xl",
+      "group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-4 rounded-xl",
       "bg-gradient-to-r from-muted/30 to-muted/10",
       "border border-border/40 hover:border-primary/30",
       "transition-all duration-300 hover:shadow-md hover:shadow-primary/5",
       className
     )}>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
         <div className={cn(
-          "p-2.5 rounded-xl bg-gradient-to-br from-background to-muted",
+          "p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-background to-muted flex-shrink-0",
           "shadow-sm border border-border/50",
           "group-hover:scale-110 transition-transform duration-300"
         )}>
           <div className={iconColor}>{icon}</div>
         </div>
-        <div className="space-y-0.5">
-          <p className="font-medium text-foreground">{title}</p>
+        <div className="space-y-0.5 min-w-0 flex-1">
+          <p className="font-medium text-foreground text-sm sm:text-base">{title}</p>
           {description && (
-            <p className="text-sm text-muted-foreground max-w-[280px]">{description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{description}</p>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
         {children}
       </div>
     </div>
