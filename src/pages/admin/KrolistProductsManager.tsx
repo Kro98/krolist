@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -67,6 +68,7 @@ export default function KrolistProductsManager() {
   const [manualPrices, setManualPrices] = useState<Record<string, string>>({});
   const [manualStatuses, setManualStatuses] = useState<Record<string, string>>({});
   const [clickedTitles, setClickedTitles] = useState<Set<string>>(new Set());
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [newListTitle, setNewListTitle] = useState('');
   const [selectedProductsToCopy, setSelectedProductsToCopy] = useState<string[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
@@ -710,16 +712,77 @@ export default function KrolistProductsManager() {
       </div>
 
       {/* Products grouped by collection */}
-      {selectedCollection === 'all' ? Object.entries(productsByCollection).map(([collectionTitle, collectionProducts]) => <div key={collectionTitle} className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+      {selectedCollection === 'all' ? Object.entries(productsByCollection).map(([collectionTitle, collectionProducts]) => {
+        const isExpanded = expandedCollections.has(collectionTitle);
+        return (
+          <Collapsible 
+            key={collectionTitle} 
+            open={isExpanded}
+            onOpenChange={(open) => {
+              setExpandedCollections(prev => {
+                const next = new Set(prev);
+                if (open) {
+                  next.add(collectionTitle);
+                } else {
+                  next.delete(collectionTitle);
+                }
+                return next;
+              });
+            }}
+            className="mb-4"
+          >
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="text-lg font-bold truncate">{collectionTitle}</span>
+                <Badge variant="secondary" className="shrink-0">
+                  {collectionProducts.length} products
+                </Badge>
+              </div>
+
+              {/* Preview thumbnails when collapsed */}
+              {!isExpanded && (
+                <div className="hidden md:flex items-center gap-1 mr-2">
+                  {collectionProducts.slice(0, 4).map((p, idx) => (
+                    <div 
+                      key={p.id} 
+                      className="w-10 h-10 rounded border bg-muted overflow-hidden shrink-0"
+                      style={{ marginLeft: idx > 0 ? '-8px' : 0, zIndex: 4 - idx }}
+                    >
+                      {p.image_url ? (
+                        <img 
+                          src={p.image_url} 
+                          alt="" 
+                          className="w-full h-full object-cover"
+                          onError={e => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center text-[8px] text-muted-foreground">
+                          No img
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {collectionProducts.length > 4 && (
+                    <div className="w-10 h-10 rounded border bg-muted flex items-center justify-center text-xs font-medium shrink-0" style={{ marginLeft: '-8px' }}>
+                      +{collectionProducts.length - 4}
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <span className="text-xl font-bold">{collectionTitle}</span>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
+                <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleCollectionAction('rename', collectionTitle)}>
                     <Edit className="h-4 w-4 mr-2" />
                     Rename Collection
@@ -736,16 +799,23 @@ export default function KrolistProductsManager() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <ProductCarousel title="" products={collectionProducts.map(p => ({
-        ...p,
-        isKrolistProduct: true,
-        price_history: [],
-        last_checked_at: p.last_checked_at || p.updated_at
-      }))} onDelete={handleDelete} onUpdate={(id, updates) => {
-        const product = collectionProducts.find(p => p.id === id);
-        if (product) handleOpenDialog(product);
-      }} />
-          </div>) : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            
+            <CollapsibleContent className="animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="mt-2 pl-2 border-l-2 border-muted">
+                <ProductCarousel title="" products={collectionProducts.map(p => ({
+                  ...p,
+                  isKrolistProduct: true,
+                  price_history: [],
+                  last_checked_at: p.last_checked_at || p.updated_at
+                }))} onDelete={handleDelete} onUpdate={(id, updates) => {
+                  const product = collectionProducts.find(p => p.id === id);
+                  if (product) handleOpenDialog(product);
+                }} />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      }) : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredProducts.map(product => <Card key={product.id} className="relative">
               {/* Three-dot menu for admin actions */}
               <DropdownMenu>
