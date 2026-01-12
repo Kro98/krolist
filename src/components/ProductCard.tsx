@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, Heart, X } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Youtube, Heart, X, History } from "lucide-react";
+import { PriceHistoryCard } from "@/components/PriceHistoryCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -120,6 +121,7 @@ export function ProductCard({
     const timer = setTimeout(calculateScroll, 100);
     return () => clearTimeout(timer);
   }, [product.title, titleScrollSpeed]);
+  const [showHistory, setShowHistory] = useState(false);
   const [editForm, setEditForm] = useState({
     title: product.title,
     description: product.description || '',
@@ -192,7 +194,7 @@ export function ProductCard({
       onToggleSelect(product);
     }
   };
-  return <Card onClick={handleCardClick} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
+  return <Card onClick={handleCardClick} className="group overflow-hidden hover:shadow-lg transition-all duration-300 relative">
       <CardContent className="p-4 py-[5px] px-[6px] mx-px">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
@@ -303,9 +305,37 @@ export function ProductCard({
               {product.youtube_url && <Button size="sm" variant="outline" className="h-6 w-6 p-0 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')} title="YouTube Review">
                   <Youtube className="h-3 w-3" />
                 </Button>}
+              
+              {/* History Button */}
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-6 px-2 gap-1 border-primary/50 text-primary hover:bg-primary/10 history-pulse" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowHistory(true);
+                }}
+                title={language === 'ar' ? 'سجل الأسعار' : 'Price History'}
+              >
+                <History className="h-3 w-3" />
+                <span className="text-[0.6rem]">{language === 'ar' ? 'السجل' : 'History'}</span>
+              </Button>
             </div>
           </div>
         </div>
+        
+        {/* Price History Overlay with Fade */}
+        {showHistory && (
+          <div className="absolute inset-0 z-20 animate-in fade-in duration-300">
+            <PriceHistoryCard
+              productId={product.id}
+              productTitle={product.title}
+              originalCurrency={product.original_currency}
+              isKrolistProduct={product.isKrolistProduct}
+              onFlip={() => setShowHistory(false)}
+            />
+          </div>
+        )}
       </CardContent>
       
       {/* Edit Dialog */}
