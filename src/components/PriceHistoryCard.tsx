@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { History, TrendingDown, TrendingUp, Minus, X, Calendar, DollarSign } from "lucide-react";
+import { History, TrendingDown, TrendingUp, Minus, X, Calendar, DollarSign, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,6 +7,7 @@ import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { cn } from "@/lib/utils";
 import { format, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PriceHistoryEntry {
   price: number;
@@ -14,25 +15,59 @@ interface PriceHistoryEntry {
 }
 
 interface PriceHistoryCardProps {
-  priceHistory: PriceHistoryEntry[];
-  originalCurrency: string;
+  productId: string;
   productTitle: string;
-  isFlipped: boolean;
+  originalCurrency?: string;
+  isKrolistProduct?: boolean;
   onFlip: () => void;
   className?: string;
 }
 
 export function PriceHistoryCard({
-  priceHistory,
-  originalCurrency,
+  productId,
   productTitle,
-  isFlipped,
+  originalCurrency = "SAR",
+  isKrolistProduct = false,
   onFlip,
   className = ""
 }: PriceHistoryCardProps) {
   const { language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const isArabic = language === 'ar';
+  const [priceHistory, setPriceHistory] = useState<PriceHistoryEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch price history from database
+  useEffect(() => {
+    const fetchPriceHistory = async () => {
+      setIsLoading(true);
+      try {
+        // For user products, fetch from price_history table
+        if (!isKrolistProduct) {
+          const { data, error } = await supabase
+            .from('price_history')
+            .select('price, scraped_at')
+            .eq('product_id', productId)
+            .order('scraped_at', { ascending: false })
+            .limit(50);
+          
+          if (error) throw error;
+          setPriceHistory(data || []);
+        } else {
+          // For Krolist products, we don't have price history in the same way
+          // We could potentially add this table later
+          setPriceHistory([]);
+        }
+      } catch (error) {
+        console.error('Error fetching price history:', error);
+        setPriceHistory([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPriceHistory();
+  }, [productId, isKrolistProduct]);
 
   // Sort history by date (newest first) and limit to 50
   const sortedHistory = [...priceHistory]
@@ -78,8 +113,6 @@ export function PriceHistoryCard({
     };
   };
 
-  if (!isFlipped) return null;
-
   return (
     <div className={cn(
       "absolute inset-0 z-10 rounded-2xl overflow-hidden",
@@ -117,7 +150,14 @@ export function PriceHistoryCard({
 
       {/* Price History List */}
       <ScrollArea className="h-[calc(100%-70px)]">
-        {sortedHistory.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+            <Loader2 className="h-8 w-8 text-primary animate-spin mb-4" />
+            <p className="text-sm text-muted-foreground">
+              {isArabic ? 'جاري التحميل...' : 'Loading...'}
+            </p>
+          </div>
+        ) : sortedHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center">
             <div className="p-4 rounded-full bg-muted/50 mb-4">
               <History className="h-8 w-8 text-muted-foreground/50" />

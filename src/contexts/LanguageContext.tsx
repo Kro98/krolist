@@ -105,6 +105,7 @@ const translations = {
     'products.displayMode': 'Display',
     'products.fullImage': 'Full Image',
     'products.cropped': 'Cropped',
+    'products.history': 'History',
     
     // Settings
     'settings.title': 'Settings',
@@ -692,6 +693,7 @@ const translations = {
     'products.displayMode': 'العرض',
     'products.fullImage': 'الصورة كاملة',
     'products.cropped': 'مقصوصة',
+    'products.history': 'السجل',
     
     // Settings
     'settings.title': 'الإعدادات',
