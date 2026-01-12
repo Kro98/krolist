@@ -99,21 +99,47 @@ export default function PromoTicketCard({
 
         {/* Background with store icon or custom image */}
         <div className="absolute inset-0" style={getGradientStyle()}>
-          {/* Custom background image */}
+          {/* Custom background image with faded edges */}
           {promo.card_background && (
-            <img 
-              src={promo.card_background} 
-              alt={displayName}
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-            />
+            <div className="absolute inset-0">
+              <img 
+                src={promo.card_background} 
+                alt={displayName}
+                className="absolute inset-0 w-full h-full object-cover opacity-50"
+              />
+              {/* Gradient fade overlay from all sides */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: `
+                    radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.7) 100%),
+                    linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%),
+                    linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%)
+                  `
+                }}
+              />
+            </div>
           )}
-          {/* Legacy custom_image_url support */}
+          {/* Legacy custom_image_url support with faded edges */}
           {!promo.card_background && promo.custom_image_url && (
-            <img 
-              src={promo.custom_image_url} 
-              alt={displayName}
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-            />
+            <div className="absolute inset-0">
+              <img 
+                src={promo.custom_image_url} 
+                alt={displayName}
+                className="absolute inset-0 w-full h-full object-cover opacity-50"
+              />
+              {/* Gradient fade overlay from all sides */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: `
+                    radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.7) 100%),
+                    linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%),
+                    linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%)
+                  `
+                }}
+              />
+            </div>
           )}
           {/* Large store icon as watermark (only for non-custom images) */}
           {storeIcon && !promo.custom_image_url && !promo.card_background && !promo.custom_icon_url && (
