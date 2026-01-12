@@ -461,10 +461,10 @@ export default function PromoCodes() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t('promo.title')}</h1>
-        <p className="text-muted-foreground">{t('promo.subtitle')}</p>
+    <div className="space-y-8">
+      <div className="text-center sm:text-left">
+        <h1 className="text-3xl md:text-4xl font-bold">{t('promo.title')}</h1>
+        <p className="text-muted-foreground mt-2 text-base">{t('promo.subtitle')}</p>
       </div>
 
       {/* Add New Promo Code - Hidden for guests */}

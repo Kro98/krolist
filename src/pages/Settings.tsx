@@ -372,29 +372,29 @@ export default function Settings() {
   ];
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen pb-10">
       {/* Animated Header */}
-      <div className="relative overflow-hidden mb-8">
+      <div className="relative overflow-hidden mb-10">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/5 animate-pulse" />
-        <div className="relative p-6 md:p-8">
-          <div className="flex items-center gap-4">
+        <div className="relative py-8 md:py-10">
+          <div className="flex items-center justify-center gap-5">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse" />
-              <div className="relative p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <Settings2 className="h-8 w-8 text-primary" />
+              <div className="relative p-5 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+                <Settings2 className="h-10 w-10 text-primary" />
               </div>
             </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <div className="text-center sm:text-left">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 {t('settings.title')}
               </h1>
-              <p className="text-muted-foreground mt-1">{t('settings.subtitle')}</p>
+              <p className="text-muted-foreground mt-2 text-base md:text-lg">{t('settings.subtitle')}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 space-y-8">
+      <div className="max-w-5xl mx-auto space-y-10">
         
         {/* ===== APPEARANCE SECTION ===== */}
         <section className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
