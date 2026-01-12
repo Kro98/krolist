@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -27,6 +28,7 @@ import Admin from "./pages/Admin";
 import CategoryTags from "@/pages/CategoryTags";
 import CategoryProducts from "@/pages/CategoryProducts";
 import MyOrders from "./pages/MyOrders";
+import Article from "./pages/Article";
 const queryClient = new QueryClient();
 
 // Initialize settings from localStorage
@@ -38,45 +40,48 @@ const initializeSettings = () => {
 };
 initializeSettings();
 const App = () => <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <GuestAuthProvider>
-              <CartProvider>
-                <AdTriggerProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <BrowserRouter>
-                      <Layout>
-                      <Routes>
-                        <Route path="/" element={<Products />} />
-                        <Route path="/products" element={<Products />} />
-                        <Route path="/search-products" element={<SearchProducts />} />
-                        <Route path="/how-to-use-search" element={<HowToUseSearch />} />
-                        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                        <Route path="/events" element={<Events />} />
-                        <Route path="/promo-codes" element={<PromoCodes />} />
-                        <Route path="/donation" element={<Donation />} />
-                        <Route path="/admin" element={<Admin />} />
-                        <Route path="/categories" element={<CategoryTags />} />
-                        <Route path="/category/:categoryId" element={<CategoryProducts />} />
-                        <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="/terms-of-service" element={<TermsOfService />} />
-                        <Route path="/contact-us" element={<ContactUs />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                      </Layout>
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </AdTriggerProvider>
-              </CartProvider>
-            </GuestAuthProvider>
-          </NotificationProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <GuestAuthProvider>
+                <CartProvider>
+                  <AdTriggerProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <BrowserRouter>
+                        <Layout>
+                        <Routes>
+                          <Route path="/" element={<Products />} />
+                          <Route path="/products" element={<Products />} />
+                          <Route path="/search-products" element={<SearchProducts />} />
+                          <Route path="/how-to-use-search" element={<HowToUseSearch />} />
+                          <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                          <Route path="/events" element={<Events />} />
+                          <Route path="/promo-codes" element={<PromoCodes />} />
+                          <Route path="/donation" element={<Donation />} />
+                          <Route path="/admin" element={<Admin />} />
+                          <Route path="/categories" element={<CategoryTags />} />
+                          <Route path="/category/:categoryId" element={<CategoryProducts />} />
+                          <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                          <Route path="/articles/:slug" element={<Article />} />
+                          <Route path="/settings" element={<Settings />} />
+                          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                          <Route path="/terms-of-service" element={<TermsOfService />} />
+                          <Route path="/contact-us" element={<ContactUs />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                        </Layout>
+                      </BrowserRouter>
+                    </TooltipProvider>
+                  </AdTriggerProvider>
+                </CartProvider>
+              </GuestAuthProvider>
+            </NotificationProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   </QueryClientProvider>;
 export default App;
