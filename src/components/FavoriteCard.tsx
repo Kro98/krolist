@@ -323,13 +323,12 @@ export function FavoriteCard({
               description: e.target.value
             })} placeholder={t('products.enterDescription')} rows={3} />
             </div>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="edit-image">{t('products.imageUrl')}</Label>
-                <Input id="edit-image" value={editForm.imageUrl || ''} onChange={e => setEditForm({
+            <div>
+              <Label htmlFor="edit-image">{t('products.imageUrl')}</Label>
+              <Input id="edit-image" value={editForm.imageUrl || ''} onChange={e => setEditForm({
                 ...editForm,
-              imageUrl: e.target.value
-            })} placeholder={t('products.enterImageUrl')} />
+                imageUrl: e.target.value
+              })} placeholder={t('products.enterImageUrl')} />
               {editForm.imageUrl && <img src={editForm.imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded-md border" onError={e => e.currentTarget.style.display = 'none'} />}
             </div>
             <div className="grid grid-cols-2 gap-4">
