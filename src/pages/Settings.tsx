@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import {
   Save, Globe, Bell, Palette, User, ZoomIn, Info, RefreshCw, 
   Download, Users, TrendingDown, Tag, Sparkles, Calendar, 
   Wand2, Moon, Sun, Languages, DollarSign, Mail, UserCircle,
-  Gauge, Type, ChevronRight, CheckCircle2, Settings2, Zap
+  Gauge, Type, ChevronRight, CheckCircle2, Settings2, Check
 } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -284,11 +284,63 @@ export default function Settings() {
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: t('settings.settingsSaved'),
-      description: t('settings.settingsSavedDesc')
-    });
+  // Auto-save notification with debounce
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const showAutoSaveToast = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      sonner.success(t('settings.settingsSaved'), {
+        description: t('settings.settingsSavedDesc'),
+        duration: 2000,
+      });
+    }, 500);
+  }, [t]);
+
+  // Wrapper functions for auto-save
+  const handleLanguageChange = (value: Language) => {
+    setLanguage(value);
+    showAutoSaveToast();
+  };
+
+  const handleCurrencyChange = (value: Currency) => {
+    setCurrency(value);
+    showAutoSaveToast();
+  };
+
+  const handleZoomChange = (checked: boolean) => {
+    setIsZoomEnabled(checked);
+    showAutoSaveToast();
+  };
+
+  const handleUndertoneChange = (value: string) => {
+    setUndertone(value as any);
+    showAutoSaveToast();
+  };
+
+  const handleCustomHueChange = (value: number) => {
+    setCustomHue(value);
+    showAutoSaveToast();
+  };
+
+  const handleCarouselSpeedChange = (value: number) => {
+    setCarouselSpeed(value);
+    localStorage.setItem('carouselSpeed', value.toString());
+    window.dispatchEvent(new CustomEvent('carouselSpeedChanged', { detail: value }));
+    showAutoSaveToast();
+  };
+
+  const handleTitleScrollSpeedChange = (value: number) => {
+    setTitleScrollSpeed(value);
+    localStorage.setItem('titleScrollSpeed', value.toString());
+    document.documentElement.style.setProperty('--marquee-speed', `${value}s`);
+    showAutoSaveToast();
+  };
+
+  const handleNotifPrefChange = (key: string, checked: boolean) => {
+    updateNotifPref(key as any, checked);
+    showAutoSaveToast();
   };
 
   const handleUpdateProfile = async () => {
@@ -427,7 +479,7 @@ export default function Settings() {
               >
                 <Switch
                   checked={isZoomEnabled}
-                  onCheckedChange={setIsZoomEnabled}
+                  onCheckedChange={handleZoomChange}
                   className="data-[state=checked]:bg-blue-500"
                 />
               </SettingRow>
@@ -450,7 +502,7 @@ export default function Settings() {
                   {undertoneColors.map((color) => (
                     <button
                       key={color.value}
-                      onClick={() => setUndertone(color.value as any)}
+                      onClick={() => handleUndertoneChange(color.value)}
                       className={cn(
                         "relative w-10 h-10 rounded-xl transition-all duration-300",
                         "hover:scale-110 hover:shadow-lg",
@@ -465,7 +517,7 @@ export default function Settings() {
                     </button>
                   ))}
                   <button
-                    onClick={() => setUndertone('custom')}
+                    onClick={() => handleUndertoneChange('custom')}
                     className={cn(
                       "relative w-10 h-10 rounded-xl transition-all duration-300",
                       "hover:scale-110 hover:shadow-lg border-2 border-dashed border-muted-foreground/30",
@@ -498,7 +550,7 @@ export default function Settings() {
                       min="0"
                       max="360"
                       value={customHue}
-                      onChange={(e) => setCustomHue(parseInt(e.target.value))}
+                      onChange={(e) => handleCustomHueChange(parseInt(e.target.value))}
                       className="w-full h-3 rounded-full appearance-none cursor-pointer"
                       style={{
                         background: `linear-gradient(to right, 
@@ -529,12 +581,7 @@ export default function Settings() {
                     max="8000"
                     step="500"
                     value={carouselSpeed}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      setCarouselSpeed(value);
-                      localStorage.setItem('carouselSpeed', value.toString());
-                      window.dispatchEvent(new CustomEvent('carouselSpeedChanged', { detail: value }));
-                    }}
+                    onChange={(e) => handleCarouselSpeedChange(parseInt(e.target.value))}
                     className="w-full accent-primary h-2 rounded-full"
                   />
                 </div>
@@ -555,12 +602,7 @@ export default function Settings() {
                     max="10"
                     step="1"
                     value={titleScrollSpeed}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      setTitleScrollSpeed(value);
-                      localStorage.setItem('titleScrollSpeed', value.toString());
-                      document.documentElement.style.setProperty('--marquee-speed', `${value}s`);
-                    }}
+                    onChange={(e) => handleTitleScrollSpeedChange(parseInt(e.target.value))}
                     className="w-full accent-primary h-2 rounded-full"
                   />
                 </div>
@@ -586,7 +628,7 @@ export default function Settings() {
                     <Languages className="h-4 w-4 text-blue-500" />
                     <Label className="font-medium">{t('settings.language')}</Label>
                   </div>
-                  <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
+                  <Select value={language} onValueChange={handleLanguageChange}>
                     <SelectTrigger className="bg-background/50">
                       <SelectValue />
                     </SelectTrigger>
@@ -612,7 +654,7 @@ export default function Settings() {
                     <DollarSign className="h-4 w-4 text-green-500" />
                     <Label className="font-medium">{t('settings.currency')}</Label>
                   </div>
-                  <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
+                  <Select value={currency} onValueChange={handleCurrencyChange}>
                     <SelectTrigger className="bg-background/50">
                       <SelectValue />
                     </SelectTrigger>
@@ -648,7 +690,7 @@ export default function Settings() {
                   title={t('settings.priceDropAlerts')}
                   description={t('settings.priceDropAlertsDesc')}
                   checked={notifPrefs.priceUpdates}
-                  onCheckedChange={(checked) => updateNotifPref('priceUpdates', checked)}
+                  onCheckedChange={(checked) => handleNotifPrefChange('priceUpdates', checked)}
                 />
                 
                 <NotificationToggle
@@ -658,7 +700,7 @@ export default function Settings() {
                   title={t('settings.promoAlerts')}
                   description={t('settings.promoAlertsDesc')}
                   checked={notifPrefs.promoAlerts}
-                  onCheckedChange={(checked) => updateNotifPref('promoAlerts', checked)}
+                  onCheckedChange={(checked) => handleNotifPrefChange('promoAlerts', checked)}
                 />
                 
                 <NotificationToggle
@@ -668,7 +710,7 @@ export default function Settings() {
                   title={t('settings.appUpdateAlerts')}
                   description={t('settings.appUpdateAlertsDesc')}
                   checked={notifPrefs.appUpdates}
-                  onCheckedChange={(checked) => updateNotifPref('appUpdates', checked)}
+                  onCheckedChange={(checked) => handleNotifPrefChange('appUpdates', checked)}
                 />
                 
                 <NotificationToggle
@@ -678,7 +720,7 @@ export default function Settings() {
                   title={t('settings.eventReminders')}
                   description={t('settings.eventRemindersDesc')}
                   checked={notifPrefs.eventReminders}
-                  onCheckedChange={(checked) => updateNotifPref('eventReminders', checked)}
+                  onCheckedChange={(checked) => handleNotifPrefChange('eventReminders', checked)}
                 />
               </div>
             </CardContent>
@@ -814,17 +856,6 @@ export default function Settings() {
           </section>
         )}
 
-        {/* ===== SAVE BUTTON ===== */}
-        <div className="flex justify-center pt-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <Button 
-            onClick={handleSave} 
-            size="lg"
-            className="px-12 bg-gradient-to-r from-primary via-primary to-primary/80 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105"
-          >
-            <Zap className="h-5 w-5 mr-2" />
-            {t('settings.saveSettings')}
-          </Button>
-        </div>
       </div>
     </div>
   );
