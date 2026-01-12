@@ -21,7 +21,7 @@ function getDeviceType(): DeviceType {
 }
 
 export function FloatingInstallPrompt() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -200,14 +200,11 @@ export function FloatingInstallPrompt() {
               {/* Content */}
               <div className="flex-1 min-w-0 pt-0.5">
                 <h3 className="font-bold text-primary-foreground text-sm mb-1 flex items-center gap-2">
-                  {language === 'ar' ? 'ثبّت Krolist!' : 'Install Krolist!'}
+                  {t('pwa.installKrolist')}
                   {getDeviceIcon()}
                 </h3>
                 <p className="text-primary-foreground/80 text-xs mb-3 leading-relaxed">
-                  {language === 'ar' 
-                    ? 'احصل على إشعارات فورية وتجربة أسرع. تثبيت مجاني!'
-                    : 'Get instant notifications and faster experience. Free to install!'
-                  }
+                  {t('pwa.installDescription')}
                 </p>
 
                 <div className="flex gap-2">
@@ -217,7 +214,7 @@ export function FloatingInstallPrompt() {
                     className="flex-1 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold gap-2 shadow-lg"
                   >
                     <Download className="h-4 w-4" />
-                    {language === 'ar' ? 'تثبيت' : 'Install'}
+                    {t('pwa.install')}
                   </Button>
                   <Button
                     onClick={() => handleDismiss(true)}
@@ -225,7 +222,7 @@ export function FloatingInstallPrompt() {
                     variant="ghost"
                     className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 text-xs px-2"
                   >
-                    {language === 'ar' ? 'لاحقاً' : 'Later'}
+                    {t('pwa.later')}
                   </Button>
                 </div>
               </div>
@@ -238,7 +235,7 @@ export function FloatingInstallPrompt() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-primary-foreground text-sm mb-1">
-                    {language === 'ar' ? 'كيفية التثبيت' : 'How to Install'}
+                    {t('pwa.howToInstall')}
                   </h4>
                   <p className="text-primary-foreground/80 text-xs leading-relaxed mb-3">
                     {quickTip.text}
@@ -248,7 +245,7 @@ export function FloatingInstallPrompt() {
                     size="sm"
                     className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-medium"
                   >
-                    {language === 'ar' ? 'فهمت!' : 'Got it!'}
+                    {t('pwa.gotIt')}
                   </Button>
                 </div>
               </div>

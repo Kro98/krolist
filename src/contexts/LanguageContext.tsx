@@ -587,6 +587,83 @@ const translations = {
     'privacyPolicy': 'Privacy Policy',
     'termsOfService': 'Terms of Service',
     'contactUs': 'Contact Us',
+    
+    // Auth Modal
+    'auth.welcomeTo': 'Welcome to Krolist',
+    'auth.collectionOfCool': 'collection of cool products and more',
+    'auth.signIn': 'Sign In',
+    'auth.signUp': 'Sign Up',
+    'auth.email': 'Email',
+    'auth.password': 'Password',
+    'auth.username': 'Username',
+    'auth.enterEmail': 'Enter your email',
+    'auth.enterPassword': 'Enter your password',
+    'auth.enterUsername': 'Enter your username',
+    'auth.rememberMe': 'Remember me',
+    'auth.pleaseWait': 'Please wait...',
+    'auth.createAccount': 'Create Account',
+    'auth.accountCreated': 'Account created! Please check your email to verify.',
+    'auth.welcomeBack': 'Welcome back!',
+    'auth.invalidEmail': 'Invalid email address',
+    'auth.usernameMin': 'Username must be at least 3 characters',
+    'auth.passwordMin': 'Password must be at least 6 characters',
+    
+    // PWA Install
+    'pwa.installApp': 'Install App',
+    'pwa.installKrolist': 'Install Krolist!',
+    'pwa.installDescription': 'Get instant notifications and faster experience. Free to install!',
+    'pwa.install': 'Install',
+    'pwa.later': 'Later',
+    'pwa.howToInstall': 'How to Install',
+    'pwa.gotIt': 'Got it!',
+    'pwa.usersInstalled': 'users installed',
+    'pwa.installSteps': 'Installation Steps',
+    'pwa.step': 'Step',
+    'pwa.of': 'of',
+    
+    // Image Cropper
+    'promo.cropImage': 'Crop Image',
+    'promo.applyCrop': 'Apply Crop',
+    'processing': 'Processing...',
+    
+    // Notifications
+    'notifications.title': 'Notifications',
+    'notifications.noNotifications': 'No notifications',
+    'notifications.notification': 'notification',
+    'notifications.notifications': 'notifications',
+    'notifications.clear': 'Clear',
+    'notifications.allCaughtUp': 'All caught up!',
+    'notifications.priceDropsWillAppear': 'Price drops and new deals will appear here',
+    
+    // Home page
+    'home.home': 'Home',
+
+    // Donation
+    'donation.title': 'Support Krolist',
+    'donation.subtitle': 'Help us keep Krolist free and ad-free',
+    
+    // Events
+    'events.title': 'Events',
+    'events.noEvents': 'No upcoming events',
+    
+    // Search
+    'search.title': 'Search Products',
+    'search.searching': 'Searching...',
+    'search.noResults': 'No results found',
+    'search.tryDifferent': 'Try different keywords',
+    
+    // My Orders
+    'orders.title': 'My Orders',
+    'orders.noOrders': 'No orders yet',
+    'orders.status': 'Status',
+    'orders.date': 'Date',
+    'orders.total': 'Total',
+    'orders.items': 'Items',
+    'orders.pending': 'Pending',
+    'orders.confirmed': 'Confirmed',
+    'orders.shipped': 'Shipped',
+    'orders.delivered': 'Delivered',
+    'orders.cancelled': 'Cancelled',
   },
   ar: {
     // Common
@@ -1088,6 +1165,83 @@ const translations = {
     'privacyPolicy': 'سياسة الخصوصية',
     'termsOfService': 'شروط الخدمة',
     'contactUs': 'اتصل بنا',
+    
+    // Auth Modal
+    'auth.welcomeTo': 'مرحباً بك في كروليست',
+    'auth.collectionOfCool': 'مجموعة من المنتجات الرائعة والمزيد',
+    'auth.signIn': 'تسجيل الدخول',
+    'auth.signUp': 'إنشاء حساب',
+    'auth.email': 'البريد الإلكتروني',
+    'auth.password': 'كلمة المرور',
+    'auth.username': 'اسم المستخدم',
+    'auth.enterEmail': 'أدخل بريدك الإلكتروني',
+    'auth.enterPassword': 'أدخل كلمة المرور',
+    'auth.enterUsername': 'أدخل اسم المستخدم',
+    'auth.rememberMe': 'تذكرني',
+    'auth.pleaseWait': 'يرجى الانتظار...',
+    'auth.createAccount': 'إنشاء حساب',
+    'auth.accountCreated': 'تم إنشاء الحساب! يرجى التحقق من بريدك الإلكتروني.',
+    'auth.welcomeBack': 'مرحباً بعودتك!',
+    'auth.invalidEmail': 'عنوان بريد إلكتروني غير صالح',
+    'auth.usernameMin': 'يجب أن يكون اسم المستخدم 3 أحرف على الأقل',
+    'auth.passwordMin': 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+    
+    // PWA Install
+    'pwa.installApp': 'تثبيت التطبيق',
+    'pwa.installKrolist': 'ثبّت كروليست!',
+    'pwa.installDescription': 'احصل على إشعارات فورية وتجربة أسرع. تثبيت مجاني!',
+    'pwa.install': 'تثبيت',
+    'pwa.later': 'لاحقاً',
+    'pwa.howToInstall': 'كيفية التثبيت',
+    'pwa.gotIt': 'فهمت!',
+    'pwa.usersInstalled': 'مستخدم قاموا بالتثبيت',
+    'pwa.installSteps': 'خطوات التثبيت',
+    'pwa.step': 'خطوة',
+    'pwa.of': 'من',
+    
+    // Image Cropper
+    'promo.cropImage': 'قص الصورة',
+    'promo.applyCrop': 'تطبيق القص',
+    'processing': 'جارٍ المعالجة...',
+    
+    // Notifications
+    'notifications.title': 'الإشعارات',
+    'notifications.noNotifications': 'لا توجد إشعارات',
+    'notifications.notification': 'إشعار',
+    'notifications.notifications': 'إشعارات',
+    'notifications.clear': 'مسح',
+    'notifications.allCaughtUp': 'كل شيء جاهز!',
+    'notifications.priceDropsWillAppear': 'ستظهر هنا تحديثات الأسعار والعروض الجديدة',
+    
+    // Home page
+    'home.home': 'الرئيسية',
+
+    // Donation
+    'donation.title': 'دعم كروليست',
+    'donation.subtitle': 'ساعدنا في إبقاء كروليست مجاني وبدون إعلانات',
+    
+    // Events
+    'events.title': 'الفعاليات',
+    'events.noEvents': 'لا توجد فعاليات قادمة',
+    
+    // Search
+    'search.title': 'البحث عن المنتجات',
+    'search.searching': 'جارٍ البحث...',
+    'search.noResults': 'لم يتم العثور على نتائج',
+    'search.tryDifferent': 'جرب كلمات مختلفة',
+    
+    // My Orders
+    'orders.title': 'طلباتي',
+    'orders.noOrders': 'لا توجد طلبات بعد',
+    'orders.status': 'الحالة',
+    'orders.date': 'التاريخ',
+    'orders.total': 'الإجمالي',
+    'orders.items': 'المنتجات',
+    'orders.pending': 'قيد الانتظار',
+    'orders.confirmed': 'تم التأكيد',
+    'orders.shipped': 'تم الشحن',
+    'orders.delivered': 'تم التوصيل',
+    'orders.cancelled': 'ملغي',
   }
 };
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -11,23 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import krolistLogo from '@/assets/krolist-text-logo-new.png';
 
-const signUpSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters')
-});
-
-const signInSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters')
-});
-
 interface AuthModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function AuthModal({ open, onOpenChange }: AuthModalProps) {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
@@ -38,6 +29,18 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const { signUp, signIn } = useAuth();
   const isMobile = useMediaQuery('(max-width: 767px)');
+  const isArabic = language === 'ar';
+
+  const signUpSchema = z.object({
+    username: z.string().min(3, t('auth.usernameMin')),
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(6, t('auth.passwordMin'))
+  });
+
+  const signInSchema = z.object({
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(6, t('auth.passwordMin'))
+  });
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,9 +51,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Account created! Please check your email to verify.');
+        toast.success(t('auth.accountCreated'));
         onOpenChange(false);
-        // Reset form
         setUsername('');
         setEmail('');
         setPassword('');
@@ -73,9 +75,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Welcome back!');
+        toast.success(t('auth.welcomeBack'));
         onOpenChange(false);
-        // Reset form
         setEmail('');
         setPassword('');
       }
@@ -95,43 +96,44 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         <div className={`text-center ${isMobile ? 'mb-4' : 'mb-6'} animate-fade-in`}>
           <img src={krolistLogo} alt="Krolist" className={`${isMobile ? 'h-12' : 'h-16'} mx-auto mb-3`} />
           <h2 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold mb-2 text-warning text-center`}>
-            Welcome to Krolist
+            {t('auth.welcomeTo')}
           </h2>
           <p className={`${isMobile ? 'text-sm' : 'text-base'} text-muted-foreground text-center`}>
-            collection of cool products and more
+            {t('auth.collectionOfCool')}
           </p>
         </div>
 
         {/* Auth Form */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full grid-cols-2 mb-4 ${isMobile ? 'h-9' : 'h-11'}`}>
-            <TabsTrigger value="signin" className={isMobile ? 'text-sm' : 'text-base'}>Sign In</TabsTrigger>
-            <TabsTrigger value="signup" className={isMobile ? 'text-sm' : 'text-base'}>Sign Up</TabsTrigger>
+            <TabsTrigger value="signin" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.signIn')}</TabsTrigger>
+            <TabsTrigger value="signup" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.signUp')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin" className={`space-y-${isMobile ? '3' : '4'} animate-fade-in`}>
             <form onSubmit={handleSignIn} className={`space-y-${isMobile ? '3' : '4'}`}>
               <div className="space-y-2">
-                <Label htmlFor="signin-email" className={isMobile ? 'text-sm' : 'text-base'}>Email</Label>
+                <Label htmlFor="signin-email" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.email')}</Label>
                 <Input 
                   id="signin-email" 
                   type="email" 
-                  placeholder="Enter your email" 
+                  placeholder={t('auth.enterEmail')} 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   disabled={isLoading}
                   className={isMobile ? 'h-9 text-sm' : 'h-10 text-base'}
+                  dir={isArabic ? 'rtl' : 'ltr'}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signin-password" className={isMobile ? 'text-sm' : 'text-base'}>Password</Label>
+                <Label htmlFor="signin-password" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.password')}</Label>
                 <div className="relative">
                   <Input 
                     id="signin-password" 
                     type={showPassword ? 'text' : 'password'} 
-                    placeholder="Enter your password" 
+                    placeholder={t('auth.enterPassword')} 
                     value={password} 
                     onChange={e => setPassword(e.target.value)} 
                     required 
@@ -148,7 +150,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className={`flex items-center ${isArabic ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <input 
                   type="checkbox" 
                   id="remember-me" 
@@ -157,7 +159,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} rounded border-border text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2`}
                 />
                 <Label htmlFor="remember-me" className={`${isMobile ? 'text-xs' : 'text-sm'} font-normal cursor-pointer`}>
-                  Remember me
+                  {t('auth.rememberMe')}
                 </Label>
               </div>
 
@@ -166,10 +168,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 className={`w-full group ${isMobile ? 'h-9 text-sm' : 'h-10 text-base'} hover:shadow-lg transition-all`}
                 disabled={isLoading}
               >
-                {isLoading ? 'Please wait...' : (
+                {isLoading ? t('auth.pleaseWait') : (
                   <>
-                    Sign In
-                    <ArrowRight className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} ml-2 group-hover:translate-x-1 transition-transform`} />
+                    {t('auth.signIn')}
+                    <ArrowRight className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} ${isArabic ? 'mr-2 rotate-180' : 'ml-2'} group-hover:translate-x-1 transition-transform`} />
                   </>
                 )}
               </Button>
@@ -179,11 +181,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <TabsContent value="signup" className={`space-y-${isMobile ? '3' : '4'} animate-fade-in`}>
             <form onSubmit={handleSignUp} className={`space-y-${isMobile ? '3' : '4'}`}>
               <div className="space-y-2">
-                <Label htmlFor="signup-username" className={isMobile ? 'text-sm' : 'text-base'}>Username</Label>
+                <Label htmlFor="signup-username" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.username')}</Label>
                 <Input 
                   id="signup-username" 
                   type="text" 
-                  placeholder="Enter your username" 
+                  placeholder={t('auth.enterUsername')} 
                   value={username} 
                   onChange={e => setUsername(e.target.value)} 
                   required 
@@ -193,26 +195,27 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-email" className={isMobile ? 'text-sm' : 'text-base'}>Email</Label>
+                <Label htmlFor="signup-email" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.email')}</Label>
                 <Input 
                   id="signup-email" 
                   type="email" 
-                  placeholder="Enter your email" 
+                  placeholder={t('auth.enterEmail')} 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   disabled={isLoading}
                   className={isMobile ? 'h-9 text-sm' : 'h-10 text-base'}
+                  dir={isArabic ? 'rtl' : 'ltr'}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password" className={isMobile ? 'text-sm' : 'text-base'}>Password</Label>
+                <Label htmlFor="signup-password" className={isMobile ? 'text-sm' : 'text-base'}>{t('auth.password')}</Label>
                 <div className="relative">
                   <Input 
                     id="signup-password" 
                     type={showPassword ? 'text' : 'password'} 
-                    placeholder="Enter your password" 
+                    placeholder={t('auth.enterPassword')} 
                     value={password} 
                     onChange={e => setPassword(e.target.value)} 
                     required 
@@ -234,10 +237,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 className={`w-full group ${isMobile ? 'h-9 text-sm' : 'h-10 text-base'} hover:shadow-lg transition-all`}
                 disabled={isLoading}
               >
-                {isLoading ? 'Please wait...' : (
+                {isLoading ? t('auth.pleaseWait') : (
                   <>
-                    Create Account
-                    <ArrowRight className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} ml-2 group-hover:translate-x-1 transition-transform`} />
+                    {t('auth.createAccount')}
+                    <ArrowRight className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} ${isArabic ? 'mr-2 rotate-180' : 'ml-2'} group-hover:translate-x-1 transition-transform`} />
                   </>
                 )}
               </Button>
