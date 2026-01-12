@@ -415,7 +415,7 @@ export function ProductCarousel({
         <div className="relative">
           <Carousel
             opts={{
-              align: "start",
+              align: "center",
               loop: true,
               direction: language === 'ar' ? 'rtl' : 'ltr',
               skipSnaps: false,
@@ -425,11 +425,11 @@ export function ProductCarousel({
             setApi={setApi}
             className="w-full"
           >
-            <CarouselContent className={language === 'ar' ? '-mr-2 md:-mr-4' : '-ml-2 md:-ml-4'}>
+            <CarouselContent className="-ml-2 md:-ml-4">
               {slidesWithAds.map((slideContent, slideIndex) => (
                 <CarouselItem
                   key={slideIndex}
-                  className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
+                  className="pl-2 md:pl-4"
                 >
                   {slideContent.type === 'ad' ? (
                     // Ad slide - single container matching the slide size (mobile only)
