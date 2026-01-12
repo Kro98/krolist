@@ -293,10 +293,10 @@ export function FavoriteCard({
 
         {/* Price History Overlay */}
         <PriceHistoryCard
-          priceHistory={product.price_history || []}
-          originalCurrency={product.original_currency}
+          productId={product.id}
           productTitle={product.title}
-          isFlipped={isFlipped}
+          originalCurrency={product.original_currency}
+          isKrolistProduct={false}
           onFlip={() => setIsFlipped(false)}
         />
       </div>

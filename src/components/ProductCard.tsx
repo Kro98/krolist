@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, Heart, X } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Youtube, Heart, X, History } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
+import { PriceHistoryCard } from "@/components/PriceHistoryCard";
 export interface Product {
   id: string;
   title: string;
@@ -79,6 +80,7 @@ export function ProductCard({
     isZoomEnabled
   } = useImageZoom();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [titleScrollSpeed, setTitleScrollSpeed] = useState(() => {
     const saved = localStorage.getItem('titleScrollSpeed');
     return saved ? parseInt(saved) : 50; // pixels per second
@@ -192,7 +194,10 @@ export function ProductCard({
       onToggleSelect(product);
     }
   };
-  return <Card onClick={handleCardClick} className="">
+  return <div className="card-flip-container relative">
+    <div className={`card-flipper ${isFlipped ? 'flipped' : ''}`}>
+      {/* Front of Card */}
+      <Card onClick={handleCardClick} className="card-front">
       <CardContent className="p-4 py-[5px] px-[6px] mx-px">
         <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
@@ -303,6 +308,19 @@ export function ProductCard({
               {product.youtube_url && <Button size="sm" variant="outline" className="h-6 w-6 p-0 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')} title="YouTube Review">
                   <Youtube className="h-3 w-3" />
                 </Button>}
+              {/* History Button */}
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-6 px-2 gap-1 text-[0.65rem] border-primary/50 text-primary hover:bg-primary/10 ml-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFlipped(true);
+                }}
+              >
+                <History className="h-3 w-3" />
+                {t('products.history') || 'History'}
+              </Button>
             </div>
           </div>
         </div>
@@ -453,5 +471,18 @@ export function ProductCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>;
+    </Card>
+      
+      {/* Back of Card - Price History */}
+      <div className="card-back absolute inset-0">
+        <PriceHistoryCard
+          productId={product.id}
+          productTitle={product.title}
+          originalCurrency={product.original_currency}
+          isKrolistProduct={product.isKrolistProduct}
+          onFlip={() => setIsFlipped(false)}
+        />
+      </div>
+    </div>
+  </div>;
 }
