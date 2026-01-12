@@ -125,7 +125,7 @@ function SettingItem({ icon, iconBg, label, description, children, saving }: Set
 
 export default function Settings() {
   const { language, currency, setLanguage, setCurrency, t } = useLanguage();
-  const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue, isClassicMode, setIsClassicMode } = useTheme();
+  const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
   const { user } = useAuth();
   const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
   const { preferences: notifPrefs, updatePreference: updateNotifPref } = useNotificationPreferences();
@@ -173,11 +173,6 @@ export default function Settings() {
   const handleUndertoneChange = (value: any) => {
     setUndertone(value);
     showSaving('undertone');
-  };
-
-  const handleClassicModeChange = (checked: boolean) => {
-    setIsClassicMode(checked);
-    showSaving('classicMode');
   };
 
   const handleZoomChange = (checked: boolean) => {
@@ -400,16 +395,6 @@ export default function Settings() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
-            <SettingItem
-              icon={<Wand2 className="h-4 w-4 text-violet-500" />}
-              iconBg="bg-violet-500/10"
-              label={language === 'ar' ? 'الوضع الكلاسيكي' : 'Classic Mode'}
-              description={language === 'ar' ? 'استخدم التصميم الأصلي' : 'Use the original design style'}
-              saving={savingState.classicMode}
-            >
-              <Switch checked={isClassicMode} onCheckedChange={handleClassicModeChange} />
-            </SettingItem>
-
             <SettingItem
               icon={<Paintbrush className="h-4 w-4 text-pink-500" />}
               iconBg="bg-pink-500/10"
