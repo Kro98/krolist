@@ -148,6 +148,11 @@ export default {
         "subtle-bounce": {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-2px)" }
+        },
+        "wiggle": {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(-12deg)" },
+          "75%": { transform: "rotate(12deg)" }
         }
       },
       animation: {
@@ -162,7 +167,8 @@ export default {
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
         "shimmer": "shimmer 1.5s infinite",
-        "subtle-bounce": "subtle-bounce 2s ease-in-out infinite"
+        "subtle-bounce": "subtle-bounce 2s ease-in-out infinite",
+        "wiggle": "wiggle 0.5s ease-in-out infinite"
       },
       boxShadow: {
         'card': 'var(--shadow-card)',
