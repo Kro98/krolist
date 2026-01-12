@@ -258,6 +258,10 @@ const translations = {
     'promo.dayLeft': '1 day left',
     'promo.daysLeft': 'days left',
     'promo.unknown': 'Unknown',
+    'promo.expirationDate': 'Expiration Date',
+    'promo.expirationHint': 'Leave empty for 1 year validity',
+    'promo.usageType': 'Usage Type',
+    'promo.storeImage': 'Store Image',
     
     
     // Admin Dashboard
@@ -830,6 +834,10 @@ const translations = {
     'promo.dayLeft': 'يوم متبقي',
     'promo.daysLeft': 'أيام متبقية',
     'promo.unknown': 'غير معروف',
+    'promo.expirationDate': 'تاريخ الانتهاء',
+    'promo.expirationHint': 'اتركه فارغاً لصلاحية سنة واحدة',
+    'promo.usageType': 'نوع الاستخدام',
+    'promo.storeImage': 'صورة المتجر',
     
     
     // Common
