@@ -14,7 +14,7 @@ import { NotificationItem } from './NotificationItem';
 import { AuthModal } from '@/components/AuthModal';
 
 export function NotificationCenter() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { user, isGuest } = useAuth();
   const { notifications, unreadCount, clearAll, hasNewGlobalNotification } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -107,12 +107,12 @@ export function NotificationCenter() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
-                    {isArabic ? 'الإشعارات' : 'Notifications'}
+                    {t('notifications.title')}
                   </h2>
                   <p className="text-xs text-muted-foreground">
                     {notifications.length === 0 
-                      ? (isArabic ? 'لا توجد إشعارات' : 'No notifications')
-                      : `${notifications.length} ${isArabic ? 'إشعار' : notifications.length === 1 ? 'notification' : 'notifications'}`
+                      ? t('notifications.noNotifications')
+                      : `${notifications.length} ${notifications.length === 1 ? t('notifications.notification') : t('notifications.notifications')}`
                     }
                   </p>
                 </div>
@@ -126,7 +126,7 @@ export function NotificationCenter() {
                   className="h-9 px-3 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-1.5 rounded-lg"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{isArabic ? 'مسح الكل' : 'Clear'}</span>
+                  <span className="hidden sm:inline">{t('notifications.clear')}</span>
                 </Button>
               )}
             </div>
@@ -145,12 +145,10 @@ export function NotificationCenter() {
                   </div>
                 </div>
                 <h3 className="text-base font-medium text-foreground mb-1">
-                  {isArabic ? 'كل شيء جاهز!' : 'All caught up!'}
+                  {t('notifications.allCaughtUp')}
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-[200px]">
-                  {isArabic 
-                    ? 'ستظهر هنا تحديثات الأسعار والعروض الجديدة' 
-                    : 'Price drops and new deals will appear here'}
+                  {t('notifications.priceDropsWillAppear')}
                 </p>
               </div>
             ) : (
