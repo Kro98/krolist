@@ -102,24 +102,11 @@ export function MobileProductCard({
   };
 
   return (
-    <div 
-      className="relative h-full"
-      style={{ perspective: '1000px' }}
+    <Card 
+      className={cn(
+        "bg-card border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 ease-out overflow-hidden relative hover:-translate-y-1 hover:border-primary/20 group h-full"
+      )}
     >
-      <div
-        className={cn(
-          "relative w-full h-full transition-transform duration-700 ease-in-out",
-          isFlipped && "[transform:rotateY(180deg)]"
-        )}
-        style={{ transformStyle: 'preserve-3d' }}
-      >
-        {/* Front of Card */}
-        <Card 
-          className={cn(
-            "bg-card border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 ease-out overflow-hidden relative hover:-translate-y-1 hover:border-primary/20 group",
-            "absolute inset-0 [backface-visibility:hidden]"
-          )}
-        >
           <CardContent className="p-0 h-full flex flex-col">
             {/* Image Container */}
             <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="block relative flex-shrink-0">
@@ -287,24 +274,19 @@ export function MobileProductCard({
               </div>
             </div>
           </CardContent>
-        </Card>
-
-        {/* Back of Card - Price History */}
-        <Card 
-          className={cn(
-            "bg-card border border-border/50 shadow-lg overflow-hidden",
-            "absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]"
+          
+          {/* Price History Panel - Slides over */}
+          {isFlipped && (
+            <div className="absolute inset-0 z-10 animate-fade-in bg-card">
+              <PriceHistoryPanel
+                productId={product.id}
+                productTitle={product.title}
+                originalCurrency={product.original_currency}
+                onBack={() => setIsFlipped(false)}
+                isKrolistProduct={product.isKrolistProduct}
+              />
+            </div>
           )}
-        >
-          <PriceHistoryPanel
-            productId={product.id}
-            productTitle={product.title}
-            originalCurrency={product.original_currency}
-            onBack={() => setIsFlipped(false)}
-            isKrolistProduct={product.isKrolistProduct}
-          />
         </Card>
-      </div>
-    </div>
   );
 }
