@@ -127,7 +127,8 @@ export function ProductCard({
     price: product.current_price.toString(),
     category: product.category || '',
     currency: product.currency || 'SAR',
-    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture', 'EDC'].includes(product.category || '') ? product.category : 'Custom'
+    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture', 'EDC'].includes(product.category || '') ? product.category : 'Custom',
+    imageFit: product.image_fit || 'contain'
   });
 
   // Convert prices to display currency
@@ -164,7 +165,8 @@ export function ProductCard({
         image_url: editForm.imageUrl || null,
         current_price: parseFloat(editForm.price),
         category: editForm.categoryType === 'Custom' ? editForm.category : editForm.categoryType,
-        currency: editForm.currency
+        currency: editForm.currency,
+        image_fit: editForm.imageFit
       });
       toast.success(t('products.editSuccess'));
       setShowEditDialog(false);
@@ -334,7 +336,45 @@ export function ProductCard({
               ...editForm,
               imageUrl: e.target.value
             })} placeholder={t('products.enterImageUrl')} />
-              {editForm.imageUrl && <img src={editForm.imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded-md border" onError={e => e.currentTarget.style.display = 'none'} />}
+              {editForm.imageUrl && (
+                <div className="mt-2 space-y-2">
+                  <img 
+                    src={editForm.imageUrl} 
+                    alt="Preview" 
+                    className={`w-32 h-32 rounded-md border bg-white ${
+                      editForm.imageFit === 'cover' ? 'object-cover' : 'object-contain'
+                    }`}
+                    onError={e => e.currentTarget.style.display = 'none'} 
+                  />
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">{t('products.displayMode')}:</span>
+                    <div className="flex gap-1 p-0.5 bg-muted rounded-md">
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({...editForm, imageFit: "contain"})}
+                        className={`px-2 py-1 text-xs rounded transition-colors ${
+                          editForm.imageFit === "contain" 
+                            ? "bg-background text-foreground shadow-sm" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {t('products.fullImage')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({...editForm, imageFit: "cover"})}
+                        className={`px-2 py-1 text-xs rounded transition-colors ${
+                          editForm.imageFit === "cover" 
+                            ? "bg-background text-foreground shadow-sm" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {t('products.cropped')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
