@@ -412,7 +412,7 @@ export function ProductCarousel({
         </div>
       ) : (
         // Carousel view
-        <div className="relative px-4 md:px-6">
+        <div className="relative mx-2 md:mx-4">
           <Carousel
             opts={{
               align: "center",
@@ -423,13 +423,13 @@ export function ProductCarousel({
             }}
             plugins={[autoplayPlugin]}
             setApi={setApi}
-            className="w-full"
+            className="w-full overflow-visible"
           >
-            <CarouselContent className="-ml-2 md:-ml-4">
+            <CarouselContent className="-ml-3 md:-ml-4">
               {slidesWithAds.map((slideContent, slideIndex) => (
                 <CarouselItem
                   key={slideIndex}
-                  className="pl-2 md:pl-4"
+                  className="pl-3 md:pl-4"
                 >
                   {slideContent.type === 'ad' ? (
                     // Ad slide - single container matching the slide size (mobile only)
