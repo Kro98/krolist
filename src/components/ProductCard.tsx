@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, Heart, X } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Youtube, Heart, X, History } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
+import { PriceHistoryPanel } from "./PriceHistoryPanel";
+import { cn } from "@/lib/utils";
 export interface Product {
   id: string;
   title: string;
@@ -79,6 +81,7 @@ export function ProductCard({
     isZoomEnabled
   } = useImageZoom();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [titleScrollSpeed, setTitleScrollSpeed] = useState(() => {
     const saved = localStorage.getItem('titleScrollSpeed');
     return saved ? parseInt(saved) : 50; // pixels per second
@@ -190,9 +193,22 @@ export function ProductCard({
       onToggleSelect(product);
     }
   };
-  return <Card onClick={handleCardClick} className="">
-      <CardContent className="p-4 py-[5px] px-[6px] mx-px">
-        <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+  return (
+    <div 
+      className="relative"
+      style={{ perspective: '1000px' }}
+    >
+      <div
+        className={cn(
+          "relative w-full transition-transform duration-700 ease-in-out",
+          isFlipped && "[transform:rotateY(180deg)]"
+        )}
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {/* Front of Card */}
+        <Card onClick={handleCardClick} className="[backface-visibility:hidden]">
+          <CardContent className="p-4 py-[5px] px-[6px] mx-px">
+            <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 px-0 my-[20px] py-0">
             <div className="relative overflow-hidden rounded-xl bg-white">
@@ -301,6 +317,25 @@ export function ProductCard({
               {product.youtube_url && <Button size="sm" variant="outline" className="h-6 w-6 p-0 border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => window.open(product.youtube_url!, '_blank')} title="YouTube Review">
                   <Youtube className="h-3 w-3" />
                 </Button>}
+              
+              {/* History Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFlipped(true);
+                }}
+                className={cn(
+                  "h-6 px-2 py-0 gap-1 text-[0.65rem] font-medium",
+                  "bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20",
+                  "transition-all duration-200 hover:scale-105",
+                  language === 'ar' ? 'mr-auto' : 'ml-auto'
+                )}
+              >
+                <History className="h-3 w-3" />
+                {language === 'ar' ? 'السجل' : 'History'}
+              </Button>
             </div>
           </div>
         </div>
@@ -413,5 +448,25 @@ export function ProductCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>;
+    </Card>
+
+    {/* Back of Card - Price History */}
+    <Card 
+      className={cn(
+        "bg-card border border-border/50 shadow-lg overflow-hidden",
+        "absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]",
+        "min-h-[200px]"
+      )}
+    >
+      <PriceHistoryPanel
+        productId={product.id}
+        productTitle={product.title}
+        originalCurrency={product.original_currency}
+        onBack={() => setIsFlipped(false)}
+        isKrolistProduct={product.isKrolistProduct}
+      />
+    </Card>
+  </div>
+</div>
+  );
 }
