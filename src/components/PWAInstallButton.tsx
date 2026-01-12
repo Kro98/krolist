@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Download, Users, Share, Plus, MoreVertical, Monitor, Smartphone, Tablet, Apple, Chrome } from "lucide-react";
+import { Download, Users, Share, Plus, MoreVertical, Monitor, Smartphone, Tablet, Apple, Chrome, Globe, CheckCircle2, ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,13 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-type DeviceType = 'ios' | 'android' | 'windows' | 'mac' | 'tablet-ios' | 'tablet-android' | 'unknown';
+type DeviceType = 'ios' | 'android' | 'windows' | 'mac' | 'tablet-ios' | 'tablet-android' | 'linux' | 'unknown';
+type BrowserType = 'safari' | 'chrome' | 'firefox' | 'edge' | 'samsung' | 'opera' | 'brave' | 'unknown';
 
 // Detect device type
 function getDeviceType(): DeviceType {
@@ -40,6 +42,24 @@ function getDeviceType(): DeviceType {
   if (/mac/.test(ua)) {
     return 'mac';
   }
+  if (/linux/.test(ua)) {
+    return 'linux';
+  }
+  return 'unknown';
+}
+
+// Detect browser type
+function getBrowserType(): BrowserType {
+  const ua = navigator.userAgent.toLowerCase();
+  
+  if (/samsungbrowser/.test(ua)) return 'samsung';
+  if (/opr|opera/.test(ua)) return 'opera';
+  if (/brave/.test(ua)) return 'brave';
+  if (/edg/.test(ua)) return 'edge';
+  if (/firefox|fxios/.test(ua)) return 'firefox';
+  if (/chrome|crios/.test(ua) && !/edg/.test(ua)) return 'chrome';
+  if (/safari/.test(ua) && !/chrome|crios/.test(ua)) return 'safari';
+  
   return 'unknown';
 }
 
@@ -92,99 +112,308 @@ function useAnimatedCounter(targetValue: number | null, duration: number = 800) 
   return displayValue;
 }
 
-const installInstructions: Record<DeviceType, { en: string[]; ar: string[]; icon: React.ReactNode }> = {
-  ios: {
-    en: [
-      "Tap the Share button at the bottom of Safari",
-      "Scroll down and tap 'Add to Home Screen'",
-      "Tap 'Add' in the top right corner"
-    ],
-    ar: [
-      "اضغط على زر المشاركة في أسفل Safari",
-      "مرر للأسفل واضغط على 'إضافة إلى الشاشة الرئيسية'",
-      "اضغط على 'إضافة' في الزاوية العلوية اليمنى"
-    ],
-    icon: <Apple className="h-5 w-5" />
-  },
-  'tablet-ios': {
-    en: [
-      "Tap the Share button at the top of Safari",
-      "Scroll and tap 'Add to Home Screen'",
-      "Tap 'Add' to confirm"
-    ],
-    ar: [
-      "اضغط على زر المشاركة في أعلى Safari",
-      "مرر واضغط على 'إضافة إلى الشاشة الرئيسية'",
-      "اضغط على 'إضافة' للتأكيد"
-    ],
-    icon: <Tablet className="h-5 w-5" />
-  },
-  android: {
-    en: [
-      "Tap the menu button (⋮) in your browser",
-      "Tap 'Install app' or 'Add to Home screen'",
-      "Confirm by tapping 'Install'"
-    ],
-    ar: [
-      "اضغط على زر القائمة (⋮) في المتصفح",
-      "اضغط على 'تثبيت التطبيق' أو 'إضافة إلى الشاشة الرئيسية'",
-      "أكد بالضغط على 'تثبيت'"
-    ],
-    icon: <Smartphone className="h-5 w-5" />
-  },
-  'tablet-android': {
-    en: [
-      "Tap the menu button (⋮) in Chrome",
-      "Tap 'Install app' or 'Add to Home screen'",
-      "Confirm by tapping 'Install'"
-    ],
-    ar: [
-      "اضغط على زر القائمة (⋮) في Chrome",
-      "اضغط على 'تثبيت التطبيق' أو 'إضافة إلى الشاشة الرئيسية'",
-      "أكد بالضغط على 'تثبيت'"
-    ],
-    icon: <Tablet className="h-5 w-5" />
-  },
-  windows: {
-    en: [
-      "Click the install icon in the address bar",
-      "Or click menu (⋮) → 'Install Krolist'",
-      "Click 'Install' to confirm"
-    ],
-    ar: [
-      "اضغط على أيقونة التثبيت في شريط العنوان",
-      "أو اضغط على القائمة (⋮) ← 'تثبيت Krolist'",
-      "اضغط على 'تثبيت' للتأكيد"
-    ],
-    icon: <Monitor className="h-5 w-5" />
-  },
-  mac: {
-    en: [
-      "Click the install icon in the address bar",
-      "Or click menu (⋮) → 'Install Krolist'",
-      "Click 'Install' to confirm"
-    ],
-    ar: [
-      "اضغط على أيقونة التثبيت في شريط العنوان",
-      "أو اضغط على القائمة (⋮) ← 'تثبيت Krolist'",
-      "اضغط على 'تثبيت' للتأكيد"
-    ],
-    icon: <Monitor className="h-5 w-5" />
-  },
-  unknown: {
-    en: [
-      "Look for an install option in your browser menu",
-      "Or 'Add to Home Screen' in share options",
-      "Follow the prompts to install"
-    ],
-    ar: [
-      "ابحث عن خيار التثبيت في قائمة المتصفح",
-      "أو 'إضافة إلى الشاشة الرئيسية' في خيارات المشاركة",
-      "اتبع التعليمات للتثبيت"
-    ],
-    icon: <Chrome className="h-5 w-5" />
+interface InstallStep {
+  icon: React.ReactNode;
+  title: { en: string; ar: string };
+  description: { en: string; ar: string };
+}
+
+// Get install instructions based on device and browser
+function getInstallInstructions(device: DeviceType, browser: BrowserType): InstallStep[] {
+  // iOS Safari
+  if ((device === 'ios' || device === 'tablet-ios') && browser === 'safari') {
+    return [
+      {
+        icon: <Share className="h-5 w-5" />,
+        title: { en: 'Tap Share', ar: 'اضغط على مشاركة' },
+        description: { 
+          en: device === 'ios' ? 'Tap the Share button at the bottom of Safari' : 'Tap the Share button at the top of Safari',
+          ar: device === 'ios' ? 'اضغط على زر المشاركة في أسفل Safari' : 'اضغط على زر المشاركة في أعلى Safari'
+        }
+      },
+      {
+        icon: <Plus className="h-5 w-5" />,
+        title: { en: 'Add to Home Screen', ar: 'أضف إلى الشاشة الرئيسية' },
+        description: { 
+          en: 'Scroll down and tap "Add to Home Screen"',
+          ar: 'مرر للأسفل واضغط على "إضافة إلى الشاشة الرئيسية"'
+        }
+      },
+      {
+        icon: <CheckCircle2 className="h-5 w-5" />,
+        title: { en: 'Confirm', ar: 'تأكيد' },
+        description: { 
+          en: 'Tap "Add" in the top right corner',
+          ar: 'اضغط على "إضافة" في الزاوية العلوية'
+        }
+      }
+    ];
   }
-};
+
+  // iOS Chrome/Firefox
+  if ((device === 'ios' || device === 'tablet-ios') && (browser === 'chrome' || browser === 'firefox')) {
+    return [
+      {
+        icon: <ExternalLink className="h-5 w-5" />,
+        title: { en: 'Open in Safari', ar: 'افتح في Safari' },
+        description: { 
+          en: 'For the best experience, open this page in Safari',
+          ar: 'للحصول على أفضل تجربة، افتح هذه الصفحة في Safari'
+        }
+      },
+      {
+        icon: <Share className="h-5 w-5" />,
+        title: { en: 'Tap Share', ar: 'اضغط على مشاركة' },
+        description: { 
+          en: 'Tap the Share button in Safari',
+          ar: 'اضغط على زر المشاركة في Safari'
+        }
+      },
+      {
+        icon: <Plus className="h-5 w-5" />,
+        title: { en: 'Add to Home Screen', ar: 'أضف إلى الشاشة الرئيسية' },
+        description: { 
+          en: 'Tap "Add to Home Screen"',
+          ar: 'اضغط على "إضافة إلى الشاشة الرئيسية"'
+        }
+      }
+    ];
+  }
+
+  // Android Chrome
+  if ((device === 'android' || device === 'tablet-android') && browser === 'chrome') {
+    return [
+      {
+        icon: <MoreVertical className="h-5 w-5" />,
+        title: { en: 'Open Menu', ar: 'افتح القائمة' },
+        description: { 
+          en: 'Tap the three dots (⋮) in the top right',
+          ar: 'اضغط على النقاط الثلاث (⋮) في الأعلى'
+        }
+      },
+      {
+        icon: <Download className="h-5 w-5" />,
+        title: { en: 'Install App', ar: 'تثبيت التطبيق' },
+        description: { 
+          en: 'Tap "Install app" or "Add to Home screen"',
+          ar: 'اضغط على "تثبيت التطبيق" أو "إضافة إلى الشاشة الرئيسية"'
+        }
+      },
+      {
+        icon: <CheckCircle2 className="h-5 w-5" />,
+        title: { en: 'Confirm', ar: 'تأكيد' },
+        description: { 
+          en: 'Tap "Install" to confirm',
+          ar: 'اضغط على "تثبيت" للتأكيد'
+        }
+      }
+    ];
+  }
+
+  // Android Samsung Browser
+  if ((device === 'android' || device === 'tablet-android') && browser === 'samsung') {
+    return [
+      {
+        icon: <MoreVertical className="h-5 w-5" />,
+        title: { en: 'Open Menu', ar: 'افتح القائمة' },
+        description: { 
+          en: 'Tap the menu icon (≡) at the bottom',
+          ar: 'اضغط على أيقونة القائمة (≡) في الأسفل'
+        }
+      },
+      {
+        icon: <Plus className="h-5 w-5" />,
+        title: { en: 'Add to Home', ar: 'أضف إلى الشاشة' },
+        description: { 
+          en: 'Tap "Add page to" then "Home screen"',
+          ar: 'اضغط على "إضافة الصفحة إلى" ثم "الشاشة الرئيسية"'
+        }
+      },
+      {
+        icon: <CheckCircle2 className="h-5 w-5" />,
+        title: { en: 'Confirm', ar: 'تأكيد' },
+        description: { 
+          en: 'Tap "Add" to confirm',
+          ar: 'اضغط على "إضافة" للتأكيد'
+        }
+      }
+    ];
+  }
+
+  // Android Firefox
+  if ((device === 'android' || device === 'tablet-android') && browser === 'firefox') {
+    return [
+      {
+        icon: <MoreVertical className="h-5 w-5" />,
+        title: { en: 'Open Menu', ar: 'افتح القائمة' },
+        description: { 
+          en: 'Tap the three dots (⋮) in the toolbar',
+          ar: 'اضغط على النقاط الثلاث (⋮) في شريط الأدوات'
+        }
+      },
+      {
+        icon: <Download className="h-5 w-5" />,
+        title: { en: 'Install', ar: 'تثبيت' },
+        description: { 
+          en: 'Tap "Install" or "Add to Home screen"',
+          ar: 'اضغط على "تثبيت" أو "إضافة إلى الشاشة الرئيسية"'
+        }
+      },
+      {
+        icon: <CheckCircle2 className="h-5 w-5" />,
+        title: { en: 'Confirm', ar: 'تأكيد' },
+        description: { 
+          en: 'Follow the prompts to add',
+          ar: 'اتبع التعليمات للإضافة'
+        }
+      }
+    ];
+  }
+
+  // Desktop Chrome/Edge/Brave
+  if ((device === 'windows' || device === 'mac' || device === 'linux') && 
+      (browser === 'chrome' || browser === 'edge' || browser === 'brave')) {
+    return [
+      {
+        icon: <Download className="h-5 w-5" />,
+        title: { en: 'Look for Install Icon', ar: 'ابحث عن أيقونة التثبيت' },
+        description: { 
+          en: 'Click the install icon (⊕) in the address bar',
+          ar: 'اضغط على أيقونة التثبيت (⊕) في شريط العنوان'
+        }
+      },
+      {
+        icon: <MoreVertical className="h-5 w-5" />,
+        title: { en: 'Or Use Menu', ar: 'أو استخدم القائمة' },
+        description: { 
+          en: 'Click menu (⋮) → "Install Krolist..."',
+          ar: 'اضغط على القائمة (⋮) ← "تثبيت Krolist..."'
+        }
+      },
+      {
+        icon: <CheckCircle2 className="h-5 w-5" />,
+        title: { en: 'Install', ar: 'تثبيت' },
+        description: { 
+          en: 'Click "Install" to confirm',
+          ar: 'اضغط على "تثبيت" للتأكيد'
+        }
+      }
+    ];
+  }
+
+  // Desktop Firefox
+  if ((device === 'windows' || device === 'mac' || device === 'linux') && browser === 'firefox') {
+    return [
+      {
+        icon: <Globe className="h-5 w-5" />,
+        title: { en: 'Firefox Limitation', ar: 'قيود Firefox' },
+        description: { 
+          en: 'Firefox desktop doesn\'t support app installation yet',
+          ar: 'Firefox لا يدعم تثبيت التطبيقات بعد'
+        }
+      },
+      {
+        icon: <Chrome className="h-5 w-5" />,
+        title: { en: 'Use Chrome or Edge', ar: 'استخدم Chrome أو Edge' },
+        description: { 
+          en: 'Open this page in Chrome or Edge to install',
+          ar: 'افتح هذه الصفحة في Chrome أو Edge للتثبيت'
+        }
+      }
+    ];
+  }
+
+  // Desktop Safari
+  if (device === 'mac' && browser === 'safari') {
+    return [
+      {
+        icon: <Share className="h-5 w-5" />,
+        title: { en: 'Click Share', ar: 'اضغط على مشاركة' },
+        description: { 
+          en: 'Click the Share button in the toolbar',
+          ar: 'اضغط على زر المشاركة في شريط الأدوات'
+        }
+      },
+      {
+        icon: <Plus className="h-5 w-5" />,
+        title: { en: 'Add to Dock', ar: 'أضف إلى Dock' },
+        description: { 
+          en: 'Click "Add to Dock" (macOS Sonoma+)',
+          ar: 'اضغط على "إضافة إلى Dock" (macOS Sonoma+)'
+        }
+      },
+      {
+        icon: <CheckCircle2 className="h-5 w-5" />,
+        title: { en: 'Confirm', ar: 'تأكيد' },
+        description: { 
+          en: 'Click "Add" to confirm',
+          ar: 'اضغط على "إضافة" للتأكيد'
+        }
+      }
+    ];
+  }
+
+  // Default/Unknown
+  return [
+    {
+      icon: <MoreVertical className="h-5 w-5" />,
+      title: { en: 'Open Browser Menu', ar: 'افتح قائمة المتصفح' },
+      description: { 
+        en: 'Look for the menu or share button',
+        ar: 'ابحث عن زر القائمة أو المشاركة'
+      }
+    },
+    {
+      icon: <Plus className="h-5 w-5" />,
+      title: { en: 'Add to Home/Install', ar: 'أضف / ثبّت' },
+      description: { 
+        en: 'Find "Add to Home Screen" or "Install"',
+        ar: 'ابحث عن "إضافة إلى الشاشة الرئيسية" أو "تثبيت"'
+      }
+    },
+    {
+      icon: <CheckCircle2 className="h-5 w-5" />,
+      title: { en: 'Confirm', ar: 'تأكيد' },
+      description: { 
+        en: 'Follow the prompts to complete installation',
+        ar: 'اتبع التعليمات لإكمال التثبيت'
+      }
+    }
+  ];
+}
+
+// Get device icon
+function getDeviceIcon(device: DeviceType): React.ReactNode {
+  switch (device) {
+    case 'ios':
+    case 'tablet-ios':
+      return <Apple className="h-5 w-5" />;
+    case 'android':
+    case 'tablet-android':
+      return <Smartphone className="h-5 w-5" />;
+    case 'windows':
+    case 'mac':
+    case 'linux':
+      return <Monitor className="h-5 w-5" />;
+    default:
+      return <Globe className="h-5 w-5" />;
+  }
+}
+
+// Get browser icon/name
+function getBrowserInfo(browser: BrowserType): { icon: React.ReactNode; name: { en: string; ar: string } } {
+  const info: Record<BrowserType, { icon: React.ReactNode; name: { en: string; ar: string } }> = {
+    safari: { icon: <Globe className="h-4 w-4" />, name: { en: 'Safari', ar: 'Safari' } },
+    chrome: { icon: <Chrome className="h-4 w-4" />, name: { en: 'Chrome', ar: 'Chrome' } },
+    firefox: { icon: <Globe className="h-4 w-4" />, name: { en: 'Firefox', ar: 'Firefox' } },
+    edge: { icon: <Globe className="h-4 w-4" />, name: { en: 'Edge', ar: 'Edge' } },
+    samsung: { icon: <Smartphone className="h-4 w-4" />, name: { en: 'Samsung Internet', ar: 'Samsung Internet' } },
+    opera: { icon: <Globe className="h-4 w-4" />, name: { en: 'Opera', ar: 'Opera' } },
+    brave: { icon: <Globe className="h-4 w-4" />, name: { en: 'Brave', ar: 'Brave' } },
+    unknown: { icon: <Globe className="h-4 w-4" />, name: { en: 'Browser', ar: 'المتصفح' } }
+  };
+  return info[browser];
+}
 
 export function PWAInstallButton() {
   const { language } = useLanguage();
@@ -193,10 +422,13 @@ export function PWAInstallButton() {
   const [isPWA, setIsPWA] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [deviceType, setDeviceType] = useState<DeviceType>('unknown');
+  const [browserType, setBrowserType] = useState<BrowserType>('unknown');
+  const [currentStep, setCurrentStep] = useState(0);
   const animatedCount = useAnimatedCounter(installCount);
 
   useEffect(() => {
     setDeviceType(getDeviceType());
+    setBrowserType(getBrowserType());
     
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true ||
@@ -239,7 +471,7 @@ export function PWAInstallButton() {
     try {
       await supabase.from('app_installs').insert({
         user_agent: navigator.userAgent,
-        platform: `${deviceType}-${method}`
+        platform: `${deviceType}-${browserType}-${method}`
       });
       setInstallCount(prev => (prev ?? 0) + 1);
     } catch (error) {
@@ -265,8 +497,8 @@ export function PWAInstallButton() {
     }
     
     // Fallback: show manual instructions
+    setCurrentStep(0);
     setShowInstructions(true);
-    // Track that user attempted install (they saw instructions)
     await trackInstall('manual');
   };
 
@@ -277,8 +509,8 @@ export function PWAInstallButton() {
     return count.toString();
   };
 
-  const instructions = installInstructions[deviceType];
-  const steps = language === 'ar' ? instructions.ar : instructions.en;
+  const instructions = getInstallInstructions(deviceType, browserType);
+  const browserInfo = getBrowserInfo(browserType);
 
   if (isPWA) {
     return null;
@@ -292,6 +524,7 @@ export function PWAInstallButton() {
       'tablet-android': { en: 'Android Tablet', ar: 'جهاز أندرويد لوحي' },
       windows: { en: 'Windows', ar: 'ويندوز' },
       mac: { en: 'Mac', ar: 'ماك' },
+      linux: { en: 'Linux', ar: 'لينكس' },
       unknown: { en: 'Your Device', ar: 'جهازك' }
     };
     return language === 'ar' ? labels[deviceType].ar : labels[deviceType].en;
@@ -302,81 +535,138 @@ export function PWAInstallButton() {
       <Button 
         variant="outline" 
         size="icon" 
-        className="relative" 
+        className="relative group" 
         onClick={handleInstall}
       >
-        <Download className="h-5 w-5" />
+        <Download className="h-5 w-5 transition-transform group-hover:scale-110" />
         {animatedCount !== null && animatedCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 min-w-4 text-[10px] font-medium bg-primary text-primary-foreground rounded-full px-1">
+          <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 min-w-4 text-[10px] font-medium bg-primary text-primary-foreground rounded-full px-1 animate-in zoom-in-50">
             {formatCount(animatedCount)}
           </span>
         )}
       </Button>
 
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {instructions.icon}
-              <span>
-                {language === 'ar' 
-                  ? `تثبيت على ${getDeviceLabel()}`
-                  : `Install on ${getDeviceLabel()}`
-                }
-              </span>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                {getDeviceIcon(deviceType)}
+              </div>
+              <div>
+                <span className="block">
+                  {language === 'ar' 
+                    ? `تثبيت Krolist`
+                    : `Install Krolist`
+                  }
+                </span>
+                <span className="text-xs font-normal text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                  {browserInfo.icon}
+                  {language === 'ar' ? browserInfo.name.ar : browserInfo.name.en}
+                  {' • '}
+                  {getDeviceLabel()}
+                </span>
+              </div>
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+            {/* User count badge */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20">
               <Users className="h-5 w-5 text-primary shrink-0" />
               <p className="text-sm">
                 {language === 'ar'
-                  ? `انضم إلى ${animatedCount} مستخدم قاموا بتثبيت التطبيق`
-                  : `Join ${animatedCount} users who installed the app`
+                  ? `انضم إلى ${animatedCount}+ مستخدم قاموا بتثبيت التطبيق`
+                  : `Join ${animatedCount}+ users who installed the app`
                 }
               </p>
             </div>
 
-            <ol className="space-y-3">
-              {steps.map((step, index) => (
-                <li key={index} className="flex gap-3 items-start">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-medium shrink-0">
-                    {index + 1}
-                  </span>
-                  <span className="text-sm pt-0.5">{step}</span>
-                </li>
+            {/* Steps */}
+            <div className="space-y-3">
+              {instructions.map((step, index) => (
+                <div 
+                  key={index}
+                  onClick={() => setCurrentStep(index)}
+                  className={cn(
+                    "flex gap-3 items-start p-3 rounded-xl border-2 cursor-pointer transition-all duration-300",
+                    currentStep === index 
+                      ? "border-primary bg-primary/5 scale-[1.02]" 
+                      : "border-border/50 hover:border-primary/30 hover:bg-muted/50"
+                  )}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className={cn(
+                    "flex items-center justify-center h-10 w-10 rounded-xl shrink-0 transition-colors",
+                    currentStep === index 
+                      ? "bg-primary text-primary-foreground" 
+                      : "bg-muted text-muted-foreground"
+                  )}>
+                    {step.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className={cn(
+                      "font-semibold text-sm mb-0.5 transition-colors",
+                      currentStep === index ? "text-primary" : "text-foreground"
+                    )}>
+                      {language === 'ar' ? step.title.ar : step.title.en}
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {language === 'ar' ? step.description.ar : step.description.en}
+                    </p>
+                  </div>
+                  {currentStep === index && (
+                    <ArrowRight className="h-4 w-4 text-primary shrink-0 mt-3 animate-pulse" />
+                  )}
+                </div>
               ))}
-            </ol>
+            </div>
 
-            {(deviceType === 'ios' || deviceType === 'tablet-ios') && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted text-muted-foreground text-sm">
-                <Share className="h-4 w-4 shrink-0" />
-                <span>
-                  {language === 'ar'
-                    ? 'ابحث عن أيقونة المشاركة هذه'
-                    : 'Look for this share icon'
-                  }
-                </span>
-              </div>
-            )}
-
-            {(deviceType === 'android' || deviceType === 'tablet-android') && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted text-muted-foreground text-sm">
-                <MoreVertical className="h-4 w-4 shrink-0" />
-                <span>
-                  {language === 'ar'
-                    ? 'ابحث عن أيقونة القائمة هذه'
-                    : 'Look for this menu icon'
-                  }
-                </span>
-              </div>
-            )}
+            {/* Navigation dots */}
+            <div className="flex justify-center gap-2 pt-2">
+              {instructions.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentStep(index)}
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-all duration-300",
+                    currentStep === index 
+                      ? "bg-primary w-6" 
+                      : "bg-muted hover:bg-muted-foreground/50"
+                  )}
+                />
+              ))}
+            </div>
           </div>
 
-          <Button onClick={() => setShowInstructions(false)} className="w-full">
-            {language === 'ar' ? 'فهمت!' : 'Got it!'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInstructions(false)} 
+              className="flex-1"
+            >
+              {language === 'ar' ? 'لاحقاً' : 'Later'}
+            </Button>
+            <Button 
+              onClick={() => {
+                if (currentStep < instructions.length - 1) {
+                  setCurrentStep(prev => prev + 1);
+                } else {
+                  setShowInstructions(false);
+                }
+              }} 
+              className="flex-1 gap-2"
+            >
+              {currentStep < instructions.length - 1 ? (
+                <>
+                  {language === 'ar' ? 'التالي' : 'Next'}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                language === 'ar' ? 'فهمت!' : 'Got it!'
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
