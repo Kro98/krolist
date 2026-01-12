@@ -102,6 +102,9 @@ const translations = {
     'products.addManuallyDesc': 'Paste a product URL and we\'ll auto-fill the details, or enter everything manually',
     'products.anyURL': 'Any URL',
     'products.fullControl': 'Full Control',
+    'products.displayMode': 'Display',
+    'products.fullImage': 'Full Image',
+    'products.cropped': 'Cropped',
     
     // Settings
     'settings.title': 'Settings',
@@ -686,6 +689,9 @@ const translations = {
     'products.addManuallyDesc': 'الصق رابط المنتج وسنملأ التفاصيل تلقائياً، أو أدخل كل شيء يدوياً',
     'products.anyURL': 'أي رابط',
     'products.fullControl': 'تحكم كامل',
+    'products.displayMode': 'العرض',
+    'products.fullImage': 'الصورة كاملة',
+    'products.cropped': 'مقصوصة',
     
     // Settings
     'settings.title': 'الإعدادات',
