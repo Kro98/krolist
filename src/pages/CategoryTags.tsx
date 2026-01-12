@@ -70,15 +70,15 @@ export default function CategoryTags() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t('categories.title') || 'Categories'}</h1>
-        <p className="text-muted-foreground">
+    <div className="max-w-7xl mx-auto py-2">
+      <div className="mb-10 text-center sm:text-left">
+        <h1 className="text-3xl md:text-4xl font-bold mb-3">{t('categories.title') || 'Categories'}</h1>
+        <p className="text-muted-foreground text-base">
           {t('categories.subtitle') || 'Browse products by category'}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
         {categories.map((category) => (
           <Card
             key={category.id}
@@ -131,9 +131,9 @@ export default function CategoryTags() {
       </div>
 
       {categories.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Tag className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <p>{t('categories.empty') || 'No categories available yet'}</p>
+        <div className="text-center py-16 text-muted-foreground">
+          <Tag className="h-20 w-20 mx-auto mb-5 opacity-50" />
+          <p className="text-lg">{t('categories.empty') || 'No categories available yet'}</p>
         </div>
       )}
     </div>
