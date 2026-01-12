@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,6 +14,8 @@ import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
+import { PriceHistoryCard } from "./PriceHistoryCard";
+
 export interface Product {
   id: string;
   title: string;
@@ -32,11 +34,13 @@ export interface Product {
   youtube_url?: string | null;
   collection_title?: string | null;
   isKrolistProduct?: boolean;
+  image_fit?: string | null;
   price_history?: Array<{
     price: number;
     scraped_at: string;
   }>;
 }
+
 interface FavoriteCardProps {
   product: Product;
   onDelete?: (id: string) => void;
@@ -46,6 +50,7 @@ interface FavoriteCardProps {
   isSelected?: boolean;
   onToggleSelect?: (product: Product) => void;
 }
+
 export function FavoriteCard({
   product,
   onDelete,
@@ -55,16 +60,11 @@ export function FavoriteCard({
   isSelected = false,
   onToggleSelect
 }: FavoriteCardProps) {
-  const {
-    t,
-    language
-  } = useLanguage();
-  const {
-    currency,
-    convertPriceToDisplay
-  } = useConvertedPrice();
+  const { t, language } = useLanguage();
+  const { currency, convertPriceToDisplay } = useConvertedPrice();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [titleScrollSpeed] = useState(() => {
     const saved = localStorage.getItem('titleScrollSpeed');
     return saved ? parseInt(saved) : 50;
@@ -80,7 +80,8 @@ export function FavoriteCard({
     price: product.current_price.toString(),
     category: product.category || '',
     currency: product.currency || 'SAR',
-    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture', 'EDC'].includes(product.category || '') ? product.category : 'Custom'
+    categoryType: ['Electronics', 'Accessories', 'Clothes', 'Shoes', 'Watches', 'Home and Kitchen', 'Care products', 'Pet products', 'Furniture', 'EDC'].includes(product.category || '') ? product.category : 'Custom',
+    imageFit: product.image_fit || 'contain'
   });
 
   // Calculate scroll for title
@@ -129,11 +130,18 @@ export function FavoriteCard({
         image_url: editForm.imageUrl || null,
         current_price: parseFloat(editForm.price),
         category: editForm.categoryType === 'Custom' ? editForm.category : editForm.categoryType,
-        currency: editForm.currency
+        currency: editForm.currency,
+        image_fit: editForm.imageFit
       });
       toast.success(t('products.editSuccess'));
       setShowEditDialog(false);
     }
+  };
+
+  const handleFlip = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsFlipped(!isFlipped);
   };
   const handleCardClick = () => {
     if (isSelectionMode && onToggleSelect) {
@@ -162,8 +170,18 @@ export function FavoriteCard({
         <div className={cn("flex gap-3 p-3", isArabic && "flex-row-reverse")}>
           {/* Image Container */}
           <div className="relative flex-shrink-0 px-[5px] py-[5px]">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden ring-1 ring-border/30 group-hover:ring-primary/30 transition-all duration-300">
-              <img src={product.image_url || '/placeholder.svg'} alt={product.title} className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110" />
+            <div className={cn(
+              "relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden ring-1 ring-border/30 group-hover:ring-primary/30 transition-all duration-300",
+              product.image_fit !== 'cover' && "bg-white"
+            )}>
+              <img 
+                src={product.image_url || '/placeholder.svg'} 
+                alt={product.title} 
+                className={cn(
+                  "w-full h-full transition-all duration-700 ease-out group-hover:scale-110",
+                  product.image_fit === 'cover' ? 'object-cover' : 'object-contain'
+                )} 
+              />
               {/* Image Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
@@ -251,12 +269,36 @@ export function FavoriteCard({
                 </Button>}
             </div>
 
-            {/* Last Checked */}
-            <div className={cn("text-[9px] text-muted-foreground/60 mt-1.5", isArabic && "text-right")}>
-              {new Date(product.last_checked_at).toLocaleDateString()}
+            {/* Last Checked + History Button */}
+            <div className={cn("flex items-center justify-between mt-1.5", isArabic && "flex-row-reverse")}>
+              <div className="text-[9px] text-muted-foreground/60">
+                {new Date(product.last_checked_at).toLocaleDateString()}
+              </div>
+              
+              {/* History Button */}
+              {product.price_history && product.price_history.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFlip}
+                  className="h-6 px-2 text-[10px] gap-1 history-btn hover:bg-primary/10 hover:text-primary rounded-full transition-all"
+                >
+                  <History className="h-3 w-3" />
+                  <span>{isArabic ? 'السجل' : 'History'}</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Price History Overlay */}
+        <PriceHistoryCard
+          priceHistory={product.price_history || []}
+          originalCurrency={product.original_currency}
+          productTitle={product.title}
+          isFlipped={isFlipped}
+          onFlip={() => setIsFlipped(false)}
+        />
       </div>
 
       {/* Edit Dialog */}
@@ -281,10 +323,11 @@ export function FavoriteCard({
               description: e.target.value
             })} placeholder={t('products.enterDescription')} rows={3} />
             </div>
-            <div>
-              <Label htmlFor="edit-image">{t('products.imageUrl')}</Label>
-              <Input id="edit-image" value={editForm.imageUrl || ''} onChange={e => setEditForm({
-              ...editForm,
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="edit-image">{t('products.imageUrl')}</Label>
+                <Input id="edit-image" value={editForm.imageUrl || ''} onChange={e => setEditForm({
+                ...editForm,
               imageUrl: e.target.value
             })} placeholder={t('products.enterImageUrl')} />
               {editForm.imageUrl && <img src={editForm.imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded-md border" onError={e => e.currentTarget.style.display = 'none'} />}
