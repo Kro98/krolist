@@ -19,18 +19,16 @@ import { useNavigate } from "react-router-dom";
 // Event type color mapping
 const EVENT_TYPE_COLORS: Record<string, string> = {
   sale: "bg-green-500",
-  holiday: "bg-amber-500", 
+  holiday: "bg-amber-500",
   discount: "bg-blue-500",
   personal: "bg-purple-500"
 };
-
 const EVENT_TYPE_BADGE_COLORS: Record<string, string> = {
   sale: "bg-green-500/20 text-green-600 border-green-500/30",
   holiday: "bg-amber-500/20 text-amber-600 border-amber-500/30",
   discount: "bg-blue-500/20 text-blue-600 border-blue-500/30",
   personal: "bg-purple-500/20 text-purple-600 border-purple-500/30"
 };
-
 interface Event {
   id: string;
   name: string;
@@ -559,7 +557,9 @@ export default function Events() {
   const {
     t
   } = useLanguage();
-  const { isGuest } = useAuth();
+  const {
+    isGuest
+  } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>(defaultEvents);
   const [selectedDates, setSelectedDates] = useState<Date[]>([new Date()]);
@@ -579,28 +579,23 @@ export default function Events() {
   useEffect(() => {
     const checkReminders = () => {
       const now = new Date();
-      setEvents(prevEvents => 
-        prevEvents.map(event => {
-          if (!event.reminderMinutes || event.reminderShown) return event;
-          
-          const eventDateTime = event.time 
-            ? parse(event.time, 'HH:mm', event.date)
-            : event.date;
-          
-          const minutesUntil = differenceInMinutes(eventDateTime, now);
-          
-          if (minutesUntil <= event.reminderMinutes && minutesUntil > 0) {
-            toast.info(`🔔 Reminder: ${event.name}`, {
-              description: `Starting in ${minutesUntil} minutes`,
-              duration: 10000
-            });
-            return { ...event, reminderShown: true };
-          }
-          return event;
-        })
-      );
+      setEvents(prevEvents => prevEvents.map(event => {
+        if (!event.reminderMinutes || event.reminderShown) return event;
+        const eventDateTime = event.time ? parse(event.time, 'HH:mm', event.date) : event.date;
+        const minutesUntil = differenceInMinutes(eventDateTime, now);
+        if (minutesUntil <= event.reminderMinutes && minutesUntil > 0) {
+          toast.info(`🔔 Reminder: ${event.name}`, {
+            description: `Starting in ${minutesUntil} minutes`,
+            duration: 10000
+          });
+          return {
+            ...event,
+            reminderShown: true
+          };
+        }
+        return event;
+      }));
     };
-
     const interval = setInterval(checkReminders, 60000); // Check every minute
     checkReminders(); // Initial check
     return () => clearInterval(interval);
@@ -612,7 +607,6 @@ export default function Events() {
     acc[dateKey] = EVENT_TYPE_COLORS[event.type];
     return acc;
   }, {} as Record<string, string>);
-
   const resetForm = () => {
     setFormData({
       name: "",
@@ -630,7 +624,6 @@ export default function Events() {
       toast.error("Please create an account to add events");
       return;
     }
-
     if (selectedDates.length === 0) {
       toast.error("Please select a date");
       return;
@@ -644,7 +637,6 @@ export default function Events() {
         return;
       }
     }
-
     const newEvent: Event = {
       id: Date.now().toString(),
       name: formData.name,
@@ -689,15 +681,13 @@ export default function Events() {
     setEvents(events.filter(event => event.id !== eventId));
     toast.success("Event deleted successfully");
   };
-  const eventsForSelectedDates = selectedDates.length > 0 ? events.filter(event => 
-    selectedDates.some(date => format(event.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
-  ) : [];
+  const eventsForSelectedDates = selectedDates.length > 0 ? events.filter(event => selectedDates.some(date => format(event.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))) : [];
   const upcomingEvents = events.filter(event => event.date >= new Date()).sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
   return <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">{t('nav.events')}</h1>
-          <p className="text-muted-foreground">Plan purchases around global sales, holidays, and national days. Create custom events for personalized shopping strategy.</p>
+          <h1 className="text-3xl font-bold mb-2 text-center">{t('nav.events')}</h1>
+          <p className="text-muted-foreground text-center">Plan purchases around global sales, holidays, and national days. Create custom events for personalized shopping strategy.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -739,10 +729,10 @@ export default function Events() {
 
               <div className="space-y-2">
                 <Label>Time</Label>
-                <TimePicker 
-                  value={formData.time} 
-                  onChange={(time) => setFormData({...formData, time})} 
-                />
+                <TimePicker value={formData.time} onChange={time => setFormData({
+                ...formData,
+                time
+              })} />
               </div>
 
               <div className="space-y-2">
@@ -765,7 +755,7 @@ export default function Events() {
 
               <div className="space-y-2">
                 <Label htmlFor="reminder">Reminder</Label>
-                <Select value={formData.reminderMinutes.toString()} onValueChange={(value) => setFormData({
+                <Select value={formData.reminderMinutes.toString()} onValueChange={value => setFormData({
                 ...formData,
                 reminderMinutes: parseInt(value)
               })}>
@@ -800,14 +790,7 @@ export default function Events() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex gap-4 flex-col">
-            <Calendar 
-              mode="multiple" 
-              selected={selectedDates} 
-              onSelect={(dates) => setSelectedDates(dates || [])} 
-              eventDates={events.map(event => event.date)}
-              eventColors={eventColors}
-              className="rounded-md border p-4 pointer-events-auto flex-1 w-full" 
-            />
+            <Calendar mode="multiple" selected={selectedDates} onSelect={dates => setSelectedDates(dates || [])} eventDates={events.map(event => event.date)} eventColors={eventColors} className="rounded-md border p-4 pointer-events-auto flex-1 w-full" />
             {/* Event Type Legend */}
             <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
               <span className="text-xs text-muted-foreground font-medium">Legend:</span>
@@ -835,11 +818,7 @@ export default function Events() {
         <Card className="shadow-card border-border animate-fade-in">
           <CardHeader>
             <CardTitle className="text-lg">
-              {selectedDates.length > 0 
-                ? selectedDates.length === 1 
-                  ? format(selectedDates[0], 'MMM dd, yyyy')
-                  : `${selectedDates.length} dates selected`
-                : 'Select a Date'}
+              {selectedDates.length > 0 ? selectedDates.length === 1 ? format(selectedDates[0], 'MMM dd, yyyy') : `${selectedDates.length} dates selected` : 'Select a Date'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
