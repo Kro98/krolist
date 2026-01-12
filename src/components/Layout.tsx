@@ -96,60 +96,47 @@ function LayoutContent({
   // Check for service worker updates and show toast
   useEffect(() => {
     if (!('serviceWorker' in navigator) || updateToastShown) return;
-
     const showUpdateToast = () => {
       if (updateToastShown) return;
       setUpdateToastShown(true);
-
       toast({
         title: language === 'ar' ? 'تحديث متاح!' : 'Update Available!',
-        description:
-          language === 'ar'
-            ? 'يتوفر إصدار جديد من التطبيق. قم بالتحديث للحصول على أحدث الميزات.'
-            : 'A new version is available. Update to get the latest features.',
+        description: language === 'ar' ? 'يتوفر إصدار جديد من التطبيق. قم بالتحديث للحصول على أحدث الميزات.' : 'A new version is available. Update to get the latest features.',
         duration: 10000,
-        action: (
-          <Button
-            size="sm"
-            onClick={async () => {
-              const registration = await navigator.serviceWorker.getRegistration();
+        action: <Button size="sm" onClick={async () => {
+          const registration = await navigator.serviceWorker.getRegistration();
 
-              // If there's a waiting SW, activate it first then reload when controller changes.
-              if (registration?.waiting) {
-                const onControllerChange = () => {
-                  navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
-                  window.location.reload();
-                };
-
-                navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-
-                // Safety fallback in case controllerchange never fires.
-                setTimeout(() => window.location.reload(), 2500);
-                return;
-              }
-
-              // Otherwise just try to update + reload.
-              await registration?.update();
+          // If there's a waiting SW, activate it first then reload when controller changes.
+          if (registration?.waiting) {
+            const onControllerChange = () => {
+              navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
               window.location.reload();
-            }}
-            className="bg-primary hover:bg-primary/90"
-          >
+            };
+            navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+            registration.waiting.postMessage({
+              type: 'SKIP_WAITING'
+            });
+
+            // Safety fallback in case controllerchange never fires.
+            setTimeout(() => window.location.reload(), 2500);
+            return;
+          }
+
+          // Otherwise just try to update + reload.
+          await registration?.update();
+          window.location.reload();
+        }} className="bg-primary hover:bg-primary/90">
             <RefreshCw className="h-3 w-3 mr-1" />
             {language === 'ar' ? 'تحديث' : 'Update'}
           </Button>
-        ),
       });
     };
-
     const checkForUpdates = async () => {
       const registration = await navigator.serviceWorker.getRegistration();
-
       if (registration?.waiting) {
         showUpdateToast();
         return;
       }
-
       registration?.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         newWorker?.addEventListener('statechange', () => {
@@ -159,7 +146,6 @@ function LayoutContent({
         });
       });
     };
-
     checkForUpdates();
   }, [language, toast, updateToastShown]);
 
@@ -222,7 +208,7 @@ function LayoutContent({
         </header>
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 py-5 px-[5px]">
+          <div className="w-full max-w-7xl mx-auto sm:px-6 py-5 px-[5px] lg:px-[5px]">
             <PageBreadcrumbs />
             {children}
           </div>
