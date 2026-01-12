@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Package, Layers, Tag, Store, MessageSquare, Menu, Megaphone } from "lucide-react";
+import { Shield, Package, Layers, Tag, Store, MessageSquare, Menu, Megaphone, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,12 @@ export default function Admin() {
     value: "categories",
     label: t('admin.categories'),
     icon: Layers
+  }, {
+    value: "articles",
+    label: "Articles",
+    icon: FileText,
+    isLink: true,
+    href: "/admin/articles"
   }, {
     value: "promo-codes",
     label: t('admin.promoCodes'),
@@ -129,6 +135,15 @@ export default function Admin() {
               <div className="mt-6 space-y-1">
                 {tabs.map(tab => {
                 const Icon = tab.icon;
+                if (tab.isLink && tab.href) {
+                  return <Button key={tab.value} variant="ghost" className="w-full justify-start relative" onClick={() => {
+                    navigate(tab.href);
+                    setMobileMenuOpen(false);
+                  }}>
+                        <Icon className="h-4 w-4 mr-2" />
+                        {tab.label}
+                      </Button>;
+                }
                 return <Button key={tab.value} variant={activeTab === tab.value ? "secondary" : "ghost"} className="w-full justify-start relative" onClick={() => {
                   setActiveTab(tab.value);
                   setMobileMenuOpen(false);
@@ -160,6 +175,12 @@ export default function Admin() {
           <TabsList className="hidden md:inline-flex w-full lg:w-auto gap-2 flex-wrap mb-6">
             {tabs.map(tab => {
             const Icon = tab.icon;
+            if (tab.isLink && tab.href) {
+              return <Button key={tab.value} variant="ghost" size="sm" className="h-9 px-3" onClick={() => navigate(tab.href)}>
+                    <Icon className="h-4 w-4 mr-2" />
+                    <span>{tab.label}</span>
+                  </Button>;
+            }
             return <TabsTrigger key={tab.value} value={tab.value} className="relative">
                   <Icon className="h-4 w-4 mr-2" />
                   <span>{tab.label}</span>
@@ -196,13 +217,13 @@ export default function Admin() {
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="grid grid-cols-6 gap-1 p-2">
+        <div className="grid grid-cols-7 gap-1 p-2">
           {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.value;
-          return <button key={tab.value} onClick={() => setActiveTab(tab.value)} className={cn("relative flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200", isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>
-                <Icon className={cn("h-5 w-5", isActive && "animate-scale-in")} />
-                <span className={cn("text-[10px] mt-1 font-medium truncate max-w-full", isActive && "font-semibold")}>
+          return <button key={tab.value} onClick={() => tab.isLink && tab.href ? navigate(tab.href) : setActiveTab(tab.value)} className={cn("relative flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200", isActive && !tab.isLink ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>
+                <Icon className={cn("h-5 w-5", isActive && !tab.isLink && "animate-scale-in")} />
+                <span className={cn("text-[10px] mt-1 font-medium truncate max-w-full", isActive && !tab.isLink && "font-semibold")}>
                   {tab.label.split(' ')[0]}
                 </span>
               </button>;
