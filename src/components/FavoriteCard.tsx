@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X, History } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,7 +14,6 @@ import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { toast } from "sonner";
 import { sanitizeContent } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
-import { PriceHistoryCard } from "./PriceHistoryCard";
 
 export interface Product {
   id: string;
@@ -64,7 +63,6 @@ export function FavoriteCard({
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(false);
   const [titleScrollSpeed] = useState(() => {
     const saved = localStorage.getItem('titleScrollSpeed');
     return saved ? parseInt(saved) : 50;
@@ -136,12 +134,6 @@ export function FavoriteCard({
       toast.success(t('products.editSuccess'));
       setShowEditDialog(false);
     }
-  };
-
-  const handleFlip = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFlipped(!isFlipped);
   };
   const handleCardClick = () => {
     if (isSelectionMode && onToggleSelect) {
@@ -269,36 +261,14 @@ export function FavoriteCard({
                 </Button>}
             </div>
 
-            {/* Last Checked + History Button */}
-            <div className={cn("flex items-center justify-between mt-1.5", isArabic && "flex-row-reverse")}>
+            {/* Last Checked */}
+            <div className={cn("mt-1.5", isArabic && "text-right")}>
               <div className="text-[9px] text-muted-foreground/60">
                 {new Date(product.last_checked_at).toLocaleDateString()}
               </div>
-              
-              {/* History Button */}
-              {product.price_history && product.price_history.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleFlip}
-                  className="h-6 px-2 text-[10px] gap-1 history-btn hover:bg-primary/10 hover:text-primary rounded-full transition-all"
-                >
-                  <History className="h-3 w-3" />
-                  <span>{isArabic ? 'السجل' : 'History'}</span>
-                </Button>
-              )}
             </div>
           </div>
         </div>
-
-        {/* Price History Overlay */}
-        <PriceHistoryCard
-          productId={product.id}
-          productTitle={product.title}
-          originalCurrency={product.original_currency}
-          isKrolistProduct={false}
-          onFlip={() => setIsFlipped(false)}
-        />
       </div>
 
       {/* Edit Dialog */}

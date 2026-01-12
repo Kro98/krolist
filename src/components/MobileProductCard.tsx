@@ -1,4 +1,4 @@
-import { Heart, Youtube, X, MoreVertical, Pencil, Trash2, History } from "lucide-react";
+import { Heart, Youtube, X, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PriceHistoryCard } from "@/components/PriceHistoryCard";
 
 export interface MobileProduct {
   id: string;
@@ -55,7 +54,6 @@ export function MobileProductCard({
   const { language, t } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const [cardStyle, setCardStyle] = useState<'fade' | 'full'>('fade');
-  const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
     const loadCardStyle = () => {
@@ -95,10 +93,7 @@ export function MobileProductCard({
   };
 
   return (
-    <div className="card-flip-container relative">
-      <div className={`card-flipper ${isFlipped ? 'flipped' : ''}`}>
-        {/* Front of Card */}
-        <Card className="card-front bg-card border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 ease-out overflow-hidden relative hover:-translate-y-1 hover:border-primary/20 group">
+    <Card className="bg-card border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 ease-out overflow-hidden relative hover:-translate-y-1 hover:border-primary/20 group">
       <CardContent className="p-0">
         {/* Image Container */}
         <a href={product.product_url} target="_blank" rel="noopener noreferrer" className="block relative">
@@ -237,7 +232,7 @@ export function MobileProductCard({
             </div>
           )}
 
-          {/* Badges and History */}
+          {/* Badges */}
           <div className={`flex gap-1.5 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
             <Badge className="bg-orange-500 text-white hover:bg-orange-600 px-1.5 py-0 text-[0.6rem]">
               {product.store}
@@ -247,36 +242,9 @@ export function MobileProductCard({
                 {product.category}
               </Badge>
             )}
-            {/* History Button */}
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="h-5 px-1.5 gap-0.5 text-[0.55rem] border-primary/50 text-primary hover:bg-primary/10 ml-auto"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsFlipped(true);
-              }}
-            >
-              <History className="h-2.5 w-2.5" />
-              {t('products.history') || 'History'}
-            </Button>
           </div>
         </div>
       </CardContent>
     </Card>
-        
-        {/* Back of Card - Price History */}
-        <div className="card-back absolute inset-0">
-          <PriceHistoryCard
-            productId={product.id}
-            productTitle={product.title}
-            originalCurrency={product.original_currency}
-            isKrolistProduct={product.isKrolistProduct}
-            onFlip={() => setIsFlipped(false)}
-          />
-        </div>
-      </div>
-    </div>
   );
 }
