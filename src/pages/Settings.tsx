@@ -189,7 +189,7 @@ function NotificationToggle({ icon, iconColor, bgColor, title, description, chec
 
 export default function Settings() {
   const { language, currency, setLanguage, setCurrency, t } = useLanguage();
-  const { theme, undertone, setUndertone, customHue, setCustomHue, isClassicMode, setIsClassicMode } = useTheme();
+  const { theme, undertone, setUndertone, customHue, setCustomHue } = useTheme();
   const { user } = useAuth();
   const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
   const { preferences: notifPrefs, updatePreference: updateNotifPref } = useNotificationPreferences();
@@ -417,19 +417,6 @@ export default function Settings() {
                 <ThemeToggle />
               </SettingRow>
 
-              {/* Classic Mode */}
-              <SettingRow
-                icon={<Wand2 className="h-5 w-5" />}
-                iconColor="text-purple-500"
-                title={language === 'ar' ? 'الوضع الكلاسيكي' : 'Classic Mode'}
-                description={language === 'ar' ? 'استخدم التصميم الأصلي' : 'Use the original design style'}
-              >
-                <Switch
-                  checked={isClassicMode}
-                  onCheckedChange={setIsClassicMode}
-                  className="data-[state=checked]:bg-purple-500"
-                />
-              </SettingRow>
 
               {/* Image Zoom */}
               <SettingRow
