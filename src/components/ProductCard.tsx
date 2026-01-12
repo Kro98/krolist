@@ -194,20 +194,8 @@ export function ProductCard({
     }
   };
   return (
-    <div 
-      className="relative"
-      style={{ perspective: '1000px' }}
-    >
-      <div
-        className={cn(
-          "relative w-full transition-transform duration-700 ease-in-out",
-          isFlipped && "[transform:rotateY(180deg)]"
-        )}
-        style={{ transformStyle: 'preserve-3d' }}
-      >
-        {/* Front of Card */}
-        <Card onClick={handleCardClick} className="[backface-visibility:hidden]">
-          <CardContent className="p-4 py-[5px] px-[6px] mx-px">
+    <Card onClick={handleCardClick} className="relative overflow-visible">
+      <CardContent className="p-4 py-[5px] px-[6px] mx-px">
             <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 px-0 my-[20px] py-0">
@@ -448,25 +436,20 @@ export function ProductCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
-
-    {/* Back of Card - Price History */}
-    <Card 
-      className={cn(
-        "bg-card border border-border/50 shadow-lg overflow-hidden",
-        "absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]",
-        "min-h-[200px]"
+      {/* Price History Panel - Slides over */}
+      {isFlipped && (
+        <div className="absolute inset-0 z-10 animate-fade-in">
+          <Card className="h-full bg-card border border-border/50 shadow-lg overflow-hidden">
+            <PriceHistoryPanel
+              productId={product.id}
+              productTitle={product.title}
+              originalCurrency={product.original_currency}
+              onBack={() => setIsFlipped(false)}
+              isKrolistProduct={product.isKrolistProduct}
+            />
+          </Card>
+        </div>
       )}
-    >
-      <PriceHistoryPanel
-        productId={product.id}
-        productTitle={product.title}
-        originalCurrency={product.original_currency}
-        onBack={() => setIsFlipped(false)}
-        isKrolistProduct={product.isKrolistProduct}
-      />
     </Card>
-  </div>
-</div>
   );
 }
