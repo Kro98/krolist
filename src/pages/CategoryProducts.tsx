@@ -80,27 +80,27 @@ export default function CategoryProducts() {
         <FunnyLoadingText />
       </div>;
   }
-  return <div className="max-w-7xl mx-auto py-2">
-      <div className="mb-8">
-        <Button variant="ghost" onClick={() => navigate('/categories')} className="mb-4 h-11 px-4">
-          <ArrowLeft className="h-5 w-5 mr-2" />
+  return <div className="container mx-auto p-6">
+      <div className="mb-6">
+        <Button variant="ghost" onClick={() => navigate('/categories')} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />
           {t('common.back') || 'Back to Categories'}
         </Button>
-        <h1 className="text-3xl md:text-4xl font-bold mb-3 text-center">{categoryTitle}</h1>
-        <p className="text-muted-foreground text-center text-base">
+        <h1 className="text-3xl font-bold mb-2 text-center">{categoryTitle}</h1>
+        <p className="text-muted-foreground text-center">
           {products.length} {products.length === 1 ? 'product' : 'products'}
         </p>
       </div>
 
-      {products.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {products.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-0 px-[5px]">
           {products.map(product => <ProductCard key={product.id} product={{
         ...product,
         isKrolistProduct: true,
         youtube_url: null
       }} />)}
-        </div> : <div className="text-center py-16 text-muted-foreground">
-          <Package className="h-20 w-20 mx-auto mb-5 opacity-50" />
-          <p className="text-lg">{t('categories.noProducts') || 'No products in this category yet'}</p>
+        </div> : <div className="text-center py-12 text-muted-foreground">
+          <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
+          <p>{t('categories.noProducts') || 'No products in this category yet'}</p>
         </div>}
     </div>;
 }
