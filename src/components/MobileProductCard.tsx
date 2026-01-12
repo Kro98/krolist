@@ -1,4 +1,5 @@
-import { Heart, Youtube, X, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Heart, Youtube, X, MoreVertical, Pencil, Trash2, History } from "lucide-react";
+import { PriceHistoryCard } from "@/components/PriceHistoryCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,8 @@ export function MobileProductCard({
     };
   }, []);
 
+  const [showHistory, setShowHistory] = useState(false);
+  
   const displayCurrentPrice = convertPriceToDisplay(product.current_price, product.original_currency);
   const displayOriginalPrice = convertPriceToDisplay(product.original_price, product.original_currency);
   const discountPercent = product.original_price > 0 
@@ -242,8 +245,36 @@ export function MobileProductCard({
                 {product.category}
               </Badge>
             )}
+            
+            {/* History Button */}
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-5 px-1.5 gap-0.5 border-primary/50 text-primary hover:bg-primary/10 history-pulse ml-auto" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowHistory(true);
+              }}
+            >
+              <History className="h-3 w-3" />
+              <span className="text-[0.55rem]">{language === 'ar' ? 'السجل' : 'History'}</span>
+            </Button>
           </div>
         </div>
+        
+        {/* Price History Overlay with Fade */}
+        {showHistory && (
+          <div className="absolute inset-0 z-30 animate-in fade-in duration-300">
+            <PriceHistoryCard
+              productId={product.id}
+              productTitle={product.title}
+              originalCurrency={product.original_currency}
+              isKrolistProduct={product.isKrolistProduct}
+              onFlip={() => setShowHistory(false)}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
