@@ -63,29 +63,27 @@ export function NotificationCenter() {
 
   return (
     <>
-      <div className="relative">
-        <Button
-          variant="outline"
-          size="icon"
-          className="group"
-          onClick={handleBellClick}
-        >
-          <Bell className={`h-5 w-5 transition-transform group-hover:scale-110 ${hasNewGlobalNotification ? 'animate-[wiggle_0.5s_ease-in-out_infinite]' : ''}`} />
-        </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="relative group overflow-hidden"
+        onClick={handleBellClick}
+      >
+        <Bell className="h-5 w-5 transition-transform group-hover:scale-110" />
         {(unreadCount > 0 || hasNewGlobalNotification) && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 pointer-events-none">
+          <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
           </span>
         )}
         {unreadCount > 0 && (
           <Badge 
-            className="absolute -top-2 -right-2 h-5 min-w-5 p-0 flex items-center justify-center text-[10px] font-bold bg-primary text-primary-foreground border-2 border-background shadow-sm pointer-events-none"
+            className="absolute -top-2 -right-2 h-5 min-w-5 p-0 flex items-center justify-center text-[10px] font-bold bg-primary text-primary-foreground border-2 border-background shadow-sm"
           >
             {unreadCount > 99 ? '99+' : unreadCount}
           </Badge>
         )}
-      </div>
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-0 shadow-2xl">

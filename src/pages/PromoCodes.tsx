@@ -461,10 +461,10 @@ export default function PromoCodes() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="text-center sm:text-left">
-        <h1 className="text-3xl md:text-4xl font-bold">{t('promo.title')}</h1>
-        <p className="text-muted-foreground mt-2 text-base">{t('promo.subtitle')}</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">{t('promo.title')}</h1>
+        <p className="text-muted-foreground">{t('promo.subtitle')}</p>
       </div>
 
       {/* Add New Promo Code - Hidden for guests */}
@@ -581,7 +581,7 @@ export default function PromoCodes() {
                     <div className="p-1.5 rounded-lg bg-blue-500/10">
                       <Gift className="h-4 w-4 text-blue-500" />
                     </div>
-                    {t('promo.expirationDate')}
+                    {t('promo.expirationDate') || 'Expires'}
                   </div>
                   <Input
                     id="expires"
@@ -592,7 +592,7 @@ export default function PromoCodes() {
                     className="h-10 bg-muted/50 border-0 rounded-lg text-sm"
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    {t('promo.expirationHint')}
+                    {t('promo.expirationHint') || 'Leave empty for 1 year'}
                   </p>
                 </div>
                 
@@ -602,7 +602,7 @@ export default function PromoCodes() {
                     <div className="p-1.5 rounded-lg bg-emerald-500/10">
                       <RotateCcw className="h-4 w-4 text-emerald-500" />
                     </div>
-                    {t('promo.usageType')}
+                    {t('promo.usageType') || 'Usage'}
                   </div>
                   <div className="flex items-center gap-3">
                     <Switch
@@ -612,10 +612,10 @@ export default function PromoCodes() {
                     />
                     {newIsReusable ? (
                       <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
-                        {t('promo.reusable')}
+                        {t('promo.reusable') || 'Reusable'}
                       </Badge>
                     ) : (
-                      <span className="text-xs text-muted-foreground">{t('promo.oneTimeUse')}</span>
+                      <span className="text-xs text-muted-foreground">{t('promo.oneTimeUse') || 'One-time'}</span>
                     )}
                   </div>
                 </div>
@@ -626,7 +626,7 @@ export default function PromoCodes() {
                     <div className="p-1.5 rounded-lg bg-purple-500/10">
                       <ImagePlus className="h-4 w-4 text-purple-500" />
                     </div>
-                    {t('promo.storeImage')}
+                    {t('promo.storeImage') || 'Image'}
                   </div>
                   
                   {croppedImagePreview ? (

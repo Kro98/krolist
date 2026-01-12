@@ -418,8 +418,6 @@ export function ProductCarousel({
               align: "start",
               loop: true,
               direction: language === 'ar' ? 'rtl' : 'ltr',
-              skipSnaps: false,
-              duration: 25,
             }}
             plugins={[autoplayPlugin]}
             setApi={setApi}

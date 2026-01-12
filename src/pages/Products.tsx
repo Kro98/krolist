@@ -380,12 +380,12 @@ export default function Products() {
       </div>
     );
   }
-  return <div className="space-y-8">
+  return <div className="space-y-6">
       {/* Search, Filter, and Select Tools */}
-      <div className="flex gap-3 sm:gap-4 items-center">
+      <div className="flex gap-2 sm:gap-3 items-center mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder={t('products.searchPlaceholder')} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-12 h-12 sm:h-12 bg-card border-border focus:ring-2 focus:ring-primary/20 transition-all text-base rounded-xl" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder={t('products.searchPlaceholder')} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 h-11 sm:h-10 bg-card border-border focus:ring-2 focus:ring-primary/20 transition-all text-base" />
         </div>
           <Button variant="outline" onClick={() => {
         if (isSelectMode) {
@@ -393,16 +393,16 @@ export default function Products() {
         } else {
           setIsSelectMode(true);
         }
-      }} className="gap-2 text-center h-12 sm:h-12 px-4 sm:px-5 text-sm font-medium whitespace-nowrap rounded-xl">{isSelectMode ? t('products.cancelSelection') : t('products.select')}
+      }} className="gap-2 text-center h-11 sm:h-10 px-3 sm:px-4 text-sm whitespace-nowrap">{isSelectMode ? t('products.cancelSelection') : t('products.select')}
           </Button>
         {/* Temporarily hidden - will be reactivated once API limitations are resolved */}
-        <Button variant="outline" size="icon" onClick={handleRefreshAllPrices} disabled={!refreshStatus.canRefresh || isRefreshingAll} className="h-12 w-12 sm:h-12 sm:w-12 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all bg-primary text-primary-foreground hover:bg-primary/90 hidden rounded-xl" title={refreshStatus.canRefresh ? `Refresh all products (${refreshStatus.remainingRefreshes} left)` : `Next refresh: ${refreshStatus.nextRefreshDate ? new Date(refreshStatus.nextRefreshDate).toLocaleDateString() : 'N/A'}`}>
-          <RefreshCw className={`h-5 w-5 ${isRefreshingAll ? 'animate-spin' : ''}`} />
+        <Button variant="outline" size="icon" onClick={handleRefreshAllPrices} disabled={!refreshStatus.canRefresh || isRefreshingAll} className="h-11 w-11 sm:h-10 sm:w-10 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all bg-primary text-primary-foreground hover:bg-primary/90 hidden" title={refreshStatus.canRefresh ? `Refresh all products (${refreshStatus.remainingRefreshes} left)` : `Next refresh: ${refreshStatus.nextRefreshDate ? new Date(refreshStatus.nextRefreshDate).toLocaleDateString() : 'N/A'}`}>
+          <RefreshCw className={`h-4 w-4 ${isRefreshingAll ? 'animate-spin' : ''}`} />
         </Button>
         <Popover open={showFilters} onOpenChange={setShowFilters}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="h-12 w-12 sm:h-12 sm:w-12 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all rounded-xl">
-              <Filter className="h-5 w-5" />
+            <Button variant="outline" size="icon" className="h-11 w-11 sm:h-10 sm:w-10 flex-shrink-0 border-border hover:bg-accent hover:border-primary/50 transition-all">
+              <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80 bg-popover z-50" align="end">

@@ -44,9 +44,6 @@ const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
-        dragFree: false,
-        containScroll: "trimSnaps",
-        duration: 25, // Smooth scroll duration
       },
       plugins,
     );
@@ -139,18 +136,10 @@ const CarouselContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HT
     const { carouselRef, orientation } = useCarousel();
 
     return (
-      <div ref={carouselRef} className="overflow-hidden will-change-transform">
+      <div ref={carouselRef} className="overflow-hidden">
         <div
           ref={ref}
-          className={cn(
-            "flex backface-visibility-hidden transform-gpu",
-            orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-            className
-          )}
-          style={{ 
-            willChange: 'transform',
-            transform: 'translate3d(0, 0, 0)',
-          }}
+          className={cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)}
           {...props}
         />
       </div>

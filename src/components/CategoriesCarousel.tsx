@@ -217,8 +217,6 @@ export function CategoriesCarousel() {
           opts={{
             align: "start",
             loop: true,
-            skipSnaps: false,
-            duration: 25,
           }}
           plugins={[autoplayPlugin.current]}
           className="w-full"

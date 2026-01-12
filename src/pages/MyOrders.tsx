@@ -204,13 +204,13 @@ export default function MyOrders() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-2">
-      <div className="mb-10 text-center sm:text-left">
-        <h1 className="text-3xl md:text-4xl font-bold flex items-center justify-center sm:justify-start gap-4">
-          <Package className="h-9 w-9" />
+    <div className="container mx-auto py-8 px-4 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold flex items-center gap-3">
+          <Package className="h-8 w-8" />
           My Orders
         </h1>
-        <p className="text-muted-foreground mt-3 text-base">Track your Krolist orders</p>
+        <p className="text-muted-foreground mt-2">Track your Krolist orders</p>
       </div>
 
       {/* Global notifications */}
