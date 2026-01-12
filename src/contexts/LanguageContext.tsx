@@ -266,6 +266,9 @@ const translations = {
     'promo.expirationHint': 'Leave empty for 1 year',
     'promo.usageType': 'Usage Type',
     'promo.storeImage': 'Store Image',
+    'promo.addImage': 'Add',
+    'promo.changeImage': 'Change',
+    'promo.saving': 'Saving...',
     
     
     // Admin Dashboard
@@ -916,6 +919,9 @@ const translations = {
     'promo.expirationHint': 'اتركه فارغاً لمدة سنة',
     'promo.usageType': 'نوع الاستخدام',
     'promo.storeImage': 'صورة المتجر',
+    'promo.addImage': 'إضافة',
+    'promo.changeImage': 'تغيير',
+    'promo.saving': 'جاري الحفظ...',
     
     
     // Common

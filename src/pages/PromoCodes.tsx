@@ -800,7 +800,7 @@ export default function PromoCodes() {
               
               {/* Edit Image Upload Section */}
               <div className="space-y-2">
-                <Label>{t('promo.storeImage') || 'Store Image'}</Label>
+                <Label>{t('promo.storeImage')}</Label>
                 <div className="flex items-center gap-4">
                   {(editCroppedImagePreview || editingPromo.custom_image_url) ? (
                     <div className="relative">
@@ -830,7 +830,7 @@ export default function PromoCodes() {
                       className="h-16 w-16 flex flex-col items-center justify-center gap-1 border-dashed"
                     >
                       <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">{t('promo.addImage') || 'Add'}</span>
+                      <span className="text-[10px] text-muted-foreground">{t('promo.addImage')}</span>
                     </Button>
                   )}
                   <input
@@ -846,7 +846,7 @@ export default function PromoCodes() {
                     size="sm"
                     onClick={() => editFileInputRef.current?.click()}
                   >
-                    {t('promo.changeImage') || 'Change'}
+                    {t('promo.changeImage')}
                   </Button>
                 </div>
               </div>
@@ -878,7 +878,7 @@ export default function PromoCodes() {
                   {isUploadingImage ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t('promo.saving') || 'Saving...'}
+                      {t('promo.saving')}
                     </>
                   ) : (
                     t('promo.saveChanges')
