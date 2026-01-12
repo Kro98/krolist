@@ -412,7 +412,7 @@ export function ProductCarousel({
         </div>
       ) : (
         // Carousel view
-        <div className="relative">
+        <div className="relative px-2 md:px-4">
           <Carousel
             opts={{
               align: "start",
@@ -425,11 +425,11 @@ export function ProductCarousel({
             setApi={setApi}
             className="w-full"
           >
-            <CarouselContent className="-ml-4">
+            <CarouselContent className="-ml-2 md:-ml-3">
               {slidesWithAds.map((slideContent, slideIndex) => (
                 <CarouselItem
                   key={slideIndex}
-                  className="pl-4"
+                  className="pl-2 md:pl-3"
                 >
                   {slideContent.type === 'ad' ? (
                     // Ad slide - single container matching the slide size (mobile only)
