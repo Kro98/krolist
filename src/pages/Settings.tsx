@@ -72,6 +72,17 @@ function useAnimatedCounter(targetValue: number | null, duration: number = 800) 
   return displayValue;
 }
 
+// Saved indicator component
+function SavedIndicator({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <div className="flex items-center gap-1 text-emerald-500 animate-fade-in">
+      <Check className="h-4 w-4" />
+      <span className="text-xs font-medium">Saved</span>
+    </div>
+  );
+}
+
 // Setting Row Component
 interface SettingRowProps {
   icon: React.ReactNode;
@@ -80,27 +91,33 @@ interface SettingRowProps {
   description?: string;
   children: React.ReactNode;
   className?: string;
+  saved?: boolean;
 }
 
-function SettingRow({ icon, iconColor = "text-primary", title, description, children, className }: SettingRowProps) {
+function SettingRow({ icon, iconColor = "text-primary", title, description, children, className, saved }: SettingRowProps) {
   return (
     <div className={cn(
       "group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-4 rounded-xl",
       "bg-gradient-to-r from-muted/30 to-muted/10",
       "border border-border/40 hover:border-primary/30",
       "transition-all duration-300 hover:shadow-md hover:shadow-primary/5",
+      saved && "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-muted/10",
       className
     )}>
       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
         <div className={cn(
           "p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-background to-muted flex-shrink-0",
           "shadow-sm border border-border/50",
-          "group-hover:scale-110 transition-transform duration-300"
+          "group-hover:scale-110 transition-transform duration-300",
+          saved && "border-emerald-500/50"
         )}>
-          <div className={iconColor}>{icon}</div>
+          <div className={cn(iconColor, saved && "text-emerald-500")}>{icon}</div>
         </div>
         <div className="space-y-0.5 min-w-0 flex-1">
-          <p className="font-medium text-foreground text-sm sm:text-base">{title}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-foreground text-sm sm:text-base">{title}</p>
+            <SavedIndicator show={!!saved} />
+          </div>
           {description && (
             <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{description}</p>
           )}
@@ -148,27 +165,33 @@ interface NotificationToggleProps {
   description: string;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
+  saved?: boolean;
 }
 
-function NotificationToggle({ icon, iconColor, bgColor, title, description, checked, onCheckedChange }: NotificationToggleProps) {
+function NotificationToggle({ icon, iconColor, bgColor, title, description, checked, onCheckedChange, saved }: NotificationToggleProps) {
   return (
     <div className={cn(
       "group relative overflow-hidden rounded-xl p-4",
       "border border-border/40 hover:border-primary/30",
       "transition-all duration-300 hover:shadow-lg hover:shadow-primary/5",
-      checked ? "bg-gradient-to-r from-primary/5 to-transparent" : "bg-muted/20"
+      checked ? "bg-gradient-to-r from-primary/5 to-transparent" : "bg-muted/20",
+      saved && "border-emerald-500/30"
     )}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={cn(
             "p-2 rounded-lg transition-all duration-300",
             bgColor,
-            checked ? "scale-110" : "scale-100"
+            checked ? "scale-110" : "scale-100",
+            saved && "ring-2 ring-emerald-500/50"
           )}>
-            <div className={iconColor}>{icon}</div>
+            <div className={cn(iconColor, saved && "text-emerald-500")}>{icon}</div>
           </div>
           <div>
-            <p className="font-medium">{title}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium">{title}</p>
+              <SavedIndicator show={!!saved} />
+            </div>
             <p className="text-xs text-muted-foreground">{description}</p>
           </div>
         </div>
@@ -178,11 +201,6 @@ function NotificationToggle({ icon, iconColor, bgColor, title, description, chec
           className="data-[state=checked]:bg-primary"
         />
       </div>
-      {checked && (
-        <div className="absolute top-2 right-12 text-primary animate-pulse">
-          <CheckCircle2 className="h-3 w-3" />
-        </div>
-      )}
     </div>
   );
 }
@@ -210,6 +228,20 @@ export default function Settings() {
   const [installCount, setInstallCount] = useState<number | null>(null);
   const animatedCount = useAnimatedCounter(installCount);
   const { toast } = useToast();
+  
+  // Saved indicator state - tracks which setting was just saved
+  const [savedSetting, setSavedSetting] = useState<string | null>(null);
+  const savedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const showSavedIndicator = useCallback((settingKey: string) => {
+    setSavedSetting(settingKey);
+    if (savedTimeoutRef.current) {
+      clearTimeout(savedTimeoutRef.current);
+    }
+    savedTimeoutRef.current = setTimeout(() => {
+      setSavedSetting(null);
+    }, 2000);
+  }, []);
 
   const BASE_INSTALL_COUNT = 31;
 
@@ -298,29 +330,34 @@ export default function Settings() {
     }, 500);
   }, [t]);
 
-  // Wrapper functions for auto-save
+  // Wrapper functions for auto-save with visual indicator
   const handleLanguageChange = (value: Language) => {
     setLanguage(value);
+    showSavedIndicator('language');
     showAutoSaveToast();
   };
 
   const handleCurrencyChange = (value: Currency) => {
     setCurrency(value);
+    showSavedIndicator('currency');
     showAutoSaveToast();
   };
 
   const handleZoomChange = (checked: boolean) => {
     setIsZoomEnabled(checked);
+    showSavedIndicator('zoom');
     showAutoSaveToast();
   };
 
   const handleUndertoneChange = (value: string) => {
     setUndertone(value as any);
+    showSavedIndicator('undertone');
     showAutoSaveToast();
   };
 
   const handleCustomHueChange = (value: number) => {
     setCustomHue(value);
+    showSavedIndicator('customHue');
     showAutoSaveToast();
   };
 
@@ -328,6 +365,7 @@ export default function Settings() {
     setCarouselSpeed(value);
     localStorage.setItem('carouselSpeed', value.toString());
     window.dispatchEvent(new CustomEvent('carouselSpeedChanged', { detail: value }));
+    showSavedIndicator('carouselSpeed');
     showAutoSaveToast();
   };
 
@@ -335,11 +373,13 @@ export default function Settings() {
     setTitleScrollSpeed(value);
     localStorage.setItem('titleScrollSpeed', value.toString());
     document.documentElement.style.setProperty('--marquee-speed', `${value}s`);
+    showSavedIndicator('titleScrollSpeed');
     showAutoSaveToast();
   };
 
   const handleNotifPrefChange = (key: string, checked: boolean) => {
     updateNotifPref(key as any, checked);
+    showSavedIndicator(`notif_${key}`);
     showAutoSaveToast();
   };
 
@@ -476,6 +516,7 @@ export default function Settings() {
                 iconColor="text-blue-500"
                 title={t('settings.imageZoom')}
                 description={t('settings.imageZoomDesc')}
+                saved={savedSetting === 'zoom'}
               >
                 <Switch
                   checked={isZoomEnabled}
@@ -485,16 +526,25 @@ export default function Settings() {
               </SettingRow>
 
               {/* Undertone Color Picker */}
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-4">
+              <div className={cn(
+                "p-4 rounded-xl bg-muted/30 border border-border/40 space-y-4 transition-all duration-300",
+                (savedSetting === 'undertone' || savedSetting === 'customHue') && "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-muted/10"
+              )}>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-                    <Palette className="h-4 w-4 text-primary" />
+                  <div className={cn(
+                    "p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 transition-all duration-300",
+                    (savedSetting === 'undertone' || savedSetting === 'customHue') && "ring-2 ring-emerald-500/50"
+                  )}>
+                    <Palette className={cn("h-4 w-4 text-primary", (savedSetting === 'undertone' || savedSetting === 'customHue') && "text-emerald-500")} />
                   </div>
-                  <div>
-                    <p className="font-medium">{t('settings.undertoneColor')}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {language === 'ar' ? 'اختر اللون الأساسي للتطبيق' : 'Choose the app accent color'}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="font-medium">{t('settings.undertoneColor')}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'ar' ? 'اختر اللون الأساسي للتطبيق' : 'Choose the app accent color'}
+                      </p>
+                    </div>
+                    <SavedIndicator show={savedSetting === 'undertone' || savedSetting === 'customHue'} />
                   </div>
                 </div>
                 
@@ -565,11 +615,15 @@ export default function Settings() {
 
               {/* Speed Controls */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+                <div className={cn(
+                  "p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3 transition-all duration-300",
+                  savedSetting === 'carouselSpeed' && "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-muted/10"
+                )}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Gauge className="h-4 w-4 text-primary" />
+                      <Gauge className={cn("h-4 w-4 text-primary", savedSetting === 'carouselSpeed' && "text-emerald-500")} />
                       <span className="text-sm font-medium">{t('settings.carouselSpeed')}</span>
+                      <SavedIndicator show={savedSetting === 'carouselSpeed'} />
                     </div>
                     <span className="text-sm font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">
                       {(carouselSpeed / 1000).toFixed(1)}s
@@ -586,11 +640,15 @@ export default function Settings() {
                   />
                 </div>
                 
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+                <div className={cn(
+                  "p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3 transition-all duration-300",
+                  savedSetting === 'titleScrollSpeed' && "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-muted/10"
+                )}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Type className="h-4 w-4 text-primary" />
+                      <Type className={cn("h-4 w-4 text-primary", savedSetting === 'titleScrollSpeed' && "text-emerald-500")} />
                       <span className="text-sm font-medium">{t('settings.titleScrollSpeed')}</span>
+                      <SavedIndicator show={savedSetting === 'titleScrollSpeed'} />
                     </div>
                     <span className="text-sm font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">
                       {titleScrollSpeed}s
@@ -623,10 +681,14 @@ export default function Settings() {
           <Card className="border-0 shadow-xl shadow-blue-500/5 bg-gradient-to-br from-card to-card/80">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+                <div className={cn(
+                  "p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3 transition-all duration-300",
+                  savedSetting === 'language' && "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-muted/10"
+                )}>
                   <div className="flex items-center gap-2">
-                    <Languages className="h-4 w-4 text-blue-500" />
+                    <Languages className={cn("h-4 w-4 text-blue-500", savedSetting === 'language' && "text-emerald-500")} />
                     <Label className="font-medium">{t('settings.language')}</Label>
+                    <SavedIndicator show={savedSetting === 'language'} />
                   </div>
                   <Select value={language} onValueChange={handleLanguageChange}>
                     <SelectTrigger className="bg-background/50">
@@ -649,10 +711,14 @@ export default function Settings() {
                   </Select>
                 </div>
                 
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+                <div className={cn(
+                  "p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3 transition-all duration-300",
+                  savedSetting === 'currency' && "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-muted/10"
+                )}>
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-green-500" />
+                    <DollarSign className={cn("h-4 w-4 text-green-500", savedSetting === 'currency' && "text-emerald-500")} />
                     <Label className="font-medium">{t('settings.currency')}</Label>
+                    <SavedIndicator show={savedSetting === 'currency'} />
                   </div>
                   <Select value={currency} onValueChange={handleCurrencyChange}>
                     <SelectTrigger className="bg-background/50">
@@ -691,6 +757,7 @@ export default function Settings() {
                   description={t('settings.priceDropAlertsDesc')}
                   checked={notifPrefs.priceUpdates}
                   onCheckedChange={(checked) => handleNotifPrefChange('priceUpdates', checked)}
+                  saved={savedSetting === 'notif_priceUpdates'}
                 />
                 
                 <NotificationToggle
@@ -701,6 +768,7 @@ export default function Settings() {
                   description={t('settings.promoAlertsDesc')}
                   checked={notifPrefs.promoAlerts}
                   onCheckedChange={(checked) => handleNotifPrefChange('promoAlerts', checked)}
+                  saved={savedSetting === 'notif_promoAlerts'}
                 />
                 
                 <NotificationToggle
@@ -711,6 +779,7 @@ export default function Settings() {
                   description={t('settings.appUpdateAlertsDesc')}
                   checked={notifPrefs.appUpdates}
                   onCheckedChange={(checked) => handleNotifPrefChange('appUpdates', checked)}
+                  saved={savedSetting === 'notif_appUpdates'}
                 />
                 
                 <NotificationToggle
@@ -721,6 +790,7 @@ export default function Settings() {
                   description={t('settings.eventRemindersDesc')}
                   checked={notifPrefs.eventReminders}
                   onCheckedChange={(checked) => handleNotifPrefChange('eventReminders', checked)}
+                  saved={savedSetting === 'notif_eventReminders'}
                 />
               </div>
             </CardContent>
