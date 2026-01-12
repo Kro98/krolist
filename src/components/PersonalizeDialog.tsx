@@ -225,7 +225,7 @@ export function PersonalizeDialog({ collapsed = false, iconOnly = false }: Perso
                 ? 'w-10 h-10 mx-auto' 
                 : 'w-full gap-2.5 py-2.5 px-4'
           )}
-          title={t('settings.personalize') || 'Personalize'}
+          title={t('settings.personalize')}
         >
           <Sparkles className={cn(
             "text-primary",

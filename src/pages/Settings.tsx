@@ -411,7 +411,7 @@ export default function Settings() {
               <SettingRow
                 icon={theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                 iconColor="text-amber-500"
-                title={t('settings.theme') || 'Theme'}
+                title={t('settings.theme')}
                 description={language === 'ar' ? 'تبديل بين الوضع الفاتح والداكن' : 'Switch between light and dark mode'}
               >
                 <ThemeToggle />
@@ -655,8 +655,8 @@ export default function Settings() {
                   icon={<Tag className="h-4 w-4" />}
                   iconColor="text-orange-500"
                   bgColor="bg-orange-500/10"
-                  title={t('settings.promoAlerts') || 'Promo Code Alerts'}
-                  description={t('settings.promoAlertsDesc') || 'New promo codes'}
+                  title={t('settings.promoAlerts')}
+                  description={t('settings.promoAlertsDesc')}
                   checked={notifPrefs.promoAlerts}
                   onCheckedChange={(checked) => updateNotifPref('promoAlerts', checked)}
                 />
@@ -665,8 +665,8 @@ export default function Settings() {
                   icon={<Sparkles className="h-4 w-4" />}
                   iconColor="text-blue-500"
                   bgColor="bg-blue-500/10"
-                  title={t('settings.appUpdateAlerts') || 'App Updates'}
-                  description={t('settings.appUpdateAlertsDesc') || 'New features'}
+                  title={t('settings.appUpdateAlerts')}
+                  description={t('settings.appUpdateAlertsDesc')}
                   checked={notifPrefs.appUpdates}
                   onCheckedChange={(checked) => updateNotifPref('appUpdates', checked)}
                 />
@@ -675,8 +675,8 @@ export default function Settings() {
                   icon={<Calendar className="h-4 w-4" />}
                   iconColor="text-purple-500"
                   bgColor="bg-purple-500/10"
-                  title={t('settings.eventReminders') || 'Event Reminders'}
-                  description={t('settings.eventRemindersDesc') || 'Shopping events'}
+                  title={t('settings.eventReminders')}
+                  description={t('settings.eventRemindersDesc')}
                   checked={notifPrefs.eventReminders}
                   onCheckedChange={(checked) => updateNotifPref('eventReminders', checked)}
                 />

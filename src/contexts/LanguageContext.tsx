@@ -594,6 +594,106 @@ const translations = {
     'donation.buyMeCoffee': 'Buy me a coffee',
     'donation.thankYou': 'Every contribution helps us grow',
     'donation.paymentMethods': 'We accept',
+    
+    // Image Cropper
+    'processing': 'Processing...',
+    'promo.applyCrop': 'Apply Crop',
+    'promo.cropImage': 'Crop Image',
+    'promo.cropImageDesc': 'Adjust the crop area to fit your store image',
+    'promo.uploadImage': 'Upload Image',
+    'promo.changeImage': 'Change',
+    'promo.removeImage': 'Remove',
+    
+    // Personalize
+    'settings.personalize': 'Personalize',
+    
+    // My Orders
+    'orders.title': 'My Orders',
+    'orders.subtitle': 'Track and manage your orders',
+    'orders.noOrders': 'No orders yet',
+    'orders.noOrdersDesc': 'Your orders will appear here once you place them',
+    'orders.orderNumber': 'Order #',
+    'orders.status': 'Status',
+    'orders.date': 'Date',
+    'orders.items': 'Items',
+    'orders.total': 'Total',
+    'orders.pending': 'Pending',
+    'orders.processing': 'Processing',
+    'orders.shipped': 'Shipped',
+    'orders.delivered': 'Delivered',
+    'orders.cancelled': 'Cancelled',
+    'orders.viewDetails': 'View Details',
+    'orders.contactSupport': 'Contact Support',
+    
+    // Search Products Page
+    'searchPage.title': 'Search Products',
+    'searchPage.subtitle': 'Find the best deals across multiple stores',
+    'searchPage.placeholder': 'What are you looking for?',
+    'searchPage.button': 'Search',
+    'searchPage.searching': 'Searching...',
+    'searchPage.noResults': 'No products found',
+    'searchPage.noResultsDesc': 'Try different keywords or check your spelling',
+    'searchPage.resultsFor': 'Results for',
+    'searchPage.filters': 'Filters',
+    'searchPage.sortBy': 'Sort by',
+    'searchPage.priceLowest': 'Price: Low to High',
+    'searchPage.priceHighest': 'Price: High to Low',
+    'searchPage.newest': 'Newest',
+    'searchPage.relevance': 'Relevance',
+    
+    // How to Search
+    'howToSearch.title': 'How to Search',
+    'howToSearch.subtitle': 'Learn how to find the best deals',
+    'howToSearch.step1.title': 'Enter Your Search',
+    'howToSearch.step1.desc': 'Type what you are looking for in the search bar',
+    'howToSearch.step2.title': 'Browse Results',
+    'howToSearch.step2.desc': 'Compare prices across different stores',
+    'howToSearch.step3.title': 'Track Prices',
+    'howToSearch.step3.desc': 'Add products to your list to track price changes',
+    
+    // Notifications
+    'notifications.title': 'Notifications',
+    'notifications.noNotifications': 'No notifications',
+    'notifications.noNotificationsDesc': 'You are all caught up!',
+    'notifications.markAllRead': 'Mark all as read',
+    'notifications.clearAll': 'Clear all',
+    'notifications.priceDropped': 'Price dropped!',
+    'notifications.newPromo': 'New promo code available',
+    'notifications.orderUpdate': 'Order update',
+    
+    // Product Actions
+    'product.addToFavorites': 'Add to favorites',
+    'product.removeFromFavorites': 'Remove from favorites',
+    'product.share': 'Share',
+    'product.copyLink': 'Copy link',
+    'product.linkCopied': 'Link copied to clipboard',
+    'product.outOfStock': 'Out of Stock',
+    'product.inStock': 'In Stock',
+    'product.limited': 'Limited Stock',
+    
+    // Time
+    'time.justNow': 'Just now',
+    'time.minutesAgo': 'minutes ago',
+    'time.hoursAgo': 'hours ago',
+    'time.daysAgo': 'days ago',
+    'time.weeksAgo': 'weeks ago',
+    
+    // Validation
+    'validation.required': 'This field is required',
+    'validation.invalidEmail': 'Please enter a valid email',
+    'validation.invalidPhone': 'Please enter a valid phone number',
+    'validation.minLength': 'Must be at least {min} characters',
+    'validation.maxLength': 'Must be no more than {max} characters',
+    
+    // Actions
+    'action.retry': 'Retry',
+    'action.refresh': 'Refresh',
+    'action.loadMore': 'Load more',
+    'action.seeAll': 'See all',
+    'action.goBack': 'Go back',
+    'action.continue': 'Continue',
+    'action.skip': 'Skip',
+    'action.done': 'Done',
   },
   ar: {
     // Common
@@ -1102,6 +1202,106 @@ const translations = {
     'donation.buyMeCoffee': 'اشتري لي قهوة',
     'donation.thankYou': 'كل مساهمة تساعدنا على النمو',
     'donation.paymentMethods': 'نقبل',
+    
+    // Image Cropper
+    'processing': 'جارٍ المعالجة...',
+    'promo.applyCrop': 'تطبيق القص',
+    'promo.cropImage': 'قص الصورة',
+    'promo.cropImageDesc': 'اضبط منطقة القص لتناسب صورة المتجر',
+    'promo.uploadImage': 'رفع صورة',
+    'promo.changeImage': 'تغيير',
+    'promo.removeImage': 'إزالة',
+    
+    // Personalize
+    'settings.personalize': 'تخصيص',
+    
+    // My Orders
+    'orders.title': 'طلباتي',
+    'orders.subtitle': 'تتبع وإدارة طلباتك',
+    'orders.noOrders': 'لا توجد طلبات بعد',
+    'orders.noOrdersDesc': 'ستظهر طلباتك هنا بمجرد تقديمها',
+    'orders.orderNumber': 'طلب رقم',
+    'orders.status': 'الحالة',
+    'orders.date': 'التاريخ',
+    'orders.items': 'المنتجات',
+    'orders.total': 'الإجمالي',
+    'orders.pending': 'قيد الانتظار',
+    'orders.processing': 'قيد المعالجة',
+    'orders.shipped': 'تم الشحن',
+    'orders.delivered': 'تم التسليم',
+    'orders.cancelled': 'ملغي',
+    'orders.viewDetails': 'عرض التفاصيل',
+    'orders.contactSupport': 'التواصل مع الدعم',
+    
+    // Search Products Page
+    'searchPage.title': 'البحث عن المنتجات',
+    'searchPage.subtitle': 'اعثر على أفضل العروض من متاجر متعددة',
+    'searchPage.placeholder': 'ماذا تبحث عنه؟',
+    'searchPage.button': 'بحث',
+    'searchPage.searching': 'جارٍ البحث...',
+    'searchPage.noResults': 'لم يتم العثور على منتجات',
+    'searchPage.noResultsDesc': 'جرب كلمات مختلفة أو تحقق من الإملاء',
+    'searchPage.resultsFor': 'نتائج البحث عن',
+    'searchPage.filters': 'الفلاتر',
+    'searchPage.sortBy': 'ترتيب حسب',
+    'searchPage.priceLowest': 'السعر: من الأقل للأعلى',
+    'searchPage.priceHighest': 'السعر: من الأعلى للأقل',
+    'searchPage.newest': 'الأحدث',
+    'searchPage.relevance': 'الأكثر صلة',
+    
+    // How to Search
+    'howToSearch.title': 'كيفية البحث',
+    'howToSearch.subtitle': 'تعلم كيفية العثور على أفضل العروض',
+    'howToSearch.step1.title': 'أدخل بحثك',
+    'howToSearch.step1.desc': 'اكتب ما تبحث عنه في شريط البحث',
+    'howToSearch.step2.title': 'تصفح النتائج',
+    'howToSearch.step2.desc': 'قارن الأسعار من متاجر مختلفة',
+    'howToSearch.step3.title': 'تتبع الأسعار',
+    'howToSearch.step3.desc': 'أضف المنتجات لقائمتك لتتبع تغييرات الأسعار',
+    
+    // Notifications
+    'notifications.title': 'الإشعارات',
+    'notifications.noNotifications': 'لا توجد إشعارات',
+    'notifications.noNotificationsDesc': 'أنت على اطلاع بكل شيء!',
+    'notifications.markAllRead': 'تحديد الكل كمقروء',
+    'notifications.clearAll': 'مسح الكل',
+    'notifications.priceDropped': 'انخفض السعر!',
+    'notifications.newPromo': 'كود خصم جديد متاح',
+    'notifications.orderUpdate': 'تحديث الطلب',
+    
+    // Product Actions
+    'product.addToFavorites': 'إضافة للمفضلة',
+    'product.removeFromFavorites': 'إزالة من المفضلة',
+    'product.share': 'مشاركة',
+    'product.copyLink': 'نسخ الرابط',
+    'product.linkCopied': 'تم نسخ الرابط',
+    'product.outOfStock': 'غير متوفر',
+    'product.inStock': 'متوفر',
+    'product.limited': 'كمية محدودة',
+    
+    // Time
+    'time.justNow': 'الآن',
+    'time.minutesAgo': 'دقائق مضت',
+    'time.hoursAgo': 'ساعات مضت',
+    'time.daysAgo': 'أيام مضت',
+    'time.weeksAgo': 'أسابيع مضت',
+    
+    // Validation
+    'validation.required': 'هذا الحقل مطلوب',
+    'validation.invalidEmail': 'يرجى إدخال بريد إلكتروني صحيح',
+    'validation.invalidPhone': 'يرجى إدخال رقم هاتف صحيح',
+    'validation.minLength': 'يجب أن يكون {min} أحرف على الأقل',
+    'validation.maxLength': 'يجب ألا يتجاوز {max} حرف',
+    
+    // Actions
+    'action.retry': 'إعادة المحاولة',
+    'action.refresh': 'تحديث',
+    'action.loadMore': 'تحميل المزيد',
+    'action.seeAll': 'عرض الكل',
+    'action.goBack': 'رجوع',
+    'action.continue': 'متابعة',
+    'action.skip': 'تخطي',
+    'action.done': 'تم',
   }
 };
 
