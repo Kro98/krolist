@@ -484,7 +484,7 @@ export function ProductCarousel({
                     </div>
                   ) : (
                     // Product slide (mobile/default)
-                    <div className={`grid gap-4 ${isMobile && currentStyle === 'compact' && mobileItemsPerSlide >= 2 ? 'grid-cols-2' : isMobile ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
+                    <div className={`grid gap-4 justify-items-center ${isMobile && currentStyle === 'compact' && mobileItemsPerSlide >= 2 ? 'grid-cols-2' : isMobile ? 'grid-cols-1' : 'grid-cols-2'} ${!isMobile && !isTablet && desktopItemsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                       {slideContent.products.map(product => (
                         isFavoritesSection ? (
                           <FavoriteCard
