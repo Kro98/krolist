@@ -194,8 +194,8 @@ export function ProductCard({
     }
   };
   return (
-    <Card onClick={handleCardClick} className="relative overflow-hidden rounded-xl">
-      <CardContent className="p-3">
+    <Card onClick={handleCardClick} className="relative overflow-visible">
+      <CardContent className="p-4 py-[5px] px-[6px] mx-px">
             <div className={`flex gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
           {/* Product Image */}
           <div className="flex-shrink-0 space-y-2 px-0 my-[20px] py-0">

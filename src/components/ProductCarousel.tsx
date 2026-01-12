@@ -412,7 +412,7 @@ export function ProductCarousel({
         </div>
       ) : (
         // Carousel view
-        <div className="relative mx-12 md:mx-14">
+        <div className="relative">
           <Carousel
             opts={{
               align: "start",
@@ -425,11 +425,11 @@ export function ProductCarousel({
             setApi={setApi}
             className="w-full"
           >
-            <CarouselContent className="-ml-3">
+            <CarouselContent className={language === 'ar' ? '-mr-2 md:-mr-4' : '-ml-2 md:-ml-4'}>
               {slidesWithAds.map((slideContent, slideIndex) => (
                 <CarouselItem
                   key={slideIndex}
-                  className="pl-3"
+                  className={language === 'ar' ? 'pr-2 md:pr-4' : 'pl-2 md:pl-4'}
                 >
                   {slideContent.type === 'ad' ? (
                     // Ad slide - single container matching the slide size (mobile only)
@@ -540,7 +540,7 @@ export function ProductCarousel({
                   onClick={() => api?.scrollPrev()}
                   size="icon"
                   variant="ghost"
-                  className={`absolute ${language === 'ar' ? '-right-10 md:-right-12' : '-left-10 md:-left-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
+                  className={`absolute ${language === 'ar' ? '-right-12' : '-left-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
                 >
                   <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -548,7 +548,7 @@ export function ProductCarousel({
                   onClick={() => api?.scrollNext()}
                   size="icon"
                   variant="ghost"
-                  className={`absolute ${language === 'ar' ? '-left-10 md:-left-12' : '-right-10 md:-right-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
+                  className={`absolute ${language === 'ar' ? '-left-12' : '-right-12'} top-0 bottom-0 h-full z-10 rounded-lg w-8 bg-muted/50 hover:bg-muted border border-border/50 transition-all`}
                 >
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
