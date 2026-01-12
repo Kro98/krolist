@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Globe, Bell, Palette, User, Shield, ZoomIn, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Package, Wand2 } from "lucide-react";
+import { Globe, Bell, Palette, User, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Wand2, Check, Loader2, Volume2, Zap, Eye, Languages, CreditCard, SlidersHorizontal, Timer, Paintbrush } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -17,6 +17,23 @@ import { toast as sonner } from "sonner";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { APP_VERSION } from "@/config/version";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 // Animated counter hook
 function useAnimatedCounter(targetValue: number | null, duration: number = 800) {
@@ -66,30 +83,52 @@ function useAnimatedCounter(targetValue: number | null, duration: number = 800) 
 
   return displayValue;
 }
+
+// Setting item component with icon and animation
+interface SettingItemProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+  saving?: boolean;
+}
+
+function SettingItem({ icon, iconBg, label, description, children, saving }: SettingItemProps) {
+  return (
+    <div className="group flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all duration-300">
+      <div className="flex items-center gap-4">
+        <div className={`p-2.5 rounded-xl ${iconBg} transition-transform duration-300 group-hover:scale-110`}>
+          {icon}
+        </div>
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">{label}</Label>
+            {saving && (
+              <div className="flex items-center gap-1 text-xs text-primary animate-in fade-in slide-in-from-left-2 duration-200">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Saving...</span>
+              </div>
+            )}
+          </div>
+          {description && (
+            <p className="text-xs text-muted-foreground">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Settings() {
-  const {
-    language,
-    currency,
-    setLanguage,
-    setCurrency,
-    t
-  } = useLanguage();
-  const {
-    theme,
-    setTheme,
-    undertone,
-    setUndertone,
-    customHue,
-    setCustomHue,
-    isClassicMode,
-    setIsClassicMode
-  } = useTheme();
+  const { language, currency, setLanguage, setCurrency, t } = useLanguage();
+  const { theme, setTheme, undertone, setUndertone, customHue, setCustomHue, isClassicMode, setIsClassicMode } = useTheme();
   const { user } = useAuth();
   const { isZoomEnabled, setIsZoomEnabled } = useImageZoom();
   const { preferences: notifPrefs, updatePreference: updateNotifPref } = useNotificationPreferences();
-  const [notifications, setNotifications] = useState(true);
-  const [priceDropAlerts, setPriceDropAlerts] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(false);
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,11 +145,73 @@ export default function Settings() {
   const [isPWA, setIsPWA] = useState(false);
   const [installCount, setInstallCount] = useState<number | null>(null);
   const animatedCount = useAnimatedCounter(installCount);
-  const {
-    toast
-  } = useToast();
+  const [savingState, setSavingState] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
 
-  const BASE_INSTALL_COUNT = 31; // Starting count before tracking began
+  const BASE_INSTALL_COUNT = 31;
+
+  // Show save indicator briefly
+  const showSaving = useCallback((key: string) => {
+    setSavingState(prev => ({ ...prev, [key]: true }));
+    setTimeout(() => {
+      setSavingState(prev => ({ ...prev, [key]: false }));
+      sonner.success(t('settings.settingsSaved'), { duration: 1500 });
+    }, 500);
+  }, [t]);
+
+  // Auto-save handlers
+  const handleLanguageChange = (value: Language) => {
+    setLanguage(value);
+    showSaving('language');
+  };
+
+  const handleCurrencyChange = (value: Currency) => {
+    setCurrency(value);
+    showSaving('currency');
+  };
+
+  const handleUndertoneChange = (value: any) => {
+    setUndertone(value);
+    showSaving('undertone');
+  };
+
+  const handleClassicModeChange = (checked: boolean) => {
+    setIsClassicMode(checked);
+    showSaving('classicMode');
+  };
+
+  const handleZoomChange = (checked: boolean) => {
+    setIsZoomEnabled(checked);
+    showSaving('zoom');
+  };
+
+  const handleCarouselSpeedChange = (value: number) => {
+    setCarouselSpeed(value);
+    localStorage.setItem('carouselSpeed', value.toString());
+    window.dispatchEvent(new CustomEvent('carouselSpeedChanged', { detail: value }));
+  };
+
+  const handleTitleScrollSpeedChange = (value: number) => {
+    setTitleScrollSpeed(value);
+    localStorage.setItem('titleScrollSpeed', value.toString());
+    document.documentElement.style.setProperty('--marquee-speed', `${value}s`);
+  };
+
+  // Debounced speed values for auto-save feedback
+  const debouncedCarouselSpeed = useDebounce(carouselSpeed, 800);
+  const debouncedTitleSpeed = useDebounce(titleScrollSpeed, 800);
+
+  useEffect(() => {
+    if (debouncedCarouselSpeed !== 3000) {
+      showSaving('carouselSpeed');
+    }
+  }, [debouncedCarouselSpeed]);
+
+  useEffect(() => {
+    if (debouncedTitleSpeed !== 5) {
+      showSaving('titleSpeed');
+    }
+  }, [debouncedTitleSpeed]);
 
   const fetchInstallCount = async () => {
     try {
@@ -130,18 +231,15 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    // Check if running as installed PWA
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true ||
       document.referrer.includes("android-app://");
     setIsPWA(isStandalone);
 
-    // Check notification permission
     if ("Notification" in window) {
       setNotificationsEnabled(Notification.permission === "granted");
     }
 
-    // Check for service worker updates
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
         registration.addEventListener('updatefound', () => {
@@ -156,7 +254,6 @@ export default function Settings() {
       });
     }
 
-    // Fetch install count for PWA mode
     fetchInstallCount();
   }, []);
 
@@ -168,7 +265,6 @@ export default function Settings() {
   }, [user]);
 
   const fetchProfile = async () => {
-    // Check if user is in guest mode
     const isGuest = localStorage.getItem('isGuest') === 'true';
     if (isGuest) {
       setUsername(t('user.guest'));
@@ -188,19 +284,11 @@ export default function Settings() {
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: t('settings.settingsSaved'),
-      description: t('settings.settingsSavedDesc')
-    });
-  };
-
   const handleUpdateProfile = async () => {
     if (!user) return;
     
     setLoading(true);
     try {
-      // Update username in profiles table
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ username })
@@ -208,7 +296,6 @@ export default function Settings() {
 
       if (profileError) throw profileError;
 
-      // Update email if changed
       if (email !== user.email) {
         const { error: emailError } = await supabase.auth.updateUser({
           email: email
@@ -226,7 +313,6 @@ export default function Settings() {
       setLoading(false);
     }
   };
-
 
   const handleEnableNotifications = async () => {
     if (!("Notification" in window)) {
@@ -254,7 +340,6 @@ export default function Settings() {
 
     const registration = await navigator.serviceWorker.getRegistration();
 
-    // If there's a waiting SW, activate it first then reload when controller changes.
     if (registration?.waiting) {
       const onControllerChange = () => {
         navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
@@ -264,7 +349,6 @@ export default function Settings() {
       navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
 
-      // Safety fallback.
       setTimeout(() => window.location.reload(), 2500);
       return;
     }
@@ -273,193 +357,194 @@ export default function Settings() {
     window.location.reload();
   };
 
-  return (
-    <div className="flex gap-6 items-start">
-      <div className="flex-1 space-y-6 max-w-4xl">
-        <div>
-          <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
-          <p className="text-muted-foreground">{t('settings.subtitle')}</p>
-        </div>
+  const handleNotifPrefChange = (key: string, checked: boolean) => {
+    updateNotifPref(key as any, checked);
+    showSaving(key);
+  };
 
-        <div className="grid gap-6">
-        {/* Appearance */}
-        <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5 text-primary" />
-                {t('settings.appearance')}
-              </CardTitle>
-              <CardDescription>
-                {t('settings.appearanceDesc')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Classic Mode Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-md bg-primary/10">
-                    <Wand2 className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <Label htmlFor="classic-mode" className="text-sm font-medium">
-                      {language === 'ar' ? 'الوضع الكلاسيكي' : 'Classic Mode'}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {language === 'ar' ? 'استخدم التصميم الأصلي' : 'Use the original design style'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  id="classic-mode"
-                  checked={isClassicMode}
-                  onCheckedChange={setIsClassicMode}
-                />
+  return (
+    <div className="min-h-screen pb-20">
+      {/* Header with gradient */}
+      <div className="relative overflow-hidden mb-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl" />
+        
+        <div className="relative py-8 px-4">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+              <SlidersHorizontal className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {t('settings.title')}
+              </h1>
+              <p className="text-muted-foreground">{t('settings.subtitle')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 space-y-6">
+        {/* Appearance Section */}
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/10">
+                <Palette className="h-5 w-5 text-violet-500" />
               </div>
-              
-              <Separator />
-              
-              <div className="flex items-center gap-4">
-                <ThemeToggle />
+              <div>
+                <CardTitle className="text-lg">{t('settings.appearance')}</CardTitle>
+                <CardDescription>{t('settings.appearanceDesc')}</CardDescription>
               </div>
-              
-              <Separator />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="undertone">{t('settings.undertoneColor')}</Label>
-                  <Select value={undertone} onValueChange={(value: any) => setUndertone(value)}>
-                    <SelectTrigger id="undertone">
-                      <SelectValue placeholder={t('settings.selectUndertone')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="orange">{t('settings.undertone.orange')}</SelectItem>
-                      <SelectItem value="blue">{t('settings.undertone.blue')}</SelectItem>
-                      <SelectItem value="green">{t('settings.undertone.green')}</SelectItem>
-                      <SelectItem value="purple">{t('settings.undertone.purple')}</SelectItem>
-                      <SelectItem value="red">{t('settings.undertone.red')}</SelectItem>
-                      <SelectItem value="custom">{t('settings.undertone.custom')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex items-end justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="image-zoom">{t('settings.imageZoom')}</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.imageZoomDesc')}
-                    </p>
-                  </div>
-                  <Switch
-                    id="image-zoom"
-                    checked={isZoomEnabled}
-                    onCheckedChange={setIsZoomEnabled}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-4">
+            <SettingItem
+              icon={<Wand2 className="h-4 w-4 text-violet-500" />}
+              iconBg="bg-violet-500/10"
+              label={language === 'ar' ? 'الوضع الكلاسيكي' : 'Classic Mode'}
+              description={language === 'ar' ? 'استخدم التصميم الأصلي' : 'Use the original design style'}
+              saving={savingState.classicMode}
+            >
+              <Switch checked={isClassicMode} onCheckedChange={handleClassicModeChange} />
+            </SettingItem>
+
+            <SettingItem
+              icon={<Paintbrush className="h-4 w-4 text-pink-500" />}
+              iconBg="bg-pink-500/10"
+              label={t('settings.theme')}
+              description={t('settings.appearanceDesc')}
+            >
+              <ThemeToggle />
+            </SettingItem>
+
+            <SettingItem
+              icon={<Sparkles className="h-4 w-4 text-amber-500" />}
+              iconBg="bg-amber-500/10"
+              label={t('settings.undertoneColor')}
+              saving={savingState.undertone}
+            >
+              <Select value={undertone} onValueChange={handleUndertoneChange}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="orange">{t('settings.undertone.orange')}</SelectItem>
+                  <SelectItem value="blue">{t('settings.undertone.blue')}</SelectItem>
+                  <SelectItem value="green">{t('settings.undertone.green')}</SelectItem>
+                  <SelectItem value="purple">{t('settings.undertone.purple')}</SelectItem>
+                  <SelectItem value="red">{t('settings.undertone.red')}</SelectItem>
+                  <SelectItem value="custom">{t('settings.undertone.custom')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </SettingItem>
+
+            {undertone === 'custom' && (
+              <div className="p-4 rounded-xl bg-muted/50 border border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm">{t('settings.customHue')} ({customHue}°)</Label>
+                  <div 
+                    className="w-6 h-6 rounded-full border-2 border-background shadow-sm transition-colors duration-300"
+                    style={{ backgroundColor: `hsl(${customHue}, 85%, 55%)` }}
                   />
                 </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="360"
+                  value={customHue}
+                  onChange={(e) => setCustomHue(parseInt(e.target.value))}
+                  className="w-full hue-slider"
+                  style={{
+                    background: `linear-gradient(to right, 
+                      hsl(0, 85%, 55%), 
+                      hsl(60, 85%, 55%), 
+                      hsl(120, 85%, 55%), 
+                      hsl(180, 85%, 55%), 
+                      hsl(240, 85%, 55%), 
+                      hsl(300, 85%, 55%), 
+                      hsl(360, 85%, 55%)
+                    )`
+                  }}
+                />
               </div>
-              <Separator />
-              
-              {/* Speed Settings */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label htmlFor="carousel-speed" className="flex items-center justify-between">
+            )}
+
+            <SettingItem
+              icon={<Eye className="h-4 w-4 text-cyan-500" />}
+              iconBg="bg-cyan-500/10"
+              label={t('settings.imageZoom')}
+              description={t('settings.imageZoomDesc')}
+              saving={savingState.zoom}
+            >
+              <Switch checked={isZoomEnabled} onCheckedChange={handleZoomChange} />
+            </SettingItem>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-3 hover:border-primary/30 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Timer className="h-4 w-4 text-blue-500" />
+                  <Label className="flex items-center justify-between w-full">
                     <span>{t('settings.carouselSpeed')}</span>
                     <span className="text-sm text-muted-foreground">{(carouselSpeed / 1000).toFixed(1)}s</span>
                   </Label>
-                  <input
-                    id="carousel-speed"
-                    type="range"
-                    min="1000"
-                    max="8000"
-                    step="500"
-                    value={carouselSpeed}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      setCarouselSpeed(value);
-                      localStorage.setItem('carouselSpeed', value.toString());
-                      window.dispatchEvent(new CustomEvent('carouselSpeedChanged', { detail: value }));
-                    }}
-                    className="w-full accent-primary"
-                  />
-                  <p className="text-xs text-muted-foreground">{t('settings.carouselSpeedDesc')}</p>
                 </div>
-                
-                <div className="space-y-3">
-                  <Label htmlFor="title-scroll-speed" className="flex items-center justify-between">
+                <input
+                  type="range"
+                  min="1000"
+                  max="8000"
+                  step="500"
+                  value={carouselSpeed}
+                  onChange={(e) => handleCarouselSpeedChange(parseInt(e.target.value))}
+                  className="w-full accent-primary"
+                />
+              </div>
+
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-3 hover:border-primary/30 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                  <Label className="flex items-center justify-between w-full">
                     <span>{t('settings.titleScrollSpeed')}</span>
                     <span className="text-sm text-muted-foreground">{titleScrollSpeed}s</span>
                   </Label>
-                  <input
-                    id="title-scroll-speed"
-                    type="range"
-                    min="2"
-                    max="10"
-                    step="1"
-                    value={titleScrollSpeed}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      setTitleScrollSpeed(value);
-                      localStorage.setItem('titleScrollSpeed', value.toString());
-                      document.documentElement.style.setProperty('--marquee-speed', `${value}s`);
-                    }}
-                    className="w-full accent-primary"
-                  />
-                  <p className="text-xs text-muted-foreground">{t('settings.carouselSpeedDesc')}</p>
                 </div>
+                <input
+                  type="range"
+                  min="2"
+                  max="10"
+                  step="1"
+                  value={titleScrollSpeed}
+                  onChange={(e) => handleTitleScrollSpeedChange(parseInt(e.target.value))}
+                  className="w-full accent-primary"
+                />
               </div>
-              
-              {/* Custom Hue Picker */}
-              {undertone === 'custom' && (
-                <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-                  <Label htmlFor="hue-picker" className="flex items-center justify-between">
-                    <span>{t('settings.customHue')} ({customHue}°)</span>
-                    <div 
-                      className="w-6 h-6 rounded-full border-2 border-background shadow-sm"
-                      style={{ backgroundColor: `hsl(${customHue}, 85%, 55%)` }}
-                    />
-                  </Label>
-                  <div className="space-y-2">
-                    <input
-                      id="hue-picker"
-                      type="range"
-                      min="0"
-                      max="360"
-                      value={customHue}
-                      onChange={(e) => setCustomHue(parseInt(e.target.value))}
-                      className="w-full hue-slider"
-                      style={{
-                        background: `linear-gradient(to right, 
-                          hsl(0, 85%, 55%), 
-                          hsl(60, 85%, 55%), 
-                          hsl(120, 85%, 55%), 
-                          hsl(180, 85%, 55%), 
-                          hsl(240, 85%, 55%), 
-                          hsl(300, 85%, 55%), 
-                          hsl(360, 85%, 55%)
-                        )`
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Language & Currency */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              {t('settings.languageCurrency')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.languageDesc')}
-            </CardDescription>
+        {/* Language & Currency Section */}
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10">
+                <Globe className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">{t('settings.languageCurrency')}</CardTitle>
+                <CardDescription>{t('settings.languageDesc')}</CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="language">{t('settings.language')}</Label>
-              <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
-                <SelectTrigger>
+          <CardContent className="space-y-3 pt-4">
+            <SettingItem
+              icon={<Languages className="h-4 w-4 text-blue-500" />}
+              iconBg="bg-blue-500/10"
+              label={t('settings.language')}
+              saving={savingState.language}
+            >
+              <Select value={language} onValueChange={handleLanguageChange}>
+                <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -467,11 +552,16 @@ export default function Settings() {
                   <SelectItem value="ar">{t('language.ar')}</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="currency">{t('settings.currency')}</Label>
-              <Select value={currency} onValueChange={(value: Currency) => setCurrency(value)}>
-                <SelectTrigger>
+            </SettingItem>
+
+            <SettingItem
+              icon={<CreditCard className="h-4 w-4 text-green-500" />}
+              iconBg="bg-green-500/10"
+              label={t('settings.currency')}
+              saving={savingState.currency}
+            >
+              <Select value={currency} onValueChange={handleCurrencyChange}>
+                <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -481,221 +571,196 @@ export default function Settings() {
                   <SelectItem value="AED">{t('currency.AED')}</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </SettingItem>
           </CardContent>
         </Card>
 
-        {/* Notification Preferences */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              {t('settings.notifications')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.notificationsDesc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <TrendingDown className="h-4 w-4 text-green-500" />
-                  <div>
-                    <p className="font-medium">{t('settings.priceDropAlerts')}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.priceDropAlertsDesc')}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifPrefs.priceUpdates}
-                  onCheckedChange={(checked) => updateNotifPref('priceUpdates', checked)}
-                />
+        {/* Notifications Section */}
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/10">
+                <Bell className="h-5 w-5 text-orange-500" />
               </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Tag className="h-4 w-4 text-orange-500" />
-                  <div>
-                    <p className="font-medium">{t('settings.promoAlerts') || 'Promo Code Alerts'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.promoAlertsDesc') || 'Get notified about new promo codes and deals'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifPrefs.promoAlerts}
-                  onCheckedChange={(checked) => updateNotifPref('promoAlerts', checked)}
-                />
-              </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="h-4 w-4 text-blue-500" />
-                  <div>
-                    <p className="font-medium">{t('settings.appUpdateAlerts') || 'App Update Alerts'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.appUpdateAlertsDesc') || 'Get notified when new app features are available'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifPrefs.appUpdates}
-                  onCheckedChange={(checked) => updateNotifPref('appUpdates', checked)}
-                />
-              </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-purple-500" />
-                  <div>
-                    <p className="font-medium">{t('settings.eventReminders') || 'Event Reminders'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.eventRemindersDesc') || 'Get reminded about shopping events like Black Friday'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifPrefs.eventReminders}
-                  onCheckedChange={(checked) => updateNotifPref('eventReminders', checked)}
-                />
+              <div>
+                <CardTitle className="text-lg">{t('settings.notifications')}</CardTitle>
+                <CardDescription>{t('settings.notificationsDesc')}</CardDescription>
               </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-4">
+            <SettingItem
+              icon={<TrendingDown className="h-4 w-4 text-green-500" />}
+              iconBg="bg-green-500/10"
+              label={t('settings.priceDropAlerts')}
+              description={t('settings.priceDropAlertsDesc')}
+              saving={savingState.priceUpdates}
+            >
+              <Switch 
+                checked={notifPrefs.priceUpdates} 
+                onCheckedChange={(checked) => handleNotifPrefChange('priceUpdates', checked)} 
+              />
+            </SettingItem>
+
+            <SettingItem
+              icon={<Tag className="h-4 w-4 text-orange-500" />}
+              iconBg="bg-orange-500/10"
+              label={t('settings.promoAlerts')}
+              description={t('settings.promoAlertsDesc')}
+              saving={savingState.promoAlerts}
+            >
+              <Switch 
+                checked={notifPrefs.promoAlerts} 
+                onCheckedChange={(checked) => handleNotifPrefChange('promoAlerts', checked)} 
+              />
+            </SettingItem>
+
+            <SettingItem
+              icon={<Sparkles className="h-4 w-4 text-blue-500" />}
+              iconBg="bg-blue-500/10"
+              label={t('settings.appUpdateAlerts')}
+              description={t('settings.appUpdateAlertsDesc')}
+              saving={savingState.appUpdates}
+            >
+              <Switch 
+                checked={notifPrefs.appUpdates} 
+                onCheckedChange={(checked) => handleNotifPrefChange('appUpdates', checked)} 
+              />
+            </SettingItem>
+
+            <SettingItem
+              icon={<Calendar className="h-4 w-4 text-purple-500" />}
+              iconBg="bg-purple-500/10"
+              label={t('settings.eventReminders')}
+              description={t('settings.eventRemindersDesc')}
+              saving={savingState.eventReminders}
+            >
+              <Switch 
+                checked={notifPrefs.eventReminders} 
+                onCheckedChange={(checked) => handleNotifPrefChange('eventReminders', checked)} 
+              />
+            </SettingItem>
           </CardContent>
         </Card>
 
-        {/* Account */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              {t('settings.account')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.accountDesc')}
-            </CardDescription>
+        {/* Account Section */}
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10">
+                <User className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">{t('settings.account')}</CardTitle>
+                <CardDescription>{t('settings.accountDesc')}</CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t('settings.email')}</Label>
+                <Label htmlFor="email" className="text-sm font-medium">{t('settings.email')}</Label>
                 <Input 
                   id="email" 
                   type="email" 
                   placeholder="your.email@example.com" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="bg-muted/50"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="username">{t('settings.username')}</Label>
+                <Label htmlFor="username" className="text-sm font-medium">{t('settings.username')}</Label>
                 <Input 
                   id="username" 
                   placeholder={t('settings.usernamePlaceholder')} 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  className="bg-muted/50"
                 />
               </div>
             </div>
             <Button 
               onClick={handleUpdateProfile} 
               disabled={loading}
-              className="bg-gradient-primary hover:shadow-hover"
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              <Save className="h-4 w-4 mr-2" />
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4 mr-2" />
+              )}
               {loading ? t('settings.updating') : t('settings.updateAccount')}
             </Button>
           </CardContent>
         </Card>
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button onClick={handleSave} className="bg-gradient-primary hover:shadow-hover transition-all duration-200">
-              <Save className="h-4 w-4 mr-2" />
-              {t('settings.saveSettings')}
-            </Button>
-          </div>
-
-          {/* App Info & Version - Only shown in PWA */}
-          {isPWA && (
-            <Card className="shadow-card border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+        {/* App Info - Only shown in PWA */}
+        {isPWA && (
+          <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/80 border-primary/20">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
                   <Info className="h-5 w-5 text-primary" />
-                  {t('settings.appInfo')}
-                </CardTitle>
-                <CardDescription>
-                  {t('settings.versionUpdates')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Version and Update */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{t('settings.currentVersion')}</p>
-                    <p className="text-2xl font-bold text-primary">v{APP_VERSION}</p>
-                  </div>
-                  {hasUpdate ? (
-                    <Button onClick={handleUpdate} className="bg-gradient-primary">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      {t('settings.installUpdate')}
-                    </Button>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      {t('settings.upToDate')}
-                    </span>
-                  )}
                 </div>
-                
-                <Separator />
+                <div>
+                  <CardTitle className="text-lg">{t('settings.appInfo')}</CardTitle>
+                  <CardDescription>{t('settings.versionUpdates')}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                <div>
+                  <p className="font-medium text-sm">{t('settings.currentVersion')}</p>
+                  <p className="text-3xl font-bold text-primary">v{APP_VERSION}</p>
+                </div>
+                {hasUpdate ? (
+                  <Button onClick={handleUpdate} className="bg-primary hover:bg-primary/90">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    {t('settings.installUpdate')}
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-green-500" />
+                    {t('settings.upToDate')}
+                  </div>
+                )}
+              </div>
 
-                {/* Install Count */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{t('settings.totalInstalls')}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.usersInstalled')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-lg font-bold text-primary">
-                    <Users className="h-5 w-5" />
-                    <span className="tabular-nums">{animatedCount ?? '...'}</span>
-                  </div>
+              <SettingItem
+                icon={<Download className="h-4 w-4 text-primary" />}
+                iconBg="bg-primary/10"
+                label={t('settings.totalInstalls')}
+                description={t('settings.usersInstalled')}
+              >
+                <div className="flex items-center gap-2 text-lg font-bold text-primary">
+                  <Users className="h-5 w-5" />
+                  <span className="tabular-nums">{animatedCount ?? '...'}</span>
                 </div>
-                
-                <Separator />
-                
-                {/* Update Notifications */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{t('settings.updateNotifications')}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.updateNotificationsDesc')}
-                    </p>
+              </SettingItem>
+
+              <SettingItem
+                icon={<Bell className="h-4 w-4 text-blue-500" />}
+                iconBg="bg-blue-500/10"
+                label={t('settings.updateNotifications')}
+                description={t('settings.updateNotificationsDesc')}
+              >
+                {notificationsEnabled ? (
+                  <div className="flex items-center gap-2 text-sm text-green-500">
+                    <Check className="h-4 w-4" />
+                    {t('settings.enabled')}
                   </div>
-                  {notificationsEnabled ? (
-                    <div className="flex items-center gap-2 text-sm text-green-500">
-                      <Bell className="h-4 w-4" />
-                      {t('settings.enabled')}
-                    </div>
-                  ) : (
-                    <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
-                      <Bell className="h-4 w-4 mr-2" />
-                      {t('settings.enable')}
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
+                    <Bell className="h-4 w-4 mr-2" />
+                    {t('settings.enable')}
+                  </Button>
+                )}
+              </SettingItem>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
