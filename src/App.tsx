@@ -29,6 +29,8 @@ import CategoryTags from "@/pages/CategoryTags";
 import CategoryProducts from "@/pages/CategoryProducts";
 import MyOrders from "./pages/MyOrders";
 import Article from "./pages/Article";
+import ArticlesManager from "./pages/admin/ArticlesManager";
+import ArticleEditor from "./pages/admin/ArticleEditor";
 const queryClient = new QueryClient();
 
 // Initialize settings from localStorage
@@ -62,6 +64,8 @@ const App = () => <QueryClientProvider client={queryClient}>
                           <Route path="/promo-codes" element={<PromoCodes />} />
                           <Route path="/donation" element={<Donation />} />
                           <Route path="/admin" element={<Admin />} />
+                          <Route path="/admin/articles" element={<ArticlesManager />} />
+                          <Route path="/admin/articles/:id" element={<ArticleEditor />} />
                           <Route path="/categories" element={<CategoryTags />} />
                           <Route path="/category/:categoryId" element={<CategoryProducts />} />
                           <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
