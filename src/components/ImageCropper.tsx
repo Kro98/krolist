@@ -129,16 +129,16 @@ export default function ImageCropper({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isProcessing}>
-            {t('cancel') || 'Cancel'}
+            {t('cancel')}
           </Button>
           <Button onClick={handleCropConfirm} disabled={isProcessing || !completedCrop}>
             {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t('processing') || 'Processing...'}
+                {t('processing')}
               </>
             ) : (
-              t('promo.applyCrop') || 'Apply Crop'
+              t('promo.applyCrop')
             )}
           </Button>
         </DialogFooter>
