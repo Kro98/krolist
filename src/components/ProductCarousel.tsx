@@ -412,7 +412,7 @@ export function ProductCarousel({
         </div>
       ) : (
         // Carousel view
-        <div className="relative">
+        <div className="relative px-4 md:px-6">
           <Carousel
             opts={{
               align: "center",
