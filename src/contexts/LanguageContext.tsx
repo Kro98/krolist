@@ -26,6 +26,7 @@ const translations = {
     'nav.myOrders': 'My Orders',
     'nav.settings': 'Settings',
     'nav.categories': 'Categories',
+    'nav.articles': 'Articles',
     'nav.addProduct': 'Add Product',
     
     // Home
@@ -710,6 +711,7 @@ const translations = {
     'nav.myOrders': 'طلباتي',
     'nav.settings': 'الإعدادات',
     'nav.categories': 'الفئات',
+    'nav.articles': 'المقالات',
     'nav.addProduct': 'إضافة منتج',
     
     // Dashboard

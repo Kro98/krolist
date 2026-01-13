@@ -29,6 +29,7 @@ import CategoryTags from "@/pages/CategoryTags";
 import CategoryProducts from "@/pages/CategoryProducts";
 import MyOrders from "./pages/MyOrders";
 import Article from "./pages/Article";
+import Articles from "./pages/Articles";
 import ArticlesManager from "./pages/admin/ArticlesManager";
 import ArticleEditor from "./pages/admin/ArticleEditor";
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                           <Route path="/categories" element={<CategoryTags />} />
                           <Route path="/category/:categoryId" element={<CategoryProducts />} />
                           <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                          <Route path="/articles" element={<Articles />} />
                           <Route path="/articles/:slug" element={<Article />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
