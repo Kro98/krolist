@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Globe, Bell, Palette, User, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Check, Loader2, Eye, Languages, CreditCard, Timer, Paintbrush, ChevronRight, Settings2 } from "lucide-react";
+import { Globe, Bell, Palette, User, Info, RefreshCw, Download, Users, TrendingDown, Tag, Sparkles, Calendar, Check, Loader2, Eye, Languages, CreditCard, Timer, Paintbrush, ChevronRight, Settings2, FileText } from "lucide-react";
 import { useLanguage, Language, Currency } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -684,6 +684,19 @@ export default function Settings() {
             <Switch 
               checked={notifPrefs.eventReminders} 
               onCheckedChange={(checked) => handleNotifPrefChange('eventReminders', checked)} 
+            />
+          </SettingRow>
+
+          <SettingRow
+            icon={<FileText className="h-4 w-4 text-cyan-500" />}
+            iconColor="bg-cyan-500/10"
+            label={t('settings.articleAlerts')}
+            description={t('settings.articleAlertsDesc')}
+            saving={savingState.articleAlerts}
+          >
+            <Switch 
+              checked={notifPrefs.articleAlerts} 
+              onCheckedChange={(checked) => handleNotifPrefChange('articleAlerts', checked)} 
             />
           </SettingRow>
         </SettingsSection>
