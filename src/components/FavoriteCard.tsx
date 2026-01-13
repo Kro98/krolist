@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X, History } from "lucide-react";
-import { PriceHistoryCard } from "@/components/PriceHistoryCard";
+import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -72,7 +71,7 @@ export function FavoriteCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollDuration, setScrollDuration] = useState(0);
   const [scrollDistance, setScrollDistance] = useState(0);
-  const [showHistory, setShowHistory] = useState(false);
+  
   const [editForm, setEditForm] = useState({
     title: product.title,
     description: product.description || '',
@@ -261,20 +260,6 @@ export function FavoriteCard({
             }}>
                   <Youtube className="h-3 w-3 text-red-500" />
                 </Button>}
-              
-              {/* History Button */}
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-5 px-1.5 gap-0.5 hover:bg-primary/10 rounded-full history-pulse" 
-                onClick={e => {
-                  e.stopPropagation();
-                  setShowHistory(true);
-                }}
-              >
-                <History className="h-3 w-3 text-primary" />
-                <span className="text-[9px] text-primary font-medium">{isArabic ? 'السجل' : 'History'}</span>
-              </Button>
             </div>
 
             {/* Last Checked */}
@@ -286,18 +271,6 @@ export function FavoriteCard({
           </div>
         </div>
         
-        {/* Price History Overlay with Fade */}
-        {showHistory && (
-          <div className="animate-in fade-in duration-300">
-            <PriceHistoryCard
-              productId={product.id}
-              productTitle={product.title}
-              originalCurrency={product.original_currency}
-              isKrolistProduct={product.isKrolistProduct}
-              onFlip={() => setShowHistory(false)}
-            />
-          </div>
-        )}
       </div>
 
       {/* Edit Dialog */}
