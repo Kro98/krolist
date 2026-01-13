@@ -178,6 +178,8 @@ const translations = {
     'settings.eventRemindersDesc': 'Get reminded about shopping events like Black Friday',
     'settings.orderUpdates': 'Order Updates',
     'settings.orderUpdatesDesc': 'Get notified about your order status changes',
+    'settings.articleAlerts': 'New Article Alerts',
+    'settings.articleAlertsDesc': 'Get notified when new articles are published',
     
     // Common
     'loading': 'Loading...',
@@ -851,6 +853,8 @@ const translations = {
     'settings.eventRemindersDesc': 'تذكير بفعاليات التسوق مثل الجمعة البيضاء',
     'settings.orderUpdates': 'تحديثات الطلبات',
     'settings.orderUpdatesDesc': 'احصل على إشعارات عن تغييرات حالة طلباتك',
+    'settings.articleAlerts': 'تنبيهات المقالات الجديدة',
+    'settings.articleAlertsDesc': 'احصل على إشعار عند نشر مقالات جديدة',
     
     // Products Page
     'products.myProducts': 'منتجاتي',

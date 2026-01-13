@@ -7,7 +7,7 @@ import { getNotificationPreferences } from '@/hooks/useNotificationPreferences';
 
 export interface AppNotification {
   id: string;
-  type: 'new_product' | 'price_update' | 'app_update' | 'order_update' | 'promo_code' | 'event';
+  type: 'new_product' | 'price_update' | 'app_update' | 'order_update' | 'promo_code' | 'event' | 'article';
   title: string;
   titleAr?: string;
   message: string;
@@ -174,6 +174,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                 return prefs.eventReminders;
               case 'order_update':
                 return prefs.orderUpdates;
+              case 'article':
+                return prefs.articleAlerts;
               default:
                 return true;
             }
@@ -244,6 +246,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               break;
             case 'order_update':
               shouldShow = prefs.orderUpdates;
+              break;
+            case 'article':
+              shouldShow = prefs.articleAlerts;
               break;
           }
           

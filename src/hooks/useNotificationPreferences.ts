@@ -6,6 +6,7 @@ export interface NotificationPreferences {
   appUpdates: boolean;
   eventReminders: boolean;
   orderUpdates: boolean;
+  articleAlerts: boolean;
 }
 
 const NOTIFICATION_PREFS_KEY = 'krolist_notification_preferences';
@@ -16,6 +17,7 @@ const defaultPreferences: NotificationPreferences = {
   appUpdates: true,
   eventReminders: true,
   orderUpdates: true,
+  articleAlerts: true,
 };
 
 export function useNotificationPreferences() {
