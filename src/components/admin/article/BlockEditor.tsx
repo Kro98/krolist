@@ -11,6 +11,7 @@ import {
   ShoppingBag, Table, HelpCircle, ChevronDown, ChevronUp 
 } from 'lucide-react';
 import { ArticleBlock } from '@/types/article';
+import { BilingualBlockInput, BilingualHtmlBlock, BilingualFaqItem } from './BilingualBlockInput';
 
 interface BlockEditorProps {
   blocks: Partial<ArticleBlock>[];
@@ -107,27 +108,13 @@ export const BlockEditor = ({ blocks, onChange, availableProductIds }: BlockEdit
     switch (block.block_type) {
       case 'text':
         return (
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <Label>Content (English) - HTML supported</Label>
-              <Textarea
-                value={String(content.html_en || '')}
-                onChange={(e) => updateBlockContent(index, { html_en: e.target.value })}
-                placeholder="<p>Your content here...</p>"
-                className="min-h-[150px] font-mono text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Content (Arabic) - HTML supported</Label>
-              <Textarea
-                value={String(content.html_ar || '')}
-                onChange={(e) => updateBlockContent(index, { html_ar: e.target.value })}
-                placeholder="<p>المحتوى هنا...</p>"
-                className="min-h-[150px] font-mono text-sm"
-                dir="rtl"
-              />
-            </div>
-          </div>
+          <BilingualHtmlBlock
+            valueEn={String(content.html_en || '')}
+            valueAr={String(content.html_ar || '')}
+            onChangeEn={(value) => updateBlockContent(index, { html_en: value })}
+            onChangeAr={(value) => updateBlockContent(index, { html_ar: value })}
+            context="article body content paragraph"
+          />
         );
       
       case 'image':
@@ -151,25 +138,17 @@ export const BlockEditor = ({ blocks, onChange, availableProductIds }: BlockEdit
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Caption (English)</Label>
-                <Input
-                  value={String(content.caption || '')}
-                  onChange={(e) => updateBlockContent(index, { caption: e.target.value })}
-                  placeholder="Image caption"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Caption (Arabic)</Label>
-                <Input
-                  value={String(content.caption_ar || '')}
-                  onChange={(e) => updateBlockContent(index, { caption_ar: e.target.value })}
-                  placeholder="تعليق الصورة"
-                  dir="rtl"
-                />
-              </div>
-            </div>
+            <BilingualBlockInput
+              labelEn="Caption (English)"
+              labelAr="Caption (Arabic)"
+              valueEn={String(content.caption || '')}
+              valueAr={String(content.caption_ar || '')}
+              onChangeEn={(value) => updateBlockContent(index, { caption: value })}
+              onChangeAr={(value) => updateBlockContent(index, { caption_ar: value })}
+              placeholderEn="Image caption"
+              placeholderAr="تعليق الصورة"
+              context="image caption for product article"
+            />
             {content.url && (
               <div className="p-2 bg-muted/50 rounded-lg">
                 <img src={String(content.url)} alt={String(content.alt || '')} className="max-h-32 mx-auto rounded" />
@@ -224,44 +203,30 @@ export const BlockEditor = ({ blocks, onChange, availableProductIds }: BlockEdit
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Title (English)</Label>
-                <Input
-                  value={String(content.title || '')}
-                  onChange={(e) => updateBlockContent(index, { title: e.target.value })}
-                  placeholder="Important Notice"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Title (Arabic)</Label>
-                <Input
-                  value={String(content.title_ar || '')}
-                  onChange={(e) => updateBlockContent(index, { title_ar: e.target.value })}
-                  placeholder="ملاحظة مهمة"
-                  dir="rtl"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Text (English)</Label>
-                <Textarea
-                  value={String(content.text || '')}
-                  onChange={(e) => updateBlockContent(index, { text: e.target.value })}
-                  placeholder="Callout message..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Text (Arabic)</Label>
-                <Textarea
-                  value={String(content.text_ar || '')}
-                  onChange={(e) => updateBlockContent(index, { text_ar: e.target.value })}
-                  placeholder="رسالة التنبيه..."
-                  dir="rtl"
-                />
-              </div>
-            </div>
+            <BilingualBlockInput
+              labelEn="Title (English)"
+              labelAr="Title (Arabic)"
+              valueEn={String(content.title || '')}
+              valueAr={String(content.title_ar || '')}
+              onChangeEn={(value) => updateBlockContent(index, { title: value })}
+              onChangeAr={(value) => updateBlockContent(index, { title_ar: value })}
+              placeholderEn="Important Notice"
+              placeholderAr="ملاحظة مهمة"
+              context="callout/alert title"
+            />
+            <BilingualBlockInput
+              labelEn="Text (English)"
+              labelAr="Text (Arabic)"
+              valueEn={String(content.text || '')}
+              valueAr={String(content.text_ar || '')}
+              onChangeEn={(value) => updateBlockContent(index, { text: value })}
+              onChangeAr={(value) => updateBlockContent(index, { text_ar: value })}
+              placeholderEn="Callout message..."
+              placeholderAr="رسالة التنبيه..."
+              multiline
+              rows={3}
+              context="callout/alert message content"
+            />
           </div>
         );
       
@@ -402,56 +367,50 @@ export const BlockEditor = ({ blocks, onChange, availableProductIds }: BlockEdit
                       <Trash2 className="w-3 h-3 text-destructive" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      value={item.question}
-                      onChange={(e) => {
-                        const newItems = items.map((it, i) => 
-                          i === itemIndex ? { ...it, question: e.target.value } : it
-                        );
-                        updateBlockContent(index, { items: newItems });
-                      }}
-                      placeholder="Question (English)"
-                      className="text-sm"
-                    />
-                    <Input
-                      value={item.question_ar || ''}
-                      onChange={(e) => {
-                        const newItems = items.map((it, i) => 
-                          i === itemIndex ? { ...it, question_ar: e.target.value } : it
-                        );
-                        updateBlockContent(index, { items: newItems });
-                      }}
-                      placeholder="السؤال (عربي)"
-                      className="text-sm"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Textarea
-                      value={item.answer}
-                      onChange={(e) => {
-                        const newItems = items.map((it, i) => 
-                          i === itemIndex ? { ...it, answer: e.target.value } : it
-                        );
-                        updateBlockContent(index, { items: newItems });
-                      }}
-                      placeholder="Answer (English)"
-                      className="text-sm min-h-[60px]"
-                    />
-                    <Textarea
-                      value={item.answer_ar || ''}
-                      onChange={(e) => {
-                        const newItems = items.map((it, i) => 
-                          i === itemIndex ? { ...it, answer_ar: e.target.value } : it
-                        );
-                        updateBlockContent(index, { items: newItems });
-                      }}
-                      placeholder="الجواب (عربي)"
-                      className="text-sm min-h-[60px]"
-                      dir="rtl"
-                    />
-                  </div>
+                  <BilingualBlockInput
+                    labelEn="Question (English)"
+                    labelAr="Question (Arabic)"
+                    valueEn={item.question}
+                    valueAr={item.question_ar || ''}
+                    onChangeEn={(value) => {
+                      const newItems = items.map((it, i) => 
+                        i === itemIndex ? { ...it, question: value } : it
+                      );
+                      updateBlockContent(index, { items: newItems });
+                    }}
+                    onChangeAr={(value) => {
+                      const newItems = items.map((it, i) => 
+                        i === itemIndex ? { ...it, question_ar: value } : it
+                      );
+                      updateBlockContent(index, { items: newItems });
+                    }}
+                    placeholderEn="Question (English)"
+                    placeholderAr="السؤال (عربي)"
+                    context="FAQ question for product article"
+                  />
+                  <BilingualBlockInput
+                    labelEn="Answer (English)"
+                    labelAr="Answer (Arabic)"
+                    valueEn={item.answer}
+                    valueAr={item.answer_ar || ''}
+                    onChangeEn={(value) => {
+                      const newItems = items.map((it, i) => 
+                        i === itemIndex ? { ...it, answer: value } : it
+                      );
+                      updateBlockContent(index, { items: newItems });
+                    }}
+                    onChangeAr={(value) => {
+                      const newItems = items.map((it, i) => 
+                        i === itemIndex ? { ...it, answer_ar: value } : it
+                      );
+                      updateBlockContent(index, { items: newItems });
+                    }}
+                    placeholderEn="Answer (English)"
+                    placeholderAr="الجواب (عربي)"
+                    multiline
+                    rows={3}
+                    context="FAQ answer for product article"
+                  />
                 </div>
               </Card>
             ))}
