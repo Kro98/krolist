@@ -1,4 +1,4 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag, HelpCircle, X } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag, HelpCircle, X, BookOpen } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -327,6 +327,56 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {/* Articles Section - Unique Separator */}
+          <div className={`relative ${collapsed ? 'mx-1' : 'mx-2'}`}>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-dashed border-white/20" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className={`px-2 text-[10px] text-white/50 bg-transparent backdrop-blur-sm ${collapsed ? 'hidden' : ''}`}>
+                ✦
+              </span>
+            </div>
+          </div>
+
+          <SidebarGroup className="px-0 py-1">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem className="px-[4px]">
+                  <SidebarMenuButton asChild className={collapsed ? "justify-center" : ""}>
+                    <NavLink 
+                      to="/articles" 
+                      className={({ isActive }) => `${getNavCls({ isActive })} ${collapsed ? 'justify-center p-2' : ''}`} 
+                      onClick={handleNavClick}
+                    >
+                      <BookOpen className="h-5 w-5 shrink-0" />
+                      {!collapsed && (
+                        <div className="flex items-center gap-2 flex-1">
+                          <span>{t('nav.articles')}</span>
+                          <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[9px] font-medium rounded-full">
+                            {language === 'ar' ? 'جديد' : 'NEW'}
+                          </span>
+                        </div>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Another Separator before Shops */}
+          <div className={`relative ${collapsed ? 'mx-1' : 'mx-2'}`}>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-dashed border-white/20" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className={`px-2 text-[10px] text-white/50 bg-transparent backdrop-blur-sm ${collapsed ? 'hidden' : ''}`}>
+                ✦
+              </span>
+            </div>
+          </div>
 
           {!collapsed && <SidebarGroup>
               <SidebarGroupLabel className="text-white/80">{t('shops.title')}</SidebarGroupLabel>
