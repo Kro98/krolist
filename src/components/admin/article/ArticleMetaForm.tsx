@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Image, Palette, Globe, Tags, X } from 'lucide-react';
 import { Article } from '@/types/article';
+import { BilingualInput } from './BilingualInput';
 
 interface ArticleMetaFormProps {
   article: Partial<Article>;
@@ -59,27 +59,18 @@ export const ArticleMetaForm = ({ article, onChange }: ArticleMetaFormProps) => 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title_en">Title (English) *</Label>
-              <Input
-                id="title_en"
-                value={article.title_en || ''}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Best Gaming Monitors in Saudi Arabia 2024"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="title_ar">Title (Arabic)</Label>
-              <Input
-                id="title_ar"
-                value={article.title_ar || ''}
-                onChange={(e) => onChange({ title_ar: e.target.value })}
-                placeholder="أفضل شاشات الألعاب في السعودية 2024"
-                dir="rtl"
-              />
-            </div>
-          </div>
+          {/* Bilingual Title with Auto-Translate */}
+          <BilingualInput
+            labelEn="Title (English) *"
+            labelAr="Title (Arabic)"
+            valueEn={article.title_en || ''}
+            valueAr={article.title_ar || ''}
+            onChangeEn={handleTitleChange}
+            onChangeAr={(value) => onChange({ title_ar: value })}
+            placeholderEn="Best Gaming Monitors in Saudi Arabia 2024"
+            placeholderAr="أفضل شاشات الألعاب في السعودية 2024"
+            context="article title for a product comparison website"
+          />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -106,29 +97,19 @@ export const ArticleMetaForm = ({ article, onChange }: ArticleMetaFormProps) => 
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="summary_en">Summary (English)</Label>
-              <Textarea
-                id="summary_en"
-                value={article.summary_en || ''}
-                onChange={(e) => onChange({ summary_en: e.target.value })}
-                placeholder="A brief 2-line summary for the hero section..."
-                className="h-20"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="summary_ar">Summary (Arabic)</Label>
-              <Textarea
-                id="summary_ar"
-                value={article.summary_ar || ''}
-                onChange={(e) => onChange({ summary_ar: e.target.value })}
-                placeholder="ملخص موجز للقسم الرئيسي..."
-                className="h-20"
-                dir="rtl"
-              />
-            </div>
-          </div>
+          {/* Bilingual Summary with Auto-Translate */}
+          <BilingualInput
+            labelEn="Summary (English)"
+            labelAr="Summary (Arabic)"
+            valueEn={article.summary_en || ''}
+            valueAr={article.summary_ar || ''}
+            onChangeEn={(value) => onChange({ summary_en: value })}
+            onChangeAr={(value) => onChange({ summary_ar: value })}
+            placeholderEn="A brief 2-line summary for the hero section..."
+            placeholderAr="ملخص موجز للقسم الرئيسي..."
+            multiline
+            context="article summary/description for a product comparison website"
+          />
           
           {/* Tags */}
           <div className="space-y-2">
@@ -290,61 +271,34 @@ export const ArticleMetaForm = ({ article, onChange }: ArticleMetaFormProps) => 
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="meta_title">Meta Title (English)</Label>
-                  <Input
-                    id="meta_title"
-                    value={article.meta_title_en || ''}
-                    onChange={(e) => onChange({ meta_title_en: e.target.value })}
-                    placeholder="SEO optimized title (60 chars max)"
-                    maxLength={60}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {(article.meta_title_en || '').length}/60 characters
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="meta_title_ar">Meta Title (Arabic)</Label>
-                  <Input
-                    id="meta_title_ar"
-                    value={article.meta_title_ar || ''}
-                    onChange={(e) => onChange({ meta_title_ar: e.target.value })}
-                    placeholder="عنوان محسن لمحركات البحث"
-                    maxLength={60}
-                    dir="rtl"
-                  />
-                </div>
-              </div>
+              {/* Bilingual Meta Title with Auto-Translate */}
+              <BilingualInput
+                labelEn="Meta Title (English)"
+                labelAr="Meta Title (Arabic)"
+                valueEn={article.meta_title_en || ''}
+                valueAr={article.meta_title_ar || ''}
+                onChangeEn={(value) => onChange({ meta_title_en: value })}
+                onChangeAr={(value) => onChange({ meta_title_ar: value })}
+                placeholderEn="SEO optimized title (60 chars max)"
+                placeholderAr="عنوان محسن لمحركات البحث"
+                maxLength={60}
+                context="SEO meta title for search engines"
+              />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="meta_desc">Meta Description (English)</Label>
-                  <Textarea
-                    id="meta_desc"
-                    value={article.meta_description_en || ''}
-                    onChange={(e) => onChange({ meta_description_en: e.target.value })}
-                    placeholder="SEO description (160 chars max)"
-                    maxLength={160}
-                    className="h-20"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {(article.meta_description_en || '').length}/160 characters
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="meta_desc_ar">Meta Description (Arabic)</Label>
-                  <Textarea
-                    id="meta_desc_ar"
-                    value={article.meta_description_ar || ''}
-                    onChange={(e) => onChange({ meta_description_ar: e.target.value })}
-                    placeholder="وصف محسن لمحركات البحث"
-                    maxLength={160}
-                    className="h-20"
-                    dir="rtl"
-                  />
-                </div>
-              </div>
+              {/* Bilingual Meta Description with Auto-Translate */}
+              <BilingualInput
+                labelEn="Meta Description (English)"
+                labelAr="Meta Description (Arabic)"
+                valueEn={article.meta_description_en || ''}
+                valueAr={article.meta_description_ar || ''}
+                onChangeEn={(value) => onChange({ meta_description_en: value })}
+                onChangeAr={(value) => onChange({ meta_description_ar: value })}
+                placeholderEn="SEO description (160 chars max)"
+                placeholderAr="وصف محسن لمحركات البحث"
+                multiline
+                maxLength={160}
+                context="SEO meta description for search engines"
+              />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
