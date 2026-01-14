@@ -72,9 +72,9 @@ export const PriceHistoryChart = ({
             break;
         }
 
-        // Build query
+        // Build query - use krolist_price_history for article products
         let query = supabase
-          .from('price_history')
+          .from('krolist_price_history')
           .select('price, scraped_at')
           .eq('product_id', productId)
           .order('scraped_at', { ascending: true });

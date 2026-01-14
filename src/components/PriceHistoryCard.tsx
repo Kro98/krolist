@@ -42,8 +42,19 @@ export function PriceHistoryCard({
     const fetchPriceHistory = async () => {
       setIsLoading(true);
       try {
-        // For user products, fetch from price_history table
-        if (!isKrolistProduct) {
+        if (isKrolistProduct) {
+          // For Krolist products, fetch from krolist_price_history table
+          const { data, error } = await supabase
+            .from('krolist_price_history')
+            .select('price, scraped_at')
+            .eq('product_id', productId)
+            .order('scraped_at', { ascending: false })
+            .limit(50);
+          
+          if (error) throw error;
+          setPriceHistory(data || []);
+        } else {
+          // For user products, fetch from price_history table
           const { data, error } = await supabase
             .from('price_history')
             .select('price, scraped_at')
@@ -53,10 +64,6 @@ export function PriceHistoryCard({
           
           if (error) throw error;
           setPriceHistory(data || []);
-        } else {
-          // For Krolist products, we don't have price history in the same way
-          // We could potentially add this table later
-          setPriceHistory([]);
         }
       } catch (error) {
         console.error('Error fetching price history:', error);

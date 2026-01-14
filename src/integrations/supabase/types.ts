@@ -524,6 +524,41 @@ export type Database = {
         }
         Relationships: []
       }
+      krolist_price_history: {
+        Row: {
+          currency: string
+          id: string
+          original_price: number | null
+          price: number
+          product_id: string
+          scraped_at: string | null
+        }
+        Insert: {
+          currency?: string
+          id?: string
+          original_price?: number | null
+          price: number
+          product_id: string
+          scraped_at?: string | null
+        }
+        Update: {
+          currency?: string
+          id?: string
+          original_price?: number | null
+          price?: number
+          product_id?: string
+          scraped_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "krolist_price_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "krolist_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       krolist_products: {
         Row: {
           availability_status: string | null

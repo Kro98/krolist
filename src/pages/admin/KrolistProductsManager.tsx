@@ -375,10 +375,23 @@ export default function KrolistProductsManager() {
     };
     try {
       if (editingProduct) {
+        // Check if price changed
+        const priceChanged = editingProduct.current_price !== parseFloat(formData.current_price);
+        
         const {
           error
         } = await supabase.from('krolist_products').update(productData).eq('id', editingProduct.id);
         if (error) throw error;
+
+        // Record price history if price changed
+        if (priceChanged) {
+          await supabase.from('krolist_price_history').insert({
+            product_id: editingProduct.id,
+            price: parseFloat(formData.current_price),
+            original_price: parseFloat(formData.original_price),
+            currency: formData.currency || 'SAR'
+          });
+        }
 
         // If copyToCollection is selected, create a copy
         if (formData.copyToCollection && formData.copyToCollection !== 'none') {
@@ -400,10 +413,22 @@ export default function KrolistProductsManager() {
           });
         }
       } else {
-        const {
-          error
-        } = await supabase.from('krolist_products').insert([productData]);
+        const { data: insertedProduct, error } = await supabase
+          .from('krolist_products')
+          .insert([productData])
+          .select()
+          .single();
         if (error) throw error;
+        
+        // Record initial price history for new product
+        if (insertedProduct) {
+          await supabase.from('krolist_price_history').insert({
+            product_id: insertedProduct.id,
+            price: parseFloat(formData.current_price),
+            original_price: parseFloat(formData.original_price),
+            currency: formData.currency || 'SAR'
+          });
+        }
         
         // Create global notification for new product
         const timestamp = new Date().toISOString();
@@ -588,6 +613,7 @@ export default function KrolistProductsManager() {
       }, {} as Record<string, KrolistProduct[]>);
       let updateCount = 0;
       const errors: string[] = [];
+      const priceHistoryRecords: { product_id: string; price: number; original_price: number; currency: string }[] = [];
 
       // Update all products with the same title with the same price and status
       for (const [title, priceStr] of Object.entries(manualPrices)) {
@@ -597,6 +623,9 @@ export default function KrolistProductsManager() {
         const status = manualStatuses[title] || 'available';
         for (const product of productsToUpdate) {
           try {
+            // Only record history if price actually changed
+            const priceChanged = product.current_price !== price;
+            
             const {
               error
             } = await supabase.from('krolist_products').update({
@@ -608,10 +637,30 @@ export default function KrolistProductsManager() {
               errors.push(`Failed to update ${title}: ${error.message}`);
             } else {
               updateCount++;
+              // Add price history record if price changed
+              if (priceChanged) {
+                priceHistoryRecords.push({
+                  product_id: product.id,
+                  price: price,
+                  original_price: product.original_price,
+                  currency: product.currency || 'SAR'
+                });
+              }
             }
           } catch (err: any) {
             errors.push(`Error updating ${title}: ${err.message}`);
           }
+        }
+      }
+      
+      // Insert all price history records in batch
+      if (priceHistoryRecords.length > 0) {
+        const { error: historyError } = await supabase
+          .from('krolist_price_history')
+          .insert(priceHistoryRecords);
+        
+        if (historyError) {
+          console.error('Error inserting price history:', historyError);
         }
       }
       
