@@ -152,7 +152,7 @@ export function MobileProductCard({
 
           {/* Price */}
           <div className={`flex items-center gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-            <span className="text-base font-bold text-foreground">
+            <span className="font-bold text-foreground text-lg">
               {currency} {displayCurrentPrice.toFixed(2)}
             </span>
           </div>
