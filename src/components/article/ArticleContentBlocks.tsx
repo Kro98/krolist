@@ -3,6 +3,8 @@ import { ArticleProductCard } from './ArticleProductCard';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ArticleInlineAd } from './ArticleInlineAd';
+import { useMemo } from 'react';
 
 interface ArticleContentBlocksProps {
   blocks: ArticleBlock[];
@@ -13,6 +15,21 @@ interface ArticleContentBlocksProps {
 
 export const ArticleContentBlocks = ({ blocks, products, onProductClick, onViewHistory }: ArticleContentBlocksProps) => {
   const { language } = useLanguage();
+  
+  // Generate random ad positions - place ads every 3-5 blocks with some randomness
+  const adPositions = useMemo(() => {
+    if (blocks.length < 3) return [];
+    
+    const positions: number[] = [];
+    let nextPosition = 2 + Math.floor(Math.random() * 2); // Start after 2-3 blocks
+    
+    while (nextPosition < blocks.length) {
+      positions.push(nextPosition);
+      nextPosition += 3 + Math.floor(Math.random() * 3); // Every 3-5 blocks
+    }
+    
+    return positions;
+  }, [blocks.length]);
   
   const renderBlock = (block: ArticleBlock) => {
     switch (block.block_type) {
@@ -168,9 +185,27 @@ export const ArticleContentBlocks = ({ blocks, products, onProductClick, onViewH
     }
   };
   
+  // Render blocks with ads inserted at random positions
+  const renderBlocksWithAds = () => {
+    const elements: React.ReactNode[] = [];
+    
+    blocks.forEach((block, index) => {
+      elements.push(renderBlock(block));
+      
+      // Check if an ad should be placed after this block
+      if (adPositions.includes(index)) {
+        elements.push(
+          <ArticleInlineAd key={`ad-${index}`} />
+        );
+      }
+    });
+    
+    return elements;
+  };
+  
   return (
     <div className="space-y-6">
-      {blocks.map(renderBlock)}
+      {renderBlocksWithAds()}
     </div>
   );
 };
