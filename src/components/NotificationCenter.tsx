@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -87,6 +90,10 @@ export function NotificationCenter() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-0 shadow-2xl">
+          <VisuallyHidden.Root>
+            <DialogTitle>{t('notifications.title')}</DialogTitle>
+            <DialogDescription>{t('notifications.noNotifications')}</DialogDescription>
+          </VisuallyHidden.Root>
           {/* Header with gradient */}
           <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background p-5 pb-4">
             {/* Decorative elements */}
