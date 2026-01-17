@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { useAdBlock } from '@/contexts/AdBlockContext';
 
 declare global {
   interface Window {
@@ -12,15 +11,9 @@ interface ArticleInlineAdProps {
 }
 
 export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
-  const { shouldShowAds } = useAdBlock();
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
   const adKey = useMemo(() => Math.random().toString(36).substring(7), []);
-
-  // Don't render if user has declined ads
-  if (!shouldShowAds) {
-    return null;
-  }
 
   useEffect(() => {
     if (adRef.current && !adLoaded) {

@@ -5,11 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Megaphone, Save, ShieldOff } from "lucide-react";
+import { Megaphone, Save } from "lucide-react";
 
 const TRIGGER_SETTINGS = [
   { key: 'trigger_page_open_enabled', label: 'Page Open', description: 'Show ad when opening a page' },
@@ -42,16 +40,6 @@ export function AdSettingsManager() {
   const [triggerStates, setTriggerStates] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
-  // Ad Block Detection Settings
-  const [adBlockDetectionEnabled, setAdBlockDetectionEnabled] = useState(true);
-  const [adBlockBannerEnabled, setAdBlockBannerEnabled] = useState(true);
-  const [promptTitleEn, setPromptTitleEn] = useState("We noticed you're using an ad blocker");
-  const [promptTitleAr, setPromptTitleAr] = useState("لاحظنا أنك تستخدم مانع إعلانات");
-  const [promptDescriptionEn, setPromptDescriptionEn] = useState("Ads help keep Krolist free for everyone. They support our servers, development, and allow us to continue providing price tracking and deals for you.");
-  const [promptDescriptionAr, setPromptDescriptionAr] = useState("الإعلانات تساعد في إبقاء كروليست مجاني للجميع. إنها تدعم خوادمنا وتطويرنا وتسمح لنا بالاستمرار في تقديم تتبع الأسعار والعروض لك.");
-  const [bannerMessageEn, setBannerMessageEn] = useState("Enjoying Krolist? Ads help us stay free!");
-  const [bannerMessageAr, setBannerMessageAr] = useState("هل تستمتع بكروليست؟ الإعلانات تساعدنا على البقاء مجانيين!");
 
   useEffect(() => {
     fetchSettings();
@@ -88,22 +76,6 @@ export function AdSettingsManager() {
             setVisibilityMode(setting.setting_value);
           } else if (setting.setting_key.startsWith('trigger_')) {
             newTriggerStates[setting.setting_key] = setting.setting_value === 'true';
-          } else if (setting.setting_key === 'adblock_detection_enabled') {
-            setAdBlockDetectionEnabled(setting.setting_value === 'true');
-          } else if (setting.setting_key === 'adblock_banner_enabled') {
-            setAdBlockBannerEnabled(setting.setting_value === 'true');
-          } else if (setting.setting_key === 'adblock_prompt_title_en') {
-            setPromptTitleEn(setting.setting_value);
-          } else if (setting.setting_key === 'adblock_prompt_title_ar') {
-            setPromptTitleAr(setting.setting_value);
-          } else if (setting.setting_key === 'adblock_prompt_description_en') {
-            setPromptDescriptionEn(setting.setting_value);
-          } else if (setting.setting_key === 'adblock_prompt_description_ar') {
-            setPromptDescriptionAr(setting.setting_value);
-          } else if (setting.setting_key === 'adblock_banner_message_en') {
-            setBannerMessageEn(setting.setting_value);
-          } else if (setting.setting_key === 'adblock_banner_message_ar') {
-            setBannerMessageAr(setting.setting_value);
           }
         });
         setTriggerStates(newTriggerStates);
@@ -129,15 +101,6 @@ export function AdSettingsManager() {
         { key: 'favorite_count_threshold', value: favoriteThreshold.toString() },
         { key: 'refresh_count_threshold', value: refreshThreshold.toString() },
         { key: 'load_screen_count_threshold', value: loadScreenThreshold.toString() },
-        // Ad Block Detection Settings
-        { key: 'adblock_detection_enabled', value: adBlockDetectionEnabled.toString() },
-        { key: 'adblock_banner_enabled', value: adBlockBannerEnabled.toString() },
-        { key: 'adblock_prompt_title_en', value: promptTitleEn },
-        { key: 'adblock_prompt_title_ar', value: promptTitleAr },
-        { key: 'adblock_prompt_description_en', value: promptDescriptionEn },
-        { key: 'adblock_prompt_description_ar', value: promptDescriptionAr },
-        { key: 'adblock_banner_message_en', value: bannerMessageEn },
-        { key: 'adblock_banner_message_ar', value: bannerMessageAr },
         ...Object.entries(triggerStates).map(([key, value]) => ({ key, value: value.toString() })),
       ];
 
@@ -363,114 +326,6 @@ export function AdSettingsManager() {
               </p>
             </div>
           </div>
-        </div>
-
-        <Separator />
-
-        {/* Ad Blocker Detection Settings */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <ShieldOff className="h-5 w-5 text-orange-500" />
-            <h4 className="font-medium">Ad Blocker Detection</h4>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Enable Ad Blocker Detection</Label>
-              <p className="text-sm text-muted-foreground">
-                Detect when users have an ad blocker enabled
-              </p>
-            </div>
-            <Switch
-              checked={adBlockDetectionEnabled}
-              onCheckedChange={setAdBlockDetectionEnabled}
-            />
-          </div>
-
-          {adBlockDetectionEnabled && (
-            <>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Show Re-engagement Banner</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show a banner to users who declined whitelisting
-                  </p>
-                </div>
-                <Switch
-                  checked={adBlockBannerEnabled}
-                  onCheckedChange={setAdBlockBannerEnabled}
-                />
-              </div>
-
-              <div className="pl-4 border-l-2 border-orange-500/20 space-y-4">
-                <div className="space-y-2">
-                  <Label>Prompt Title (English)</Label>
-                  <Input
-                    value={promptTitleEn}
-                    onChange={(e) => setPromptTitleEn(e.target.value)}
-                    placeholder="We noticed you're using an ad blocker"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Prompt Title (Arabic)</Label>
-                  <Input
-                    value={promptTitleAr}
-                    onChange={(e) => setPromptTitleAr(e.target.value)}
-                    placeholder="لاحظنا أنك تستخدم مانع إعلانات"
-                    dir="rtl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Prompt Description (English)</Label>
-                  <Textarea
-                    value={promptDescriptionEn}
-                    onChange={(e) => setPromptDescriptionEn(e.target.value)}
-                    placeholder="Ads help keep Krolist free..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Prompt Description (Arabic)</Label>
-                  <Textarea
-                    value={promptDescriptionAr}
-                    onChange={(e) => setPromptDescriptionAr(e.target.value)}
-                    placeholder="الإعلانات تساعد في إبقاء كروليست مجاني..."
-                    dir="rtl"
-                    rows={3}
-                  />
-                </div>
-
-                {adBlockBannerEnabled && (
-                  <>
-                    <Separator className="my-2" />
-                    <p className="text-sm font-medium text-muted-foreground">Re-engagement Banner Messages</p>
-                    
-                    <div className="space-y-2">
-                      <Label>Banner Message (English)</Label>
-                      <Input
-                        value={bannerMessageEn}
-                        onChange={(e) => setBannerMessageEn(e.target.value)}
-                        placeholder="Enjoying Krolist? Ads help us stay free!"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Banner Message (Arabic)</Label>
-                      <Input
-                        value={bannerMessageAr}
-                        onChange={(e) => setBannerMessageAr(e.target.value)}
-                        placeholder="هل تستمتع بكروليست؟ الإعلانات تساعدنا على البقاء مجانيين!"
-                        dir="rtl"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full">

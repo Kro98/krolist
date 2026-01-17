@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
-import { useAdBlock } from "@/contexts/AdBlockContext";
 
 declare global {
   interface Window {
@@ -10,16 +9,10 @@ declare global {
 
 export function InterstitialAd() {
   const { isAdVisible, closeAd } = useAdTrigger();
-  const { shouldShowAds } = useAdBlock();
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [canSkipEarly, setCanSkipEarly] = useState(false);
-
-  // Don't show interstitial ads if user declined
-  if (!shouldShowAds) {
-    return null;
-  }
 
   useEffect(() => {
     if (isAdVisible) {

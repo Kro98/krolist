@@ -1,6 +1,5 @@
 import { useSidebar } from "@/components/ui/sidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAdBlock } from "@/contexts/AdBlockContext";
 import { useEffect, useState, useRef } from "react";
 
 declare global {
@@ -54,14 +53,8 @@ export function AdSpace({
 }: AdSpaceProps) {
   const { open } = useSidebar();
   const { language } = useLanguage();
-  const { shouldShowAds } = useAdBlock();
   const isRTL = language === 'ar';
   const [bannerCount, setBannerCount] = useState(1);
-
-  // Don't render if user has declined ads
-  if (!shouldShowAds) {
-    return null;
-  }
   
   const sidebarOpenWidth = 260;
   const sidebarCollapsedWidth = 52;
