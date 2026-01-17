@@ -13,6 +13,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { AdTriggerProvider } from "@/contexts/AdTriggerContext";
 import { AdBlockProvider } from "@/contexts/AdBlockContext";
 import { AdBlockPrompt } from "@/components/AdBlockPrompt";
+import { AdSupportBanner } from "@/components/AdSupportBanner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Products from "./pages/Products";
 import SearchProducts from "./pages/SearchProducts";
@@ -57,6 +58,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                       <TooltipProvider>
                         <Toaster />
                         <AdBlockPrompt />
+                        <AdSupportBanner position="bottom" />
                         <BrowserRouter>
                         <Layout>
                         <Routes>
