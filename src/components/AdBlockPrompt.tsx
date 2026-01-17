@@ -11,21 +11,29 @@ import { Button } from '@/components/ui/button';
 import { Heart, ShieldOff, X } from 'lucide-react';
 
 export function AdBlockPrompt() {
-  const { showAdBlockPrompt, setShowAdBlockPrompt, handleUserDecision } = useAdBlock();
+  const { 
+    showAdBlockPrompt, 
+    setShowAdBlockPrompt, 
+    handleUserDecision,
+    promptTitleEn,
+    promptTitleAr,
+    promptDescriptionEn,
+    promptDescriptionAr,
+  } = useAdBlock();
   const { language } = useLanguage();
 
   const content = {
     en: {
-      title: "We noticed you're using an ad blocker",
-      description: "Ads help keep Krolist free for everyone. They support our servers, development, and allow us to continue providing price tracking and deals for you.",
+      title: promptTitleEn,
+      description: promptDescriptionEn,
       whitelistTitle: "Would you consider whitelisting Krolist?",
       whitelistBtn: "I'll whitelist Krolist",
       declineBtn: "No thanks",
       promise: "We promise to keep ads non-intrusive and relevant.",
     },
     ar: {
-      title: "لاحظنا أنك تستخدم مانع إعلانات",
-      description: "الإعلانات تساعد في إبقاء كروليست مجاني للجميع. إنها تدعم خوادمنا وتطويرنا وتسمح لنا بالاستمرار في تقديم تتبع الأسعار والعروض لك.",
+      title: promptTitleAr,
+      description: promptDescriptionAr,
       whitelistTitle: "هل يمكنك إضافة كروليست للقائمة البيضاء؟",
       whitelistBtn: "سأضيف كروليست للقائمة البيضاء",
       declineBtn: "لا شكراً",
