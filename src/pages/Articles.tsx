@@ -305,12 +305,10 @@ const Articles = () => {
                   })}
                 </span>
               )}
-              {article.view_count !== undefined && article.view_count > 0 && (
-                <span className="flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
-                  {article.view_count.toLocaleString()}
-                </span>
-              )}
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {(article.view_count ?? 0).toLocaleString()}
+              </span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -374,12 +372,10 @@ const Articles = () => {
                   {format(new Date(article.published_at), 'MMM d, yyyy')}
                 </span>
               )}
-              {article.view_count !== undefined && article.view_count > 0 && (
-                <span className="flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
-                  {article.view_count.toLocaleString()}
-                </span>
-              )}
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {(article.view_count ?? 0).toLocaleString()}
+              </span>
             </div>
             <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
