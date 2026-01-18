@@ -38,6 +38,13 @@ export function FloatingInstallPrompt() {
       document.referrer.includes("android-app://");
     setIsPWA(isStandalone);
 
+    // Check if permanently dismissed (never show again)
+    const permanentlyDismissed = localStorage.getItem('installPromptNeverShow');
+    if (permanentlyDismissed === 'true') {
+      setIsDismissed(true);
+      return;
+    }
+
     // Check if already dismissed today
     const dismissedDate = localStorage.getItem('installPromptDismissedDate');
     const today = new Date().toDateString();
@@ -84,12 +91,14 @@ export function FloatingInstallPrompt() {
     };
   }, [isDismissed]);
 
-  const handleDismiss = (rememberForDay: boolean = false) => {
+  const handleDismiss = (rememberForDay: boolean = false, neverShowAgain: boolean = false) => {
     setIsVisible(false);
     setIsDismissed(true);
     sessionStorage.setItem('installPromptDismissed', 'true');
     
-    if (rememberForDay) {
+    if (neverShowAgain) {
+      localStorage.setItem('installPromptNeverShow', 'true');
+    } else if (rememberForDay) {
       localStorage.setItem('installPromptDismissedDate', new Date().toDateString());
     }
   };
@@ -225,6 +234,12 @@ export function FloatingInstallPrompt() {
                     {t('pwa.later')}
                   </Button>
                 </div>
+                <button
+                  onClick={() => handleDismiss(false, true)}
+                  className="w-full text-center text-primary-foreground/50 hover:text-primary-foreground/70 text-[10px] mt-2 transition-colors"
+                >
+                  {language === 'ar' ? 'عدم الإظهار مرة أخرى' : "Don't show again"}
+                </button>
               </div>
             </div>
           ) : (
