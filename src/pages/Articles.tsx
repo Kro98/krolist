@@ -296,14 +296,22 @@ const Articles = () => {
             <h4 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors text-sm">
               {title}
             </h4>
-            {article.published_at && (
-              <p className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(article.published_at), { 
-                  addSuffix: true,
-                  locale: isArabic ? ar : undefined 
-                })}
-              </p>
-            )}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {article.published_at && (
+                <span>
+                  {formatDistanceToNow(new Date(article.published_at), { 
+                    addSuffix: true,
+                    locale: isArabic ? ar : undefined 
+                  })}
+                </span>
+              )}
+              {article.view_count !== undefined && article.view_count > 0 && (
+                <span className="flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  {article.view_count.toLocaleString()}
+                </span>
+              )}
+            </div>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
@@ -360,11 +368,19 @@ const Articles = () => {
           )}
           
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-            {article.published_at && (
-              <span>
-                {format(new Date(article.published_at), 'MMM d, yyyy')}
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {article.published_at && (
+                <span>
+                  {format(new Date(article.published_at), 'MMM d, yyyy')}
+                </span>
+              )}
+              {article.view_count !== undefined && article.view_count > 0 && (
+                <span className="flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  {article.view_count.toLocaleString()}
+                </span>
+              )}
+            </div>
             <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </CardContent>
