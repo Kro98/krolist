@@ -21,6 +21,7 @@ interface PriceHistoryCardProps {
   isKrolistProduct?: boolean;
   onFlip: () => void;
   className?: string;
+  isCompactGrid?: boolean; // True when in 2x2 mobile grid view
 }
 
 export function PriceHistoryCard({
@@ -29,7 +30,8 @@ export function PriceHistoryCard({
   originalCurrency = "SAR",
   isKrolistProduct = false,
   onFlip,
-  className = ""
+  className = "",
+  isCompactGrid = false
 }: PriceHistoryCardProps) {
   const { language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
@@ -196,8 +198,9 @@ export function PriceHistoryCard({
                   }}
                 >
                   <div className={cn(
-                    "flex items-center justify-between gap-3",
-                    isArabic && "flex-row-reverse"
+                    "flex gap-3",
+                    isCompactGrid ? "flex-col" : "items-center justify-between",
+                    isArabic && !isCompactGrid && "flex-row-reverse"
                   )}>
                     {/* Date & Time */}
                     <div className={cn("flex-1 min-w-0", isArabic && "text-right")}>
@@ -210,24 +213,31 @@ export function PriceHistoryCard({
                       </p>
                     </div>
 
-                    {/* Price Change Badge */}
-                    {priceChange && (
-                      <div className={cn(
-                        "flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium",
-                        priceChange.color
-                      )}>
-                        {priceChange.icon}
-                        <span>{priceChange.label}</span>
-                      </div>
-                    )}
-
-                    {/* Price */}
+                    {/* Price and Change - stack in compact grid */}
                     <div className={cn(
-                      "flex items-center gap-1 font-bold",
-                      index === 0 ? "text-primary" : "text-foreground"
+                      "flex items-center gap-2",
+                      isCompactGrid && "justify-between",
+                      isArabic && "flex-row-reverse"
                     )}>
-                      <span className="text-sm">{currency}</span>
-                      <span className="text-base tabular-nums">{displayPrice.toFixed(2)}</span>
+                      {/* Price Change Badge */}
+                      {priceChange && (
+                        <div className={cn(
+                          "flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium",
+                          priceChange.color
+                        )}>
+                          {priceChange.icon}
+                          <span>{priceChange.label}</span>
+                        </div>
+                      )}
+
+                      {/* Price */}
+                      <div className={cn(
+                        "flex items-center gap-1 font-bold",
+                        index === 0 ? "text-primary" : "text-foreground"
+                      )}>
+                        <span className="text-sm">{currency}</span>
+                        <span className="text-base tabular-nums">{displayPrice.toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
 

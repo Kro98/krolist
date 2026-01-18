@@ -33,6 +33,7 @@ interface MobileProductCardProps {
   userProductCount?: number;
   isInFavorites?: boolean;
   isFavoritesSection?: boolean;
+  isCompactGrid?: boolean; // True when in 2x2 mobile grid view
 }
 export function MobileProductCard({
   product,
@@ -42,7 +43,8 @@ export function MobileProductCard({
   onDelete,
   userProductCount = 0,
   isInFavorites = false,
-  isFavoritesSection = false
+  isFavoritesSection = false,
+  isCompactGrid = false
 }: MobileProductCardProps) {
   const {
     language,
@@ -190,7 +192,7 @@ export function MobileProductCard({
         
         {/* Price History Overlay with Fade */}
         {showHistory && <div className="absolute inset-0 z-30 animate-in fade-in duration-300">
-            <PriceHistoryCard productId={product.id} productTitle={product.title} originalCurrency={product.original_currency} isKrolistProduct={product.isKrolistProduct} onFlip={() => setShowHistory(false)} />
+            <PriceHistoryCard productId={product.id} productTitle={product.title} originalCurrency={product.original_currency} isKrolistProduct={product.isKrolistProduct} onFlip={() => setShowHistory(false)} isCompactGrid={isCompactGrid} />
           </div>}
       </CardContent>
     </Card>;
