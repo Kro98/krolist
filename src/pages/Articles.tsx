@@ -188,8 +188,16 @@ const Articles = () => {
     };
   }, [articles, searchQuery, selectedCategory, selectedTag, scoreArticle]);
 
-  const handleArticleClick = (article: Article) => {
+  const handleArticleClick = async (article: Article) => {
     updatePreferences(article);
+    
+    // Increment view count in database (no rate limiting)
+    supabase
+      .from('articles')
+      .update({ view_count: (article.view_count ?? 0) + 1 })
+      .eq('id', article.id)
+      .then(() => {});
+    
     navigate(`/articles/${article.slug}`);
   };
 
