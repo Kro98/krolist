@@ -522,6 +522,7 @@ export function ProductCarousel({
                             userProductCount={userProductCount}
                             isInFavorites={isInFavorites(product)}
                             isFavoritesSection={isFavoritesSection}
+                            isCompactGrid={isMobile && mobileItemsPerSlide >= 2}
                           />
                         )
                       ))}
