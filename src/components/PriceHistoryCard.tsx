@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { History, TrendingDown, TrendingUp, Minus, X, Calendar, DollarSign, Loader2, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { History, TrendingDown, TrendingUp, Minus, Calendar, DollarSign, Loader2, BarChart3 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
@@ -254,8 +253,9 @@ export function PriceHistoryCard({
   return (
     <div
       ref={containerRef}
+      onClick={onFlip}
       className={cn(
-        "absolute inset-0 z-10 overflow-hidden flex flex-col",
+        "absolute inset-0 z-10 overflow-hidden flex flex-col cursor-pointer",
         "bg-gradient-to-br from-card via-card to-card/95",
         "border border-primary/20 shadow-xl",
         "animate-in fade-in duration-300",
@@ -269,44 +269,28 @@ export function PriceHistoryCard({
         config.headerPadding
       )}>
         <div className={cn(
-          "flex items-center justify-between gap-2",
+          "flex items-center gap-2",
           isArabic && "flex-row-reverse"
         )}>
           <div className={cn(
-            "flex items-center gap-2 flex-1 min-w-0",
-            isArabic && "flex-row-reverse"
+            "bg-primary/10 border border-primary/20 flex-shrink-0",
+            config.iconContainer
           )}>
-            <div className={cn(
-              "bg-primary/10 border border-primary/20 flex-shrink-0",
-              config.iconContainer
-            )}>
-              <History className={cn("text-primary", config.iconSize)} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className={cn(config.titleSize, "truncate")}>
-                {isArabic ? 'سجل الأسعار' : 'Price History'}
-              </h3>
-              {effectiveSize !== 'compact' && (
-                <p className={cn(
-                  "text-muted-foreground truncate",
-                  config.subtitleSize
-                )}>
-                  {productTitle}
-                </p>
-              )}
-            </div>
+            <History className={cn("text-primary", config.iconSize)} />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onFlip}
-            className={cn(
-              "p-0 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors flex-shrink-0",
-              config.closeButtonSize
+          <div className="flex-1 min-w-0">
+            <h3 className={cn(config.titleSize, "truncate")}>
+              {isArabic ? 'سجل الأسعار' : 'Price History'}
+            </h3>
+            {effectiveSize !== 'compact' && (
+              <p className={cn(
+                "text-muted-foreground truncate",
+                config.subtitleSize
+              )}>
+                {productTitle}
+              </p>
             )}
-          >
-            <X className={config.iconSize} />
-          </Button>
+          </div>
         </div>
 
         {/* Mini Stats Bar for compact view */}

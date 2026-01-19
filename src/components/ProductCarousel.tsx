@@ -316,7 +316,7 @@ export function ProductCarousel({
   // Legacy slides array for pagination (just product slides count)
   const slides = productSlides;
   
-  // Update current slide when API changes
+  // Update current slide when API changes and emit reset event
   useEffect(() => {
     if (!api) return;
     
@@ -324,6 +324,8 @@ export function ProductCarousel({
     
     const handleSelect = () => {
       setCurrent(api.selectedScrollSnap());
+      // Dispatch event to close all history overlays when slide changes
+      window.dispatchEvent(new CustomEvent('carouselSlideChanged'));
     };
     
     api.on("select", handleSelect);
