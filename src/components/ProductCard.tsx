@@ -96,6 +96,15 @@ export function ProductCard({
     window.addEventListener('titleScrollSpeedChanged', handleSpeedChange as EventListener);
     return () => window.removeEventListener('titleScrollSpeedChanged', handleSpeedChange as EventListener);
   }, []);
+
+  // Listen for carousel slide changes to close history
+  useEffect(() => {
+    const handleSlideChange = () => {
+      setShowHistory(false);
+    };
+    window.addEventListener('carouselSlideChanged', handleSlideChange);
+    return () => window.removeEventListener('carouselSlideChanged', handleSlideChange);
+  }, []);
   const [scrollDistance, setScrollDistance] = useState(0);
 
   // Calculate scroll distance and duration based on title width and speed
@@ -313,7 +322,7 @@ export function ProductCard({
                 className="h-6 px-2 gap-1 border-primary/50 text-primary hover:bg-primary/10 history-pulse" 
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowHistory(true);
+                  setShowHistory(!showHistory);
                 }}
                 title={language === 'ar' ? 'سجل الأسعار' : 'Price History'}
               >

@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X, History } from "lucide-react";
-import { PriceHistoryCard } from "@/components/PriceHistoryCard";
+import { MoreVertical, Trash2, Edit, Youtube, TrendingDown, TrendingUp, ExternalLink, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -63,7 +61,6 @@ export function FavoriteCard({
   const { t, language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [titleScrollSpeed] = useState(() => {
     const saved = localStorage.getItem('titleScrollSpeed');
@@ -262,21 +259,6 @@ export function FavoriteCard({
             }}>
                   <Youtube className="h-3 w-3 text-red-500" />
                 </Button>}
-              
-              {/* History Button */}
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="h-5 px-1.5 gap-1 border-primary/50 text-primary hover:bg-primary/10 rounded-full" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowHistory(true);
-                }}
-                title={language === 'ar' ? 'سجل الأسعار' : 'Price History'}
-              >
-                <History className="h-3 w-3" />
-                <span className="text-[9px]">{language === 'ar' ? 'السجل' : 'History'}</span>
-              </Button>
             </div>
 
             {/* Last Checked */}
@@ -287,19 +269,6 @@ export function FavoriteCard({
             </div>
           </div>
         </div>
-        
-        {/* Price History Overlay */}
-        {showHistory && (
-          <div className="absolute inset-0 z-20 animate-in fade-in duration-300">
-            <PriceHistoryCard
-              productId={product.id}
-              productTitle={product.title}
-              originalCurrency={product.original_currency}
-              isKrolistProduct={false}
-              onFlip={() => setShowHistory(false)}
-            />
-          </div>
-        )}
       </div>
 
       {/* Edit Dialog */}

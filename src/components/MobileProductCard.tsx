@@ -71,6 +71,16 @@ export function MobileProductCard({
       window.removeEventListener('mobileCardStyleChanged', handleStyleChange as EventListener);
     };
   }, []);
+
+  // Listen for carousel slide changes to close history
+  useEffect(() => {
+    const handleSlideChange = () => {
+      setShowHistory(false);
+    };
+    window.addEventListener('carouselSlideChanged', handleSlideChange);
+    return () => window.removeEventListener('carouselSlideChanged', handleSlideChange);
+  }, []);
+
   const [showHistory, setShowHistory] = useState(false);
   const displayCurrentPrice = convertPriceToDisplay(product.current_price, product.original_currency);
   const displayOriginalPrice = convertPriceToDisplay(product.original_price, product.original_currency);
@@ -182,7 +192,7 @@ export function MobileProductCard({
             <Button size="sm" variant="outline" className="h-5 gap-0.5 border-primary/50 text-primary hover:bg-primary/10 history-pulse ml-auto px-[45px]" onClick={e => {
             e.preventDefault();
             e.stopPropagation();
-            setShowHistory(true);
+            setShowHistory(!showHistory);
           }}>
               <History className="h-3 w-3" />
               <span className="text-[0.55rem]">{language === 'ar' ? 'السجل' : 'History'}</span>
