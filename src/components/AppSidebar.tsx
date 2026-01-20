@@ -1,4 +1,4 @@
-import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag, HelpCircle, X, BookOpen } from "lucide-react";
+import { BarChart3, Home, Package, Settings, Heart, Gift, PlusCircle, Megaphone, Calendar, ShoppingBag, HelpCircle, X, BookOpen, Sticker } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -355,6 +355,25 @@ export function AppSidebar() {
                         <div className="flex items-center gap-2 flex-1">
                           <span>{t('nav.articles')}</span>
                           <span className="px-1.5 py-0.5 bg-primary/20 text-primary text-[9px] font-medium rounded-full">
+                            {language === 'ar' ? 'جديد' : 'NEW'}
+                          </span>
+                        </div>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="px-[4px]">
+                  <SidebarMenuButton asChild className={collapsed ? "justify-center" : ""}>
+                    <NavLink 
+                      to="/stickers" 
+                      className={({ isActive }) => `${getNavCls({ isActive })} ${collapsed ? 'justify-center p-2' : ''} border border-dashed border-primary/40`} 
+                      onClick={handleNavClick}
+                    >
+                      <Sticker className="h-5 w-5 shrink-0" />
+                      {!collapsed && (
+                        <div className="flex items-center gap-2 flex-1">
+                          <span>{language === 'ar' ? 'ملصقات' : 'Stickers'}</span>
+                          <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[9px] font-medium rounded-full">
                             {language === 'ar' ? 'جديد' : 'NEW'}
                           </span>
                         </div>

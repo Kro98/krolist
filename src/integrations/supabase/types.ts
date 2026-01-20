@@ -1079,6 +1079,90 @@ export type Database = {
         }
         Relationships: []
       }
+      sticker_settings: {
+        Row: {
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      stickers: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          description_ar: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_new: boolean | null
+          name: string
+          name_ar: string | null
+          price: number
+          stock_status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          description_ar?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_new?: boolean | null
+          name: string
+          name_ar?: string | null
+          price?: number
+          stock_status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          description_ar?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_new?: boolean | null
+          name?: string
+          name_ar?: string | null
+          price?: number
+          stock_status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       store_promotions: {
         Row: {
           active: boolean | null
