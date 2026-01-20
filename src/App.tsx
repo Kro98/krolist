@@ -32,6 +32,7 @@ import Article from "./pages/Article";
 import Articles from "./pages/Articles";
 import ArticlesManager from "./pages/admin/ArticlesManager";
 import ArticleEditor from "./pages/admin/ArticleEditor";
+import Stickers from "./pages/Stickers";
 const queryClient = new QueryClient();
 
 // Initialize settings from localStorage
@@ -72,6 +73,7 @@ const App = () => <QueryClientProvider client={queryClient}>
                           <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
                           <Route path="/articles" element={<Articles />} />
                           <Route path="/articles/:slug" element={<Article />} />
+                          <Route path="/stickers" element={<Stickers />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                           <Route path="/terms-of-service" element={<TermsOfService />} />

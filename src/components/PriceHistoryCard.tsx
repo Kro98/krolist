@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { History, TrendingDown, TrendingUp, Minus, Calendar, DollarSign, Loader2, BarChart3 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConvertedPrice } from "@/hooks/useConvertedPrice";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,8 @@ interface PriceHistoryCardProps {
   onFlip: () => void;
   className?: string;
   isCompactGrid?: boolean;
+  originalPrice?: number;
+  currentPrice?: number;
 }
 
 type CardSize = 'compact' | 'medium' | 'large';
@@ -32,7 +35,9 @@ export function PriceHistoryCard({
   isKrolistProduct = false,
   onFlip,
   className = "",
-  isCompactGrid = false
+  isCompactGrid = false,
+  originalPrice,
+  currentPrice
 }: PriceHistoryCardProps) {
   const { language } = useLanguage();
   const { currency, convertPriceToDisplay } = useConvertedPrice();
@@ -107,7 +112,15 @@ export function PriceHistoryCard({
   const prices = sortedHistory.map(h => h.price);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-  const currentPrice = prices[0] || 0;
+  const latestPrice = prices[0] || 0;
+  
+  // Calculate discount for compact grid display
+  const displayOriginalPrice = originalPrice ? convertPriceToDisplay(originalPrice, originalCurrency) : null;
+  const displayCurrentPrice = currentPrice ? convertPriceToDisplay(currentPrice, originalCurrency) : null;
+  const hasDiscount = originalPrice && currentPrice && originalPrice !== currentPrice;
+  const discountPercent = hasDiscount && originalPrice > 0 
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) 
+    : 0;
 
   const getRelativeTime = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -293,20 +306,42 @@ export function PriceHistoryCard({
           </div>
         </div>
 
+        {/* Original Price for compact grid view */}
+        {effectiveSize === 'compact' && isCompactGrid && hasDiscount && displayOriginalPrice && displayCurrentPrice && (
+          <div className={cn(
+            "flex items-center justify-between mt-2 pt-2 border-t border-border/30",
+            isArabic && "flex-row-reverse"
+          )}>
+            <div className={cn("flex items-center gap-1", isArabic && "flex-row-reverse")}>
+              <span className="text-[9px] text-muted-foreground">
+                {isArabic ? 'السعر الأصلي:' : 'Original:'}
+              </span>
+              <span className="text-[10px] text-muted-foreground line-through">
+                {currency} {displayOriginalPrice.toFixed(2)}
+              </span>
+            </div>
+            {discountPercent > 0 && (
+              <Badge className="bg-success hover:bg-success text-success-foreground text-[8px] px-1.5 py-0">
+                -{discountPercent}%
+              </Badge>
+            )}
+          </div>
+        )}
+
         {/* Mini Stats Bar for compact view */}
         {effectiveSize === 'compact' && prices.length > 0 && (
           <div className={cn(
             "flex items-center gap-2 mt-1.5 text-[8px]",
             isArabic && "flex-row-reverse"
           )}>
-            <div className="flex items-center gap-1 text-green-500">
+            <div className="flex items-center gap-1 text-success">
               <TrendingDown className="h-2 w-2" />
               <span>{currency}{convertPriceToDisplay(minPrice, originalCurrency).toFixed(0)}</span>
             </div>
             <div className="flex-1">
               {renderMiniChart()}
             </div>
-            <div className="flex items-center gap-1 text-red-500">
+            <div className="flex items-center gap-1 text-destructive">
               <TrendingUp className="h-2 w-2" />
               <span>{currency}{convertPriceToDisplay(maxPrice, originalCurrency).toFixed(0)}</span>
             </div>
