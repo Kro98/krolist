@@ -169,8 +169,8 @@ export function MobileProductCard({
             </span>
           </div>
 
-          {/* Original Price */}
-          {product.current_price !== product.original_price && <div className={`flex items-center gap-1.5 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+          {/* Original Price - Hidden in compact grid, shown in history card instead */}
+          {!isCompactGrid && product.current_price !== product.original_price && <div className={`flex items-center gap-1.5 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
               <span className="text-xs text-muted-foreground line-through">
                 {currency} {displayOriginalPrice.toFixed(2)}
               </span>
@@ -180,16 +180,20 @@ export function MobileProductCard({
             </div>}
 
           {/* Badges */}
-          <div className={`flex gap-1.5 flex-wrap items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-            <Badge className="bg-orange-500 text-white hover:bg-orange-600 px-1.5 py-0 text-[0.6rem]">
-              {product.store}
-            </Badge>
-            {product.category && <Badge variant="secondary" className="px-1.5 py-0 text-[0.6rem] border border-border">
-                {product.category}
-              </Badge>}
+          <div className={`flex gap-1.5 flex-wrap items-center ${isCompactGrid ? 'justify-center' : ''} ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+            {!isCompactGrid && (
+              <>
+                <Badge className="bg-orange-500 text-white hover:bg-orange-600 px-1.5 py-0 text-[0.6rem]">
+                  {product.store}
+                </Badge>
+                {product.category && <Badge variant="secondary" className="px-1.5 py-0 text-[0.6rem] border border-border">
+                    {product.category}
+                  </Badge>}
+              </>
+            )}
             
-            {/* History Button */}
-            <Button size="sm" variant="outline" className="h-5 gap-0.5 border-primary/50 text-primary hover:bg-primary/10 history-pulse ml-auto px-[45px]" onClick={e => {
+            {/* History Button - Centered in compact grid */}
+            <Button size="sm" variant="outline" className={`h-5 gap-0.5 border-primary/50 text-primary hover:bg-primary/10 history-pulse ${isCompactGrid ? 'px-3' : 'ml-auto px-[45px]'}`} onClick={e => {
             e.preventDefault();
             e.stopPropagation();
             setShowHistory(!showHistory);
@@ -202,7 +206,16 @@ export function MobileProductCard({
         
         {/* Price History Overlay with Fade */}
         {showHistory && <div className="absolute inset-0 z-30 animate-in fade-in duration-300">
-            <PriceHistoryCard productId={product.id} productTitle={product.title} originalCurrency={product.original_currency} isKrolistProduct={product.isKrolistProduct} onFlip={() => setShowHistory(false)} isCompactGrid={isCompactGrid} />
+            <PriceHistoryCard 
+              productId={product.id} 
+              productTitle={product.title} 
+              originalCurrency={product.original_currency} 
+              isKrolistProduct={product.isKrolistProduct} 
+              onFlip={() => setShowHistory(false)} 
+              isCompactGrid={isCompactGrid}
+              originalPrice={product.original_price}
+              currentPrice={product.current_price}
+            />
           </div>}
       </CardContent>
     </Card>;
