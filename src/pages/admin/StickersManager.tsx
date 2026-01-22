@@ -18,17 +18,15 @@ interface Sticker {
   id: string;
   name: string;
   name_ar: string | null;
-  description: string | null;
-  description_ar: string | null;
   price: number;
   currency: string;
   image_url: string | null;
-  category: string | null;
   stock_status: string;
   is_featured: boolean | null;
   is_new: boolean | null;
   is_active: boolean | null;
   display_order: number | null;
+  sku?: string;
 }
 
 const STOCK_STATUS_OPTIONS = [
@@ -37,7 +35,7 @@ const STOCK_STATUS_OPTIONS = [
   { value: 'out_of_stock', label: 'Out of Stock', labelAr: 'نفذ المخزون' },
 ];
 
-const CATEGORY_OPTIONS = ['Logo', 'Badge', 'Fun', 'Motivational', 'Custom'];
+const generateSKU = (count: number) => `S-${String(count + 1).padStart(3, '0')}`;
 
 export default function StickersManager() {
   const { language, t } = useLanguage();
@@ -54,17 +52,14 @@ export default function StickersManager() {
   const [formData, setFormData] = useState({
     name: '',
     name_ar: '',
-    description: '',
-    description_ar: '',
     price: 0,
     currency: 'SAR',
     image_url: '',
-    category: '',
     stock_status: 'in_stock',
     is_featured: false,
     is_new: false,
     is_active: true,
-    display_order: 0,
+    sku: '',
   });
 
   useEffect(() => {
@@ -154,17 +149,14 @@ export default function StickersManager() {
       const stickerData = {
         name: formData.name,
         name_ar: formData.name_ar || null,
-        description: formData.description || null,
-        description_ar: formData.description_ar || null,
         price: formData.price,
         currency: formData.currency,
         image_url: formData.image_url || null,
-        category: formData.category || null,
         stock_status: formData.stock_status,
         is_featured: formData.is_featured,
         is_new: formData.is_new,
         is_active: formData.is_active,
-        display_order: formData.display_order,
+        display_order: stickers.length,
       };
 
       if (editingSticker) {
@@ -228,22 +220,19 @@ export default function StickersManager() {
     }
   };
 
-  const handleEdit = (sticker: Sticker) => {
+  const handleEdit = (sticker: Sticker, index: number) => {
     setEditingSticker(sticker);
     setFormData({
       name: sticker.name,
       name_ar: sticker.name_ar || '',
-      description: sticker.description || '',
-      description_ar: sticker.description_ar || '',
       price: sticker.price,
       currency: sticker.currency,
       image_url: sticker.image_url || '',
-      category: sticker.category || '',
       stock_status: sticker.stock_status,
       is_featured: sticker.is_featured || false,
       is_new: sticker.is_new || false,
       is_active: sticker.is_active ?? true,
-      display_order: sticker.display_order || 0,
+      sku: generateSKU(index),
     });
     setDialogOpen(true);
   };
@@ -253,17 +242,14 @@ export default function StickersManager() {
     setFormData({
       name: '',
       name_ar: '',
-      description: '',
-      description_ar: '',
       price: 0,
       currency: 'SAR',
       image_url: '',
-      category: '',
       stock_status: 'in_stock',
       is_featured: false,
       is_new: false,
       is_active: true,
-      display_order: 0,
+      sku: generateSKU(stickers.length),
     });
   };
 
@@ -385,6 +371,12 @@ export default function StickersManager() {
                 <DialogTitle>{editingSticker ? 'Edit Sticker' : 'Add New Sticker'}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                {/* Auto-generated SKU display */}
+                <div className="bg-muted/50 p-3 rounded-lg border">
+                  <Label className="text-xs text-muted-foreground">SKU (Auto-generated)</Label>
+                  <p className="font-mono text-lg font-bold">{editingSticker ? formData.sku : generateSKU(stickers.length)}</p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Name (English) *</Label>
@@ -405,24 +397,6 @@ export default function StickersManager() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Description (English)</Label>
-                    <Textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description (Arabic)</Label>
-                    <Textarea
-                      value={formData.description_ar}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description_ar: e.target.value }))}
-                      dir="rtl"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Price *</Label>
                     <Input
@@ -447,45 +421,22 @@ export default function StickersManager() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Display Order</Label>
-                    <Input
-                      type="number"
-                      value={formData.display_order}
-                      onChange={(e) => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
-                    />
-                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CATEGORY_OPTIONS.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Stock Status</Label>
-                    <Select value={formData.stock_status} onValueChange={(value) => setFormData(prev => ({ ...prev, stock_status: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STOCK_STATUS_OPTIONS.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {language === 'ar' ? opt.labelAr : opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label>Stock Status</Label>
+                  <Select value={formData.stock_status} onValueChange={(value) => setFormData(prev => ({ ...prev, stock_status: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STOCK_STATUS_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {language === 'ar' ? opt.labelAr : opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -565,8 +516,8 @@ export default function StickersManager() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Image</TableHead>
+                  <TableHead>SKU</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
                   <TableHead>Status</TableHead>
@@ -581,7 +532,7 @@ export default function StickersManager() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  stickers.map((sticker) => (
+                  stickers.map((sticker, index) => (
                     <TableRow key={sticker.id}>
                       <TableCell>
                         {sticker.image_url ? (
@@ -593,6 +544,9 @@ export default function StickersManager() {
                         )}
                       </TableCell>
                       <TableCell>
+                        <span className="font-mono text-sm font-bold">{generateSKU(index)}</span>
+                      </TableCell>
+                      <TableCell>
                         <div>
                           <div className="font-medium">{sticker.name}</div>
                           {sticker.name_ar && (
@@ -600,7 +554,6 @@ export default function StickersManager() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{sticker.category || '-'}</TableCell>
                       <TableCell>{sticker.price} {sticker.currency}</TableCell>
                       <TableCell>{getStockBadge(sticker.stock_status)}</TableCell>
                       <TableCell>
@@ -616,7 +569,7 @@ export default function StickersManager() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button size="icon" variant="ghost" onClick={() => handleEdit(sticker)}>
+                          <Button size="icon" variant="ghost" onClick={() => handleEdit(sticker, index)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDelete(sticker.id)}>
