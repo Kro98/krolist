@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Twitter } from 'lucide-react';
+import { Twitter, Gift, Tag, Sparkles, FileText, Calendar, Mail, Heart } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -15,9 +16,18 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 );
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isArabic = language === 'ar';
   
-  const footerLinks = [
+  const quickLinks = [
+    { to: '/products', label: isArabic ? 'المنتجات' : 'Products', icon: Gift },
+    { to: '/promo-codes', label: isArabic ? 'أكواد الخصم' : 'Promo Codes', icon: Tag },
+    { to: '/stickers', label: isArabic ? 'ستيكرات' : 'Stickers', icon: Sparkles },
+    { to: '/articles', label: isArabic ? 'المقالات' : 'Articles', icon: FileText },
+    { to: '/events', label: isArabic ? 'الفعاليات' : 'Events', icon: Calendar },
+  ];
+
+  const legalLinks = [
     { to: '/privacy-policy', label: t('privacyPolicy') },
     { to: '/terms-of-service', label: t('termsOfService') },
     { to: '/contact-us', label: t('contactUs') }
@@ -30,38 +40,94 @@ export function Footer() {
   ];
 
   return (
-    <footer className="w-full border-t border-border bg-background/80 backdrop-blur-sm mt-auto">
-      <div className="container my-0 mx-[5px] px-[5px] py-[5px]">
-        <div className="items-center gap-4 sm:items-center sm:justify-center sm:gap-[5px] mx-0 sm:flex sm:flex-row flex flex-row">
-          {footerLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-0 mx-[5px] text-center"
-            >
-              {link.label}
-            </Link>
-          ))}
+    <footer className="w-full border-t border-border bg-background/95 backdrop-blur-sm mt-auto">
+      <div className="container mx-auto px-4 py-8">
+        {/* Main footer content */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          {/* Brand section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/favicon.png" 
+                alt="Krolist" 
+                className="w-8 h-8"
+              />
+              <span className="font-bold text-xl text-foreground">Krolist</span>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              {isArabic 
+                ? 'قائمة منسقة من الأشياء الرائعة والصفقات وأفكار الهدايا لك ولأحبائك.'
+                : 'A curated list of cool stuff, deals, and gift ideas for you and your loved ones.'}
+            </p>
+            
+            {/* Social links */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-muted hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                  aria-label={social.label}
+                >
+                  <social.icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick links */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground">
+              {isArabic ? 'روابط سريعة' : 'Quick Links'}
+            </h3>
+            <nav className="grid grid-cols-2 gap-2">
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                >
+                  <link.icon className="w-3.5 h-3.5" />
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* Legal & Contact */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground">
+              {isArabic ? 'القانونية' : 'Legal'}
+            </h3>
+            <nav className="flex flex-col gap-2">
+              {legalLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
-        
-        {/* Copyright and Social Icons */}
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <p className="text-xs text-muted-foreground text-center">
-            © {new Date().getFullYear()} Krolist. All rights reserved.
+
+        <Separator className="mb-6" />
+
+        {/* Bottom section */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground text-center sm:text-left">
+            © {new Date().getFullYear()} Krolist. {isArabic ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
           </p>
-          <div className="flex items-center gap-2">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label={social.label}
-              >
-                <social.icon className="h-4 w-4" />
-              </a>
-            ))}
+          
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span>{isArabic ? 'صنع بـ' : 'Made with'}</span>
+            <Heart className="w-3 h-3 text-destructive fill-destructive" />
+            <span>{isArabic ? 'في السعودية' : 'in Saudi Arabia'}</span>
+            <span className="text-lg ml-1">🇸🇦</span>
           </div>
         </div>
       </div>
