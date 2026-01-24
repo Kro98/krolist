@@ -23,3 +23,12 @@ verify_jwt = true
 
 [functions.delete-expired-promo-codes]
 verify_jwt = false
+
+[functions.admin-refresh-krolist-prices]
+verify_jwt = true
+
+[functions.translate-text]
+verify_jwt = true
+
+[functions.generate-sitemap]
+verify_jwt = false
