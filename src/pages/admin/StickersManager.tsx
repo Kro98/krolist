@@ -12,8 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon, Loader2 } from "lucide-react";
-import { compressImage, getExtensionFromMimeType, formatFileSize } from "@/lib/imageCompression";
+import { Slider } from "@/components/ui/slider";
+import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon, Loader2, Maximize2 } from "lucide-react";
+import { getExtensionFromMimeType, formatFileSize } from "@/lib/imageCompression";
+import { ImageCompressionPreview } from "@/components/ImageCompressionPreview";
 
 interface Sticker {
   id: string;
@@ -28,6 +30,12 @@ interface Sticker {
   is_active: boolean | null;
   display_order: number | null;
   sku?: string;
+}
+
+interface CompressionSettings {
+  maxWidth: number;
+  maxHeight: number;
+  quality: number;
 }
 
 const STOCK_STATUS_OPTIONS = [
@@ -45,6 +53,13 @@ const IMAGE_QUALITY_OPTIONS = [
   { value: '50', label: 'Low (50%)', description: 'Fastest loading, lower quality' },
 ];
 
+const MAX_DIMENSION_OPTIONS = [
+  { value: 800, label: '800px', description: 'Small - fastest loading' },
+  { value: 1200, label: '1200px', description: 'Medium - recommended' },
+  { value: 1600, label: '1600px', description: 'Large - high quality' },
+  { value: 2000, label: '2000px', description: 'Extra large - best quality' },
+];
+
 export default function StickersManager() {
   const { language, t } = useLanguage();
   const { toast } = useToast();
@@ -56,6 +71,15 @@ export default function StickersManager() {
   const [uploading, setUploading] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [imageQuality, setImageQuality] = useState('85');
+  
+  // Compression settings
+  const [compressionMaxWidth, setCompressionMaxWidth] = useState(1200);
+  const [compressionMaxHeight, setCompressionMaxHeight] = useState(1200);
+  const [compressionQuality, setCompressionQuality] = useState(85);
+  
+  // Compression preview state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [compressionPreviewOpen, setCompressionPreviewOpen] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -81,7 +105,7 @@ export default function StickersManager() {
       const { data, error } = await supabase
         .from('sticker_settings')
         .select('setting_key, setting_value')
-        .in('setting_key', ['whatsapp_number', 'image_quality']);
+        .in('setting_key', ['whatsapp_number', 'image_quality', 'compression_max_width', 'compression_max_height', 'compression_quality']);
 
       if (error) throw error;
       
@@ -90,6 +114,12 @@ export default function StickersManager() {
           setWhatsappNumber(setting.setting_value);
         } else if (setting.setting_key === 'image_quality') {
           setImageQuality(setting.setting_value);
+        } else if (setting.setting_key === 'compression_max_width') {
+          setCompressionMaxWidth(parseInt(setting.setting_value) || 1200);
+        } else if (setting.setting_key === 'compression_max_height') {
+          setCompressionMaxHeight(parseInt(setting.setting_value) || 1200);
+        } else if (setting.setting_key === 'compression_quality') {
+          setCompressionQuality(parseInt(setting.setting_value) || 85);
         }
       });
     } catch (error) {
@@ -118,7 +148,7 @@ export default function StickersManager() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -132,14 +162,23 @@ export default function StickersManager() {
       return;
     }
 
+    // Open compression preview dialog
+    setSelectedFile(file);
+    setCompressionPreviewOpen(true);
+    
+    // Reset the input so the same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleCompressionConfirm = async (
+    compressedBlob: Blob, 
+    stats: { originalSize: number; compressedSize: number }
+  ) => {
+    setCompressionPreviewOpen(false);
+    setSelectedFile(null);
     setUploading(true);
+    
     try {
-      const originalSize = file.size;
-      
-      // Compress image using canvas - max 1200x1200, 85% quality
-      const compressedBlob = await compressImage(file, 1200, 1200, 0.85);
-      const compressedSize = compressedBlob.size;
-      
       // Get appropriate file extension
       const fileExt = getExtensionFromMimeType(compressedBlob.type);
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -160,10 +199,10 @@ export default function StickersManager() {
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
       
       // Show compression stats
-      const savedPercent = Math.round((1 - compressedSize / originalSize) * 100);
+      const savedPercent = Math.round((1 - stats.compressedSize / stats.originalSize) * 100);
       toast({
         title: "Image Uploaded & Compressed",
-        description: `${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)} (${savedPercent > 0 ? `-${savedPercent}%` : 'optimized'})`,
+        description: `${formatFileSize(stats.originalSize)} → ${formatFileSize(stats.compressedSize)} (${savedPercent > 0 ? `-${savedPercent}%` : 'optimized'})`,
       });
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -175,6 +214,11 @@ export default function StickersManager() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCompressionCancel = () => {
+    setCompressionPreviewOpen(false);
+    setSelectedFile(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,49 +334,34 @@ export default function StickersManager() {
 
   const handleSettingsSave = async () => {
     try {
-      // Save WhatsApp number
-      const { data: existingWhatsapp } = await supabase
-        .from('sticker_settings')
-        .select('id')
-        .eq('setting_key', 'whatsapp_number')
-        .single();
+      // Helper to upsert a setting
+      const upsertSetting = async (key: string, value: string, description: string) => {
+        const { data: existing } = await supabase
+          .from('sticker_settings')
+          .select('id')
+          .eq('setting_key', key)
+          .single();
 
-      if (existingWhatsapp) {
-        await supabase
-          .from('sticker_settings')
-          .update({ setting_value: whatsappNumber })
-          .eq('setting_key', 'whatsapp_number');
-      } else {
-        await supabase
-          .from('sticker_settings')
-          .insert([{
-            setting_key: 'whatsapp_number',
-            setting_value: whatsappNumber,
-            description: 'WhatsApp number for sticker orders',
-          }]);
-      }
+        if (existing) {
+          await supabase
+            .from('sticker_settings')
+            .update({ setting_value: value })
+            .eq('setting_key', key);
+        } else {
+          await supabase
+            .from('sticker_settings')
+            .insert([{ setting_key: key, setting_value: value, description }]);
+        }
+      };
 
-      // Save image quality
-      const { data: existingQuality } = await supabase
-        .from('sticker_settings')
-        .select('id')
-        .eq('setting_key', 'image_quality')
-        .single();
-
-      if (existingQuality) {
-        await supabase
-          .from('sticker_settings')
-          .update({ setting_value: imageQuality })
-          .eq('setting_key', 'image_quality');
-      } else {
-        await supabase
-          .from('sticker_settings')
-          .insert([{
-            setting_key: 'image_quality',
-            setting_value: imageQuality,
-            description: 'Image quality for sticker display (1-100)',
-          }]);
-      }
+      // Save all settings
+      await Promise.all([
+        upsertSetting('whatsapp_number', whatsappNumber, 'WhatsApp number for sticker orders'),
+        upsertSetting('image_quality', imageQuality, 'Image quality for sticker display (1-100)'),
+        upsertSetting('compression_max_width', compressionMaxWidth.toString(), 'Max width for image compression during upload'),
+        upsertSetting('compression_max_height', compressionMaxHeight.toString(), 'Max height for image compression during upload'),
+        upsertSetting('compression_quality', compressionQuality.toString(), 'Quality percentage for image compression during upload'),
+      ]);
 
       toast({
         title: "Success",
@@ -404,10 +433,11 @@ export default function StickersManager() {
                   </p>
                 </div>
 
+                {/* Display Quality Settings */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <ImageIcon className="h-4 w-4" />
-                    Image Quality
+                    Display Quality (Frontend)
                   </Label>
                   <Select value={imageQuality} onValueChange={setImageQuality}>
                     <SelectTrigger>
@@ -425,8 +455,76 @@ export default function StickersManager() {
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-muted-foreground">
-                    Lower quality = faster loading. Affects how stickers display on the page.
+                    Affects how stickers display on the page for visitors.
                   </p>
+                </div>
+
+                {/* Upload Compression Settings */}
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <Maximize2 className="h-4 w-4" />
+                    <Label className="font-medium">Upload Compression Defaults</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground -mt-2">
+                    Default settings for image compression during upload. Can be adjusted per-upload.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm">Max Width</Label>
+                      <Select 
+                        value={compressionMaxWidth.toString()} 
+                        onValueChange={(v) => setCompressionMaxWidth(parseInt(v))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          {MAX_DIMENSION_OPTIONS.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value.toString()}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">Max Height</Label>
+                      <Select 
+                        value={compressionMaxHeight.toString()} 
+                        onValueChange={(v) => setCompressionMaxHeight(parseInt(v))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          {MAX_DIMENSION_OPTIONS.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value.toString()}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Compression Quality</Label>
+                      <span className="text-sm font-mono">{compressionQuality}%</span>
+                    </div>
+                    <Slider
+                      value={[compressionQuality]}
+                      onValueChange={([value]) => setCompressionQuality(value)}
+                      min={10}
+                      max={100}
+                      step={5}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Smaller file</span>
+                      <span>Higher quality</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="bg-muted/50 p-3 rounded-lg border">
@@ -536,7 +634,7 @@ export default function StickersManager() {
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleImageSelect}
                         disabled={uploading}
                         className="hidden"
                         id="image-upload"
@@ -672,6 +770,20 @@ export default function StickersManager() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Compression Preview Dialog */}
+      <ImageCompressionPreview
+        file={selectedFile}
+        open={compressionPreviewOpen}
+        onOpenChange={setCompressionPreviewOpen}
+        onConfirm={handleCompressionConfirm}
+        onCancel={handleCompressionCancel}
+        defaultSettings={{
+          maxWidth: compressionMaxWidth,
+          maxHeight: compressionMaxHeight,
+          quality: compressionQuality,
+        }}
+      />
     </div>
   );
 }
