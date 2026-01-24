@@ -37,6 +37,13 @@ const STOCK_STATUS_OPTIONS = [
 
 const generateSKU = (count: number) => `S-${String(count + 1).padStart(3, '0')}`;
 
+const IMAGE_QUALITY_OPTIONS = [
+  { value: '100', label: 'Original (100%)', description: 'Full quality, larger file size' },
+  { value: '85', label: 'High (85%)', description: 'Recommended - good balance' },
+  { value: '70', label: 'Medium (70%)', description: 'Faster loading' },
+  { value: '50', label: 'Low (50%)', description: 'Fastest loading, lower quality' },
+];
+
 export default function StickersManager() {
   const { language, t } = useLanguage();
   const { toast } = useToast();
@@ -47,6 +54,7 @@ export default function StickersManager() {
   const [editingSticker, setEditingSticker] = useState<Sticker | null>(null);
   const [uploading, setUploading] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [imageQuality, setImageQuality] = useState('85');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -64,8 +72,29 @@ export default function StickersManager() {
 
   useEffect(() => {
     fetchStickers();
-    fetchWhatsappNumber();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sticker_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['whatsapp_number', 'image_quality']);
+
+      if (error) throw error;
+      
+      data?.forEach(setting => {
+        if (setting.setting_key === 'whatsapp_number') {
+          setWhatsappNumber(setting.setting_value);
+        } else if (setting.setting_key === 'image_quality') {
+          setImageQuality(setting.setting_value);
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
 
   const fetchStickers = async () => {
     try {
@@ -85,23 +114,6 @@ export default function StickersManager() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchWhatsappNumber = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('sticker_settings')
-        .select('setting_value')
-        .eq('setting_key', 'whatsapp_number')
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      if (data) {
-        setWhatsappNumber(data.setting_value);
-      }
-    } catch (error) {
-      console.error('Error fetching WhatsApp number:', error);
     }
   };
 
@@ -253,43 +265,62 @@ export default function StickersManager() {
     });
   };
 
-  const handleWhatsappSave = async () => {
+  const handleSettingsSave = async () => {
     try {
-      const { data: existing } = await supabase
+      // Save WhatsApp number
+      const { data: existingWhatsapp } = await supabase
         .from('sticker_settings')
         .select('id')
         .eq('setting_key', 'whatsapp_number')
         .single();
 
-      if (existing) {
-        const { error } = await supabase
+      if (existingWhatsapp) {
+        await supabase
           .from('sticker_settings')
           .update({ setting_value: whatsappNumber })
           .eq('setting_key', 'whatsapp_number');
-
-        if (error) throw error;
       } else {
-        const { error } = await supabase
+        await supabase
           .from('sticker_settings')
           .insert([{
             setting_key: 'whatsapp_number',
             setting_value: whatsappNumber,
             description: 'WhatsApp number for sticker orders',
           }]);
+      }
 
-        if (error) throw error;
+      // Save image quality
+      const { data: existingQuality } = await supabase
+        .from('sticker_settings')
+        .select('id')
+        .eq('setting_key', 'image_quality')
+        .single();
+
+      if (existingQuality) {
+        await supabase
+          .from('sticker_settings')
+          .update({ setting_value: imageQuality })
+          .eq('setting_key', 'image_quality');
+      } else {
+        await supabase
+          .from('sticker_settings')
+          .insert([{
+            setting_key: 'image_quality',
+            setting_value: imageQuality,
+            description: 'Image quality for sticker display (1-100)',
+          }]);
       }
 
       toast({
         title: "Success",
-        description: "WhatsApp number saved successfully",
+        description: "Settings saved successfully",
       });
       setSettingsDialogOpen(false);
     } catch (error) {
-      console.error('Error saving WhatsApp number:', error);
+      console.error('Error saving settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save WhatsApp number",
+        description: "Failed to save settings",
         variant: "destructive",
       });
     }
@@ -334,7 +365,7 @@ export default function StickersManager() {
               <DialogHeader>
                 <DialogTitle>Sticker Settings</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 pt-4">
+              <div className="space-y-6 pt-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
@@ -349,7 +380,40 @@ export default function StickersManager() {
                     Include country code (e.g., +966 for Saudi Arabia)
                   </p>
                 </div>
-                <Button onClick={handleWhatsappSave} className="w-full">
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Image Quality
+                  </Label>
+                  <Select value={imageQuality} onValueChange={setImageQuality}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select quality" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {IMAGE_QUALITY_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          <div className="flex flex-col">
+                            <span>{opt.label}</span>
+                            <span className="text-xs text-muted-foreground">{opt.description}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Lower quality = faster loading. Affects how stickers display on the page.
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-3 rounded-lg border">
+                  <p className="text-sm font-medium mb-1">🔒 Watermark Protection</p>
+                  <p className="text-xs text-muted-foreground">
+                    When users open sticker images in a new tab, they'll see a "KROLIST" watermark overlay to protect your designs.
+                  </p>
+                </div>
+
+                <Button onClick={handleSettingsSave} className="w-full">
                   Save Settings
                 </Button>
               </div>
