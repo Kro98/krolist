@@ -42,517 +42,999 @@ interface Event {
   reminderMinutes?: number;
   reminderShown?: boolean;
 }
+// Helper to generate events for multiple years
+const generateYearlyEvents = (baseYear: number, yearsToGenerate: number) => {
+  const events: Event[] = [];
+  
+  // Islamic calendar dates are approximate - these shift ~11 days earlier each year
+  // 2025 Base dates (approximate):
+  // Ramadan 2025: March 1 - March 30
+  // Eid al-Fitr 2025: March 30-31
+  // Eid al-Adha 2025: June 6-9
+  // Islamic New Year 1447: June 26, 2025
+  // Mawlid 2025: September 4
+  
+  const islamicShiftDays = -11; // Islamic calendar shifts ~11 days earlier each solar year
+  
+  for (let yearOffset = 0; yearOffset < yearsToGenerate; yearOffset++) {
+    const year = baseYear + yearOffset;
+    const islamicDayShift = yearOffset * islamicShiftDays;
+    
+    // Helper to add days to a base date
+    const addDays = (dateStr: string, days: number) => {
+      const date = new Date(dateStr);
+      date.setDate(date.getDate() + days);
+      return date;
+    };
+    
+    // ==========================================
+    // ISLAMIC RELIGIOUS EVENTS (shift each year)
+    // ==========================================
+    
+    // Ramadan Start
+    events.push({
+      id: `ramadan-start-${year}`,
+      name: "Ramadan Begins",
+      date: addDays(`${year}-03-01`, islamicDayShift),
+      description: "The holy month of fasting begins - major sales across all retailers",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "☪️",
+      isUserCreated: false
+    });
+    
+    // Ramadan Sales Period
+    events.push({
+      id: `ramadan-sales-${year}`,
+      name: "Ramadan Sales Season",
+      date: addDays(`${year}-03-10`, islamicDayShift),
+      description: "Peak Ramadan shopping season - electronics, fashion, home goods",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "🛒",
+      isUserCreated: false
+    });
+    
+    // Last 10 Days of Ramadan
+    events.push({
+      id: `ramadan-last-10-${year}`,
+      name: "Last 10 Days of Ramadan",
+      date: addDays(`${year}-03-20`, islamicDayShift),
+      description: "Laylat al-Qadr period - intensified spiritual activities",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "🌙",
+      isUserCreated: false
+    });
+    
+    // Eid al-Fitr
+    events.push({
+      id: `eid-al-fitr-${year}`,
+      name: "Eid al-Fitr",
+      date: addDays(`${year}-03-30`, islamicDayShift),
+      description: "Festival of Breaking the Fast - major holiday sales and celebrations",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "🌙",
+      isUserCreated: false
+    });
+    
+    // Eid al-Fitr Sales
+    events.push({
+      id: `eid-al-fitr-sales-${year}`,
+      name: "Eid al-Fitr Mega Sales",
+      date: addDays(`${year}-03-28`, islamicDayShift),
+      description: "Pre-Eid shopping rush - clothing, gifts, electronics discounts",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "🎁",
+      isUserCreated: false
+    });
+    
+    // Hajj Season
+    events.push({
+      id: `hajj-season-${year}`,
+      name: "Hajj Season Begins",
+      date: addDays(`${year}-05-27`, islamicDayShift),
+      description: "Annual Islamic pilgrimage to Mecca",
+      location: "Saudi Arabia",
+      type: "holiday",
+      emoji: "🕋",
+      isUserCreated: false
+    });
+    
+    // Day of Arafah
+    events.push({
+      id: `day-of-arafah-${year}`,
+      name: "Day of Arafah",
+      date: addDays(`${year}-06-05`, islamicDayShift),
+      description: "Holiest day in Islam - day before Eid al-Adha",
+      location: "Saudi Arabia & Muslim World",
+      type: "holiday",
+      emoji: "⛰️",
+      isUserCreated: false
+    });
+    
+    // Eid al-Adha
+    events.push({
+      id: `eid-al-adha-${year}`,
+      name: "Eid al-Adha",
+      date: addDays(`${year}-06-06`, islamicDayShift),
+      description: "Festival of Sacrifice - major holiday with special offers",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "🐑",
+      isUserCreated: false
+    });
+    
+    // Eid al-Adha Sales
+    events.push({
+      id: `eid-al-adha-sales-${year}`,
+      name: "Eid al-Adha Sales",
+      date: addDays(`${year}-06-04`, islamicDayShift),
+      description: "Pre-Eid shopping - meat, gifts, fashion discounts",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "🛍️",
+      isUserCreated: false
+    });
+    
+    // Islamic New Year
+    events.push({
+      id: `islamic-new-year-${year}`,
+      name: "Islamic New Year (Hijri)",
+      date: addDays(`${year}-06-26`, islamicDayShift),
+      description: "Beginning of the new Islamic calendar year",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "📅",
+      isUserCreated: false
+    });
+    
+    // Ashura
+    events.push({
+      id: `ashura-${year}`,
+      name: "Ashura",
+      date: addDays(`${year}-07-05`, islamicDayShift),
+      description: "10th day of Muharram - significant religious observance",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "🕌",
+      isUserCreated: false
+    });
+    
+    // Mawlid an-Nabi (Prophet's Birthday)
+    events.push({
+      id: `mawlid-${year}`,
+      name: "Mawlid an-Nabi",
+      date: addDays(`${year}-09-04`, islamicDayShift),
+      description: "Prophet Muhammad's Birthday celebration",
+      location: "Middle East & Muslim World",
+      type: "holiday",
+      emoji: "🌟",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // SAUDI ARABIA EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `saudi-founding-day-${year}`,
+      name: "Saudi Founding Day",
+      date: new Date(`${year}-02-22`),
+      description: "Commemorating the establishment of the first Saudi state in 1727",
+      location: "Saudi Arabia",
+      type: "holiday",
+      emoji: "🇸🇦",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `saudi-founding-sales-${year}`,
+      name: "Founding Day Sales",
+      date: new Date(`${year}-02-20`),
+      description: "Major retail discounts celebrating Saudi heritage",
+      location: "Saudi Arabia",
+      type: "sale",
+      emoji: "🛒",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `saudi-national-day-${year}`,
+      name: "Saudi National Day",
+      date: new Date(`${year}-09-23`),
+      description: "Kingdom of Saudi Arabia unification - massive nationwide sales",
+      location: "Saudi Arabia",
+      type: "holiday",
+      emoji: "🇸🇦",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `saudi-national-sales-${year}`,
+      name: "National Day Mega Sales",
+      date: new Date(`${year}-09-20`),
+      description: "Biggest annual sales event in Saudi Arabia",
+      location: "Saudi Arabia",
+      type: "sale",
+      emoji: "💚",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `saudi-flag-day-${year}`,
+      name: "Saudi Flag Day",
+      date: new Date(`${year}-03-11`),
+      description: "Celebrating the Saudi Arabian flag",
+      location: "Saudi Arabia",
+      type: "holiday",
+      emoji: "🏴",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `riyadh-season-${year}`,
+      name: "Riyadh Season",
+      date: new Date(`${year}-10-15`),
+      description: "Major entertainment festival with exclusive shopping deals",
+      location: "Saudi Arabia",
+      type: "discount",
+      emoji: "🎭",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `jeddah-season-${year}`,
+      name: "Jeddah Season",
+      date: new Date(`${year}-06-01`),
+      description: "Summer entertainment and shopping festival",
+      location: "Saudi Arabia",
+      type: "discount",
+      emoji: "🌊",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // UAE EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `uae-national-day-${year}`,
+      name: "UAE National Day",
+      date: new Date(`${year}-12-02`),
+      description: "United Arab Emirates formation anniversary",
+      location: "UAE",
+      type: "holiday",
+      emoji: "🇦🇪",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `uae-national-sales-${year}`,
+      name: "UAE National Day Sales",
+      date: new Date(`${year}-11-28`),
+      description: "Week-long sales celebrating UAE National Day",
+      location: "UAE",
+      type: "sale",
+      emoji: "🛍️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `uae-flag-day-${year}`,
+      name: "UAE Flag Day",
+      date: new Date(`${year}-11-03`),
+      description: "Celebrating UAE unity and identity",
+      location: "UAE",
+      type: "holiday",
+      emoji: "🏳️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `dubai-shopping-festival-${year}`,
+      name: "Dubai Shopping Festival",
+      date: new Date(`${year}-12-15`),
+      description: "World-famous month-long shopping extravaganza",
+      location: "UAE",
+      type: "sale",
+      emoji: "🏬",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `dubai-summer-surprises-${year}`,
+      name: "Dubai Summer Surprises",
+      date: new Date(`${year}-07-01`),
+      description: "Summer shopping festival with major discounts",
+      location: "UAE",
+      type: "sale",
+      emoji: "☀️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `abu-dhabi-shopping-${year}`,
+      name: "Abu Dhabi Shopping Festival",
+      date: new Date(`${year}-08-01`),
+      description: "Major retail event with prizes and discounts",
+      location: "UAE",
+      type: "sale",
+      emoji: "🏙️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `uae-commemoration-day-${year}`,
+      name: "UAE Commemoration Day",
+      date: new Date(`${year}-12-01`),
+      description: "Honoring UAE martyrs - day before National Day",
+      location: "UAE",
+      type: "holiday",
+      emoji: "🕯️",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // KUWAIT EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `kuwait-national-day-${year}`,
+      name: "Kuwait National Day",
+      date: new Date(`${year}-02-25`),
+      description: "Independence celebration with nationwide sales",
+      location: "Kuwait",
+      type: "holiday",
+      emoji: "🇰🇼",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `kuwait-liberation-day-${year}`,
+      name: "Kuwait Liberation Day",
+      date: new Date(`${year}-02-26`),
+      description: "Celebrating liberation from Iraqi occupation",
+      location: "Kuwait",
+      type: "holiday",
+      emoji: "🕊️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `kuwait-hala-feb-${year}`,
+      name: "Hala February Festival",
+      date: new Date(`${year}-02-01`),
+      description: "Month-long shopping and entertainment festival",
+      location: "Kuwait",
+      type: "sale",
+      emoji: "🎉",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // BAHRAIN EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `bahrain-national-day-${year}`,
+      name: "Bahrain National Day",
+      date: new Date(`${year}-12-16`),
+      description: "Kingdom of Bahrain national celebration",
+      location: "Bahrain",
+      type: "holiday",
+      emoji: "🇧🇭",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `bahrain-national-day-2-${year}`,
+      name: "Bahrain National Day (Day 2)",
+      date: new Date(`${year}-12-17`),
+      description: "Second day of Bahrain National Day celebrations",
+      location: "Bahrain",
+      type: "holiday",
+      emoji: "🇧🇭",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `bahrain-shop-festival-${year}`,
+      name: "Shop Bahrain Festival",
+      date: new Date(`${year}-01-15`),
+      description: "Annual shopping festival with prizes",
+      location: "Bahrain",
+      type: "sale",
+      emoji: "🎊",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // QATAR EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `qatar-national-day-${year}`,
+      name: "Qatar National Day",
+      date: new Date(`${year}-12-18`),
+      description: "Qatar's independence and unity celebration",
+      location: "Qatar",
+      type: "holiday",
+      emoji: "🇶🇦",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `qatar-sports-day-${year}`,
+      name: "Qatar Sports Day",
+      date: new Date(`${year}-02-11`), // Second Tuesday of February
+      description: "National sports holiday promoting fitness",
+      location: "Qatar",
+      type: "holiday",
+      emoji: "⚽",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `qatar-shop-festival-${year}`,
+      name: "Shop Qatar Festival",
+      date: new Date(`${year}-01-07`),
+      description: "Winter shopping festival with major discounts",
+      location: "Qatar",
+      type: "sale",
+      emoji: "🛒",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `qatar-summer-festival-${year}`,
+      name: "Qatar Summer Festival",
+      date: new Date(`${year}-07-15`),
+      description: "Summer entertainment and shopping event",
+      location: "Qatar",
+      type: "sale",
+      emoji: "🌴",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // OMAN EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `oman-national-day-${year}`,
+      name: "Oman National Day",
+      date: new Date(`${year}-11-18`),
+      description: "Sultanate of Oman national celebration",
+      location: "Oman",
+      type: "holiday",
+      emoji: "🇴🇲",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `oman-renaissance-day-${year}`,
+      name: "Oman Renaissance Day",
+      date: new Date(`${year}-07-23`),
+      description: "Celebrating Oman's modern development",
+      location: "Oman",
+      type: "holiday",
+      emoji: "🌟",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `muscat-festival-${year}`,
+      name: "Muscat Festival",
+      date: new Date(`${year}-01-20`),
+      description: "Annual cultural and shopping festival",
+      location: "Oman",
+      type: "sale",
+      emoji: "🎪",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `salalah-khareef-${year}`,
+      name: "Salalah Khareef Festival",
+      date: new Date(`${year}-07-15`),
+      description: "Monsoon season festival with special offers",
+      location: "Oman",
+      type: "discount",
+      emoji: "🌧️",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // EGYPT EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `egypt-revolution-day-${year}`,
+      name: "Egypt Revolution Day",
+      date: new Date(`${year}-07-23`),
+      description: "1952 Revolution anniversary",
+      location: "Egypt",
+      type: "holiday",
+      emoji: "🇪🇬",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `egypt-national-day-${year}`,
+      name: "Egypt Armed Forces Day",
+      date: new Date(`${year}-10-06`),
+      description: "Commemorating the October War victory",
+      location: "Egypt",
+      type: "holiday",
+      emoji: "⚔️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `sham-el-nessim-${year}`,
+      name: "Sham el-Nessim",
+      date: new Date(`${year}-04-21`), // Day after Easter
+      description: "Ancient Egyptian spring festival",
+      location: "Egypt",
+      type: "holiday",
+      emoji: "🌸",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `egypt-january-sales-${year}`,
+      name: "January Revolution Sales",
+      date: new Date(`${year}-01-25`),
+      description: "Revolution anniversary with retail promotions",
+      location: "Egypt",
+      type: "discount",
+      emoji: "🛍️",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // JORDAN EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `jordan-independence-${year}`,
+      name: "Jordan Independence Day",
+      date: new Date(`${year}-05-25`),
+      description: "Hashemite Kingdom independence celebration",
+      location: "Jordan",
+      type: "holiday",
+      emoji: "🇯🇴",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `jordan-great-revolt-${year}`,
+      name: "Great Arab Revolt Day",
+      date: new Date(`${year}-06-10`),
+      description: "Commemorating the 1916 Arab Revolt",
+      location: "Jordan",
+      type: "holiday",
+      emoji: "🏴",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `jordan-king-birthday-${year}`,
+      name: "King Abdullah II Birthday",
+      date: new Date(`${year}-01-30`),
+      description: "Royal celebration with special offers",
+      location: "Jordan",
+      type: "holiday",
+      emoji: "👑",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // LEBANON EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `lebanon-independence-${year}`,
+      name: "Lebanon Independence Day",
+      date: new Date(`${year}-11-22`),
+      description: "Lebanese Republic independence celebration",
+      location: "Lebanon",
+      type: "holiday",
+      emoji: "🇱🇧",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `beirut-holidays-${year}`,
+      name: "Beirut Holidays Festival",
+      date: new Date(`${year}-12-20`),
+      description: "End of year shopping festival",
+      location: "Lebanon",
+      type: "sale",
+      emoji: "🎄",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // IRAQ EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `iraq-national-day-${year}`,
+      name: "Iraq National Day",
+      date: new Date(`${year}-10-03`),
+      description: "Iraqi independence celebration",
+      location: "Iraq",
+      type: "holiday",
+      emoji: "🇮🇶",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `iraq-republic-day-${year}`,
+      name: "Iraq Republic Day",
+      date: new Date(`${year}-07-14`),
+      description: "1958 Revolution anniversary",
+      location: "Iraq",
+      type: "holiday",
+      emoji: "🇮🇶",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // MOROCCO EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `morocco-throne-day-${year}`,
+      name: "Morocco Throne Day",
+      date: new Date(`${year}-07-30`),
+      description: "King's accession anniversary with national celebrations",
+      location: "Morocco",
+      type: "holiday",
+      emoji: "🇲🇦",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `morocco-independence-${year}`,
+      name: "Morocco Independence Day",
+      date: new Date(`${year}-11-18`),
+      description: "Independence from France celebration",
+      location: "Morocco",
+      type: "holiday",
+      emoji: "🇲🇦",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `morocco-green-march-${year}`,
+      name: "Green March Day",
+      date: new Date(`${year}-11-06`),
+      description: "Commemorating the 1975 peaceful march",
+      location: "Morocco",
+      type: "holiday",
+      emoji: "🌿",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // TUNISIA EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `tunisia-revolution-${year}`,
+      name: "Tunisia Revolution Day",
+      date: new Date(`${year}-01-14`),
+      description: "Jasmine Revolution anniversary",
+      location: "Tunisia",
+      type: "holiday",
+      emoji: "🇹🇳",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `tunisia-independence-${year}`,
+      name: "Tunisia Independence Day",
+      date: new Date(`${year}-03-20`),
+      description: "Independence from France celebration",
+      location: "Tunisia",
+      type: "holiday",
+      emoji: "🇹🇳",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // ALGERIA EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `algeria-independence-${year}`,
+      name: "Algeria Independence Day",
+      date: new Date(`${year}-07-05`),
+      description: "Independence from France celebration",
+      location: "Algeria",
+      type: "holiday",
+      emoji: "🇩🇿",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `algeria-revolution-${year}`,
+      name: "Algeria Revolution Day",
+      date: new Date(`${year}-11-01`),
+      description: "1954 Revolution anniversary",
+      location: "Algeria",
+      type: "holiday",
+      emoji: "🇩🇿",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // TURKEY EVENTS
+    // ==========================================
+    
+    events.push({
+      id: `turkey-republic-day-${year}`,
+      name: "Turkey Republic Day",
+      date: new Date(`${year}-10-29`),
+      description: "Turkish Republic founding anniversary",
+      location: "Turkey",
+      type: "holiday",
+      emoji: "🇹🇷",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `turkey-victory-day-${year}`,
+      name: "Turkey Victory Day",
+      date: new Date(`${year}-08-30`),
+      description: "Victory in War of Independence",
+      location: "Turkey",
+      type: "holiday",
+      emoji: "🏆",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `turkey-youth-day-${year}`,
+      name: "Turkey Youth Day",
+      date: new Date(`${year}-05-19`),
+      description: "Commemoration of Atatürk, Youth and Sports Day",
+      location: "Turkey",
+      type: "holiday",
+      emoji: "🇹🇷",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `turkey-childrens-day-${year}`,
+      name: "Turkey Children's Day",
+      date: new Date(`${year}-04-23`),
+      description: "National Sovereignty and Children's Day",
+      location: "Turkey",
+      type: "holiday",
+      emoji: "👶",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `istanbul-shopping-fest-${year}`,
+      name: "Istanbul Shopping Fest",
+      date: new Date(`${year}-06-15`),
+      description: "Annual shopping festival with major discounts",
+      location: "Turkey",
+      type: "sale",
+      emoji: "🛍️",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // REGIONAL DISCOUNT SEASONS
+    // ==========================================
+    
+    events.push({
+      id: `white-friday-${year}`,
+      name: "White Friday",
+      date: new Date(`${year}-11-28`),
+      description: "Middle East's biggest online shopping day",
+      location: "Middle East",
+      type: "sale",
+      emoji: "🏷️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `yellow-friday-${year}`,
+      name: "Yellow Friday (Noon)",
+      date: new Date(`${year}-11-27`),
+      description: "Noon.com's mega sale event",
+      location: "Middle East",
+      type: "sale",
+      emoji: "💛",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `singles-day-mena-${year}`,
+      name: "Singles Day (11.11)",
+      date: new Date(`${year}-11-11`),
+      description: "World's largest shopping day - huge MENA sales",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "🎊",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `end-of-season-winter-${year}`,
+      name: "Winter End-of-Season Sale",
+      date: new Date(`${year}-01-15`),
+      description: "Major clearance on winter fashion and goods",
+      location: "Middle East",
+      type: "sale",
+      emoji: "❄️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `end-of-season-summer-${year}`,
+      name: "Summer End-of-Season Sale",
+      date: new Date(`${year}-08-15`),
+      description: "Major clearance on summer fashion and goods",
+      location: "Middle East",
+      type: "sale",
+      emoji: "🌞",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `back-to-school-mena-${year}`,
+      name: "Back to School Season",
+      date: new Date(`${year}-08-25`),
+      description: "School supplies, electronics, and uniform sales",
+      location: "Middle East",
+      type: "sale",
+      emoji: "🎒",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `cyber-monday-mena-${year}`,
+      name: "Cyber Monday",
+      date: new Date(`${year}-12-01`),
+      description: "Online shopping deals post-White Friday",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "💻",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `mid-year-sale-${year}`,
+      name: "Mid-Year Mega Sale",
+      date: new Date(`${year}-06-15`),
+      description: "Half-year clearance with major discounts",
+      location: "Middle East",
+      type: "sale",
+      emoji: "🔥",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `amazon-prime-day-mena-${year}`,
+      name: "Amazon Prime Day",
+      date: new Date(`${year}-07-15`),
+      description: "Exclusive deals for Prime members",
+      location: "UAE, Saudi Arabia",
+      type: "sale",
+      emoji: "📦",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `new-year-sale-${year}`,
+      name: "New Year Sale",
+      date: new Date(`${year}-01-01`),
+      description: "New year clearance and fresh start deals",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "🎆",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `valentines-day-${year}`,
+      name: "Valentine's Day Sales",
+      date: new Date(`${year}-02-14`),
+      description: "Romantic gifts and special discounts",
+      location: "Middle East, Worldwide",
+      type: "discount",
+      emoji: "💝",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `mothers-day-mena-${year}`,
+      name: "Mother's Day (Arab)",
+      date: new Date(`${year}-03-21`),
+      description: "Arab Mother's Day - gifts and special offers",
+      location: "Middle East",
+      type: "holiday",
+      emoji: "💐",
+      isUserCreated: false
+    });
+    
+    // ==========================================
+    // GLOBAL EVENTS AFFECTING MENA
+    // ==========================================
+    
+    events.push({
+      id: `black-friday-${year}`,
+      name: "Black Friday",
+      date: new Date(`${year}-11-28`),
+      description: "Global mega sales event (coincides with White Friday)",
+      location: "Worldwide",
+      type: "sale",
+      emoji: "🛍️",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `christmas-sales-${year}`,
+      name: "Christmas Sales",
+      date: new Date(`${year}-12-25`),
+      description: "Holiday shopping deals",
+      location: "Middle East, Worldwide",
+      type: "holiday",
+      emoji: "🎄",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `boxing-day-${year}`,
+      name: "Boxing Day Sales",
+      date: new Date(`${year}-12-26`),
+      description: "Post-Christmas clearance sales",
+      location: "Middle East, Worldwide",
+      type: "sale",
+      emoji: "🎁",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `earth-hour-${year}`,
+      name: "Earth Hour",
+      date: new Date(`${year}-03-29`),
+      description: "Environmental awareness - eco-product promotions",
+      location: "Worldwide",
+      type: "discount",
+      emoji: "🌍",
+      isUserCreated: false
+    });
+    
+    events.push({
+      id: `international-womens-day-${year}`,
+      name: "International Women's Day",
+      date: new Date(`${year}-03-08`),
+      description: "Celebrating women with special offers",
+      location: "Worldwide",
+      type: "discount",
+      emoji: "👩",
+      isUserCreated: false
+    });
+  }
+  
+  return events;
+};
+
+// Generate events for 2025-2029 (5 years)
 const defaultEvents: Event[] = [
-// Global Shopping Events
-{
-  id: "amazon-prime-day",
-  name: "Amazon Prime Day",
-  date: new Date("2025-07-15"),
-  description: "Exclusive deals for Prime members",
-  location: "Worldwide",
-  type: "sale",
-  emoji: "📦",
-  isUserCreated: false
-}, {
-  id: "black-friday",
-  name: "Black Friday",
-  date: new Date("2025-11-28"),
-  description: "Worldwide mega sales event",
-  location: "Worldwide",
-  type: "sale",
-  emoji: "🛍️",
-  isUserCreated: false
-}, {
-  id: "cyber-monday",
-  name: "Cyber Monday",
-  date: new Date("2025-12-01"),
-  description: "Online shopping deals",
-  location: "Worldwide",
-  type: "sale",
-  emoji: "💻",
-  isUserCreated: false
-}, {
-  id: "singles-day",
-  name: "Single's Day",
-  date: new Date("2025-11-11"),
-  description: "World's largest shopping event from China",
-  location: "Worldwide",
-  type: "sale",
-  emoji: "🎊",
-  isUserCreated: false
-}, {
-  id: "boxing-day",
-  name: "Boxing Day",
-  date: new Date("2025-12-26"),
-  description: "Post-Christmas sales and clearance",
-  location: "UK, Canada, Australia",
-  type: "sale",
-  emoji: "🎁",
-  isUserCreated: false
-}, {
-  id: "back-to-school",
-  name: "Back-to-School Sales",
-  date: new Date("2025-08-15"),
-  description: "Educational supplies and electronics discounts",
-  location: "Worldwide",
-  type: "sale",
-  emoji: "🎒",
-  isUserCreated: false
-}, {
-  id: "eofy-sales",
-  name: "End of Financial Year (EOFY) Sales",
-  date: new Date("2025-06-30"),
-  description: "Major discounts before new financial year",
-  location: "Australia",
-  type: "sale",
-  emoji: "💰",
-  isUserCreated: false
-},
-// Holiday Shopping Events
-{
-  id: "fathers-day",
-  name: "Father's Day Sales",
-  date: new Date("2025-06-15"),
-  description: "Special offers for Father's Day gifts",
-  location: "Worldwide",
-  type: "holiday",
-  emoji: "👨‍👧‍👦",
-  isUserCreated: false
-}, {
-  id: "valentines-day",
-  name: "Valentine's Day Sales",
-  date: new Date("2025-02-14"),
-  description: "Romantic gifts and special discounts",
-  location: "Worldwide",
-  type: "holiday",
-  emoji: "💝",
-  isUserCreated: false
-}, {
-  id: "christmas-sales",
-  name: "Christmas Sales",
-  date: new Date("2025-12-25"),
-  description: "Holiday shopping deals and gift discounts",
-  location: "Worldwide",
-  type: "holiday",
-  emoji: "🎄",
-  isUserCreated: false
-}, {
-  id: "mothers-day",
-  name: "Mother's Day Sales",
-  date: new Date("2025-05-11"),
-  description: "Special discounts for Mother's Day gifts",
-  location: "Worldwide",
-  type: "holiday",
-  emoji: "💐",
-  isUserCreated: false
-}, {
-  id: "easter-sales",
-  name: "Easter Sales",
-  date: new Date("2025-04-20"),
-  description: "Spring holiday shopping deals",
-  location: "Worldwide",
-  type: "holiday",
-  emoji: "🐰",
-  isUserCreated: false
-}, {
-  id: "new-year-sales",
-  name: "New Year Sales",
-  date: new Date("2025-01-01"),
-  description: "New year clearance and fresh start deals",
-  location: "Worldwide",
-  type: "sale",
-  emoji: "🎆",
-  isUserCreated: false
-},
-// National Days and Regional Events
-{
-  id: "saudi-national-day",
-  name: "Saudi National Day",
-  date: new Date("2025-09-23"),
-  description: "Special discounts across Saudi retailers",
-  location: "Saudi Arabia",
-  type: "discount",
-  emoji: "🇸🇦",
-  isUserCreated: false
-}, {
-  id: "uae-national-day",
-  name: "UAE National Day",
-  date: new Date("2025-12-02"),
-  description: "Celebrate UAE with special offers",
-  location: "UAE",
-  type: "discount",
-  emoji: "🇦🇪",
-  isUserCreated: false
-}, {
-  id: "independence-day-us",
-  name: "Independence Day Sales",
-  date: new Date("2025-07-04"),
-  description: "4th of July shopping deals",
-  location: "United States",
-  type: "discount",
-  emoji: "🇺🇸",
-  isUserCreated: false
-}, {
-  id: "canada-day",
-  name: "Canada Day Sales",
-  date: new Date("2025-07-01"),
-  description: "Canadian retailers celebrate with discounts",
-  location: "Canada",
-  type: "discount",
-  emoji: "🇨🇦",
-  isUserCreated: false
-}, {
-  id: "diwali-sales",
-  name: "Diwali Festival Sales",
-  date: new Date("2025-10-20"),
-  description: "Festival of lights shopping extravaganza",
-  location: "India, Worldwide",
-  type: "holiday",
-  emoji: "🪔",
-  isUserCreated: false
-}, {
-  id: "golden-week",
-  name: "Golden Week Sales",
-  date: new Date("2025-04-29"),
-  description: "Japanese holiday shopping period",
-  location: "Japan",
-  type: "holiday",
-  emoji: "🌸",
-  isUserCreated: false
-}, {
-  id: "eid-al-fitr",
-  name: "Eid Al-Fitr Sales",
-  date: new Date("2025-03-30"),
-  description: "End of Ramadan celebration discounts",
-  location: "Middle East, Worldwide",
-  type: "holiday",
-  emoji: "🌙",
-  isUserCreated: false
-}, {
-  id: "eid-al-adha",
-  name: "Eid Al-Adha Sales",
-  date: new Date("2025-06-06"),
-  description: "Festival of Sacrifice shopping deals",
-  location: "Middle East, Worldwide",
-  type: "holiday",
-  emoji: "🐑",
-  isUserCreated: false
-}, {
-  id: "ramadan-sales",
-  name: "Ramadan Sales",
-  date: new Date("2025-03-01"),
-  description: "Special offers during the holy month",
-  location: "Middle East, Worldwide",
-  type: "discount",
-  emoji: "☪️",
-  isUserCreated: false
-}, {
-  id: "chinese-new-year",
-  name: "Chinese New Year Sales",
-  date: new Date("2025-01-29"),
-  description: "Lunar New Year shopping festival",
-  location: "China, Southeast Asia",
-  type: "holiday",
-  emoji: "🐉",
-  isUserCreated: false
-}, {
-  id: "brazil-independence",
-  name: "Brazil Independence Day",
-  date: new Date("2025-09-07"),
-  description: "Brazilian national day sales",
-  location: "Brazil",
-  type: "discount",
-  emoji: "🇧🇷",
-  isUserCreated: false
-}, {
-  id: "mexico-independence",
-  name: "Mexico Independence Day",
-  date: new Date("2025-09-16"),
-  description: "Mexican national celebration sales",
-  location: "Mexico",
-  type: "discount",
-  emoji: "🇲🇽",
-  isUserCreated: false
-}, {
-  id: "bastille-day",
-  name: "Bastille Day Sales",
-  date: new Date("2025-07-14"),
-  description: "French national day shopping deals",
-  location: "France",
-  type: "discount",
-  emoji: "🇫🇷",
-  isUserCreated: false
-}, {
-  id: "german-unity-day",
-  name: "German Unity Day",
-  date: new Date("2025-10-03"),
-  description: "German national day retail discounts",
-  location: "Germany",
-  type: "discount",
-  emoji: "🇩🇪",
-  isUserCreated: false
-}, {
-  id: "australia-day",
-  name: "Australia Day Sales",
-  date: new Date("2025-01-26"),
-  description: "Australian national day shopping event",
-  location: "Australia",
-  type: "discount",
-  emoji: "🇦🇺",
-  isUserCreated: false
-}, {
-  id: "republic-day-india",
-  name: "Republic Day Sales",
-  date: new Date("2025-01-26"),
-  description: "Indian Republic Day shopping offers",
-  location: "India",
-  type: "discount",
-  emoji: "🇮🇳",
-  isUserCreated: false
-}, {
-  id: "independence-day-india",
-  name: "India Independence Day",
-  date: new Date("2025-08-15"),
-  description: "Indian Independence Day sales",
-  location: "India",
-  type: "discount",
-  emoji: "🇮🇳",
-  isUserCreated: false
-}, {
-  id: "qatar-national-day",
-  name: "Qatar National Day",
-  date: new Date("2025-12-18"),
-  description: "Qatar national celebration discounts",
-  location: "Qatar",
-  type: "discount",
-  emoji: "🇶🇦",
-  isUserCreated: false
-}, {
-  id: "kuwait-national-day",
-  name: "Kuwait National Day",
-  date: new Date("2025-02-25"),
-  description: "Kuwait national day sales",
-  location: "Kuwait",
-  type: "discount",
-  emoji: "🇰🇼",
-  isUserCreated: false
-}, {
-  id: "bahrain-national-day",
-  name: "Bahrain National Day",
-  date: new Date("2025-12-16"),
-  description: "Bahrain national celebration offers",
-  location: "Bahrain",
-  type: "discount",
-  emoji: "🇧🇭",
-  isUserCreated: false
-}, {
-  id: "oman-national-day",
-  name: "Oman National Day",
-  date: new Date("2025-11-18"),
-  description: "Oman national day shopping deals",
-  location: "Oman",
-  type: "discount",
-  emoji: "🇴🇲",
-  isUserCreated: false
-}, {
-  id: "egypt-revolution-day",
-  name: "Egypt Revolution Day",
-  date: new Date("2025-07-23"),
-  description: "Egyptian national celebration sales",
-  location: "Egypt",
-  type: "discount",
-  emoji: "🇪🇬",
-  isUserCreated: false
-}, {
-  id: "turkey-republic-day",
-  name: "Turkey Republic Day",
-  date: new Date("2025-10-29"),
-  description: "Turkish national day discounts",
-  location: "Turkey",
-  type: "discount",
-  emoji: "🇹🇷",
-  isUserCreated: false
-}, {
-  id: "malaysia-merdeka",
-  name: "Malaysia Merdeka Day",
-  date: new Date("2025-08-31"),
-  description: "Malaysian Independence Day sales",
-  location: "Malaysia",
-  type: "discount",
-  emoji: "🇲🇾",
-  isUserCreated: false
-}, {
-  id: "indonesia-independence",
-  name: "Indonesia Independence Day",
-  date: new Date("2025-08-17"),
-  description: "Indonesian national day shopping",
-  location: "Indonesia",
-  type: "discount",
-  emoji: "🇮🇩",
-  isUserCreated: false
-}, {
-  id: "philippines-independence",
-  name: "Philippines Independence Day",
-  date: new Date("2025-06-12"),
-  description: "Filipino national day sales",
-  location: "Philippines",
-  type: "discount",
-  emoji: "🇵🇭",
-  isUserCreated: false
-}, {
-  id: "thailand-king-birthday",
-  name: "Thailand King's Birthday",
-  date: new Date("2025-07-28"),
-  description: "Thai national holiday sales",
-  location: "Thailand",
-  type: "holiday",
-  emoji: "🇹🇭",
-  isUserCreated: false
-}, {
-  id: "vietnam-national-day",
-  name: "Vietnam National Day",
-  date: new Date("2025-09-02"),
-  description: "Vietnamese national celebration",
-  location: "Vietnam",
-  type: "discount",
-  emoji: "🇻🇳",
-  isUserCreated: false
-}, {
-  id: "south-korea-liberation",
-  name: "Korea Liberation Day",
-  date: new Date("2025-08-15"),
-  description: "Korean national day shopping",
-  location: "South Korea",
-  type: "discount",
-  emoji: "🇰🇷",
-  isUserCreated: false
-}, {
-  id: "chuseok",
-  name: "Chuseok Festival",
-  date: new Date("2025-10-06"),
-  description: "Korean harvest festival sales",
-  location: "South Korea",
-  type: "holiday",
-  emoji: "🥮",
-  isUserCreated: false
-}, {
-  id: "mid-autumn-festival",
-  name: "Mid-Autumn Festival",
-  date: new Date("2025-10-06"),
-  description: "Chinese Moon Festival sales",
-  location: "China, East Asia",
-  type: "holiday",
-  emoji: "🥮",
-  isUserCreated: false
-}, {
-  id: "thanksgiving",
-  name: "Thanksgiving Sales",
-  date: new Date("2025-11-27"),
-  description: "Pre-Black Friday shopping deals",
-  location: "United States",
-  type: "sale",
-  emoji: "🦃",
-  isUserCreated: false
-}, {
-  id: "labor-day-us",
-  name: "Labor Day Sales",
-  date: new Date("2025-09-01"),
-  description: "End of summer sales event",
-  location: "United States",
-  type: "sale",
-  emoji: "⚒️",
-  isUserCreated: false
-}, {
-  id: "memorial-day",
-  name: "Memorial Day Sales",
-  date: new Date("2025-05-26"),
-  description: "Start of summer shopping deals",
-  location: "United States",
-  type: "sale",
-  emoji: "🇺🇸",
-  isUserCreated: false
-}, {
-  id: "presidents-day",
-  name: "Presidents Day Sales",
-  date: new Date("2025-02-17"),
-  description: "Winter clearance and discounts",
-  location: "United States",
-  type: "sale",
-  emoji: "🏛️",
-  isUserCreated: false
-}, {
-  id: "st-patricks-day",
-  name: "St. Patrick's Day Sales",
-  date: new Date("2025-03-17"),
-  description: "Irish celebration shopping deals",
-  location: "Ireland, Worldwide",
-  type: "holiday",
-  emoji: "☘️",
-  isUserCreated: false
-}, {
-  id: "halloween-sales",
-  name: "Halloween Sales",
-  date: new Date("2025-10-31"),
-  description: "Spooky season shopping deals",
-  location: "Worldwide",
-  type: "holiday",
-  emoji: "🎃",
-  isUserCreated: false
-}, {
-  id: "white-day",
-  name: "White Day Sales",
-  date: new Date("2025-03-14"),
-  description: "Japanese gift-giving holiday",
-  location: "Japan, South Korea",
-  type: "holiday",
-  emoji: "🤍",
-  isUserCreated: false
-}, {
-  id: "jordan-independence",
-  name: "Jordan Independence Day",
-  date: new Date("2025-05-25"),
-  description: "Jordanian national day sales",
-  location: "Jordan",
-  type: "discount",
-  emoji: "🇯🇴",
-  isUserCreated: false
-}, {
-  id: "morocco-throne-day",
-  name: "Morocco Throne Day",
-  date: new Date("2025-07-30"),
-  description: "Moroccan national celebration",
-  location: "Morocco",
-  type: "discount",
-  emoji: "🇲🇦",
-  isUserCreated: false
-}, {
-  id: "pakistan-independence",
-  name: "Pakistan Independence Day",
-  date: new Date("2025-08-14"),
-  description: "Pakistani national day sales",
-  location: "Pakistan",
-  type: "discount",
-  emoji: "🇵🇰",
-  isUserCreated: false
-}, {
-  id: "nigeria-independence",
-  name: "Nigeria Independence Day",
-  date: new Date("2025-10-01"),
-  description: "Nigerian national celebration",
-  location: "Nigeria",
-  type: "discount",
-  emoji: "🇳🇬",
-  isUserCreated: false
-}, {
-  id: "south-africa-heritage",
-  name: "South Africa Heritage Day",
-  date: new Date("2025-09-24"),
-  description: "South African national day",
-  location: "South Africa",
-  type: "discount",
-  emoji: "🇿🇦",
-  isUserCreated: false
-}];
+  ...generateYearlyEvents(2025, 5),
+];
 export default function Events() {
   const {
     t
