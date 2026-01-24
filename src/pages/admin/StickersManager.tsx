@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon, Loader2 } from "lucide-react";
+import { compressImage, getExtensionFromMimeType, formatFileSize } from "@/lib/imageCompression";
 
 interface Sticker {
   id: string;
@@ -121,15 +122,34 @@ export default function StickersManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const originalSize = file.size;
+      
+      // Compress image using canvas - max 1200x1200, 85% quality
+      const compressedBlob = await compressImage(file, 1200, 1200, 0.85);
+      const compressedSize = compressedBlob.size;
+      
+      // Get appropriate file extension
+      const fileExt = getExtensionFromMimeType(compressedBlob.type);
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `stickers/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('sticker-images')
-        .upload(filePath, file);
+        .upload(filePath, compressedBlob, {
+          contentType: compressedBlob.type,
+        });
 
       if (uploadError) throw uploadError;
 
@@ -138,9 +158,12 @@ export default function StickersManager() {
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      
+      // Show compression stats
+      const savedPercent = Math.round((1 - compressedSize / originalSize) * 100);
       toast({
-        title: "Success",
-        description: "Image uploaded successfully",
+        title: "Image Uploaded & Compressed",
+        description: `${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)} (${savedPercent > 0 ? `-${savedPercent}%` : 'optimized'})`,
       });
     } catch (error) {
       console.error('Error uploading image:', error);
