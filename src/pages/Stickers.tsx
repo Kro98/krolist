@@ -62,10 +62,28 @@ export default function Stickers() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [addedSticker, setAddedSticker] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [imageQuality, setImageQuality] = useState(85);
 
   useEffect(() => {
     fetchStickers();
+    fetchImageQuality();
   }, []);
+
+  const fetchImageQuality = async () => {
+    try {
+      const { data } = await supabase
+        .from('sticker_settings')
+        .select('setting_value')
+        .eq('setting_key', 'image_quality')
+        .single();
+      
+      if (data) {
+        setImageQuality(parseInt(data.setting_value) || 85);
+      }
+    } catch (error) {
+      // Use default quality
+    }
+  };
 
   const fetchStickers = async () => {
     try {
@@ -82,6 +100,24 @@ export default function Stickers() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get optimized image URL with quality adjustment
+  const getOptimizedImageUrl = (url: string | null) => {
+    if (!url) return '/placeholder.svg';
+    // For Supabase storage, add transformation query params
+    if (url.includes('supabase') && url.includes('storage')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}quality=${imageQuality}&width=400`;
+    }
+    return url;
+  };
+
+  // Get watermarked image URL for viewing in new tab
+  const getWatermarkedViewUrl = (url: string | null) => {
+    if (!url) return '/placeholder.svg';
+    const baseUrl = 'https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/process-sticker-image';
+    return `${baseUrl}?url=${encodeURIComponent(url)}&watermark=true`;
   };
 
   const addToCart = useCallback((sticker: StickerItem) => {
@@ -286,9 +322,10 @@ export default function Stickers() {
                           >
                             <div className="relative">
                               <img 
-                                src={item.image_url || '/placeholder.svg'} 
+                                src={getOptimizedImageUrl(item.image_url)} 
                                 alt={item.name}
                                 className="w-16 h-16 object-contain"
+                                draggable={false}
                               />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -458,12 +495,18 @@ export default function Stickers() {
                     {/* Glow effect on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
-                    {/* The sticker image - raw and expressive */}
+                    {/* The sticker image - optimized with protection */}
                     <img 
-                      src={sticker.image_url || '/placeholder.svg'} 
+                      src={getOptimizedImageUrl(sticker.image_url)} 
                       alt={isArabic ? (sticker.name_ar || sticker.name) : sticker.name}
-                      className="w-full h-full object-contain drop-shadow-2xl transition-all duration-300 group-hover:drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+                      className="w-full h-full object-contain drop-shadow-2xl transition-all duration-300 group-hover:drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)] select-none"
                       loading="lazy"
+                      draggable={false}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        // Open watermarked version in new tab on right-click
+                        window.open(getWatermarkedViewUrl(sticker.image_url), '_blank');
+                      }}
                     />
 
                     {/* Floating price tag */}
