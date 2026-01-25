@@ -226,6 +226,7 @@ export default function Stickers() {
                     rotate: [-2, 2, -2],
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex items-center gap-3"
                 >
                   <h1 
                     className="text-4xl sm:text-5xl md:text-6xl tracking-tight"
@@ -243,6 +244,17 @@ export default function Stickers() {
                   >
                     {isArabic ? 'ملصقات' : 'STICKERS'}
                   </h1>
+                  {/* Animated GIF */}
+                  <img 
+                    src="https://img1.picmix.com/output/stamp/normal/4/8/0/3/2813084_3a70d.gif"
+                    alt=""
+                    className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 object-contain"
+                    style={{ 
+                      mixBlendMode: 'screen',
+                      filter: 'drop-shadow(0 0 10px hsla(31, 98%, 51%, 0.5))'
+                    }}
+                    draggable={false}
+                  />
                 </motion.div>
               </motion.div>
 
@@ -616,12 +628,17 @@ export default function Stickers() {
                       )}
                     </AnimatePresence>
 
-                    {/* Locked overlay for free stickers */}
+                    {/* Locked overlay for free stickers - show price over locked */}
                     {isLocked && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl backdrop-blur-sm bg-black/40">
-                        <Lock className="h-8 w-8 text-white/80 mb-2" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl backdrop-blur-sm bg-black/50">
+                        <div className="px-4 py-2 bg-gradient-to-r from-primary via-pink-500 to-purple-500 rounded-2xl shadow-lg mb-2">
+                          <span className="text-lg font-black text-white">
+                            {sticker.price === 0 ? (isArabic ? 'مجاني' : 'FREE') : `${sticker.price} SAR`}
+                          </span>
+                        </div>
+                        <Lock className="h-6 w-6 text-white/80 mb-1" />
                         <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold text-white/90">
-                          {isArabic ? `${FREE_STICKER_THRESHOLD_SAR}+ ريال` : `${FREE_STICKER_THRESHOLD_SAR}+ SAR`}
+                          {isArabic ? `اشترِ بـ ${FREE_STICKER_THRESHOLD_SAR}+ ريال` : `Spend ${FREE_STICKER_THRESHOLD_SAR}+ SAR`}
                         </span>
                       </div>
                     )}
@@ -650,25 +667,37 @@ export default function Stickers() {
               exit={{ y: 100, opacity: 0 }}
               className="fixed bottom-4 left-4 right-4 z-50"
             >
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button
-                  onClick={() => setIsCartOpen(true)}
-                  className="w-full h-16 bg-gradient-to-r from-primary via-pink-500 to-purple-500 hover:from-primary/90 hover:via-pink-500/90 hover:to-purple-500/90 text-white font-black text-lg shadow-2xl shadow-primary/50 rounded-3xl gap-4 border border-white/20"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, -10, 10, 0] }}
-                    transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+              <div className="flex gap-2">
+                {/* Clear button */}
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={() => setCart([])}
+                    className="h-16 px-4 bg-red-500 hover:bg-red-600 text-white font-black shadow-2xl shadow-red-500/40 rounded-3xl border border-white/20"
                   >
-                    <ShoppingCart className="h-6 w-6" />
-                  </motion.div>
-                  <span className="flex items-center gap-3">
-                    <span className="bg-white/20 px-3 py-1 rounded-full">
-                      {getTotalItems()} {isArabic ? 'ملصق' : 'stickers'}
+                    <Trash2 className="h-6 w-6" />
+                  </Button>
+                </motion.div>
+                {/* Cart button */}
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                  <Button
+                    onClick={() => setIsCartOpen(true)}
+                    className="w-full h-16 bg-gradient-to-r from-primary via-pink-500 to-purple-500 hover:from-primary/90 hover:via-pink-500/90 hover:to-purple-500/90 text-white font-black text-lg shadow-2xl shadow-primary/50 rounded-3xl gap-4 border border-white/20"
+                  >
+                    <motion.div
+                      animate={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+                    >
+                      <ShoppingCart className="h-6 w-6" />
+                    </motion.div>
+                    <span className="flex items-center gap-3">
+                      <span className="bg-white/20 px-3 py-1 rounded-full">
+                        {getTotalItems()} {isArabic ? 'ملصق' : 'stickers'}
+                      </span>
+                      <span className="text-2xl font-black">{getTotalPrice()} SAR</span>
                     </span>
-                    <span className="text-2xl font-black">{getTotalPrice()} SAR</span>
-                  </span>
-                </Button>
-              </motion.div>
+                  </Button>
+                </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
