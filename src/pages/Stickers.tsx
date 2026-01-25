@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,14 +10,15 @@ import {
   Minus,
   MessageCircle,
   Trash2,
-  Zap,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
+import GeminiGradientBackground from "@/components/GeminiGradientBackground";
 
 interface StickerItem {
   id: string;
@@ -32,6 +33,7 @@ interface StickerItem {
   stock_status: string;
   is_featured: boolean | null;
   is_new: boolean | null;
+  display_order: number;
 }
 
 interface CartItem extends StickerItem {
@@ -40,18 +42,8 @@ interface CartItem extends StickerItem {
 
 const WHATSAPP_NUMBER = "966501950800";
 const PRICE_CATEGORIES = [7, 14, 30];
-
-// Random rotation for scattered effect
-const getRandomRotation = (index: number) => {
-  const rotations = [-12, 8, -5, 15, -8, 10, -15, 6, -10, 12, 5, -6];
-  return rotations[index % rotations.length];
-};
-
-// Random scale for variety
-const getRandomScale = (index: number) => {
-  const scales = [1, 1.05, 0.95, 1.1, 0.9, 1.08, 0.92, 1.03, 0.97, 1.12];
-  return scales[index % scales.length];
-};
+const FREE_STICKER_THRESHOLD_SAR = 30;
+const FREE_STICKER_THRESHOLD_USD = 8;
 
 export default function Stickers() {
   const { language } = useLanguage();
@@ -62,28 +54,14 @@ export default function Stickers() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [addedSticker, setAddedSticker] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [imageQuality, setImageQuality] = useState(85);
+
+  // Lower default resolution for faster loading
+  const DEFAULT_IMAGE_WIDTH = 280;
+  const DEFAULT_IMAGE_QUALITY = 70;
 
   useEffect(() => {
     fetchStickers();
-    fetchImageQuality();
   }, []);
-
-  const fetchImageQuality = async () => {
-    try {
-      const { data } = await supabase
-        .from('sticker_settings')
-        .select('setting_value')
-        .eq('setting_key', 'image_quality')
-        .single();
-      
-      if (data) {
-        setImageQuality(parseInt(data.setting_value) || 85);
-      }
-    } catch (error) {
-      // Use default quality
-    }
-  };
 
   const fetchStickers = async () => {
     try {
@@ -102,25 +80,48 @@ export default function Stickers() {
     }
   };
 
-  // Get optimized image URL with quality adjustment
-  const getOptimizedImageUrl = (url: string | null) => {
+  // Optimized image URL with lower resolution by default
+  const getOptimizedImageUrl = useCallback((url: string | null) => {
     if (!url) return '/placeholder.svg';
-    // For Supabase storage, add transformation query params
     if (url.includes('supabase') && url.includes('storage')) {
       const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}quality=${imageQuality}&width=400`;
+      return `${url}${separator}quality=${DEFAULT_IMAGE_QUALITY}&width=${DEFAULT_IMAGE_WIDTH}`;
     }
     return url;
-  };
+  }, []);
 
   // Get watermarked image URL for viewing in new tab
-  const getWatermarkedViewUrl = (url: string | null) => {
+  const getWatermarkedViewUrl = useCallback((url: string | null) => {
     if (!url) return '/placeholder.svg';
     const baseUrl = 'https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/process-sticker-image';
     return `${baseUrl}?url=${encodeURIComponent(url)}&watermark=true`;
-  };
+  }, []);
+
+  // Cart total for free sticker eligibility
+  const cartTotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  }, [cart]);
+
+  // Check if user qualifies for free stickers
+  const qualifiesForFreeStickers = cartTotal >= FREE_STICKER_THRESHOLD_SAR;
+
+  // Check if sticker is in cart
+  const isInCart = useCallback((stickerId: string) => {
+    return cart.some(item => item.id === stickerId);
+  }, [cart]);
 
   const addToCart = useCallback((sticker: StickerItem) => {
+    // Check if it's a free sticker and user doesn't qualify
+    if (sticker.price === 0 && !qualifiesForFreeStickers) {
+      toast.error(
+        isArabic 
+          ? `أضف منتجات بقيمة ${FREE_STICKER_THRESHOLD_SAR} ريال للحصول على الملصقات المجانية` 
+          : `Add ${FREE_STICKER_THRESHOLD_SAR} SAR worth of stickers to unlock free ones!`,
+        { duration: 3000 }
+      );
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(item => item.id === sticker.id);
       if (existing) {
@@ -146,13 +147,13 @@ export default function Stickers() {
         border: 'none',
       }
     });
-  }, [isArabic]);
+  }, [isArabic, qualifiesForFreeStickers]);
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = useCallback((id: string) => {
     setCart(prev => prev.filter(item => item.id !== id));
-  };
+  }, []);
 
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = useCallback((id: string, delta: number) => {
     setCart(prev => prev.map(item => {
       if (item.id === id) {
         const newQty = Math.max(1, item.quantity + delta);
@@ -160,17 +161,19 @@ export default function Stickers() {
       }
       return item;
     }));
-  };
+  }, []);
 
-  const getTotalItems = () => cart.reduce((sum, item) => sum + item.quantity, 0);
-  const getTotalPrice = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const getTotalItems = useCallback(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const getTotalPrice = useCallback(() => cartTotal, [cartTotal]);
 
-  const handleWhatsAppOrder = () => {
+  const handleWhatsAppOrder = useCallback(() => {
     if (cart.length === 0) return;
 
-    const orderLines = cart.map(item => {
+    const orderLines = cart.map((item, index) => {
       const name = isArabic ? (item.name_ar || item.name) : item.name;
-      return `• ${name} x${item.quantity} = ${item.price * item.quantity} SAR`;
+      // Use display_order as SKU reference
+      const sku = `S-${String(item.display_order + 1).padStart(3, '0')}`;
+      return `• [${sku}] ${name} x${item.quantity} = ${item.price * item.quantity} SAR`;
     });
 
     const message = isArabic 
@@ -179,11 +182,12 @@ export default function Stickers() {
     
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
-  };
+  }, [cart, isArabic, getTotalPrice]);
 
-  const filteredStickers = selectedCategory 
-    ? stickers.filter(s => s.price === selectedCategory)
-    : stickers;
+  const filteredStickers = useMemo(() => {
+    if (selectedCategory === null) return stickers;
+    return stickers.filter(s => s.price === selectedCategory);
+  }, [stickers, selectedCategory]);
 
   return (
     <>
@@ -196,34 +200,19 @@ export default function Stickers() {
             : 'Discover the exclusive Krolist sticker collection'
           } 
         />
+        {/* Preload graffiti font */}
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" 
+          rel="stylesheet" 
+        />
       </Helmet>
 
-      <div className={`min-h-screen bg-background overflow-x-hidden ${isArabic ? 'rtl' : 'ltr'}`}>
-        {/* Wild Animated Background */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-40 right-10 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-          {/* Floating shapes */}
-          <motion.div 
-            animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-32 right-20 w-8 h-8 bg-primary/20 rounded-lg"
-          />
-          <motion.div 
-            animate={{ y: [0, 20, 0], rotate: [0, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-60 left-16 w-6 h-6 bg-orange-500/20 rounded-full"
-          />
-          <motion.div 
-            animate={{ y: [0, -15, 0], x: [0, 10, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/3 left-1/4 w-4 h-4 bg-pink-500/20 rotate-45"
-          />
-        </div>
+      <div className={`min-h-screen overflow-x-hidden ${isArabic ? 'rtl' : 'ltr'}`}>
+        {/* Gemini-style Abstract Gradient Background */}
+        <GeminiGradientBackground />
 
-        {/* Crazy Header */}
-        <div className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b-2 border-primary/30">
+        {/* Glassmorphic Header */}
+        <div className="sticky top-0 z-40 backdrop-blur-2xl bg-background/20 border-b border-white/10">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <motion.div 
@@ -231,51 +220,50 @@ export default function Stickers() {
                 animate={{ x: 0, opacity: 1 }}
                 className="flex items-center gap-4"
               >
-                {/* Bouncing sticker icon */}
+                {/* Graffiti Style Title */}
                 <motion.div
                   animate={{ 
-                    rotate: [0, -10, 10, -10, 0],
-                    scale: [1, 1.1, 1, 1.1, 1]
+                    rotate: [-2, 2, -2],
                   }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="relative"
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-orange-500 to-pink-500 rounded-2xl blur-lg opacity-50" />
-                  <div className="relative bg-gradient-to-br from-primary via-orange-500 to-pink-500 p-3 rounded-2xl shadow-xl">
-                    <Zap className="h-7 w-7 text-white" />
-                  </div>
-                </motion.div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tighter">
-                    <span className="bg-gradient-to-r from-primary via-orange-500 to-pink-500 bg-clip-text text-transparent">
-                      {isArabic ? 'ملصقات' : 'STICKERS'}
-                    </span>
+                  <h1 
+                    className="text-4xl sm:text-5xl md:text-6xl tracking-tight"
+                    style={{ 
+                      fontFamily: "'Permanent Marker', cursive",
+                      background: 'linear-gradient(135deg, hsl(31, 98%, 51%) 0%, hsl(25, 100%, 60%) 25%, hsl(330, 85%, 55%) 50%, hsl(280, 75%, 55%) 75%, hsl(31, 98%, 51%) 100%)',
+                      backgroundSize: '200% 200%',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      animation: 'gradient-shift 4s ease infinite',
+                      textShadow: '0 0 40px hsla(31, 98%, 51%, 0.3)',
+                      filter: 'drop-shadow(0 4px 8px hsla(0, 0%, 0%, 0.3))',
+                    }}
+                  >
+                    {isArabic ? 'ملصقات' : 'STICKERS'}
                   </h1>
-                  <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-primary" />
-                    {isArabic ? 'اضغط • أضف • اطلب' : 'TAP • ADD • ORDER'}
-                  </p>
-                </div>
+                </motion.div>
               </motion.div>
 
-              {/* Cart Button - Wobbly */}
+              {/* Cart Button */}
               <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
                 <SheetTrigger asChild>
                   <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="relative h-12 w-12 rounded-2xl border-2 border-primary/50 bg-primary/5 hover:bg-primary/20 transition-colors"
+                      className="relative h-14 w-14 rounded-2xl backdrop-blur-xl bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-300"
                     >
-                      <ShoppingCart className="h-6 w-6 text-primary" />
+                      <ShoppingCart className="h-6 w-6 text-white" />
                       {getTotalItems() > 0 && (
                         <motion.span 
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs flex items-center justify-center font-black shadow-lg"
+                          className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-gradient-to-r from-primary to-pink-500 text-white text-sm flex items-center justify-center font-black shadow-lg"
                         >
                           {getTotalItems()}
                         </motion.span>
@@ -283,10 +271,10 @@ export default function Stickers() {
                     </Button>
                   </motion.div>
                 </SheetTrigger>
-                <SheetContent className="w-full sm:max-w-md flex flex-col bg-background/95 backdrop-blur-xl">
-                  <SheetHeader className="border-b-2 border-primary/20 pb-4">
-                    <SheetTitle className="flex items-center gap-2 text-xl font-black">
-                      <div className="p-2 bg-gradient-to-r from-primary to-orange-500 rounded-xl">
+                <SheetContent className="w-full sm:max-w-md flex flex-col backdrop-blur-2xl bg-background/90 border-white/10">
+                  <SheetHeader className="border-b border-white/10 pb-4">
+                    <SheetTitle className="flex items-center gap-2 text-xl font-black text-white">
+                      <div className="p-2 bg-gradient-to-r from-primary to-pink-500 rounded-xl">
                         <ShoppingCart className="h-5 w-5 text-white" />
                       </div>
                       {isArabic ? 'سلة الملصقات' : 'YOUR STASH'}
@@ -298,14 +286,14 @@ export default function Stickers() {
                       <motion.div
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-orange-500/20 flex items-center justify-center mb-4"
+                        className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-pink-500/20 flex items-center justify-center mb-4"
                       >
                         <Star className="h-12 w-12 text-primary/50" />
                       </motion.div>
-                      <p className="text-lg font-bold text-foreground">
+                      <p className="text-lg font-bold text-white">
                         {isArabic ? 'السلة فارغة!' : 'Nothing here yet!'}
                       </p>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-white/60 mt-1">
                         {isArabic ? 'اضغط على الملصقات لإضافتها' : 'Tap those stickers to add \'em'}
                       </p>
                     </div>
@@ -318,7 +306,7 @@ export default function Stickers() {
                             initial={{ x: 50, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: index * 0.05 }}
-                            className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 border-2 border-primary/10"
+                            className="flex items-center gap-3 p-3 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10"
                           >
                             <div className="relative">
                               <img 
@@ -329,29 +317,32 @@ export default function Stickers() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-bold text-sm truncate">
+                              <p className="font-bold text-sm truncate text-white">
                                 {isArabic ? (item.name_ar || item.name) : item.name}
                               </p>
+                              <p className="text-xs text-white/50">
+                                SKU: S-{String(item.display_order + 1).padStart(3, '0')}
+                              </p>
                               <p className="text-primary font-black text-lg">
-                                {item.price} <span className="text-xs">SAR</span>
+                                {item.price === 0 ? (isArabic ? 'مجاني' : 'FREE') : `${item.price} SAR`}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1 bg-muted/50 rounded-full p-1">
+                            <div className="flex items-center gap-1 backdrop-blur-xl bg-white/10 rounded-full p-1">
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 rounded-full hover:bg-primary/20"
+                                className="h-7 w-7 rounded-full hover:bg-white/20 text-white"
                                 onClick={() => updateQuantity(item.id, -1)}
                               >
                                 <Minus className="h-3 w-3" />
                               </Button>
-                              <span className="w-6 text-center font-black text-sm">
+                              <span className="w-6 text-center font-black text-sm text-white">
                                 {item.quantity}
                               </span>
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 rounded-full hover:bg-primary/20"
+                                className="h-7 w-7 rounded-full hover:bg-white/20 text-white"
                                 onClick={() => updateQuantity(item.id, 1)}
                               >
                                 <Plus className="h-3 w-3" />
@@ -360,7 +351,7 @@ export default function Stickers() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10"
+                              className="h-8 w-8 rounded-full text-red-400 hover:bg-red-500/20"
                               onClick={() => removeFromCart(item.id)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -369,10 +360,29 @@ export default function Stickers() {
                         ))}
                       </div>
 
-                      <div className="border-t-2 border-primary/20 pt-4 space-y-4">
+                      <div className="border-t border-white/10 pt-4 space-y-4">
+                        {/* Free sticker progress */}
+                        {!qualifiesForFreeStickers && (
+                          <div className="p-3 rounded-xl backdrop-blur-xl bg-primary/10 border border-primary/20">
+                            <p className="text-xs text-primary font-medium">
+                              {isArabic 
+                                ? `أضف ${FREE_STICKER_THRESHOLD_SAR - cartTotal} ريال للحصول على ملصقات مجانية!`
+                                : `Add ${FREE_STICKER_THRESHOLD_SAR - cartTotal} SAR more to unlock FREE stickers!`
+                              }
+                            </p>
+                            <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                              <motion.div 
+                                className="h-full bg-gradient-to-r from-primary to-pink-500"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(100, (cartTotal / FREE_STICKER_THRESHOLD_SAR) * 100)}%` }}
+                                transition={{ duration: 0.5 }}
+                              />
+                            </div>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold">{isArabic ? 'المجموع' : 'TOTAL'}</span>
-                          <span className="text-3xl font-black bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+                          <span className="text-lg font-bold text-white">{isArabic ? 'المجموع' : 'TOTAL'}</span>
+                          <span className="text-3xl font-black bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
                             {getTotalPrice()} <span className="text-base">SAR</span>
                           </span>
                         </div>
@@ -394,42 +404,56 @@ export default function Stickers() {
           </div>
         </div>
 
-        {/* Wild Price Filter Pills */}
-        <div className="sticky top-[73px] z-30 bg-background/60 backdrop-blur-lg py-4">
+        {/* Frosted Category Buttons */}
+        <div className="sticky top-[73px] z-30 backdrop-blur-2xl bg-background/10 py-4">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-3 justify-center flex-wrap">
               <motion.button
-                whileHover={{ scale: 1.1, rotate: -3 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(null)}
-                className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 border-2 ${
+                className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 backdrop-blur-xl ${
                   selectedCategory === null
-                    ? 'bg-gradient-to-r from-primary via-orange-500 to-pink-500 text-white border-transparent shadow-xl shadow-primary/30'
-                    : 'bg-background border-primary/20 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                    ? 'bg-gradient-to-r from-primary via-pink-500 to-purple-500 text-white shadow-xl shadow-primary/30'
+                    : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
                 }`}
               >
                 {isArabic ? '🔥 الكل' : '🔥 ALL'}
               </motion.button>
-              {PRICE_CATEGORIES.map((price, i) => (
+              {PRICE_CATEGORIES.map((price) => (
                 <motion.button
                   key={price}
-                  whileHover={{ scale: 1.1, rotate: i % 2 === 0 ? 3 : -3 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedCategory(price)}
-                  className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 border-2 ${
+                  className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 backdrop-blur-xl ${
                     selectedCategory === price
-                      ? 'bg-gradient-to-r from-primary via-orange-500 to-pink-500 text-white border-transparent shadow-xl shadow-primary/30'
-                      : 'bg-background border-primary/20 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                      ? 'bg-gradient-to-r from-primary via-pink-500 to-purple-500 text-white shadow-xl shadow-primary/30'
+                      : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
                   }`}
                 >
                   {price} {isArabic ? 'ر.س' : 'SAR'}
                 </motion.button>
               ))}
+              {/* Free stickers category */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory(0)}
+                className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 backdrop-blur-xl flex items-center gap-2 ${
+                  selectedCategory === 0
+                    ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-xl shadow-green-500/30'
+                    : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                {!qualifiesForFreeStickers && <Lock className="h-3 w-3" />}
+                {isArabic ? '🎁 مجاني' : '🎁 FREE'}
+              </motion.button>
             </div>
           </div>
         </div>
 
-        {/* Scattered Stickers Grid */}
+        {/* Stickers Grid */}
         <div className="container mx-auto px-4 py-8 pb-32 relative">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -439,7 +463,7 @@ export default function Stickers() {
               >
                 <Loader2 className="h-12 w-12 text-primary" />
               </motion.div>
-              <p className="text-muted-foreground font-bold animate-pulse">
+              <p className="text-white/60 font-bold animate-pulse">
                 {isArabic ? 'جاري التحميل...' : 'Loading the good stuff...'}
               </p>
             </div>
@@ -450,103 +474,133 @@ export default function Stickers() {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="inline-block mb-4"
               >
-                <Star className="h-20 w-20 text-muted-foreground/30" />
+                <Star className="h-20 w-20 text-white/20" />
               </motion.div>
-              <p className="text-xl font-bold text-muted-foreground">
+              <p className="text-xl font-bold text-white/60">
                 {isArabic ? 'لا توجد ملصقات هنا!' : 'No stickers here!'}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
               {filteredStickers.map((sticker, index) => {
                 const isAdded = addedSticker === sticker.id;
                 const isOutOfStock = sticker.stock_status === 'out_of_stock';
-                const rotation = getRandomRotation(index);
-                const scale = getRandomScale(index);
+                const isFreeSticker = sticker.price === 0;
+                const isLocked = isFreeSticker && !qualifiesForFreeStickers;
+                const inCart = isInCart(sticker.id);
                 
                 return (
                   <motion.button
                     key={sticker.id}
-                    initial={{ opacity: 0, y: 50, rotate: rotation * 2 }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: 0, 
-                      rotate: rotation,
-                      scale: scale
-                    }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ 
-                      delay: index * 0.05,
+                      delay: index * 0.03,
                       type: "spring",
-                      stiffness: 200
+                      stiffness: 300,
+                      damping: 25
                     }}
                     whileHover={{ 
-                      scale: 1.2, 
-                      rotate: 0,
+                      scale: 1.08, 
                       zIndex: 50,
                       transition: { duration: 0.2 }
                     }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => !isOutOfStock && addToCart(sticker)}
-                    disabled={isOutOfStock}
-                    className={`relative aspect-square focus:outline-none group ${
-                      isOutOfStock ? 'opacity-40 cursor-not-allowed grayscale' : 'cursor-pointer'
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => !isOutOfStock && !isLocked && addToCart(sticker)}
+                    disabled={isOutOfStock || isLocked}
+                    className={`relative aspect-square focus:outline-none group rounded-2xl ${
+                      isOutOfStock || isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                   >
+                    {/* Selected/In-cart highlight ring */}
+                    {inCart && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="absolute inset-0 rounded-2xl ring-4 ring-primary ring-offset-2 ring-offset-transparent"
+                        style={{
+                          boxShadow: '0 0 30px hsla(31, 98%, 51%, 0.4), inset 0 0 20px hsla(31, 98%, 51%, 0.1)'
+                        }}
+                      />
+                    )}
+
                     {/* Glow effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
-                    {/* The sticker image - optimized with protection */}
+                    {/* Glassmorphic card background */}
+                    <div className={`absolute inset-0 rounded-2xl backdrop-blur-sm transition-all duration-300 ${
+                      inCart 
+                        ? 'bg-primary/20 border-2 border-primary/50' 
+                        : 'bg-white/5 border border-white/10 group-hover:bg-white/10'
+                    }`} />
+                    
+                    {/* The sticker image - optimized */}
                     <img 
                       src={getOptimizedImageUrl(sticker.image_url)} 
                       alt={isArabic ? (sticker.name_ar || sticker.name) : sticker.name}
-                      className="w-full h-full object-contain drop-shadow-2xl transition-all duration-300 group-hover:drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)] select-none"
+                      className="relative w-full h-full object-contain p-2 drop-shadow-2xl transition-all duration-300 group-hover:drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] select-none"
                       loading="lazy"
                       draggable={false}
                       onContextMenu={(e) => {
                         e.preventDefault();
-                        // Open watermarked version in new tab on right-click
                         window.open(getWatermarkedViewUrl(sticker.image_url), '_blank');
                       }}
                     />
 
-                    {/* Floating price tag */}
-                    <motion.div 
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2"
-                      animate={{ y: [0, -3, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-primary via-orange-500 to-pink-500 text-white text-xs font-black shadow-lg shadow-primary/40 whitespace-nowrap">
-                        {sticker.price} SAR
-                      </div>
-                    </motion.div>
+                    {/* SKU Badge */}
+                    <div className="absolute top-2 left-2 px-2 py-1 rounded-lg backdrop-blur-xl bg-black/40 text-white/70 text-[10px] font-mono">
+                      S-{String(sticker.display_order + 1).padStart(3, '0')}
+                    </div>
 
-                    {/* New badge - spinning star */}
-                    {sticker.is_new && (
+                    {/* Price tag */}
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                      <div className={`px-4 py-1.5 rounded-full text-white text-xs font-black shadow-lg whitespace-nowrap ${
+                        sticker.price === 0 
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-green-500/40'
+                          : 'bg-gradient-to-r from-primary via-pink-500 to-purple-500 shadow-primary/40'
+                      }`}>
+                        {sticker.price === 0 ? (isArabic ? 'مجاني' : 'FREE') : `${sticker.price} SAR`}
+                      </div>
+                    </div>
+
+                    {/* In cart badge */}
+                    {inCart && (
                       <motion.div 
-                        className="absolute -top-1 -right-1"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute top-2 right-2 p-1.5 bg-primary rounded-full shadow-lg"
+                      >
+                        <Check className="h-3 w-3 text-white" />
+                      </motion.div>
+                    )}
+
+                    {/* New badge */}
+                    {sticker.is_new && !inCart && (
+                      <motion.div 
+                        className="absolute top-2 right-2"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                       >
                         <div className="p-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg">
-                          <Sparkles className="h-4 w-4 text-white" />
+                          <Sparkles className="h-3 w-3 text-white" />
                         </div>
                       </motion.div>
                     )}
 
                     {/* Featured badge */}
-                    {sticker.is_featured && !sticker.is_new && (
+                    {sticker.is_featured && !sticker.is_new && !inCart && (
                       <motion.div 
-                        className="absolute -top-1 -right-1"
+                        className="absolute top-2 right-2"
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
-                        <div className="p-1.5 bg-gradient-to-r from-primary to-purple-500 rounded-full shadow-lg">
-                          <Star className="h-4 w-4 text-white" />
+                        <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg">
+                          <Star className="h-3 w-3 text-white" />
                         </div>
                       </motion.div>
                     )}
 
-                    {/* Added feedback - exploding effect */}
+                    {/* Added feedback */}
                     <AnimatePresence>
                       {isAdded && (
                         <motion.div
@@ -555,17 +609,27 @@ export default function Stickers() {
                           exit={{ scale: 2, opacity: 0 }}
                           className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
-                          <div className="bg-gradient-to-r from-primary to-orange-500 rounded-full p-4 shadow-2xl">
-                            <Check className="h-10 w-10 text-white" />
+                          <div className="bg-gradient-to-r from-primary to-pink-500 rounded-full p-4 shadow-2xl">
+                            <Check className="h-8 w-8 text-white" />
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
 
+                    {/* Locked overlay for free stickers */}
+                    {isLocked && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl backdrop-blur-sm bg-black/40">
+                        <Lock className="h-8 w-8 text-white/80 mb-2" />
+                        <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold text-white/90">
+                          {isArabic ? `${FREE_STICKER_THRESHOLD_SAR}+ ريال` : `${FREE_STICKER_THRESHOLD_SAR}+ SAR`}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Out of stock */}
                     {isOutOfStock && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="px-3 py-1 bg-background/90 rounded-full text-sm font-black text-muted-foreground border-2 border-muted">
+                      <div className="absolute inset-0 flex items-center justify-center rounded-2xl backdrop-blur-sm bg-black/40">
+                        <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-black text-white/90">
                           {isArabic ? 'نفذ' : 'SOLD OUT'}
                         </span>
                       </div>
@@ -577,7 +641,7 @@ export default function Stickers() {
           )}
         </div>
 
-        {/* Epic Floating Cart Bar */}
+        {/* Floating Cart Bar */}
         <AnimatePresence>
           {cart.length > 0 && !isCartOpen && (
             <motion.div 
@@ -586,13 +650,10 @@ export default function Stickers() {
               exit={{ y: 100, opacity: 0 }}
               className="fixed bottom-4 left-4 right-4 z-50"
             >
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   onClick={() => setIsCartOpen(true)}
-                  className="w-full h-16 bg-gradient-to-r from-primary via-orange-500 to-pink-500 hover:from-primary/90 hover:via-orange-500/90 hover:to-pink-500/90 text-white font-black text-lg shadow-2xl shadow-primary/50 rounded-3xl gap-4 border-2 border-white/20"
+                  className="w-full h-16 bg-gradient-to-r from-primary via-pink-500 to-purple-500 hover:from-primary/90 hover:via-pink-500/90 hover:to-purple-500/90 text-white font-black text-lg shadow-2xl shadow-primary/50 rounded-3xl gap-4 border border-white/20"
                 >
                   <motion.div
                     animate={{ rotate: [0, -10, 10, 0] }}
@@ -612,6 +673,14 @@ export default function Stickers() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* CSS for gradient animation */}
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
     </>
   );
 }
