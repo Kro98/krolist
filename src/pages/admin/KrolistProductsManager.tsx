@@ -968,167 +968,285 @@ export default function KrolistProductsManager() {
         </div>}
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingProduct ? t('admin.editProduct') : t('admin.addProduct')}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label>{t('product.title')}</Label>
-              <Input value={formData.title} onChange={e => setFormData({
-              ...formData,
-              title: e.target.value
-            })} />
-            </div>
-
-            <div>
-              <Label>{t('product.description')}</Label>
-              <Textarea value={formData.description} onChange={e => setFormData({
-              ...formData,
-              description: e.target.value
-            })} />
-            </div>
-
-            <div>
-              <Label>{t('product.imageUrl')}</Label>
-              <Input value={formData.image_url} onChange={e => setFormData({
-              ...formData,
-              image_url: e.target.value
-            })} placeholder="https://..." />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>{t('product.currentPrice')}</Label>
-                <Input type="number" step="0.01" value={formData.current_price} onChange={e => setFormData({
-                ...formData,
-                current_price: e.target.value
-              })} />
-              </div>
-              <div>
-                <Label>{t('product.originalPrice')}</Label>
-                <Input type="number" step="0.01" value={formData.original_price} onChange={e => setFormData({
-                ...formData,
-                original_price: e.target.value
-              })} />
-              </div>
-              <div>
-                <Label>{t('product.currency')}</Label>
-                <Select value={formData.currency} onValueChange={value => setFormData({
-                ...formData,
-                currency: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCIES.map(curr => <SelectItem key={curr} value={curr}>{curr}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>{t('product.store')}</Label>
-                <Select value={formData.store} onValueChange={value => setFormData({
-                ...formData,
-                store: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getEnabledStores().map(store => <SelectItem key={store.id} value={store.name}>{store.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>{t('product.category')}</Label>
-                <Select value={formData.category} onValueChange={value => setFormData({
-                ...formData,
-                category: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {formData.category === 'Custom' && <div>
-                <Label>{t('product.customCategory')}</Label>
-                <Input value={formData.customCategory} onChange={e => setFormData({
-              ...formData,
-              customCategory: e.target.value
-            })} maxLength={16} />
-              </div>}
-
-            <div>
-              <Label>{t('product.productUrl')}</Label>
-              <Input value={formData.product_url} onChange={e => setFormData({
-              ...formData,
-              product_url: e.target.value
-            })} placeholder="https://..." />
-            </div>
-
-            <div>
-              <Label>Collection Title</Label>
-              <Select value={formData.collection_title} onValueChange={value => setFormData({
-              ...formData,
-              collection_title: value
-            })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select collection..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {collections.filter(c => c !== 'all').map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>YouTube Review URL (Optional)</Label>
-              <Input value={formData.youtube_url} onChange={e => setFormData({
-              ...formData,
-              youtube_url: e.target.value
-            })} placeholder="https://youtube.com/..." />
-            </div>
-
-            {editingProduct && <div>
-                <Label>Copy to Collection (Optional)</Label>
-                <Select value={formData.copyToCollection || 'none'} onValueChange={value => setFormData({
-              ...formData,
-              copyToCollection: value
-            })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select collection to copy to..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Don't copy</SelectItem>
-                    {collections.filter(c => c !== 'all' && c !== formData.collection_title).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground mt-1">
-                  This will create a duplicate of this product in the selected collection
-                </p>
-              </div>}
-
-            
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
+          {/* Header with gradient accent */}
+          <div className="relative px-6 pt-6 pb-4 border-b border-muted/30">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5" />
+            <DialogHeader className="relative">
+              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {editingProduct ? t('admin.editProduct') : t('admin.addProduct')}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {editingProduct ? 'Update product details and pricing' : 'Add a new product to your collection'}
+              </p>
+            </DialogHeader>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
-              {t('cancel')}
-            </Button>
-            <Button onClick={handleSave}>{t('save')}</Button>
-          </DialogFooter>
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="grid md:grid-cols-[280px_1fr] gap-6">
+              {/* Left Column - Image Preview */}
+              <div className="space-y-4">
+                {/* Image Preview Card */}
+                <div className="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-muted/50 to-muted border border-muted/50 group">
+                  {formData.image_url ? (
+                    <>
+                      <img 
+                        src={formData.image_url} 
+                        alt="Product preview" 
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/50">
+                      <svg className="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm">No image</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Image URL Input */}
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t('product.imageUrl')}</Label>
+                  <Input 
+                    value={formData.image_url} 
+                    onChange={e => setFormData({ ...formData, image_url: e.target.value })} 
+                    placeholder="https://..."
+                    className="bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                  />
+                </div>
+
+                {/* Price Display Card */}
+                {(formData.current_price || formData.original_price) && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                    <p className="text-xs uppercase tracking-wider text-primary/70 font-medium mb-2">Price Preview</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-primary">
+                        {formData.current_price || '0'} {formData.currency}
+                      </span>
+                      {formData.original_price && parseFloat(formData.original_price) > parseFloat(formData.current_price || '0') && (
+                        <span className="text-sm text-muted-foreground line-through">
+                          {formData.original_price} {formData.currency}
+                        </span>
+                      )}
+                    </div>
+                    {formData.original_price && parseFloat(formData.original_price) > parseFloat(formData.current_price || '0') && (
+                      <Badge className="mt-2 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        {Math.round((1 - parseFloat(formData.current_price || '0') / parseFloat(formData.original_price)) * 100)}% OFF
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - Form Fields */}
+              <div className="space-y-5">
+                {/* Product Info Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">1</span>
+                    Product Information
+                  </h3>
+                  
+                  <div className="space-y-3 pl-8">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.title')}</Label>
+                      <Input 
+                        value={formData.title} 
+                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                        placeholder="Enter product title..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.description')}</Label>
+                      <Textarea 
+                        value={formData.description} 
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors min-h-[80px] resize-none"
+                        placeholder="Brief description..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.productUrl')}</Label>
+                      <Input 
+                        value={formData.product_url} 
+                        onChange={e => setFormData({ ...formData, product_url: e.target.value })} 
+                        placeholder="https://..."
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pricing Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">2</span>
+                    Pricing
+                  </h3>
+                  
+                  <div className="grid grid-cols-3 gap-3 pl-8">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.currentPrice')}</Label>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        value={formData.current_price} 
+                        onChange={e => setFormData({ ...formData, current_price: e.target.value })}
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.originalPrice')}</Label>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        value={formData.original_price} 
+                        onChange={e => setFormData({ ...formData, original_price: e.target.value })}
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.currency')}</Label>
+                      <Select value={formData.currency} onValueChange={value => setFormData({ ...formData, currency: value })}>
+                        <SelectTrigger className="mt-1 bg-muted/30 border-muted/50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map(curr => <SelectItem key={curr} value={curr}>{curr}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Classification Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">3</span>
+                    Classification
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 gap-3 pl-8">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.store')}</Label>
+                      <Select value={formData.store} onValueChange={value => setFormData({ ...formData, store: value })}>
+                        <SelectTrigger className="mt-1 bg-muted/30 border-muted/50">
+                          <SelectValue placeholder="Select store" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getEnabledStores().map(store => <SelectItem key={store.id} value={store.name}>{store.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('product.category')}</Label>
+                      <Select value={formData.category} onValueChange={value => setFormData({ ...formData, category: value })}>
+                        <SelectTrigger className="mt-1 bg-muted/30 border-muted/50">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {formData.category === 'Custom' && (
+                    <div className="pl-8">
+                      <Label className="text-xs text-muted-foreground">{t('product.customCategory')}</Label>
+                      <Input 
+                        value={formData.customCategory} 
+                        onChange={e => setFormData({ ...formData, customCategory: e.target.value })} 
+                        maxLength={16}
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                        placeholder="Enter custom category..."
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3 pl-8">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Collection</Label>
+                      <Select value={formData.collection_title} onValueChange={value => setFormData({ ...formData, collection_title: value })}>
+                        <SelectTrigger className="mt-1 bg-muted/30 border-muted/50">
+                          <SelectValue placeholder="Select collection..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {collections.filter(c => c !== 'all').map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">YouTube URL</Label>
+                      <Input 
+                        value={formData.youtube_url} 
+                        onChange={e => setFormData({ ...formData, youtube_url: e.target.value })} 
+                        placeholder="https://youtube.com/..."
+                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Copy to Collection - Only for editing */}
+                {editingProduct && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">4</span>
+                      Duplicate
+                    </h3>
+                    
+                    <div className="pl-8">
+                      <Label className="text-xs text-muted-foreground">Copy to Collection</Label>
+                      <Select value={formData.copyToCollection || 'none'} onValueChange={value => setFormData({ ...formData, copyToCollection: value })}>
+                        <SelectTrigger className="mt-1 bg-muted/30 border-muted/50">
+                          <SelectValue placeholder="Select collection to copy to..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Don't copy</SelectItem>
+                          {collections.filter(c => c !== 'all' && c !== formData.collection_title).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Creates a duplicate in the selected collection
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with gradient accent */}
+          <div className="relative px-6 py-4 border-t border-muted/30 bg-muted/20">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+            <DialogFooter className="relative gap-2 sm:gap-2">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowDialog(false)}
+                className="hover:bg-muted/50"
+              >
+                {t('cancel')}
+              </Button>
+              <Button 
+                onClick={handleSave}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+              >
+                {editingProduct ? 'Update Product' : 'Add Product'}
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
