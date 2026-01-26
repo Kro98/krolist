@@ -68,6 +68,12 @@ export default function KrolistProductsManager() {
   const [manualPrices, setManualPrices] = useState<Record<string, string>>({});
   const [manualStatuses, setManualStatuses] = useState<Record<string, string>>({});
   const [clickedTitles, setClickedTitles] = useState<Set<string>>(new Set());
+  
+  // Manual price update progress state
+  const [isSavingPrices, setIsSavingPrices] = useState(false);
+  const [savePricesProgress, setSavePricesProgress] = useState(0);
+  const [savePricesTotal, setSavePricesTotal] = useState(0);
+  const [savePricesCompleted, setSavePricesCompleted] = useState(0);
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [newListTitle, setNewListTitle] = useState('');
   const [selectedProductsToCopy, setSelectedProductsToCopy] = useState<string[]>([]);
@@ -602,102 +608,140 @@ export default function KrolistProductsManager() {
     event.target.value = '';
   };
   const handleSaveManualPrices = async () => {
-    try {
-      // Group products by title
-      const productsByTitle = products.reduce((acc, product) => {
-        if (!acc[product.title]) {
-          acc[product.title] = [];
-        }
-        acc[product.title].push(product);
-        return acc;
-      }, {} as Record<string, KrolistProduct[]>);
-      let updateCount = 0;
-      const errors: string[] = [];
-      const priceHistoryRecords: { product_id: string; price: number; original_price: number; currency: string }[] = [];
+    // Group products by title
+    const productsByTitle = products.reduce((acc, product) => {
+      if (!acc[product.title]) {
+        acc[product.title] = [];
+      }
+      acc[product.title].push(product);
+      return acc;
+    }, {} as Record<string, KrolistProduct[]>);
 
-      // Update all products with the same title with the same price and status
-      for (const [title, priceStr] of Object.entries(manualPrices)) {
-        const price = parseFloat(priceStr);
-        if (isNaN(price) || price <= 0) continue;
-        const productsToUpdate = productsByTitle[title] || [];
-        const status = manualStatuses[title] || 'available';
-        for (const product of productsToUpdate) {
-          try {
-            // Only record history if price actually changed
-            const priceChanged = product.current_price !== price;
-            
-            const {
-              error
-            } = await supabase.from('krolist_products').update({
-              current_price: price,
-              availability_status: status,
-              last_checked_at: new Date().toISOString()
-            }).eq('id', product.id);
-            if (error) {
-              errors.push(`Failed to update ${title}: ${error.message}`);
-            } else {
-              updateCount++;
-              // Add price history record if price changed
-              if (priceChanged) {
-                priceHistoryRecords.push({
-                  product_id: product.id,
-                  price: price,
-                  original_price: product.original_price,
-                  currency: product.currency || 'SAR'
-                });
-              }
-            }
-          } catch (err: any) {
-            errors.push(`Error updating ${title}: ${err.message}`);
-          }
-        }
+    // Build list of all updates to perform
+    const updates: { product: KrolistProduct; price: number; status: string }[] = [];
+    for (const [title, priceStr] of Object.entries(manualPrices)) {
+      const price = parseFloat(priceStr);
+      if (isNaN(price) || price <= 0) continue;
+      const productsToUpdate = productsByTitle[title] || [];
+      const status = manualStatuses[title] || 'available';
+      for (const product of productsToUpdate) {
+        updates.push({ product, price, status });
       }
-      
-      // Insert all price history records in batch
-      if (priceHistoryRecords.length > 0) {
-        const { error: historyError } = await supabase
-          .from('krolist_price_history')
-          .insert(priceHistoryRecords);
-        
-        if (historyError) {
-          console.error('Error inserting price history:', historyError);
-        }
-      }
-      
-      // Create global notification for price update
-      if (updateCount > 0) {
-        const timestamp = new Date().toISOString();
-        await supabase.from('global_notifications').insert({
-          type: 'price_update',
-          title: 'Prices Updated',
-          title_ar: 'تم تحديث الأسعار',
-          message: `Product prices have been updated on ${new Date().toLocaleDateString()}`,
-          message_ar: `تم تحديث أسعار المنتجات في ${new Date().toLocaleDateString('ar')}`,
-          data: { updatedCount: updateCount, timestamp }
-        });
-      }
-      
-      if (errors.length > 0) {
-        toast({
-          title: 'Partial success',
-          description: `Updated ${updateCount} products. ${errors.length} errors occurred.`,
-          variant: 'destructive'
-        });
-      } else {
-        toast({
-          title: 'Success',
-          description: `Updated ${updateCount} products successfully`
-        });
-      }
-      setShowManualPriceDialog(false);
-      fetchProducts();
-    } catch (error: any) {
+    }
+
+    if (updates.length === 0) {
       toast({
-        title: 'Error',
-        description: error.message,
+        title: 'No updates',
+        description: 'No valid price changes to save',
         variant: 'destructive'
       });
+      return;
     }
+
+    // Close dialog immediately and show progress
+    setShowManualPriceDialog(false);
+    setIsSavingPrices(true);
+    setSavePricesProgress(0);
+    setSavePricesTotal(updates.length);
+    setSavePricesCompleted(0);
+
+    // Process in background
+    const BATCH_SIZE = 10; // Process 10 at a time for speed
+    let updateCount = 0;
+    const errors: string[] = [];
+    const priceHistoryRecords: { product_id: string; price: number; original_price: number; currency: string }[] = [];
+
+    const processBatch = async (batch: typeof updates) => {
+      const results = await Promise.allSettled(
+        batch.map(async ({ product, price, status }) => {
+          const priceChanged = product.current_price !== price;
+          const { error } = await supabase.from('krolist_products').update({
+            current_price: price,
+            availability_status: status,
+            last_checked_at: new Date().toISOString()
+          }).eq('id', product.id);
+          
+          if (error) throw new Error(`Failed to update ${product.title}: ${error.message}`);
+          
+          return { product, price, priceChanged };
+        })
+      );
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          updateCount++;
+          if (result.value.priceChanged) {
+            priceHistoryRecords.push({
+              product_id: result.value.product.id,
+              price: result.value.price,
+              original_price: result.value.product.original_price,
+              currency: result.value.product.currency || 'SAR'
+            });
+          }
+        } else {
+          errors.push(result.reason?.message || 'Unknown error');
+        }
+      }
+    };
+
+    // Process all batches
+    for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+      const batch = updates.slice(i, i + BATCH_SIZE);
+      await processBatch(batch);
+      
+      const completed = Math.min(i + BATCH_SIZE, updates.length);
+      setSavePricesCompleted(completed);
+      setSavePricesProgress(Math.round((completed / updates.length) * 100));
+    }
+
+    // Insert all price history records in batch
+    if (priceHistoryRecords.length > 0) {
+      const { error: historyError } = await supabase
+        .from('krolist_price_history')
+        .insert(priceHistoryRecords);
+      
+      if (historyError) {
+        console.error('Error inserting price history:', historyError);
+      }
+    }
+    
+    // Create global notification for price update
+    if (updateCount > 0) {
+      const timestamp = new Date().toISOString();
+      await supabase.from('global_notifications').insert({
+        type: 'price_update',
+        title: 'Prices Updated',
+        title_ar: 'تم تحديث الأسعار',
+        message: `Product prices have been updated on ${new Date().toLocaleDateString()}`,
+        message_ar: `تم تحديث أسعار المنتجات في ${new Date().toLocaleDateString('ar')}`,
+        data: { updatedCount: updateCount, timestamp }
+      });
+    }
+    
+    // Show completion status
+    setSavePricesProgress(100);
+    
+    if (errors.length > 0) {
+      toast({
+        title: 'Partial success',
+        description: `Updated ${updateCount} products. ${errors.length} errors occurred.`,
+        variant: 'destructive'
+      });
+    } else {
+      toast({
+        title: 'Success',
+        description: `Updated ${updateCount} products successfully`
+      });
+    }
+    
+    // Refresh products and hide progress after delay
+    fetchProducts();
+    setTimeout(() => {
+      setIsSavingPrices(false);
+      setSavePricesProgress(0);
+      setManualPrices({});
+      setManualStatuses({});
+    }, 2000);
   };
   if (isLoading) {
     return (
@@ -1476,6 +1520,20 @@ export default function KrolistProductsManager() {
           </div>
           <Progress value={refreshProgress} className="h-2" />
           <p className="text-xs text-muted-foreground mt-2">{refreshProgress}% complete</p>
+        </div>}
+
+      {/* Progress indicator for manual price update */}
+      {isSavingPrices && <div className="fixed bottom-4 right-4 z-50 bg-background border rounded-lg shadow-lg p-4 w-80">
+          <div className="flex items-center gap-3 mb-2">
+            <RefreshCw className={`h-4 w-4 text-primary ${savePricesProgress < 100 ? 'animate-spin' : ''}`} />
+            <span className="font-medium">
+              {savePricesProgress < 100 ? 'Updating prices...' : 'Complete!'}
+            </span>
+          </div>
+          <Progress value={savePricesProgress} className="h-2" />
+          <p className="text-xs text-muted-foreground mt-2">
+            {savePricesCompleted} / {savePricesTotal} products ({savePricesProgress}%)
+          </p>
         </div>}
     </div>;
 }
