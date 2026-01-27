@@ -225,7 +225,7 @@ export default function Stickers() {
                 <motion.img 
                   src={stickersTitleImage}
                   alt={isArabic ? 'ملصقات' : 'Stickers'}
-                  className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain cursor-pointer"
+                  className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain cursor-pointer"
                   draggable={false}
                   initial={{ 
                     filter: 'drop-shadow(0 4px 12px hsla(0, 0%, 0%, 0.4))'
