@@ -968,7 +968,7 @@ export default function KrolistProductsManager() {
         </div>}
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
           {/* Header with gradient accent */}
           <div className="relative px-6 pt-6 pb-4 border-b border-muted/30">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5" />
@@ -982,7 +982,7 @@ export default function KrolistProductsManager() {
             </DialogHeader>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 min-h-0 overflow-y-auto p-6">
             <div className="grid md:grid-cols-[280px_1fr] gap-6">
               {/* Left Column - Image Preview */}
               <div className="space-y-4">
