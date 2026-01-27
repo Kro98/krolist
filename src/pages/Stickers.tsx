@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
 import GeminiGradientBackground from "@/components/GeminiGradientBackground";
+import stickersTitleImage from "@/assets/stickers-title.png";
 
 interface StickerItem {
   id: string;
@@ -220,42 +221,20 @@ export default function Stickers() {
                 animate={{ x: 0, opacity: 1 }}
                 className="flex items-center gap-4"
               >
-                {/* Graffiti Style Title */}
-                <motion.div
+                {/* Stickers Title Image */}
+                <motion.img 
+                  src={stickersTitleImage}
+                  alt={isArabic ? 'ملصقات' : 'Stickers'}
+                  className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 4px 12px hsla(0, 0%, 0%, 0.4))'
+                  }}
+                  draggable={false}
                   animate={{ 
-                    rotate: [-2, 2, -2],
+                    rotate: [-1, 1, -1],
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="flex items-center gap-3"
-                >
-                  <h1 
-                    className="text-4xl sm:text-5xl md:text-6xl tracking-tight"
-                    style={{ 
-                      fontFamily: "'Permanent Marker', cursive",
-                      background: 'linear-gradient(135deg, hsl(31, 98%, 51%) 0%, hsl(25, 100%, 60%) 25%, hsl(330, 85%, 55%) 50%, hsl(280, 75%, 55%) 75%, hsl(31, 98%, 51%) 100%)',
-                      backgroundSize: '200% 200%',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      animation: 'gradient-shift 4s ease infinite',
-                      textShadow: '0 0 40px hsla(31, 98%, 51%, 0.3)',
-                      filter: 'drop-shadow(0 4px 8px hsla(0, 0%, 0%, 0.3))',
-                    }}
-                  >
-                    {isArabic ? 'ملصقات' : 'STICKERS'}
-                  </h1>
-                  {/* Animated GIF */}
-                  <img 
-                    src="https://img1.picmix.com/output/stamp/normal/4/8/0/3/2813084_3a70d.gif"
-                    alt=""
-                    className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 object-contain"
-                    style={{ 
-                      mixBlendMode: 'screen',
-                      filter: 'drop-shadow(0 0 10px hsla(31, 98%, 51%, 0.5))'
-                    }}
-                    draggable={false}
-                  />
-                </motion.div>
+                />
               </motion.div>
 
               {/* Cart Button */}
