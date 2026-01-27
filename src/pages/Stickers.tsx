@@ -225,15 +225,25 @@ export default function Stickers() {
                 <motion.img 
                   src={stickersTitleImage}
                   alt={isArabic ? 'ملصقات' : 'Stickers'}
-                  className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
-                  style={{
+                  className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain cursor-pointer"
+                  draggable={false}
+                  initial={{ 
                     filter: 'drop-shadow(0 4px 12px hsla(0, 0%, 0%, 0.4))'
                   }}
-                  draggable={false}
                   animate={{ 
                     rotate: [-1, 1, -1],
+                    filter: 'drop-shadow(0 4px 12px hsla(0, 0%, 0%, 0.4))'
                   }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  whileHover={{ 
+                    scale: 1.08,
+                    rotate: 0,
+                    filter: 'drop-shadow(0 0 25px hsla(31, 98%, 51%, 0.6)) drop-shadow(0 0 50px hsla(330, 85%, 55%, 0.4))'
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ 
+                    duration: 0.3,
+                    rotate: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                  }}
                 />
               </motion.div>
 
