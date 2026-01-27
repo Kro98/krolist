@@ -15,6 +15,47 @@ const TikTokIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// Marquee component for mobile quick links
+const QuickLinksMarquee = ({ links, isArabic }: { links: { to: string; label: string }[]; isArabic: boolean }) => {
+  // Duplicate links for seamless loop
+  const duplicatedLinks = [...links, ...links];
+  
+  return (
+    <div className="relative overflow-hidden py-2">
+      <div 
+        className="flex whitespace-nowrap"
+        style={{
+          animation: isArabic 
+            ? 'marquee-rtl 20s linear infinite' 
+            : 'marquee-ltr 20s linear infinite'
+        }}
+      >
+        {duplicatedLinks.map((link, index) => (
+          <span key={`${link.to}-${index}`} className="inline-flex items-center">
+            <Link
+              to={link.to}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2"
+            >
+              {link.label}
+            </Link>
+            <span className="text-muted-foreground/50 mx-1">•</span>
+          </span>
+        ))}
+      </div>
+      <style>{`
+        @keyframes marquee-ltr {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-rtl {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 export function Footer() {
   const { t, language } = useLanguage();
   const isArabic = language === 'ar';
@@ -42,18 +83,37 @@ export function Footer() {
   return (
     <footer className="w-full border-t border-border bg-background/95 backdrop-blur-sm mt-auto">
       <div className="container mx-auto px-4 py-8">
+        {/* Mobile Quick Links Marquee */}
+        <div className="md:hidden mb-6">
+          <h3 className="font-semibold text-foreground text-center mb-2">
+            {isArabic ? 'روابط سريعة' : 'Quick Links'}
+          </h3>
+          <QuickLinksMarquee links={quickLinks} isArabic={isArabic} />
+        </div>
+
         {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Brand section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/favicon.png" 
-                alt="Krolist" 
-                className="w-8 h-8"
-              />
-              <span className="font-bold text-xl text-foreground">Krolist</span>
+            {/* Logo with Made with love - side by side */}
+            <div className="flex items-center justify-between md:justify-start gap-4">
+              <div className="flex items-center gap-2">
+                <img 
+                  src="/favicon.png" 
+                  alt="Krolist" 
+                  className="w-8 h-8"
+                />
+                <span className="font-bold text-xl text-foreground">Krolist</span>
+              </div>
+              
+              {/* Made with love - visible on mobile next to logo */}
+              <div className="flex md:hidden items-center gap-1 text-xs text-muted-foreground">
+                <span>{isArabic ? 'صنع بـ' : 'Made with'}</span>
+                <Heart className="w-3 h-3 text-destructive fill-destructive" />
+                <span className="text-lg">🇸🇦</span>
+              </div>
             </div>
+            
             <p className="text-sm text-muted-foreground max-w-xs">
               {isArabic 
                 ? 'قائمة منسقة من الأشياء الرائعة والصفقات وأفكار الهدايا لك ولأحبائك.'
@@ -77,8 +137,8 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick links */}
-          <div className="space-y-4">
+          {/* Quick links - hidden on mobile, shown on desktop */}
+          <div className="hidden md:block space-y-4">
             <h3 className="font-semibold text-foreground">
               {isArabic ? 'روابط سريعة' : 'Quick Links'}
             </h3>
@@ -101,15 +161,21 @@ export function Footer() {
             <h3 className="font-semibold text-foreground">
               {isArabic ? 'القانونية' : 'Legal'}
             </h3>
-            <nav className="flex flex-col gap-2">
-              {legalLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {link.label}
-                </Link>
+            {/* Mobile: horizontal layout, Desktop: vertical */}
+            <nav className="flex flex-row flex-wrap gap-x-4 gap-y-2 md:flex-col md:gap-2">
+              {legalLinks.map((link, index) => (
+                <span key={link.to} className="inline-flex items-center">
+                  <Link
+                    to={link.to}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                  {/* Separator dot for mobile only */}
+                  {index < legalLinks.length - 1 && (
+                    <span className="md:hidden text-muted-foreground/50 ml-4">•</span>
+                  )}
+                </span>
               ))}
             </nav>
           </div>
@@ -123,7 +189,8 @@ export function Footer() {
             © {new Date().getFullYear()} Krolist. {isArabic ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
           </p>
           
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          {/* Made with love - hidden on mobile, shown on desktop */}
+          <div className="hidden md:flex items-center gap-1 text-xs text-muted-foreground">
             <span>{isArabic ? 'صنع بـ' : 'Made with'}</span>
             <Heart className="w-3 h-3 text-destructive fill-destructive" />
             <span>{isArabic ? 'في السعودية' : 'in Saudi Arabia'}</span>
