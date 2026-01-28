@@ -42,6 +42,34 @@ function toHex(buffer: ArrayBuffer): string {
     .join('');
 }
 
+// Extract ASIN from various Amazon URL formats
+function extractASIN(url: string): string | null {
+  // Match patterns like /dp/ASIN, /gp/product/ASIN, /gp/aw/d/ASIN
+  const patterns = [
+    /\/dp\/([A-Z0-9]{10})/i,
+    /\/gp\/product\/([A-Z0-9]{10})/i,
+    /\/gp\/aw\/d\/([A-Z0-9]{10})/i,
+    /\/product\/([A-Z0-9]{10})/i,
+    /\?.*asin=([A-Z0-9]{10})/i,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// Check if URL is an Amazon product URL
+function isAmazonProductUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    return /amazon\.(com|sa|ae|co\.uk|de|fr|es|it|ca|com\.au|in|jp|com\.mx|com\.br|nl|sg|eg)/i.test(parsedUrl.hostname);
+  } catch {
+    return false;
+  }
+}
+
 async function signAmazonRequest(
   method: string,
   host: string,
@@ -50,7 +78,8 @@ async function signAmazonRequest(
   payload: string,
   accessKey: string,
   secretKey: string,
-  region: string = 'eu-west-1'
+  region: string = 'eu-west-1',
+  apiTarget: string = 'com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems'
 ): Promise<{ authorization: string; amzDate: string; contentHash: string }> {
   const now = new Date();
   const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
@@ -58,7 +87,7 @@ async function signAmazonRequest(
   
   // Create canonical request
   const payloadHash = toHex(await sha256(payload));
-  const canonicalHeaders = `host:${host}\nx-amz-date:${amzDate}\nx-amz-target:com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems\n`;
+  const canonicalHeaders = `host:${host}\nx-amz-date:${amzDate}\nx-amz-target:${apiTarget}\n`;
   const signedHeaders = 'host;x-amz-date;x-amz-target';
   const canonicalRequest = `${method}\n${path}\n${queryString}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
   
@@ -143,6 +172,118 @@ async function logSearch(supabase: any, userId: string, query: string) {
   }
 }
 
+// Get single item by ASIN using GetItems API
+async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<ScrapedProduct | null> {
+  console.log(`Fetching Amazon product by ASIN: ${asin}`);
+  
+  const { accessKey, secretKey, affiliateTag } = AFFILIATE_CONFIG.amazon;
+  
+  if (!accessKey || !secretKey) {
+    console.error('Amazon API credentials not configured');
+    return null;
+  }
+  
+  try {
+    const host = 'webservices.amazon.sa';
+    const path = '/paapi5/getitems';
+    const region = 'eu-west-1';
+    const apiTarget = 'com.amazon.paapi5.v1.ProductAdvertisingAPIv1.GetItems';
+    
+    const payload = JSON.stringify({
+      ItemIds: [asin],
+      PartnerTag: affiliateTag,
+      PartnerType: 'Associates',
+      Marketplace: 'www.amazon.sa',
+      Resources: [
+        'Images.Primary.Large',
+        'ItemInfo.Title',
+        'ItemInfo.Features',
+        'Offers.Listings.Price',
+        'Offers.Listings.SavingBasis',
+        'Offers.Listings.DeliveryInfo.IsPrimeEligible'
+      ]
+    });
+    
+    const { authorization, amzDate } = await signAmazonRequest(
+      'POST',
+      host,
+      path,
+      '',
+      payload,
+      accessKey,
+      secretKey,
+      region,
+      apiTarget
+    );
+    
+    const response = await fetch(`https://${host}${path}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authorization,
+        'Content-Type': 'application/json; charset=utf-8',
+        'Host': host,
+        'X-Amz-Date': amzDate,
+        'X-Amz-Target': apiTarget,
+        'Content-Encoding': 'amz-1.0'
+      },
+      body: payload
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Amazon PA-API GetItems failed: ${response.status}`, errorText);
+      
+      // Handle rate limiting with exponential backoff
+      if (response.status === 429 && retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000;
+        console.log(`Rate limited. Retrying in ${delay}ms (attempt ${retryCount + 1}/3)`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return getAmazonItemByASIN(asin, retryCount + 1);
+      }
+      
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log('Amazon PA-API GetItems response:', JSON.stringify(data, null, 2));
+    
+    if (data.ItemsResult?.Items?.[0]) {
+      const item = data.ItemsResult.Items[0];
+      const rawTitle = String(item.ItemInfo?.Title?.DisplayValue || '').substring(0, 500).trim();
+      const rawImage = String(item.Images?.Primary?.Large?.URL || '').substring(0, 1000);
+      
+      const priceInfo = item.Offers?.Listings?.[0]?.Price;
+      const savingsBasis = item.Offers?.Listings?.[0]?.SavingBasis;
+      
+      const price = parseFloat(priceInfo?.Amount) || 0;
+      const originalPrice = savingsBasis?.Amount ? parseFloat(savingsBasis.Amount) : undefined;
+      
+      const affiliateUrl = `https://www.amazon.sa/dp/${asin}?tag=${affiliateTag}`;
+      const isPrime = item.Offers?.Listings?.[0]?.DeliveryInfo?.IsPrimeEligible;
+      
+      return {
+        id: asin,
+        title: rawTitle,
+        description: rawTitle,
+        image: rawImage,
+        sellers: [{
+          store: 'Amazon',
+          price,
+          originalPrice,
+          badge: isPrime ? 'Prime' : undefined,
+          productUrl: affiliateUrl,
+        }],
+        bestPrice: price,
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error calling Amazon PA-API GetItems:', error);
+    return null;
+  }
+}
+
 async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedProduct[]> {
   console.log(`Searching Amazon PA-API for query: ${query}`);
   
@@ -169,6 +310,7 @@ async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedPr
     const host = 'webservices.amazon.sa';
     const path = '/paapi5/searchitems';
     const region = 'eu-west-1';
+    const apiTarget = 'com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems';
     
     const payload = JSON.stringify({
       Keywords: query,
@@ -184,7 +326,7 @@ async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedPr
       ItemCount: 5 // Reduced to conserve API quota
     });
     
-    const { authorization, amzDate, contentHash } = await signAmazonRequest(
+    const { authorization, amzDate } = await signAmazonRequest(
       'POST',
       host,
       path,
@@ -192,7 +334,8 @@ async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedPr
       payload,
       accessKey,
       secretKey,
-      region
+      region,
+      apiTarget
     );
     
     const response = await fetch(`https://${host}${path}`, {
@@ -202,7 +345,7 @@ async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedPr
         'Content-Type': 'application/json; charset=utf-8',
         'Host': host,
         'X-Amz-Date': amzDate,
-        'X-Amz-Target': 'com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems',
+        'X-Amz-Target': apiTarget,
         'Content-Encoding': 'amz-1.0'
       },
       body: payload
@@ -354,6 +497,60 @@ serve(async (req) => {
     }
 
     const body = await req.json();
+    
+    // Check if this is a direct ASIN lookup request (for auto-fill)
+    const isAutoFillRequest = body.autoFill === true && body.url;
+    
+    if (isAutoFillRequest) {
+      // Direct ASIN lookup for auto-fill feature
+      const url = body.url;
+      
+      if (!isAmazonProductUrl(url)) {
+        return new Response(
+          JSON.stringify({ error: 'Not a valid Amazon product URL' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const asin = extractASIN(url);
+      if (!asin) {
+        return new Response(
+          JSON.stringify({ error: 'Could not extract ASIN from URL' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      console.log(`Auto-fill request for ASIN: ${asin}`);
+      
+      const product = await getAmazonItemByASIN(asin);
+      
+      if (!product) {
+        return new Response(
+          JSON.stringify({ error: 'Could not fetch product details from Amazon' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Return product data formatted for auto-fill
+      const seller = product.sellers[0];
+      return new Response(
+        JSON.stringify({
+          success: true,
+          product: {
+            title: product.title,
+            image: product.image,
+            price: seller.price,
+            originalPrice: seller.originalPrice,
+            productUrl: seller.productUrl,
+            store: 'Amazon',
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
+    }
     
     // Validate request - accept either query or url
     const requestSchema = z.union([

@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical, Download, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical, Download, Upload, Loader2, Sparkles } from 'lucide-react';
 import { STORES, getEnabledStores } from '@/config/stores';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -68,6 +68,9 @@ export default function KrolistProductsManager() {
   const [manualPrices, setManualPrices] = useState<Record<string, string>>({});
   const [manualStatuses, setManualStatuses] = useState<Record<string, string>>({});
   const [clickedTitles, setClickedTitles] = useState<Set<string>>(new Set());
+  
+  // Auto-fill state
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
   
   // Manual price update progress state
   const [isSavingPrices, setIsSavingPrices] = useState(false);
@@ -362,6 +365,87 @@ export default function KrolistProductsManager() {
     }
     setShowDialog(true);
   };
+
+  // Helper to check if URL is an Amazon product URL
+  const isAmazonUrl = (url: string): boolean => {
+    try {
+      const parsedUrl = new URL(url);
+      return /amazon\.(com|sa|ae|co\.uk|de|fr|es|it|ca|com\.au|in|jp|com\.mx|com\.br|nl|sg|eg)/i.test(parsedUrl.hostname);
+    } catch {
+      return false;
+    }
+  };
+
+  // Handle auto-fill from Amazon URL
+  const handleAutoFill = async () => {
+    if (!formData.product_url || !isAmazonUrl(formData.product_url)) {
+      toast({
+        title: 'Invalid URL',
+        description: 'Please enter a valid Amazon product URL',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsAutoFilling(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-products', {
+        body: {
+          autoFill: true,
+          url: formData.product_url
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.product) {
+        const product = data.product;
+        
+        // Truncate title to 200 characters with "..." if needed
+        let processedTitle = product.title || '';
+        if (processedTitle.length > 200) {
+          processedTitle = processedTitle.substring(0, 199) + '...';
+        }
+        
+        // Price mapping logic:
+        // If both price and originalPrice exist → use price as current, originalPrice as original
+        // If only price exists (no discount) → set current empty, use price as original
+        const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+        const currentPrice = hasDiscount ? product.price.toString() : '';
+        const originalPrice = hasDiscount ? product.originalPrice.toString() : product.price.toString();
+        
+        setFormData(prev => ({
+          ...prev,
+          title: processedTitle,
+          image_url: product.image || '',
+          current_price: currentPrice,
+          original_price: originalPrice,
+          store: 'Amazon',
+          product_url: product.productUrl || prev.product_url,
+          currency: 'SAR', // Amazon SA uses SAR
+          original_currency: 'SAR'
+        }));
+
+        toast({
+          title: 'Auto-fill successful',
+          description: 'Product details have been loaded from Amazon'
+        });
+      } else {
+        throw new Error(data?.error || 'Failed to fetch product details');
+      }
+    } catch (error: any) {
+      console.error('Auto-fill error:', error);
+      toast({
+        title: 'Auto-fill failed',
+        description: error.message || 'Could not fetch product details from Amazon',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsAutoFilling(false);
+    }
+  };
+
   const handleSave = async () => {
     const finalCategory = formData.category === 'Custom' ? formData.customCategory : formData.category;
     const productData = {
@@ -1076,12 +1160,41 @@ export default function KrolistProductsManager() {
 
                     <div>
                       <Label className="text-xs text-muted-foreground">{t('product.productUrl')}</Label>
-                      <Input 
-                        value={formData.product_url} 
-                        onChange={e => setFormData({ ...formData, product_url: e.target.value })} 
-                        placeholder="https://..."
-                        className="mt-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
-                      />
+                      <div className="flex gap-2 mt-1">
+                        <Input 
+                          value={formData.product_url} 
+                          onChange={e => setFormData({ ...formData, product_url: e.target.value })} 
+                          placeholder="https://..."
+                          className="flex-1 bg-muted/30 border-muted/50 focus:border-primary/50 transition-colors"
+                        />
+                        {isAmazonUrl(formData.product_url) && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAutoFill}
+                            disabled={isAutoFilling}
+                            className="shrink-0 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                          >
+                            {isAutoFilling ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                Loading...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4 mr-1" />
+                                Auto-Fill
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      {isAmazonUrl(formData.product_url) && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Amazon URL detected - Click Auto-Fill to load product details
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
