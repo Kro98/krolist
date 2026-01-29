@@ -72,6 +72,9 @@ export default function KrolistProductsManager() {
   // Auto-fill state
   const [isAutoFilling, setIsAutoFilling] = useState(false);
   
+  // Auto-update prices state
+  const [isAutoUpdating, setIsAutoUpdating] = useState(false);
+  
   // Manual price update progress state
   const [isSavingPrices, setIsSavingPrices] = useState(false);
   const [savePricesProgress, setSavePricesProgress] = useState(0);
@@ -228,6 +231,39 @@ export default function KrolistProductsManager() {
     } finally {
       setIsRefreshing(false);
       setTimeout(() => setShowRefreshProgress(false), 2000);
+    }
+  };
+
+  // Handle auto-update prices using Amazon PA-API + Firecrawl fallback
+  const handleAutoUpdatePrices = async () => {
+    setIsAutoUpdating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-update-prices', {
+        body: {}
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Auto-update started',
+        description: data.message || `Processing ${data.products_count} products in the background`
+      });
+      
+      // Close the dialog and refresh after a delay
+      setShowManualPriceDialog(false);
+      setTimeout(() => {
+        fetchProducts();
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error('Auto-update error:', error);
+      toast({
+        title: 'Auto-update failed',
+        description: error.message || 'Could not start auto-update',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsAutoUpdating(false);
     }
   };
   const handleCollectionAction = (action: 'rename' | 'migrate' | 'delete', collectionTitle: string) => {
@@ -1499,9 +1535,22 @@ export default function KrolistProductsManager() {
             <div className="flex items-start justify-between">
               <div>
                 <DialogTitle>Manual Price Update</DialogTitle>
-                
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={handleAutoUpdatePrices}
+                  disabled={isAutoUpdating}
+                  className="bg-gradient-to-r from-primary to-primary/80"
+                >
+                  {isAutoUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">Auto Update</span>
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleExportPrices}>
                   <Download className="h-4 w-4" />
                   <span className="hidden md:inline md:ml-2">Export</span>
