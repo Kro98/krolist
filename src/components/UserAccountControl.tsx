@@ -93,32 +93,59 @@ export function UserAccountControl() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="relative">
+          <Button variant="outline" size="icon" className="relative rounded-full">
             <User className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-popover">
-          <div className="px-2 py-2 space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-foreground truncate font-medium">
-                {username || user.email}
-              </span>
+        <DropdownMenuContent 
+          align="end" 
+          className="w-64 backdrop-blur-xl bg-background/80 border border-border/50 shadow-xl rounded-xl overflow-hidden"
+        >
+          {/* User Profile Section */}
+          <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {username || user.email?.split('@')[0]}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
             </div>
-            <Badge 
-              variant={isAdmin ? "default" : "secondary"} 
-              className={`text-xs flex items-center gap-1 w-fit ${isAdmin ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
-              onClick={isAdmin ? handleAdminClick : undefined}
-            >
-              {isAdmin && <Shield className="h-3 w-3" />}
-              {isAdmin ? t('user.admin') : t('user.user')}
-            </Badge>
+            
+            {/* Role Badge */}
+            <div className="mt-3">
+              <Badge 
+                variant={isAdmin ? "default" : "secondary"} 
+                className={`text-xs flex items-center gap-1.5 w-fit px-2.5 py-1 ${
+                  isAdmin 
+                    ? 'cursor-pointer hover:opacity-90 transition-all bg-primary/90 hover:bg-primary shadow-sm' 
+                    : 'bg-muted/50'
+                }`}
+                onClick={isAdmin ? handleAdminClick : undefined}
+              >
+                {isAdmin && <Shield className="h-3 w-3" />}
+                {isAdmin ? t('user.admin') : t('user.user')}
+              </Badge>
+            </div>
           </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-            <LogOut className="mr-2 h-4 w-4" />
-            {t('auth.signOut') || 'Log Out'}
-          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator className="bg-border/30" />
+          
+          {/* Sign Out Action */}
+          <div className="p-2">
+            <DropdownMenuItem 
+              onClick={handleSignOut} 
+              className="cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg px-3 py-2.5 transition-colors"
+            >
+              <LogOut className="mr-2.5 h-4 w-4" />
+              <span className="font-medium">{t('auth.signOut') || 'Log Out'}</span>
+            </DropdownMenuItem>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
 
