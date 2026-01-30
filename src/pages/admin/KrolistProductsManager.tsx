@@ -74,6 +74,17 @@ export default function KrolistProductsManager() {
   
   // Auto-update prices state
   const [isAutoUpdating, setIsAutoUpdating] = useState(false);
+  const [autoUpdateProgress, setAutoUpdateProgress] = useState<{
+    current: number;
+    total: number;
+    currentProduct: string;
+    status: 'idle' | 'processing' | 'completed' | 'error';
+    updated: number;
+    failed: number;
+    skipped: number;
+    message?: string;
+  } | null>(null);
+  const [autoUpdateSessionId, setAutoUpdateSessionId] = useState<string | null>(null);
   
   // Manual price update progress state
   const [isSavingPrices, setIsSavingPrices] = useState(false);
@@ -237,23 +248,68 @@ export default function KrolistProductsManager() {
   // Handle auto-update prices using Amazon PA-API + Firecrawl fallback
   const handleAutoUpdatePrices = async () => {
     setIsAutoUpdating(true);
+    const sessionId = crypto.randomUUID();
+    setAutoUpdateSessionId(sessionId);
+    setAutoUpdateProgress({
+      current: 0,
+      total: 0,
+      currentProduct: 'Starting...',
+      status: 'processing',
+      updated: 0,
+      failed: 0,
+      skipped: 0
+    });
+    
+    // Subscribe to realtime progress updates
+    const channel = supabase.channel(`auto-update-${sessionId}`)
+      .on('broadcast', { event: 'progress' }, ({ payload }) => {
+        console.log('[Auto-Update] Progress update:', payload);
+        setAutoUpdateProgress({
+          current: payload.current,
+          total: payload.total,
+          currentProduct: payload.currentProduct,
+          status: payload.status,
+          updated: payload.updated || 0,
+          failed: payload.failed || 0,
+          skipped: payload.skipped || 0,
+          message: payload.message
+        });
+        
+        // If completed, show toast and cleanup
+        if (payload.status === 'completed') {
+          toast({
+            title: 'Auto-update completed',
+            description: payload.message || `Updated: ${payload.updated}, Failed: ${payload.failed}, Skipped: ${payload.skipped}`
+          });
+          setIsAutoUpdating(false);
+          fetchProducts();
+          
+          // Cleanup after a delay
+          setTimeout(() => {
+            channel.unsubscribe();
+            setAutoUpdateProgress(null);
+            setAutoUpdateSessionId(null);
+          }, 5000);
+        }
+      })
+      .subscribe();
+    
     try {
       const { data, error } = await supabase.functions.invoke('auto-update-prices', {
-        body: {}
+        body: { session_id: sessionId }
       });
       
       if (error) throw error;
       
+      setAutoUpdateProgress(prev => prev ? {
+        ...prev,
+        total: data.products_count
+      } : null);
+      
       toast({
         title: 'Auto-update started',
-        description: data.message || `Processing ${data.products_count} products in the background`
+        description: data.message || `Processing ${data.products_count} products`
       });
-      
-      // Close the dialog and refresh after a delay
-      setShowManualPriceDialog(false);
-      setTimeout(() => {
-        fetchProducts();
-      }, 3000);
       
     } catch (error: any) {
       console.error('Auto-update error:', error);
@@ -262,8 +318,9 @@ export default function KrolistProductsManager() {
         description: error.message || 'Could not start auto-update',
         variant: 'destructive'
       });
-    } finally {
       setIsAutoUpdating(false);
+      setAutoUpdateProgress(null);
+      channel.unsubscribe();
     }
   };
   const handleCollectionAction = (action: 'rename' | 'migrate' | 'delete', collectionTitle: string) => {
@@ -1529,7 +1586,18 @@ export default function KrolistProductsManager() {
       </Dialog>
 
       {/* Manual Price Update Dialog */}
-      <Dialog open={showManualPriceDialog} onOpenChange={setShowManualPriceDialog}>
+      <Dialog open={showManualPriceDialog} onOpenChange={(open) => {
+        // Don't allow closing while auto-update is running
+        if (!open && isAutoUpdating) {
+          toast({
+            title: 'Auto-update in progress',
+            description: 'Please wait for the auto-update to complete',
+            variant: 'destructive'
+          });
+          return;
+        }
+        setShowManualPriceDialog(open);
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <div className="flex items-start justify-between">
@@ -1551,20 +1619,76 @@ export default function KrolistProductsManager() {
                   )}
                   <span className="ml-2">Auto Update</span>
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleExportPrices}>
+                <Button variant="outline" size="sm" onClick={handleExportPrices} disabled={isAutoUpdating}>
                   <Download className="h-4 w-4" />
                   <span className="hidden md:inline md:ml-2">Export</span>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <label className="cursor-pointer">
+                  <label className={`cursor-pointer ${isAutoUpdating ? 'pointer-events-none opacity-50' : ''}`}>
                     <Upload className="h-4 w-4" />
                     <span className="hidden md:inline md:ml-2">Import</span>
-                    <input type="file" accept=".csv" className="hidden" onChange={handleImportPrices} />
+                    <input type="file" accept=".csv" className="hidden" onChange={handleImportPrices} disabled={isAutoUpdating} />
                   </label>
                 </Button>
               </div>
             </div>
           </DialogHeader>
+          
+          {/* Auto-update Progress Banner */}
+          {autoUpdateProgress && (
+            <div className="mx-0 mb-4 p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {autoUpdateProgress.status === 'processing' ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : autoUpdateProgress.status === 'completed' ? (
+                    <Sparkles className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-destructive" />
+                  )}
+                  <span className="font-medium text-sm">
+                    {autoUpdateProgress.status === 'completed' 
+                      ? 'Auto-update completed!' 
+                      : autoUpdateProgress.status === 'error'
+                      ? 'Auto-update failed'
+                      : 'Auto-updating prices...'}
+                  </span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {autoUpdateProgress.current} / {autoUpdateProgress.total}
+                </span>
+              </div>
+              
+              <Progress 
+                value={autoUpdateProgress.total > 0 ? (autoUpdateProgress.current / autoUpdateProgress.total) * 100 : 0} 
+                className="h-2 mb-2"
+              />
+              
+              {autoUpdateProgress.currentProduct && autoUpdateProgress.status === 'processing' && (
+                <p className="text-xs text-muted-foreground truncate mb-2">
+                  Processing: {autoUpdateProgress.currentProduct}
+                </p>
+              )}
+              
+              <div className="flex gap-4 text-xs">
+                <span className="text-green-600 dark:text-green-400">
+                  ✓ Updated: {autoUpdateProgress.updated}
+                </span>
+                <span className="text-red-600 dark:text-red-400">
+                  ✗ Failed: {autoUpdateProgress.failed}
+                </span>
+                <span className="text-muted-foreground">
+                  ○ Skipped: {autoUpdateProgress.skipped}
+                </span>
+              </div>
+              
+              {autoUpdateProgress.message && autoUpdateProgress.status === 'completed' && (
+                <p className="text-xs text-primary mt-2 font-medium">
+                  {autoUpdateProgress.message}
+                </p>
+              )}
+            </div>
+          )}
           
           <div className="flex-1 overflow-y-auto">
             {/* Mobile View - Cards */}
