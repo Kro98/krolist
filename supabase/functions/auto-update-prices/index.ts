@@ -251,6 +251,33 @@ interface UpdateResult {
   error?: string;
 }
 
+// Helper to broadcast progress via Supabase Realtime
+async function broadcastProgress(
+  supabase: any,
+  sessionId: string,
+  data: {
+    current: number;
+    total: number;
+    currentProduct: string;
+    status: 'processing' | 'completed' | 'error';
+    updated?: number;
+    failed?: number;
+    skipped?: number;
+    message?: string;
+  }
+) {
+  try {
+    const channel = supabase.channel(`auto-update-${sessionId}`);
+    await channel.send({
+      type: 'broadcast',
+      event: 'progress',
+      payload: data
+    });
+  } catch (error) {
+    console.error('[Auto-Update] Failed to broadcast progress:', error);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -292,9 +319,13 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { collection_title } = await req.json().catch(() => ({}));
+    const { collection_title, session_id } = await req.json().catch(() => ({}));
+    
+    // Generate session ID if not provided
+    const sessionId = session_id || crypto.randomUUID();
 
     console.log('[Auto-Update] Starting price auto-update for:', collection_title || 'ALL collections');
+    console.log('[Auto-Update] Session ID:', sessionId);
 
     // Build query for krolist products
     let query = supabase
@@ -321,21 +352,24 @@ serve(async (req) => {
           updated: 0, 
           failed: 0,
           skipped: 0,
-          message: 'No products found to update'
+          message: 'No products found to update',
+          session_id: sessionId
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Background task for price updates
+    // Background task for price updates with progress broadcasting
     const backgroundTask = async () => {
       const results: UpdateResult[] = [];
       let updated = 0;
       let failed = 0;
       let skipped = 0;
       const priceHistoryRecords: any[] = [];
+      const total = products.length;
 
-      for (const product of products as Product[]) {
+      for (let i = 0; i < (products as Product[]).length; i++) {
+        const product = (products as Product[])[i];
         const result: UpdateResult = {
           id: product.id,
           title: product.title,
@@ -344,6 +378,17 @@ serve(async (req) => {
           source: 'firecrawl',
           success: false
         };
+
+        // Broadcast current progress
+        await broadcastProgress(supabase, sessionId, {
+          current: i + 1,
+          total,
+          currentProduct: product.title.substring(0, 50) + (product.title.length > 50 ? '...' : ''),
+          status: 'processing',
+          updated,
+          failed,
+          skipped
+        });
 
         try {
           let newPrice: number | null = null;
@@ -450,19 +495,32 @@ serve(async (req) => {
         });
       }
 
+      // Broadcast completion
+      await broadcastProgress(supabase, sessionId, {
+        current: total,
+        total,
+        currentProduct: '',
+        status: 'completed',
+        updated,
+        failed,
+        skipped,
+        message: `Completed! Updated: ${updated}, Failed: ${failed}, Skipped: ${skipped}`
+      });
+
       console.log(`[Auto-Update] Complete. Updated: ${updated}, Failed: ${failed}, Skipped: ${skipped}`);
     };
 
     // Start background task
     EdgeRuntime.waitUntil(backgroundTask());
 
-    // Return immediate response
+    // Return immediate response with session ID
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Auto-update started for ${products.length} products. Check logs for progress.`,
+        message: `Auto-update started for ${products.length} products.`,
         products_count: products.length,
-        collection: collection_title || 'ALL'
+        collection: collection_title || 'ALL',
+        session_id: sessionId
       }),
       { 
         status: 200,
