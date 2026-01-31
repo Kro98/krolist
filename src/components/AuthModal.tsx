@@ -142,44 +142,46 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           border border-border/40 
           shadow-2xl rounded-2xl 
           overflow-hidden
+          data-[state=open]:animate-scale-in
+          data-[state=closed]:animate-scale-out
         `}
       >
         {/* Gradient Background Decoration */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none animate-fade-in" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-[fade-in_0.5s_ease-out_0.1s_both]" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none animate-[fade-in_0.5s_ease-out_0.2s_both]" />
         
         <div className={`relative z-10 ${isMobile ? '' : 'p-8'}`}>
           {/* Logo Section */}
-          <div className={`text-center ${isMobile ? 'mb-5' : 'mb-8'}`}>
-            <div className="relative inline-block">
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 opacity-50" />
+          <div className={`text-center ${isMobile ? 'mb-5' : 'mb-8'} animate-[fade-in_0.4s_ease-out_0.1s_both]`}>
+            <div className="relative inline-block animate-[scale-in_0.3s_ease-out_0.15s_both]">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 opacity-50 animate-pulse" />
               <img 
                 src={krolistLogo} 
                 alt="Krolist" 
                 className={`${isMobile ? 'h-14' : 'h-16'} mx-auto relative z-10 drop-shadow-lg`} 
               />
             </div>
-            <h2 className={`${isMobile ? 'text-xl mt-3' : 'text-2xl mt-4'} font-bold text-warning`}>
+            <h2 className={`${isMobile ? 'text-xl mt-3' : 'text-2xl mt-4'} font-bold text-warning animate-[fade-in_0.4s_ease-out_0.2s_both]`}>
               {t('auth.welcomeTo')}
             </h2>
-            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground/80 mt-1`}>
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground/80 mt-1 animate-[fade-in_0.4s_ease-out_0.25s_both]`}>
               {t('auth.collectionOfCool')}
             </p>
           </div>
 
           {/* Auth Form */}
-          <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); clearErrors(); }} className="w-full">
+          <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); clearErrors(); }} className="w-full animate-[fade-in_0.4s_ease-out_0.3s_both]">
             <TabsList className={`grid w-full grid-cols-2 ${isMobile ? 'mb-4 h-10' : 'mb-6 h-11'} bg-muted/30 backdrop-blur-sm rounded-xl p-1`}>
               <TabsTrigger 
                 value="signin" 
-                className={`${isMobile ? 'text-sm' : 'text-sm'} rounded-lg data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all`}
+                className={`${isMobile ? 'text-sm' : 'text-sm'} rounded-lg data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all duration-200`}
               >
                 {t('auth.signIn')}
               </TabsTrigger>
               <TabsTrigger 
                 value="signup" 
-                className={`${isMobile ? 'text-sm' : 'text-sm'} rounded-lg data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all`}
+                className={`${isMobile ? 'text-sm' : 'text-sm'} rounded-lg data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all duration-200`}
               >
                 {t('auth.signUp')}
               </TabsTrigger>
