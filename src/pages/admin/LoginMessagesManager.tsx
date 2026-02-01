@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, MessageSquare } from 'lucide-react';
 import { FunnyLoadingText } from '@/components/FunnyLoadingText';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SeasonalThemeManager from '@/components/admin/SeasonalThemeManager';
 
 interface LoginMessage {
   id: string;
@@ -166,85 +168,111 @@ export default function LoginMessagesManager() {
     );
   }
 
+  const { language } = useLanguage();
+  const isArabic = language === 'ar';
+
   return (
     <div className="space-y-6">
-      <div>
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold">Login Messages</h2>
-          <p className="text-muted-foreground">Manage messages shown to users when they log in</p>
-        </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Message
-        </Button>
-      </div>
+      <Tabs defaultValue="messages" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="messages">
+            {isArabic ? 'رسائل تسجيل الدخول' : 'Login Messages'}
+          </TabsTrigger>
+          <TabsTrigger value="themes">
+            {isArabic ? 'ثيمات المناسبات' : 'Seasonal Themes'}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-4">
-        {messages.map((message) => (
-          <Card key={message.id}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                {message.title_en}
-                {message.title_ar && <span className="text-muted-foreground text-sm">({message.title_ar})</span>}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">{message.description_en}</p>
-                {message.description_ar && (
-                  <p className="text-sm text-muted-foreground" dir="rtl">{message.description_ar}</p>
-                )}
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-muted-foreground">
-                    Display times: {message.display_times}
-                  </span>
-                  <Switch
-                    checked={message.is_active}
-                    onCheckedChange={async (checked) => {
-                      await supabase
-                        .from('login_messages')
-                        .update({ is_active: checked })
-                        .eq('id', message.id);
-                      fetchMessages();
-                    }}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleOpenDialog(message)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => handleDelete(message.id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
+        <TabsContent value="messages">
+          <div className="space-y-6">
+            <div>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold">{isArabic ? 'رسائل تسجيل الدخول' : 'Login Messages'}</h2>
+                <p className="text-muted-foreground">
+                  {isArabic ? 'إدارة الرسائل التي تظهر للمستخدمين عند تسجيل الدخول' : 'Manage messages shown to users when they log in'}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <Button onClick={() => handleOpenDialog()}>
+                <Plus className="h-4 w-4 mr-2" />
+                {isArabic ? 'إضافة رسالة' : 'Add Message'}
+              </Button>
+            </div>
+
+            <div className="grid gap-4">
+              {messages.map((message) => (
+                <Card key={message.id}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                      {message.title_en}
+                      {message.title_ar && <span className="text-muted-foreground text-sm">({message.title_ar})</span>}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{message.description_en}</p>
+                      {message.description_ar && (
+                        <p className="text-sm text-muted-foreground" dir="rtl">{message.description_ar}</p>
+                      )}
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm text-muted-foreground">
+                          {isArabic ? 'عدد مرات العرض:' : 'Display times:'} {message.display_times}
+                        </span>
+                        <Switch
+                          checked={message.is_active}
+                          onCheckedChange={async (checked) => {
+                            await supabase
+                              .from('login_messages')
+                              .update({ is_active: checked })
+                              .eq('id', message.id);
+                            fetchMessages();
+                          }}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleOpenDialog(message)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          {isArabic ? 'تعديل' : 'Edit'}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => handleDelete(message.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {isArabic ? 'حذف' : 'Delete'}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="themes">
+          <SeasonalThemeManager />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {editingMessage ? 'Edit Login Message' : 'Add Login Message'}
+              {editingMessage 
+                ? (isArabic ? 'تعديل رسالة تسجيل الدخول' : 'Edit Login Message') 
+                : (isArabic ? 'إضافة رسالة تسجيل الدخول' : 'Add Login Message')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label>Title (English) *</Label>
+              <Label>{isArabic ? 'العنوان (إنجليزي) *' : 'Title (English) *'}</Label>
               <Input
                 value={formData.title_en}
                 onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
@@ -253,7 +281,7 @@ export default function LoginMessagesManager() {
             </div>
 
             <div>
-              <Label>Title (Arabic)</Label>
+              <Label>{isArabic ? 'العنوان (عربي)' : 'Title (Arabic)'}</Label>
               <Input
                 value={formData.title_ar}
                 onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
@@ -263,7 +291,7 @@ export default function LoginMessagesManager() {
             </div>
 
             <div>
-              <Label>Description (English) *</Label>
+              <Label>{isArabic ? 'الوصف (إنجليزي) *' : 'Description (English) *'}</Label>
               <Textarea
                 value={formData.description_en}
                 onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
@@ -273,7 +301,7 @@ export default function LoginMessagesManager() {
             </div>
 
             <div>
-              <Label>Description (Arabic)</Label>
+              <Label>{isArabic ? 'الوصف (عربي)' : 'Description (Arabic)'}</Label>
               <Textarea
                 value={formData.description_ar}
                 onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
@@ -284,7 +312,7 @@ export default function LoginMessagesManager() {
             </div>
 
             <div>
-              <Label>Display Times (how many logins to show this message)</Label>
+              <Label>{isArabic ? 'عدد مرات العرض' : 'Display Times (how many logins to show this message)'}</Label>
               <Input
                 type="number"
                 min="1"
@@ -292,7 +320,9 @@ export default function LoginMessagesManager() {
                 onChange={(e) => setFormData({ ...formData, display_times: parseInt(e.target.value) || 1 })}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Default is 1 (shown once per user). Set higher to show multiple times.
+                {isArabic 
+                  ? 'الافتراضي هو 1 (تظهر مرة واحدة لكل مستخدم). اضبط أعلى لعرض عدة مرات.'
+                  : 'Default is 1 (shown once per user). Set higher to show multiple times.'}
               </p>
             </div>
 
@@ -301,16 +331,16 @@ export default function LoginMessagesManager() {
                 checked={formData.is_active}
                 onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
               />
-              <Label>Active (visible to users on login)</Label>
+              <Label>{isArabic ? 'نشط (مرئي للمستخدمين عند تسجيل الدخول)' : 'Active (visible to users on login)'}</Label>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
-              Cancel
+              {isArabic ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button onClick={handleSave}>
-              {editingMessage ? 'Update' : 'Create'}
+              {editingMessage ? (isArabic ? 'تحديث' : 'Update') : (isArabic ? 'إنشاء' : 'Create')}
             </Button>
           </DialogFooter>
         </DialogContent>

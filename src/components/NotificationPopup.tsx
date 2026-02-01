@@ -98,6 +98,20 @@ export function NotificationPopup() {
     }
   }, [notifications, shownIds, activePopups.length, isGuest]);
 
+  // Auto-dismiss notifications after 5 seconds
+  useEffect(() => {
+    if (activePopups.length === 0) return;
+    
+    const timer = setTimeout(() => {
+      const popup = activePopups[0];
+      if (popup && !popup.isDragging) {
+        handleMarkAsRead(popup.notification.id);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [activePopups]);
+
   const handleDismiss = (id: string) => {
     setActivePopups(prev => prev.map(p => p.notification.id === id ? {
       ...p,
