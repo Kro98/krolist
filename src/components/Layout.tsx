@@ -25,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import { AdSpace } from "@/components/AdSpace";
 import { InterstitialAd } from "@/components/InterstitialAd";
 import { useAdTrigger } from "@/contexts/AdTriggerContext";
+import { SeasonalPromoBanner } from "@/components/SeasonalPromoBanner";
+import { RamadanCountdown } from "@/components/RamadanCountdown";
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -178,45 +180,49 @@ function LayoutContent({
         <div className="text-muted-foreground">Loading...</div>
       </div>;
   }
-  return <div className="flex min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Interstitial Ad */}
-      <InterstitialAd />
-      {/* Desktop Ad Spaces - Customize width/height as needed */}
-      <AdSpace position="left" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
-      <AdSpace position="right" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
+  return <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Seasonal Promo Banner */}
+      <SeasonalPromoBanner />
       
-      <NotificationPopup />
-      <FloatingInstallPrompt />
-      <LoginMessageDialog />
-      <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
-      <AppSidebar />
-      <div className="flex-1 flex flex-col bg-background min-w-0 max-w-full">
-        <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4 flex-shrink-0">
-          <div className="flex items-center">
-            <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
-            <Link to="/products">
-              <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <PWAInstallButton />
-            <NotificationCenter />
-            <UserAccountControl />
-            {/* Cart hidden for now - will be enabled later */}
-            {/* <ShoppingCart /> */}
-          </div>
-        </header>
+      <div className="flex flex-1">
+        {/* Interstitial Ad */}
+        <InterstitialAd />
+        {/* Desktop Ad Spaces - Customize width/height as needed */}
+        <AdSpace position="left" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
+        <AdSpace position="right" width="160px" height="calc(100vh - 100px)" topOffset="72px" />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto sm:px-6 py-5 px-[5px] lg:px-[5px]">
-            <PageBreadcrumbs />
-            {children}
-          </div>
-        </main>
+        <NotificationPopup />
+        <FloatingInstallPrompt />
+        <LoginMessageDialog />
+        <AuthModal open={showAuthModal} onOpenChange={closeAuthModal} />
+        <RamadanCountdown />
+        <AppSidebar />
+        <div className="flex-1 flex flex-col bg-background min-w-0 max-w-full">
+          <header className="h-16 flex items-center justify-between border-b border-border bg-card px-4 flex-shrink-0">
+            <div className="flex items-center">
+              <SidebarTrigger className={language === 'ar' ? 'ml-4' : 'mr-4'} />
+              <Link to="/products">
+                <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <PWAInstallButton />
+              <NotificationCenter />
+              <UserAccountControl />
+            </div>
+          </header>
+          
+          <main className="flex-1 overflow-x-hidden overflow-y-auto">
+            <div className="w-full max-w-7xl mx-auto sm:px-6 py-5 px-[5px] lg:px-[5px]">
+              <PageBreadcrumbs />
+              {children}
+            </div>
+          </main>
+        </div>
+        
+        <Toaster />
+        <Sonner />
       </div>
-      
-      <Toaster />
-      <Sonner />
     </div>;
 }
 export function Layout({

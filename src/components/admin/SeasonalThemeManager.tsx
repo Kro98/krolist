@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Moon, Sparkles, PartyPopper, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SeasonalBannerSettings } from './SeasonalBannerSettings';
+import { Separator } from '@/components/ui/separator';
 
 type ThemeOption = 'none' | 'ramadan' | 'eid';
 
@@ -199,6 +201,11 @@ export default function SeasonalThemeManager() {
           </p>
         </div>
       )}
+
+      <Separator className="my-8" />
+
+      {/* Banner & Countdown Settings */}
+      <SeasonalBannerSettings />
     </div>
   );
 }
