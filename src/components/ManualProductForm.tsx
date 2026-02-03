@@ -87,11 +87,11 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
       }
 
       const { data, error } = await supabase.functions.invoke('scrape-products', {
-        body: { url: productUrl }
+        body: { url: productUrl, autoFill: true }
       });
 
       // Handle API eligibility or availability errors gracefully
-      if (error || data?.error || data?.errorCode === 'API_NOT_ELIGIBLE') {
+      if (error || data?.success === false || data?.errorCode) {
         setHasAutoFilled(true);
         const errorMessage = data?.error || error?.message || "Auto-fill unavailable";
         
@@ -115,10 +115,27 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         return;
       }
 
-      if (data?.success && data?.results && data.results.length > 0) {
+      if (data?.success && data?.product) {
+        const product = data.product;
+        
+        setTitle(product.title || "");
+        setDescription(product.title || ""); // Use title as description
+        setImageUrl(product.image || "");
+        
+        if (product.price && product.price > 0) {
+          setPrice(product.price.toString());
+        }
+        
+        setHasAutoFilled(true);
+        toast({
+          title: "Details Loaded",
+          description: "Product details auto-filled from Amazon. Review and save.",
+        });
+      } else if (data?.success && data?.results && data.results.length > 0) {
+        // Fallback for search results format
         const product = data.results[0];
         
-        // Check if it's a fallback result (rate limited)
+        // Check if it's a fallback result
         if (product.id === 'amazon-fallback' || product.bestPrice === 0) {
           setHasAutoFilled(true);
           toast({
@@ -132,7 +149,6 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         setDescription(product.description || "");
         setImageUrl(product.image || "");
         
-        // Extract price from sellers if available
         if (product.sellers && product.sellers.length > 0) {
           const bestPrice = product.sellers[0];
           if (bestPrice.price && bestPrice.price > 0) {
@@ -143,7 +159,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         setHasAutoFilled(true);
         toast({
           title: "Details Loaded",
-          description: "Product details auto-filled from Amazon. Review and save.",
+          description: "Product details auto-filled. Review and save.",
         });
       } else {
         setHasAutoFilled(true);

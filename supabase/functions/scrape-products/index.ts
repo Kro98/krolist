@@ -536,16 +536,16 @@ serve(async (req) => {
       const result = await getAmazonItemByASIN(asin);
       
       if (!result.product) {
-        // Return user-friendly error with specific message
-        const statusCode = result.errorCode === 'API_NOT_ELIGIBLE' ? 503 : 
-                          result.errorCode === 'NOT_FOUND' ? 404 : 500;
+        // Return 200 with error info so frontend can parse it properly
+        // Non-2xx responses cause Supabase client to throw before parsing body
         return new Response(
           JSON.stringify({ 
+            success: false,
             error: result.error || 'Could not fetch product details from Amazon',
             errorCode: result.errorCode,
             suggestion: 'Please enter product details manually'
           }),
-          { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
