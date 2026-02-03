@@ -1,8 +1,9 @@
 // App version - increment by 0.1 with each update
-export const APP_VERSION = "0.46";
+export const APP_VERSION = "0.75";
 
 // Version history for reference
 export const VERSION_HISTORY = [
+  { version: "0.75", date: "2025-02-03", notes: "Seasonal themes (Ramadan/Eid), promo banners, countdown widget, Arabic localization improvements, auto-dismiss notifications" },
   { version: "0.46", date: "2024-12-25", notes: "Notification preferences settings, frosted glass overlays, hidden orders feature" },
   { version: "4.5", date: "2024-12-16", notes: "Events calendar with colored event dots, multi-date selection, and reminders" },
   { version: "0.42", date: "2024-12-15", notes: "Fixed PWA mobile view detection" },
