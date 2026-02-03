@@ -492,6 +492,16 @@ export default function KrolistProductsManager() {
 
       if (error) throw error;
 
+      // Handle API eligibility errors gracefully
+      if (data?.errorCode === 'API_NOT_ELIGIBLE' || data?.success === false) {
+        toast({
+          title: 'Auto-fill Unavailable',
+          description: 'Amazon PA-API requires 3 qualifying sales in 180 days. Please enter details manually.',
+          variant: 'default'
+        });
+        return;
+      }
+
       if (data?.success && data?.product) {
         const product = data.product;
         
@@ -525,7 +535,11 @@ export default function KrolistProductsManager() {
           description: 'Product details have been loaded from Amazon'
         });
       } else {
-        throw new Error(data?.error || 'Failed to fetch product details');
+        toast({
+          title: 'Auto-fill Unavailable',
+          description: data?.error || 'Could not fetch product details. Please enter manually.',
+          variant: 'default'
+        });
       }
     } catch (error: any) {
       console.error('Auto-fill error:', error);
