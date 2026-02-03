@@ -90,18 +90,29 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         body: { url: productUrl }
       });
 
-      if (error) {
-        // Check for rate limit error
-        if (error.message?.includes('429') || error.message?.includes('limit')) {
-          setHasAutoFilled(true);
+      // Handle API eligibility or availability errors gracefully
+      if (error || data?.error || data?.errorCode === 'API_NOT_ELIGIBLE') {
+        setHasAutoFilled(true);
+        const errorMessage = data?.error || error?.message || "Auto-fill unavailable";
+        
+        // Check for specific error types
+        if (data?.errorCode === 'API_NOT_ELIGIBLE' || errorMessage.includes('temporarily unavailable')) {
+          toast({
+            title: "Auto-Fill Unavailable",
+            description: "Amazon API is temporarily unavailable. Please enter product details manually below.",
+          });
+        } else if (errorMessage.includes('429') || errorMessage.includes('limit')) {
           toast({
             title: "Daily Limit Reached",
             description: "Amazon API limit reached. Please enter product details manually.",
-            variant: "destructive",
           });
-          return;
+        } else {
+          toast({
+            title: "Auto-Fill Unavailable",
+            description: "Please enter the product details manually below.",
+          });
         }
-        throw error;
+        return;
       }
 
       if (data?.success && data?.results && data.results.length > 0) {
@@ -111,9 +122,8 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         if (product.id === 'amazon-fallback' || product.bestPrice === 0) {
           setHasAutoFilled(true);
           toast({
-            title: "API Limit Reached",
-            description: "Amazon API limit reached. Please enter the product details manually.",
-            variant: "destructive",
+            title: "Auto-Fill Unavailable",
+            description: "Please enter the product details manually below.",
           });
           return;
         }
@@ -140,7 +150,6 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         toast({
           title: "Couldn't Auto-Fill",
           description: "Please enter the product details manually",
-          variant: "destructive",
         });
       }
     } catch (error) {
