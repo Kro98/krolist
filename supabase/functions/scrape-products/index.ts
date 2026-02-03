@@ -173,14 +173,14 @@ async function logSearch(supabase: any, userId: string, query: string) {
 }
 
 // Get single item by ASIN using GetItems API
-async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<ScrapedProduct | null> {
+async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<{ product: ScrapedProduct | null; error?: string; errorCode?: string }> {
   console.log(`Fetching Amazon product by ASIN: ${asin}`);
   
   const { accessKey, secretKey, affiliateTag } = AFFILIATE_CONFIG.amazon;
   
   if (!accessKey || !secretKey) {
     console.error('Amazon API credentials not configured');
-    return null;
+    return { product: null, error: 'Amazon API credentials not configured', errorCode: 'NO_CREDENTIALS' };
   }
   
   try {
@@ -241,7 +241,16 @@ async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<Scrape
         return getAmazonItemByASIN(asin, retryCount + 1);
       }
       
-      return null;
+      // Handle eligibility error specifically
+      if (response.status === 403 && errorText.includes('AssociateNotEligible')) {
+        return { 
+          product: null, 
+          error: 'Amazon API access is temporarily unavailable. Please enter product details manually.',
+          errorCode: 'API_NOT_ELIGIBLE'
+        };
+      }
+      
+      return { product: null, error: `Amazon API error: ${response.status}`, errorCode: 'API_ERROR' };
     }
     
     const data = await response.json();
@@ -262,25 +271,27 @@ async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<Scrape
       const isPrime = item.Offers?.Listings?.[0]?.DeliveryInfo?.IsPrimeEligible;
       
       return {
-        id: asin,
-        title: rawTitle,
-        description: rawTitle,
-        image: rawImage,
-        sellers: [{
-          store: 'Amazon',
-          price,
-          originalPrice,
-          badge: isPrime ? 'Prime' : undefined,
-          productUrl: affiliateUrl,
-        }],
-        bestPrice: price,
+        product: {
+          id: asin,
+          title: rawTitle,
+          description: rawTitle,
+          image: rawImage,
+          sellers: [{
+            store: 'Amazon',
+            price,
+            originalPrice,
+            badge: isPrime ? 'Prime' : undefined,
+            productUrl: affiliateUrl,
+          }],
+          bestPrice: price,
+        }
       };
     }
     
-    return null;
+    return { product: null, error: 'Product not found on Amazon', errorCode: 'NOT_FOUND' };
   } catch (error) {
     console.error('Error calling Amazon PA-API GetItems:', error);
-    return null;
+    return { product: null, error: 'Failed to connect to Amazon API', errorCode: 'CONNECTION_ERROR' };
   }
 }
 
@@ -522,23 +533,30 @@ serve(async (req) => {
       
       console.log(`Auto-fill request for ASIN: ${asin}`);
       
-      const product = await getAmazonItemByASIN(asin);
+      const result = await getAmazonItemByASIN(asin);
       
-      if (!product) {
+      if (!result.product) {
+        // Return user-friendly error with specific message
+        const statusCode = result.errorCode === 'API_NOT_ELIGIBLE' ? 503 : 
+                          result.errorCode === 'NOT_FOUND' ? 404 : 500;
         return new Response(
-          JSON.stringify({ error: 'Could not fetch product details from Amazon' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ 
+            error: result.error || 'Could not fetch product details from Amazon',
+            errorCode: result.errorCode,
+            suggestion: 'Please enter product details manually'
+          }),
+          { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       // Return product data formatted for auto-fill
-      const seller = product.sellers[0];
+      const seller = result.product.sellers[0];
       return new Response(
         JSON.stringify({
           success: true,
           product: {
-            title: product.title,
-            image: product.image,
+            title: result.product.title,
+            image: result.product.image,
             price: seller.price,
             originalPrice: seller.originalPrice,
             productUrl: seller.productUrl,
