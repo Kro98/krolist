@@ -171,9 +171,10 @@ async function getAmazonPrice(asin: string): Promise<{ price: number; originalPr
   }
 }
 
-// Get price using Firecrawl scraping
+// Get price using Firecrawl scraping (updated API format)
 async function getFirecrawlPrice(url: string, firecrawlApiKey: string): Promise<number | null> {
   try {
+    // Use the extract endpoint for structured data extraction
     const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
@@ -182,44 +183,63 @@ async function getFirecrawlPrice(url: string, firecrawlApiKey: string): Promise<
       },
       body: JSON.stringify({
         url,
-        formats: [{ 
-          type: 'json', 
-          prompt: 'Extract the current price of the product. Return only the numeric value without currency symbols.',
+        formats: ['extract'],
+        extract: {
+          prompt: 'Extract the current selling price of this product. Look for the main price displayed on the page, not shipping costs.',
           schema: {
             type: 'object',
             properties: {
               price: { 
-                type: ['number', 'string'],
-                description: 'The current price of the product'
+                type: 'number',
+                description: 'The current price of the product as a number'
+              },
+              currency: {
+                type: 'string',
+                description: 'The currency code (e.g., SAR, USD)'
               }
             },
             required: ['price']
           }
-        }],
-        onlyMainContent: true,
-        waitFor: 2000,
+        },
+        timeout: 30000,
       }),
     });
 
     if (!response.ok) {
-      console.error(`Firecrawl failed for ${url}: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Firecrawl failed for ${url}: ${response.status}`, errorText);
       return null;
     }
 
     const data = await response.json();
+    console.log(`Firecrawl response for ${url}:`, JSON.stringify(data, null, 2));
     
-    // Try different response paths
-    const rawPrice = data?.data?.json?.price 
-      ?? data?.data?.extract?.price 
-      ?? data?.json?.price
-      ?? data?.extract?.price;
+    // Try different response paths based on Firecrawl API versions
+    const rawPrice = data?.data?.extract?.price 
+      ?? data?.extract?.price
+      ?? data?.data?.json?.price 
+      ?? data?.json?.price;
     
     if (rawPrice !== null && rawPrice !== undefined) {
-      if (typeof rawPrice === 'number') return rawPrice;
+      if (typeof rawPrice === 'number' && rawPrice > 0) return rawPrice;
       if (typeof rawPrice === 'string') {
+        // Extract numeric value from string
         const match = rawPrice.match(/[\d,]+\.?\d*/);
         if (match) {
-          return parseFloat(match[0].replace(/,/g, ''));
+          const parsed = parseFloat(match[0].replace(/,/g, ''));
+          if (parsed > 0) return parsed;
+        }
+      }
+    }
+    
+    // Fallback: try to extract from markdown content
+    if (data?.data?.markdown) {
+      const priceMatches = data.data.markdown.match(/(?:SAR|AED|USD|\$|ر\.س)\s*([\d,]+\.?\d*)/gi);
+      if (priceMatches && priceMatches.length > 0) {
+        const numMatch = priceMatches[0].match(/[\d,]+\.?\d*/);
+        if (numMatch) {
+          const parsed = parseFloat(numMatch[0].replace(/,/g, ''));
+          if (parsed > 0) return parsed;
         }
       }
     }
