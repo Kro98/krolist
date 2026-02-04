@@ -171,86 +171,6 @@ async function getAmazonPrice(asin: string): Promise<{ price: number; originalPr
   }
 }
 
-// Get price using Firecrawl scraping (updated API format)
-async function getFirecrawlPrice(url: string, firecrawlApiKey: string): Promise<number | null> {
-  try {
-    // Use the extract endpoint for structured data extraction
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        formats: ['extract'],
-        extract: {
-          prompt: 'Extract the current selling price of this product. Look for the main price displayed on the page, not shipping costs.',
-          schema: {
-            type: 'object',
-            properties: {
-              price: { 
-                type: 'number',
-                description: 'The current price of the product as a number'
-              },
-              currency: {
-                type: 'string',
-                description: 'The currency code (e.g., SAR, USD)'
-              }
-            },
-            required: ['price']
-          }
-        },
-        timeout: 30000,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Firecrawl failed for ${url}: ${response.status}`, errorText);
-      return null;
-    }
-
-    const data = await response.json();
-    console.log(`Firecrawl response for ${url}:`, JSON.stringify(data, null, 2));
-    
-    // Try different response paths based on Firecrawl API versions
-    const rawPrice = data?.data?.extract?.price 
-      ?? data?.extract?.price
-      ?? data?.data?.json?.price 
-      ?? data?.json?.price;
-    
-    if (rawPrice !== null && rawPrice !== undefined) {
-      if (typeof rawPrice === 'number' && rawPrice > 0) return rawPrice;
-      if (typeof rawPrice === 'string') {
-        // Extract numeric value from string
-        const match = rawPrice.match(/[\d,]+\.?\d*/);
-        if (match) {
-          const parsed = parseFloat(match[0].replace(/,/g, ''));
-          if (parsed > 0) return parsed;
-        }
-      }
-    }
-    
-    // Fallback: try to extract from markdown content
-    if (data?.data?.markdown) {
-      const priceMatches = data.data.markdown.match(/(?:SAR|AED|USD|\$|ر\.س)\s*([\d,]+\.?\d*)/gi);
-      if (priceMatches && priceMatches.length > 0) {
-        const numMatch = priceMatches[0].match(/[\d,]+\.?\d*/);
-        if (numMatch) {
-          const parsed = parseFloat(numMatch[0].replace(/,/g, ''));
-          if (parsed > 0) return parsed;
-        }
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error(`Firecrawl error for ${url}:`, error);
-    return null;
-  }
-}
-
 interface Product {
   id: string;
   product_url: string;
@@ -266,7 +186,6 @@ interface UpdateResult {
   title: string;
   oldPrice: number;
   newPrice: number;
-  source: 'amazon' | 'firecrawl';
   success: boolean;
   error?: string;
 }
@@ -305,7 +224,6 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
 
   try {
     // Get the authorization header from the request
@@ -347,11 +265,12 @@ serve(async (req) => {
     console.log('[Auto-Update] Starting price auto-update for:', collection_title || 'ALL collections');
     console.log('[Auto-Update] Session ID:', sessionId);
 
-    // Build query for krolist products
+    // Build query for krolist products (only Amazon products)
     let query = supabase
       .from('krolist_products')
       .select('id, product_url, current_price, original_price, title, store, currency')
-      .eq('is_featured', true);
+      .eq('is_featured', true)
+      .eq('store', 'Amazon');
 
     if (collection_title && collection_title !== 'all') {
       query = query.eq('collection_title', collection_title);
@@ -363,7 +282,7 @@ serve(async (req) => {
       throw new Error(`Failed to fetch products: ${fetchError.message}`);
     }
 
-    console.log(`[Auto-Update] Found ${products?.length || 0} products to update`);
+    console.log(`[Auto-Update] Found ${products?.length || 0} Amazon products to update`);
 
     if (!products || products.length === 0) {
       return new Response(
@@ -372,7 +291,7 @@ serve(async (req) => {
           updated: 0, 
           failed: 0,
           skipped: 0,
-          message: 'No products found to update',
+          message: 'No Amazon products found to update',
           session_id: sessionId
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -395,7 +314,6 @@ serve(async (req) => {
           title: product.title,
           oldPrice: product.current_price,
           newPrice: 0,
-          source: 'firecrawl',
           success: false
         };
 
@@ -412,29 +330,17 @@ serve(async (req) => {
 
         try {
           let newPrice: number | null = null;
-          let source: 'amazon' | 'firecrawl' = 'firecrawl';
 
-          // Try Amazon PA-API first for Amazon products
+          // Get price from Amazon PA-API
           if (isAmazonProductUrl(product.product_url)) {
             const asin = extractASIN(product.product_url);
             if (asin) {
-              console.log(`[Auto-Update] Trying Amazon PA-API for ${product.title} (ASIN: ${asin})`);
+              console.log(`[Auto-Update] Fetching Amazon PA-API for ${product.title} (ASIN: ${asin})`);
               const amazonResult = await getAmazonPrice(asin);
               if (amazonResult && amazonResult.price > 0) {
                 newPrice = amazonResult.price;
-                source = 'amazon';
                 console.log(`[Auto-Update] ✓ Amazon PA-API returned price: ${newPrice}`);
               }
-            }
-          }
-
-          // Fallback to Firecrawl if Amazon failed or not Amazon product
-          if (newPrice === null && firecrawlApiKey) {
-            console.log(`[Auto-Update] Trying Firecrawl for ${product.title}`);
-            newPrice = await getFirecrawlPrice(product.product_url, firecrawlApiKey);
-            if (newPrice && newPrice > 0) {
-              source = 'firecrawl';
-              console.log(`[Auto-Update] ✓ Firecrawl returned price: ${newPrice}`);
             }
           }
 
@@ -461,7 +367,6 @@ serve(async (req) => {
               failed++;
             } else {
               result.newPrice = newPrice;
-              result.source = source;
               result.success = true;
               updated++;
 
@@ -473,11 +378,11 @@ serve(async (req) => {
                 currency: product.currency || 'SAR'
               });
 
-              console.log(`[Auto-Update] ✓ Updated ${product.title}: ${product.current_price} → ${newPrice} (via ${source})`);
+              console.log(`[Auto-Update] ✓ Updated ${product.title}: ${product.current_price} → ${newPrice}`);
             }
           } else {
             console.error(`[Auto-Update] Could not fetch price for ${product.title}`);
-            result.error = 'Could not fetch price from any source';
+            result.error = 'Could not fetch price from Amazon PA-API';
             failed++;
           }
         } catch (error) {
@@ -537,7 +442,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Auto-update started for ${products.length} products.`,
+        message: `Auto-update started for ${products.length} Amazon products.`,
         products_count: products.length,
         collection: collection_title || 'ALL',
         session_id: sessionId
