@@ -16,7 +16,8 @@ import { getAllStores } from "@/config/stores";
 const productSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
-  price: z.number().positive("Price must be greater than 0"),
+  price: z.number().nonnegative("Price must be 0 or greater"),
+  originalPrice: z.number().positive("Original price must be greater than 0"),
   currency: z.string().min(1, "Currency is required"),
   imageUrl: z.string().url("Invalid image URL").optional().or(z.literal("")),
   store: z.string().min(1, "Store is required"),
@@ -33,6 +34,7 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
   const [currency, setCurrency] = useState("SAR");
   const [imageUrl, setImageUrl] = useState("");
   const [store, setStore] = useState("");
@@ -118,13 +120,30 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
       if (data?.success && data?.product) {
         const product = data.product;
         
-        setTitle(product.title || "");
-        setDescription(product.title || ""); // Use title as description
+        // Truncate title and description to 60 characters
+        const truncatedTitle = product.title ? product.title.substring(0, 60) : "";
+        const truncatedDesc = product.title ? product.title.substring(0, 60) : "";
+        
+        setTitle(truncatedTitle);
+        setDescription(truncatedDesc);
         setImageUrl(product.image || "");
         
+        // Set current price (discounted/displayed price)
         if (product.price && product.price > 0) {
           setPrice(product.price.toString());
         }
+        
+        // Set original price (greyed out/strikethrough price, or same as current if no discount)
+        if (product.originalPrice && product.originalPrice > 0) {
+          setOriginalPrice(product.originalPrice.toString());
+        } else if (product.price && product.price > 0) {
+          // If no original price, use current price as original
+          setOriginalPrice(product.price.toString());
+        }
+        
+        // Auto-set currency and store for Amazon
+        setCurrency("SAR");
+        setStore("Amazon");
         
         setHasAutoFilled(true);
         toast({
@@ -189,10 +208,14 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
       const finalCategory = categoryType === 'Custom' ? customCategory : categoryType;
       
       // Validate form data
+      const parsedOriginalPrice = parseFloat(originalPrice) || 0;
+      const parsedCurrentPrice = parseFloat(price) || 0;
+      
       const formData = productSchema.parse({
         title,
         description: description || undefined,
-        price: parseFloat(price),
+        price: parsedCurrentPrice,
+        originalPrice: parsedOriginalPrice > 0 ? parsedOriginalPrice : parsedCurrentPrice,
         currency,
         imageUrl: imageUrl || undefined,
         store,
@@ -220,8 +243,8 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
           user_id: user.id,
           title: formData.title,
           description: formData.description,
-          current_price: formData.price,
-          original_price: formData.price,
+          current_price: formData.price > 0 ? formData.price : formData.originalPrice,
+          original_price: formData.originalPrice,
           original_currency: formData.currency,
           currency: formData.currency,
           image_url: formData.imageUrl,
@@ -241,8 +264,8 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
         .from('price_history')
         .insert({
           product_id: product.id,
-          price: formData.price,
-          original_price: formData.price,
+          price: formData.price > 0 ? formData.price : formData.originalPrice,
+          original_price: formData.originalPrice,
           currency: formData.currency,
         });
 
@@ -372,28 +395,52 @@ export function ManualProductForm({ onBack }: ManualProductFormProps) {
                 />
               </div>
 
-              {/* Price and Currency */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price" className="text-sm font-medium">
-                    Price *
-                  </Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    onPaste={(e) => {
-                      e.preventDefault();
-                      const pastedText = e.clipboardData.getData('text');
-                      const numbersOnly = pastedText.replace(/[^\d.]/g, '');
-                      const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
-                      setPrice(cleanedValue);
-                    }}
-                    placeholder="0.00"
-                    required
-                  />
+              {/* Pricing Section */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price" className="text-sm font-medium">
+                      Current Price (Discounted)
+                    </Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedText = e.clipboardData.getData('text');
+                        const numbersOnly = pastedText.replace(/[^\d.]/g, '');
+                        const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
+                        setPrice(cleanedValue);
+                      }}
+                      placeholder="0.00 (leave empty if no discount)"
+                    />
+                    <p className="text-xs text-muted-foreground">The displayed/discounted price</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="originalPrice" className="text-sm font-medium">
+                      Original Price *
+                    </Label>
+                    <Input
+                      id="originalPrice"
+                      type="number"
+                      step="0.01"
+                      value={originalPrice}
+                      onChange={(e) => setOriginalPrice(e.target.value)}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedText = e.clipboardData.getData('text');
+                        const numbersOnly = pastedText.replace(/[^\d.]/g, '');
+                        const cleanedValue = numbersOnly.replace(/(\..*)\./g, '$1');
+                        setOriginalPrice(cleanedValue);
+                      }}
+                      placeholder="0.00"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">The strikethrough/full price</p>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency" className="text-sm font-medium">
