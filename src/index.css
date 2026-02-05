@@ -461,51 +461,40 @@ input[type="range"].hue-slider::-moz-range-track {
   animation: history-pulse 1.5s ease-in-out infinite;
 }
 
-/* Seasonal Theme Styles */
+/* Seasonal Theme Styles - Minimalist & Modern */
 
-/* Ramadan Theme */
+/* 
+ * Seasonal themes add subtle ambient enhancements without 
+ * changing core UI colors. The effect is primarily through
+ * the canvas background animation and very subtle accents.
+ */
+
+/* Ramadan Theme - Warm, contemplative ambient */
 .theme-ramadan {
-  --primary: 43 96% 56%; /* Golden amber */
-  --ring: 43 96% 56%;
+  /* Keep primary orange but add warm undertone to accents */
+  --accent: 35 30% 94%;
+  --accent-foreground: 35 25% 20%;
 }
 
 .theme-ramadan.dark {
-  --background: 240 20% 8%;
-  --card: 240 15% 12%;
+  --accent: 35 20% 15%;
+  --accent-foreground: 35 30% 90%;
 }
 
-.theme-ramadan .theme-badge {
-  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(280 60% 45%));
-}
-
-/* Eid Theme */
+/* Eid Theme - Soft celebratory ambient */
 .theme-eid {
-  --primary: 340 82% 52%; /* Festive pink */
-  --ring: 340 82% 52%;
+  /* Keep primary orange but add rose undertone to accents */
+  --accent: 350 25% 95%;
+  --accent-foreground: 350 20% 20%;
 }
 
 .theme-eid.dark {
-  --background: 260 15% 10%;
-  --card: 260 12% 14%;
+  --accent: 350 15% 14%;
+  --accent-foreground: 350 25% 90%;
 }
 
-.theme-eid .theme-badge {
-  background: linear-gradient(135deg, hsl(340 82% 52%), hsl(45 93% 47%));
-}
-
-/* Seasonal theme decorative borders */
-.theme-ramadan .sidebar,
-.theme-ramadan [data-sidebar="sidebar"] {
-  border-color: hsl(43 96% 56% / 0.2);
-}
-
-.theme-eid .sidebar,
-.theme-eid [data-sidebar="sidebar"] {
-  border-color: hsl(340 82% 52% / 0.2);
-}
-
-/* Theme transition for smooth switching */
+/* Smooth theme transitions */
 .theme-ramadan,
 .theme-eid {
-  transition: background-color 0.5s ease, color 0.3s ease;
+  transition: background-color 0.6s ease, color 0.4s ease;
 }
