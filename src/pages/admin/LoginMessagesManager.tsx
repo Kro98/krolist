@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, Edit, Trash2, MessageSquare, Link2, ExternalLink, Copy, Check } from 'lucide-react';
 import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SeasonalThemeManager from '@/components/admin/SeasonalThemeManager';
+import { Slider } from '@/components/ui/slider';
 
 interface LoginMessage {
   id: string;
@@ -27,11 +28,13 @@ interface LoginMessage {
 }
 
 export default function LoginMessagesManager() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isArabic = language === 'ar';
   const [messages, setMessages] = useState<LoginMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingMessage, setEditingMessage] = useState<LoginMessage | null>(null);
+  const [affiliateLinkCopied, setAffiliateLinkCopied] = useState(false);
   
   const [formData, setFormData] = useState({
     title_en: '',
@@ -41,6 +44,10 @@ export default function LoginMessagesManager() {
     display_times: 1,
     is_active: true,
   });
+
+  const affiliateUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/affiliate` 
+    : '/affiliate';
 
   useEffect(() => {
     fetchMessages();
@@ -160,6 +167,13 @@ export default function LoginMessagesManager() {
     }
   };
 
+  const copyAffiliateLink = () => {
+    navigator.clipboard.writeText(affiliateUrl);
+    setAffiliateLinkCopied(true);
+    toast({ title: isArabic ? 'تم نسخ الرابط!' : 'Link copied!' });
+    setTimeout(() => setAffiliateLinkCopied(false), 2000);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
@@ -168,18 +182,18 @@ export default function LoginMessagesManager() {
     );
   }
 
-  const { language } = useLanguage();
-  const isArabic = language === 'ar';
-
   return (
     <div className="space-y-6">
       <Tabs defaultValue="messages" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="messages">
             {isArabic ? 'رسائل تسجيل الدخول' : 'Login Messages'}
           </TabsTrigger>
           <TabsTrigger value="themes">
             {isArabic ? 'ثيمات المناسبات' : 'Seasonal Themes'}
+          </TabsTrigger>
+          <TabsTrigger value="affiliate">
+            {isArabic ? 'وضع الأفيليت' : 'Affiliate Mode'}
           </TabsTrigger>
         </TabsList>
 
@@ -257,6 +271,76 @@ export default function LoginMessagesManager() {
 
         <TabsContent value="themes">
           <SeasonalThemeManager />
+        </TabsContent>
+
+        <TabsContent value="affiliate">
+          <div className="space-y-6">
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold">{isArabic ? 'وضع الأفيليت' : 'Affiliate Mode'}</h2>
+              <p className="text-muted-foreground">
+                {isArabic 
+                  ? 'صفحة مبسطة تعرض جميع المنتجات مع روابط الأفيليت فقط - بدون قائمة جانبية أو فئات'
+                  : 'A simplified page showing all products with affiliate links only - no sidebar or categories'}
+              </p>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Link2 className="h-5 w-5 text-primary" />
+                  {isArabic ? 'رابط صفحة الأفيليت' : 'Affiliate Page Link'}
+                </CardTitle>
+                <CardDescription>
+                  {isArabic 
+                    ? 'شارك هذا الرابط لعرض صفحة المنتجات المبسطة مع روابط الأفيليت'
+                    : 'Share this link to display the simplified products page with affiliate links'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Input 
+                    value={affiliateUrl} 
+                    readOnly 
+                    className="font-mono text-sm"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={copyAffiliateLink}
+                    className="shrink-0"
+                  >
+                    {affiliateLinkCopied ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => window.open(affiliateUrl, '_blank')}
+                    className="shrink-0"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium mb-2">
+                    {isArabic ? 'مميزات صفحة الأفيليت:' : 'Affiliate Page Features:'}
+                  </h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• {isArabic ? 'عرض شبكي مضغوط للمنتجات' : 'Compact grid display of products'}</li>
+                    <li>• {isArabic ? 'شريط بحث سريع' : 'Quick search bar'}</li>
+                    <li>• {isArabic ? 'بدون قائمة جانبية أو فئات' : 'No sidebar or categories'}</li>
+                    <li>• {isArabic ? 'تحكم في عدد المنتجات في الصف' : 'Control products per row'}</li>
+                    <li>• {isArabic ? 'روابط الأفيليت تعمل تلقائياً' : 'Affiliate links work automatically'}</li>
+                    <li>• {isArabic ? 'تذييل بدون روابط سريعة' : 'Footer without quick links'}</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 
