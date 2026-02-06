@@ -35,6 +35,7 @@ import Articles from "./pages/Articles";
 import ArticlesManager from "./pages/admin/ArticlesManager";
 import ArticleEditor from "./pages/admin/ArticleEditor";
 import Stickers from "./pages/Stickers";
+import AffiliateMode from "./pages/AffiliateMode";
 const queryClient = new QueryClient();
 
 // Initialize settings from localStorage
@@ -59,32 +60,40 @@ const App = () => <QueryClientProvider client={queryClient}>
                         <Toaster />
                         <SeasonalBackground />
                         <BrowserRouter>
-                          <Layout>
                           <Routes>
-                            <Route path="/" element={<Products />} />
-                            <Route path="/products" element={<Products />} />
-                            <Route path="/search-products" element={<SearchProducts />} />
-                            <Route path="/how-to-use-search" element={<HowToUseSearch />} />
-                            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                            <Route path="/events" element={<Events />} />
-                            <Route path="/promo-codes" element={<PromoCodes />} />
-                            <Route path="/donation" element={<Donation />} />
-                            <Route path="/admin" element={<Admin />} />
-                            <Route path="/admin/articles" element={<ArticlesManager />} />
-                            <Route path="/admin/articles/:id" element={<ArticleEditor />} />
-                            <Route path="/categories" element={<CategoryTags />} />
-                            <Route path="/category/:categoryId" element={<CategoryProducts />} />
-                            <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-                            <Route path="/articles" element={<Articles />} />
-                            <Route path="/articles/:slug" element={<Article />} />
-                            <Route path="/stickers" element={<Stickers />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                            <Route path="/terms-of-service" element={<TermsOfService />} />
-                            <Route path="/contact-us" element={<ContactUs />} />
-                            <Route path="*" element={<NotFound />} />
+                            {/* Affiliate Mode - Outside Layout (no sidebar) */}
+                            <Route path="/affiliate" element={<AffiliateMode />} />
+                            
+                            {/* Main App with Layout */}
+                            <Route path="*" element={
+                              <Layout>
+                                <Routes>
+                                  <Route path="/" element={<Products />} />
+                                  <Route path="/products" element={<Products />} />
+                                  <Route path="/search-products" element={<SearchProducts />} />
+                                  <Route path="/how-to-use-search" element={<HowToUseSearch />} />
+                                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                                  <Route path="/events" element={<Events />} />
+                                  <Route path="/promo-codes" element={<PromoCodes />} />
+                                  <Route path="/donation" element={<Donation />} />
+                                  <Route path="/admin" element={<Admin />} />
+                                  <Route path="/admin/articles" element={<ArticlesManager />} />
+                                  <Route path="/admin/articles/:id" element={<ArticleEditor />} />
+                                  <Route path="/categories" element={<CategoryTags />} />
+                                  <Route path="/category/:categoryId" element={<CategoryProducts />} />
+                                  <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                                  <Route path="/articles" element={<Articles />} />
+                                  <Route path="/articles/:slug" element={<Article />} />
+                                  <Route path="/stickers" element={<Stickers />} />
+                                  <Route path="/settings" element={<Settings />} />
+                                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                                  <Route path="/contact-us" element={<ContactUs />} />
+                                  <Route path="*" element={<NotFound />} />
+                                </Routes>
+                              </Layout>
+                            } />
                           </Routes>
-                          </Layout>
                         </BrowserRouter>
                       </TooltipProvider>
                     </SeasonalThemeProvider>

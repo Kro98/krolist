@@ -56,7 +56,11 @@ const QuickLinksMarquee = ({ links, isArabic }: { links: { to: string; label: st
   );
 };
 
-export function Footer() {
+interface FooterProps {
+  hideQuickLinks?: boolean;
+}
+
+export function Footer({ hideQuickLinks = false }: FooterProps) {
   const { t, language } = useLanguage();
   const isArabic = language === 'ar';
   
@@ -84,12 +88,14 @@ export function Footer() {
     <footer className="w-full border-t border-border bg-background/95 backdrop-blur-sm mt-auto">
       <div className="container mx-auto px-4 py-8">
         {/* Mobile Quick Links Marquee */}
-        <div className="md:hidden mb-6">
-          <h3 className="font-semibold text-foreground text-center mb-2">
-            {isArabic ? 'روابط سريعة' : 'Quick Links'}
-          </h3>
-          <QuickLinksMarquee links={quickLinks} isArabic={isArabic} />
-        </div>
+        {!hideQuickLinks && (
+          <div className="md:hidden mb-6">
+            <h3 className="font-semibold text-foreground text-center mb-2">
+              {isArabic ? 'روابط سريعة' : 'Quick Links'}
+            </h3>
+            <QuickLinksMarquee links={quickLinks} isArabic={isArabic} />
+          </div>
+        )}
 
         {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
@@ -138,23 +144,25 @@ export function Footer() {
           </div>
 
           {/* Quick links - hidden on mobile, shown on desktop */}
-          <div className="hidden md:block space-y-4">
-            <h3 className="font-semibold text-foreground">
-              {isArabic ? 'روابط سريعة' : 'Quick Links'}
-            </h3>
-            <nav className="grid grid-cols-2 gap-2">
-              {quickLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
-                >
-                  <link.icon className="w-3.5 h-3.5" />
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
+          {!hideQuickLinks && (
+            <div className="hidden md:block space-y-4">
+              <h3 className="font-semibold text-foreground">
+                {isArabic ? 'روابط سريعة' : 'Quick Links'}
+              </h3>
+              <nav className="grid grid-cols-2 gap-2">
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                  >
+                    <link.icon className="w-3.5 h-3.5" />
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          )}
 
           {/* Legal & Contact */}
           <div className="space-y-4">
