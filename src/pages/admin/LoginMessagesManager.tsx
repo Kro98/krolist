@@ -331,12 +331,87 @@ export default function LoginMessagesManager() {
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• {isArabic ? 'عرض شبكي مضغوط للمنتجات' : 'Compact grid display of products'}</li>
-                    <li>• {isArabic ? 'شريط بحث سريع' : 'Quick search bar'}</li>
+                    <li>• {isArabic ? 'شريط بحث سريع مع بانر بحث أمازون' : 'Quick search bar with Amazon search banner'}</li>
                     <li>• {isArabic ? 'بدون قائمة جانبية أو فئات' : 'No sidebar or categories'}</li>
                     <li>• {isArabic ? 'تحكم في عدد المنتجات في الصف' : 'Control products per row'}</li>
                     <li>• {isArabic ? 'روابط الأفيليت تعمل تلقائياً' : 'Affiliate links work automatically'}</li>
                     <li>• {isArabic ? 'تذييل بدون روابط سريعة' : 'Footer without quick links'}</li>
                   </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{isArabic ? 'إعدادات وضع الأفيليت' : 'Affiliate Mode Settings'}</CardTitle>
+                <CardDescription>
+                  {isArabic 
+                    ? 'تخصيص سلوك صفحة الأفيليت'
+                    : 'Customize affiliate page behavior'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">{isArabic ? 'إخفاء زر التسجيل' : 'Hide Sign Up Button'}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {isArabic 
+                        ? 'إخفاء زر التسجيل وتسجيل الدخول من صفحة الأفيليت'
+                        : 'Hide sign up and login buttons from affiliate page'}
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={localStorage.getItem('affiliateHideAuth') === 'true'}
+                    onCheckedChange={(checked) => {
+                      localStorage.setItem('affiliateHideAuth', String(checked));
+                      toast({ title: isArabic ? 'تم الحفظ' : 'Setting saved' });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">{isArabic ? 'إظهار بانر أمازون' : 'Show Amazon Banner'}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {isArabic 
+                        ? 'عرض بانر "ابحث على أمازون" عند البحث'
+                        : 'Display "Find on Amazon" banner when searching'}
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={localStorage.getItem('affiliateShowAmazonBanner') !== 'false'}
+                    onCheckedChange={(checked) => {
+                      localStorage.setItem('affiliateShowAmazonBanner', String(checked));
+                      toast({ title: isArabic ? 'تم الحفظ' : 'Setting saved' });
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">{isArabic ? 'عدد المنتجات الافتراضي في الصف' : 'Default Products Per Row'}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {isArabic 
+                        ? 'عدد المنتجات المعروضة في كل صف افتراضياً'
+                        : 'Number of products displayed per row by default'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Slider
+                      value={[parseInt(localStorage.getItem('affiliateDefaultPerRow') || '4', 10)]}
+                      onValueChange={(value) => {
+                        localStorage.setItem('affiliateDefaultPerRow', String(value[0]));
+                        localStorage.setItem('affiliateProductsPerRow', String(value[0]));
+                      }}
+                      min={2}
+                      max={6}
+                      step={1}
+                      className="flex-1"
+                    />
+                    <span className="w-8 text-center font-medium">
+                      {localStorage.getItem('affiliateDefaultPerRow') || '4'}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

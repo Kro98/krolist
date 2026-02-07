@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, Grid2X2, Grid3X3, LayoutGrid } from "lucide-react";
+import { Search, ExternalLink, Grid2X2, Grid3X3, LayoutGrid, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Link } from "react-router-dom";
 import { replaceWithAffiliateLink } from "@/lib/affiliateLinks";
+import { getAffiliateTag } from "@/config/stores";
+import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
 
 interface AffiliateProduct {
   id: string;
@@ -34,10 +36,15 @@ export default function AffiliateMode() {
   // Load settings from localStorage
   useEffect(() => {
     const savedPerRow = localStorage.getItem('affiliateProductsPerRow');
+    const defaultPerRow = localStorage.getItem('affiliateDefaultPerRow');
     if (savedPerRow) {
       setProductsPerRow(parseInt(savedPerRow, 10));
+    } else if (defaultPerRow) {
+      setProductsPerRow(parseInt(defaultPerRow, 10));
     }
   }, []);
+
+  const showAmazonBanner = localStorage.getItem('affiliateShowAmazonBanner') !== 'false';
 
   useEffect(() => {
     loadProducts();
@@ -147,7 +154,7 @@ export default function AffiliateMode() {
       {/* Main Content */}
       <main className="flex-1 px-4 py-4">
         {/* Search Bar */}
-        <div className="relative mb-4 max-w-2xl mx-auto">
+        <div className="relative mb-3 max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={language === 'ar' ? 'ابحث عن المنتجات...' : 'Search products...'}
@@ -156,6 +163,44 @@ export default function AffiliateMode() {
             className="pl-10 h-11 bg-card border-border focus:ring-2 focus:ring-primary/20"
           />
         </div>
+
+        {/* Amazon Search Banner */}
+        {searchQuery.trim() && showAmazonBanner && (
+          <button
+            onClick={() => {
+              const affiliateTag = getAffiliateTag('amazon');
+              const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery)}&linkCode=sl2&tag=${affiliateTag}`;
+              window.open(amazonSearchUrl, '_blank');
+            }}
+            className="group w-full max-w-2xl mx-auto mb-4 block"
+          >
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#131921] via-[#232f3e] to-[#131921] border border-[#febd69]/20 p-3 sm:p-4 transition-all duration-300 hover:border-[#febd69]/50 hover:shadow-lg hover:shadow-[#febd69]/10">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#febd69]/5 via-transparent to-[#febd69]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <div className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <img src={amazonIcon} alt="Amazon" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-[#febd69] truncate">
+                      {language === 'ar' ? 'ابحث على أمازون' : 'Find on Amazon'}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-gray-400 truncate">
+                      "{searchQuery}"
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-[#febd69] text-[#131921] text-xs sm:text-sm font-semibold transition-transform duration-200 group-hover:scale-105">
+                  <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">{language === 'ar' ? 'بحث' : 'Search'}</span>
+                  <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                </div>
+              </div>
+            </div>
+          </button>
+        )}
 
         {/* Products Count */}
         <p className="text-sm text-muted-foreground text-center mb-4">
