@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, Grid2X2, Grid3X3, LayoutGrid, ShoppingBag } from "lucide-react";
+import { Search, ExternalLink, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSafeErrorMessage } from "@/lib/errorHandler";
 import { FunnyLoadingText } from "@/components/FunnyLoadingText";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Link } from "react-router-dom";
 import { replaceWithAffiliateLink } from "@/lib/affiliateLinks";
 import { getAffiliateTag } from "@/config/stores";
 import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
+import { AffiliateDock } from "@/components/affiliate/AffiliateDock";
+import { AffiliateInterstitialAd } from "@/components/affiliate/AffiliateInterstitialAd";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface AffiliateProduct {
   id: string;
@@ -31,18 +33,17 @@ export default function AffiliateMode() {
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [productsPerRow, setProductsPerRow] = useState(4);
+  const [showAd, setShowAd] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load settings from localStorage
-  useEffect(() => {
-    const savedPerRow = localStorage.getItem('affiliateProductsPerRow');
-    const defaultPerRow = localStorage.getItem('affiliateDefaultPerRow');
-    if (savedPerRow) {
-      setProductsPerRow(parseInt(savedPerRow, 10));
-    } else if (defaultPerRow) {
-      setProductsPerRow(parseInt(defaultPerRow, 10));
-    }
-  }, []);
+  // Responsive breakpoints for auto grid
+  const isXl = useMediaQuery("(min-width: 1280px)");
+  const isLg = useMediaQuery("(min-width: 1024px)");
+  const isMd = useMediaQuery("(min-width: 768px)");
+  const isSm = useMediaQuery("(min-width: 640px)");
+
+  // Auto-calculate products per row based on screen size
+  const productsPerRow = isXl ? 6 : isLg ? 5 : isMd ? 4 : isSm ? 3 : 2;
 
   const showAmazonBanner = localStorage.getItem('affiliateShowAmazonBanner') !== 'false';
 
@@ -88,6 +89,21 @@ export default function AffiliateMode() {
     return Math.round(((original - current) / original) * 100);
   };
 
+  const handleSearchClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 300);
+  };
+
+  const handleHeartClick = () => {
+    window.open('https://ko-fi.com/krolist', '_blank');
+  };
+
+  const handleAdsClick = () => {
+    setShowAd(true);
+  };
+
   const gridClass = cn(
     "grid gap-3",
     productsPerRow === 2 && "grid-cols-2",
@@ -107,56 +123,23 @@ export default function AffiliateMode() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Interstitial Ad */}
+      <AffiliateInterstitialAd isVisible={showAd} onClose={() => setShowAd(false)} />
+
       {/* Header */}
-      <header className="sticky top-0 z-50 h-16 flex items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm px-4">
+      <header className="sticky top-0 z-50 h-16 flex items-center justify-center border-b border-border bg-card/95 backdrop-blur-sm px-4">
         <Link to="/products" className="flex items-center gap-2">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
         </Link>
-        
-        {/* Grid Size Controls */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant={productsPerRow === 3 ? "secondary" : "ghost"}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              setProductsPerRow(3);
-              localStorage.setItem('affiliateProductsPerRow', '3');
-            }}
-          >
-            <Grid2X2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={productsPerRow === 4 ? "secondary" : "ghost"}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              setProductsPerRow(4);
-              localStorage.setItem('affiliateProductsPerRow', '4');
-            }}
-          >
-            <Grid3X3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={productsPerRow === 5 ? "secondary" : "ghost"}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              setProductsPerRow(5);
-              localStorage.setItem('affiliateProductsPerRow', '5');
-            }}
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-        </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 py-4">
+      <main className="flex-1 px-4 py-4 pb-24">
         {/* Search Bar */}
         <div className="relative mb-3 max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             placeholder={language === 'ar' ? 'ابحث عن المنتجات...' : 'Search products...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -283,18 +266,16 @@ export default function AffiliateMode() {
             <p className="text-muted-foreground">
               {language === 'ar' ? 'لم يتم العثور على منتجات' : 'No products found'}
             </p>
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                className="mt-2"
-                onClick={() => setSearchQuery("")}
-              >
-                {language === 'ar' ? 'مسح البحث' : 'Clear search'}
-              </Button>
-            )}
           </div>
         )}
       </main>
+
+      {/* Floating Dock */}
+      <AffiliateDock 
+        onSearchClick={handleSearchClick}
+        onHeartClick={handleHeartClick}
+        onAdsClick={handleAdsClick}
+      />
 
       {/* Footer - simplified */}
       <Footer hideQuickLinks />

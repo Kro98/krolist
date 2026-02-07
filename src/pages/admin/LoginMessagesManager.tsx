@@ -353,6 +353,24 @@ export default function LoginMessagesManager() {
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
+                    <Label className="text-base">{isArabic ? 'تفعيل وضع الأفيليت على الموقع الرئيسي' : 'Enable Affiliate Mode on Main Site'}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {isArabic 
+                        ? 'عند التفعيل، سيتم تحويل krolist.com إلى وضع الأفيليت بدلاً من الموقع العادي'
+                        : 'When enabled, krolist.com will redirect to affiliate mode instead of the normal site'}
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={localStorage.getItem('affiliateModeEnabled') === 'true'}
+                    onCheckedChange={(checked) => {
+                      localStorage.setItem('affiliateModeEnabled', String(checked));
+                      toast({ title: isArabic ? 'تم الحفظ' : 'Setting saved' });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
                     <Label className="text-base">{isArabic ? 'إخفاء زر التسجيل' : 'Hide Sign Up Button'}</Label>
                     <p className="text-sm text-muted-foreground">
                       {isArabic 
@@ -385,33 +403,6 @@ export default function LoginMessagesManager() {
                       toast({ title: isArabic ? 'تم الحفظ' : 'Setting saved' });
                     }}
                   />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="space-y-0.5">
-                    <Label className="text-base">{isArabic ? 'عدد المنتجات الافتراضي في الصف' : 'Default Products Per Row'}</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {isArabic 
-                        ? 'عدد المنتجات المعروضة في كل صف افتراضياً'
-                        : 'Number of products displayed per row by default'}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Slider
-                      value={[parseInt(localStorage.getItem('affiliateDefaultPerRow') || '4', 10)]}
-                      onValueChange={(value) => {
-                        localStorage.setItem('affiliateDefaultPerRow', String(value[0]));
-                        localStorage.setItem('affiliateProductsPerRow', String(value[0]));
-                      }}
-                      min={2}
-                      max={6}
-                      step={1}
-                      className="flex-1"
-                    />
-                    <span className="w-8 text-center font-medium">
-                      {localStorage.getItem('affiliateDefaultPerRow') || '4'}
-                    </span>
-                  </div>
                 </div>
               </CardContent>
             </Card>

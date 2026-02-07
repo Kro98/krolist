@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -46,6 +46,12 @@ const initializeSettings = () => {
   }
 };
 initializeSettings();
+
+// Check if affiliate mode is enabled for main site
+const isAffiliateModeEnabled = () => {
+  return localStorage.getItem('affiliateModeEnabled') === 'true';
+};
+
 const App = () => <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <ThemeProvider>
@@ -64,34 +70,52 @@ const App = () => <QueryClientProvider client={queryClient}>
                             {/* Affiliate Mode - Outside Layout (no sidebar) */}
                             <Route path="/affiliate" element={<AffiliateMode />} />
                             
-                            {/* Main App with Layout */}
+                            {/* Main App with Layout or Affiliate Mode if enabled */}
                             <Route path="*" element={
-                              <Layout>
+                              isAffiliateModeEnabled() ? (
                                 <Routes>
-                                  <Route path="/" element={<Products />} />
-                                  <Route path="/products" element={<Products />} />
-                                  <Route path="/search-products" element={<SearchProducts />} />
-                                  <Route path="/how-to-use-search" element={<HowToUseSearch />} />
-                                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                                  <Route path="/events" element={<Events />} />
-                                  <Route path="/promo-codes" element={<PromoCodes />} />
-                                  <Route path="/donation" element={<Donation />} />
-                                  <Route path="/admin" element={<Admin />} />
-                                  <Route path="/admin/articles" element={<ArticlesManager />} />
-                                  <Route path="/admin/articles/:id" element={<ArticleEditor />} />
-                                  <Route path="/categories" element={<CategoryTags />} />
-                                  <Route path="/category/:categoryId" element={<CategoryProducts />} />
-                                  <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-                                  <Route path="/articles" element={<Articles />} />
-                                  <Route path="/articles/:slug" element={<Article />} />
-                                  <Route path="/stickers" element={<Stickers />} />
-                                  <Route path="/settings" element={<Settings />} />
-                                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                                  <Route path="/contact-us" element={<ContactUs />} />
-                                  <Route path="*" element={<NotFound />} />
+                                  <Route path="/" element={<AffiliateMode />} />
+                                  <Route path="/products" element={<AffiliateMode />} />
+                                  <Route path="/admin" element={<Layout><Admin /></Layout>} />
+                                  <Route path="/admin/*" element={
+                                    <Layout>
+                                      <Routes>
+                                        <Route path="articles" element={<ArticlesManager />} />
+                                        <Route path="articles/:id" element={<ArticleEditor />} />
+                                      </Routes>
+                                    </Layout>
+                                  } />
+                                  <Route path="/settings" element={<Layout><Settings /></Layout>} />
+                                  <Route path="*" element={<AffiliateMode />} />
                                 </Routes>
-                              </Layout>
+                              ) : (
+                                <Layout>
+                                  <Routes>
+                                    <Route path="/" element={<Products />} />
+                                    <Route path="/products" element={<Products />} />
+                                    <Route path="/search-products" element={<SearchProducts />} />
+                                    <Route path="/how-to-use-search" element={<HowToUseSearch />} />
+                                    <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                                    <Route path="/events" element={<Events />} />
+                                    <Route path="/promo-codes" element={<PromoCodes />} />
+                                    <Route path="/donation" element={<Donation />} />
+                                    <Route path="/admin" element={<Admin />} />
+                                    <Route path="/admin/articles" element={<ArticlesManager />} />
+                                    <Route path="/admin/articles/:id" element={<ArticleEditor />} />
+                                    <Route path="/categories" element={<CategoryTags />} />
+                                    <Route path="/category/:categoryId" element={<CategoryProducts />} />
+                                    <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                                    <Route path="/articles" element={<Articles />} />
+                                    <Route path="/articles/:slug" element={<Article />} />
+                                    <Route path="/stickers" element={<Stickers />} />
+                                    <Route path="/settings" element={<Settings />} />
+                                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                                    <Route path="/contact-us" element={<ContactUs />} />
+                                    <Route path="*" element={<NotFound />} />
+                                  </Routes>
+                                </Layout>
+                              )
                             } />
                           </Routes>
                         </BrowserRouter>
