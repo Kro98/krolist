@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Search, ExternalLink, ShoppingBag } from "lucide-react";
@@ -14,7 +14,10 @@ import { replaceWithAffiliateLink } from "@/lib/affiliateLinks";
 import { getAffiliateTag } from "@/config/stores";
 import amazonIcon from "@/assets/shop-icons/amazon-icon.png";
 import { AffiliateDock } from "@/components/affiliate/AffiliateDock";
-import { AffiliateInterstitialAd } from "@/components/affiliate/AffiliateInterstitialAd";
+import { AffiliateSettings } from "@/components/affiliate/AffiliateSettings";
+import { AffiliateDonation } from "@/components/affiliate/AffiliateDonation";
+import { AffiliateFilter, SortOption, StoreFilter } from "@/components/affiliate/AffiliateFilter";
+import { AffiliateProductAd } from "@/components/affiliate/AffiliateProductAd";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface AffiliateProduct {
@@ -26,6 +29,7 @@ interface AffiliateProduct {
   currency: string;
   store: string;
   product_url: string;
+  created_at: string | null;
 }
 
 export default function AffiliateMode() {
@@ -33,7 +37,17 @@ export default function AffiliateMode() {
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAd, setShowAd] = useState(false);
+  
+  // Panel states
+  const [showSettings, setShowSettings] = useState(false);
+  const [showDonation, setShowDonation] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  
+  // Filter & Sort state
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [storeFilter, setStoreFilter] = useState<StoreFilter>(null);
+  const [manualGridOverride, setManualGridOverride] = useState<number | null>(null);
+  
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Responsive breakpoints for auto grid
@@ -43,7 +57,8 @@ export default function AffiliateMode() {
   const isSm = useMediaQuery("(min-width: 640px)");
 
   // Auto-calculate products per row based on screen size
-  const productsPerRow = isXl ? 6 : isLg ? 5 : isMd ? 4 : isSm ? 3 : 2;
+  const autoProductsPerRow = isXl ? 6 : isLg ? 5 : isMd ? 4 : isSm ? 3 : 2;
+  const productsPerRow = manualGridOverride || autoProductsPerRow;
 
   const showAmazonBanner = localStorage.getItem('affiliateShowAmazonBanner') !== 'false';
 
@@ -55,7 +70,7 @@ export default function AffiliateMode() {
     try {
       const { data, error } = await supabase
         .from('krolist_products')
-        .select('id, title, image_url, current_price, original_price, currency, store, product_url')
+        .select('id, title, image_url, current_price, original_price, currency, store, product_url, created_at')
         .eq('is_featured', true)
         .eq('availability_status', 'available')
         .order('created_at', { ascending: false });
@@ -69,11 +84,48 @@ export default function AffiliateMode() {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.store.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
+  // Get unique stores for filter
+  const availableStores = useMemo(() => {
+    const stores = [...new Set(products.map(p => p.store))];
+    return stores.sort();
+  }, [products]);
+
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    let result = products.filter(product => {
+      const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.store.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStore = !storeFilter || product.store.toLowerCase() === storeFilter.toLowerCase();
+      return matchesSearch && matchesStore;
+    });
+
+    // Sort
+    switch (sortBy) {
+      case 'price-low':
+        result = [...result].sort((a, b) => a.current_price - b.current_price);
+        break;
+      case 'price-high':
+        result = [...result].sort((a, b) => b.current_price - a.current_price);
+        break;
+      case 'discount':
+        result = [...result].sort((a, b) => {
+          const discountA = a.original_price > a.current_price 
+            ? ((a.original_price - a.current_price) / a.original_price) * 100 
+            : 0;
+          const discountB = b.original_price > b.current_price 
+            ? ((b.original_price - b.current_price) / b.original_price) * 100 
+            : 0;
+          return discountB - discountA;
+        });
+        break;
+      case 'newest':
+      default:
+        // Already sorted by created_at from DB
+        break;
+    }
+
+    return result;
+  }, [products, searchQuery, storeFilter, sortBy]);
 
   const handleProductClick = (product: AffiliateProduct) => {
     const affiliateUrl = replaceWithAffiliateLink(product.product_url);
@@ -96,12 +148,8 @@ export default function AffiliateMode() {
     }, 300);
   };
 
-  const handleHeartClick = () => {
-    window.open('https://ko-fi.com/krolist', '_blank');
-  };
-
-  const handleAdsClick = () => {
-    setShowAd(true);
+  const handleGridChange = (cols: number) => {
+    setManualGridOverride(cols);
   };
 
   const gridClass = cn(
@@ -113,6 +161,23 @@ export default function AffiliateMode() {
     productsPerRow === 6 && "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
   );
 
+  // Insert ads every N products
+  const getProductsWithAds = () => {
+    const AD_INTERVAL = 12; // Insert ad every 12 products
+    const items: (AffiliateProduct | 'ad')[] = [];
+    
+    filteredProducts.forEach((product, index) => {
+      items.push(product);
+      if ((index + 1) % AD_INTERVAL === 0 && index < filteredProducts.length - 1) {
+        items.push('ad');
+      }
+    });
+    
+    return items;
+  };
+
+  const itemsWithAds = getProductsWithAds();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -123,8 +188,30 @@ export default function AffiliateMode() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Interstitial Ad */}
-      <AffiliateInterstitialAd isVisible={showAd} onClose={() => setShowAd(false)} />
+      {/* Settings Panel */}
+      <AffiliateSettings 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)}
+        onGridChange={handleGridChange}
+        currentGrid={productsPerRow}
+      />
+
+      {/* Donation Panel */}
+      <AffiliateDonation 
+        isOpen={showDonation} 
+        onClose={() => setShowDonation(false)} 
+      />
+
+      {/* Filter Panel */}
+      <AffiliateFilter
+        isOpen={showFilter}
+        onClose={() => setShowFilter(false)}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        storeFilter={storeFilter}
+        onStoreFilterChange={setStoreFilter}
+        availableStores={availableStores}
+      />
 
       {/* Header */}
       <header className="sticky top-0 z-50 h-16 flex items-center justify-center border-b border-border bg-card/95 backdrop-blur-sm px-4">
@@ -134,7 +221,7 @@ export default function AffiliateMode() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 py-4 pb-24">
+      <main className="flex-1 px-4 py-4 pb-28">
         {/* Search Bar */}
         <div className="relative mb-3 max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -158,7 +245,6 @@ export default function AffiliateMode() {
             className="group w-full max-w-2xl mx-auto mb-4 block"
           >
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#131921] via-[#232f3e] to-[#131921] border border-[#febd69]/20 p-3 sm:p-4 transition-all duration-300 hover:border-[#febd69]/50 hover:shadow-lg hover:shadow-[#febd69]/10">
-              {/* Subtle gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#febd69]/5 via-transparent to-[#febd69]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               <div className="relative flex items-center justify-between gap-3">
@@ -185,16 +271,32 @@ export default function AffiliateMode() {
           </button>
         )}
 
-        {/* Products Count */}
-        <p className="text-sm text-muted-foreground text-center mb-4">
-          {language === 'ar' 
-            ? `${filteredProducts.length} منتج` 
-            : `${filteredProducts.length} products`}
-        </p>
+        {/* Products Count & Active Filters */}
+        <div className="flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground">
+          <span>
+            {language === 'ar' 
+              ? `${filteredProducts.length} منتج` 
+              : `${filteredProducts.length} products`}
+          </span>
+          {storeFilter && (
+            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs capitalize">
+              {storeFilter}
+            </span>
+          )}
+        </div>
 
-        {/* Products Grid */}
+        {/* Products Grid with Ads */}
         <div className={gridClass}>
-          {filteredProducts.map((product) => {
+          {itemsWithAds.map((item, index) => {
+            if (item === 'ad') {
+              return (
+                <div key={`ad-${index}`} className="col-span-full">
+                  <AffiliateProductAd />
+                </div>
+              );
+            }
+
+            const product = item;
             const discount = getDiscount(product.original_price, product.current_price);
             
             return (
@@ -273,8 +375,9 @@ export default function AffiliateMode() {
       {/* Floating Dock */}
       <AffiliateDock 
         onSearchClick={handleSearchClick}
-        onHeartClick={handleHeartClick}
-        onAdsClick={handleAdsClick}
+        onHeartClick={() => setShowDonation(true)}
+        onSettingsClick={() => setShowSettings(true)}
+        onFilterClick={() => setShowFilter(true)}
       />
 
       {/* Footer - simplified */}
