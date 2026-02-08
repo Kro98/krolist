@@ -54,10 +54,10 @@ export function AffiliateDock({
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto max-w-[90vw] sm:max-w-none">
       {/* iOS-style glass dock with enhanced blur */}
       <div className={cn(
-        "flex items-center gap-1.5 px-2 py-2 rounded-2xl",
+        "flex items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-2xl sm:rounded-3xl",
         // Enhanced glass effect with stronger backdrop blur
         "bg-background/40 backdrop-blur-2xl backdrop-saturate-150",
         // Subtle border with gradient
@@ -65,7 +65,7 @@ export function AffiliateDock({
         // Deep shadow for depth
         "shadow-xl shadow-black/20",
         // Subtle inner highlight
-        "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none",
+        "before:absolute before:inset-0 before:rounded-2xl sm:before:rounded-3xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none",
         "relative overflow-hidden"
       )}>
         {dockItems.map((item, index) => {
@@ -75,7 +75,8 @@ export function AffiliateDock({
               key={index}
               onClick={item.onClick}
               className={cn(
-                "group relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl",
+                "group relative flex flex-col items-center justify-center gap-1 sm:gap-1.5",
+                "px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl",
                 // Bubble effect background
                 item.bgClass,
                 item.colorClass,
@@ -91,21 +92,21 @@ export function AffiliateDock({
             >
               {/* Bubble highlight effect */}
               <div className={cn(
-                "absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100",
+                "absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100",
                 "bg-gradient-to-t from-transparent via-white/10 to-white/20",
                 "transition-opacity duration-300"
               )} />
               
               {/* Icon */}
               <Icon className={cn(
-                "w-5 h-5 relative z-10",
+                "w-5 h-5 sm:w-6 sm:h-6 relative z-10",
                 "transition-transform duration-300",
                 "group-hover:scale-110"
               )} />
               
               {/* Label */}
               <span className={cn(
-                "text-[10px] font-medium relative z-10",
+                "text-[10px] sm:text-xs font-medium relative z-10",
                 "opacity-70 group-hover:opacity-100",
                 "transition-opacity duration-200"
               )}>
