@@ -1,7 +1,7 @@
 import { Search, Heart, Settings, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-
+import { useState, useEffect } from "react";
 interface AffiliateDockProps {
   onSearchClick: () => void;
   onHeartClick: () => void;
@@ -17,7 +17,13 @@ export function AffiliateDock({
 }: AffiliateDockProps) {
   const { language } = useLanguage();
   const isArabic = language === 'ar';
+  const [isVisible, setIsVisible] = useState(false);
 
+  useEffect(() => {
+    // Trigger animation after mount
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
   const dockItems = [
     {
       icon: Search,
@@ -54,7 +60,13 @@ export function AffiliateDock({
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto max-w-[90vw] sm:max-w-none">
+    <div className={cn(
+      "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto max-w-[90vw] sm:max-w-none",
+      "transition-all duration-500 ease-out",
+      isVisible 
+        ? "opacity-100 translate-y-0" 
+        : "opacity-0 translate-y-8 scale-95"
+    )}>
       {/* iOS-style glass dock with enhanced blur */}
       <div className={cn(
         "flex items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-2xl sm:rounded-3xl",
