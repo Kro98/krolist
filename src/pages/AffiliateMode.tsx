@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, ShoppingBag } from "lucide-react";
+import { Search, ExternalLink, ShoppingBag, Info } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import { AffiliateSettings } from "@/components/affiliate/AffiliateSettings";
 import { AffiliateDonation } from "@/components/affiliate/AffiliateDonation";
 import { AffiliateFilter, SortOption, StoreFilter } from "@/components/affiliate/AffiliateFilter";
 import { AffiliateProductAd } from "@/components/affiliate/AffiliateProductAd";
+import { AffiliateInfoPage } from "@/components/affiliate/AffiliateInfoPage";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface AffiliateProduct {
@@ -42,6 +43,7 @@ export default function AffiliateMode() {
   const [showSettings, setShowSettings] = useState(false);
   const [showDonation, setShowDonation] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
+  const [showInfoPage, setShowInfoPage] = useState(false);
   
   // Filter & Sort state
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -213,11 +215,27 @@ export default function AffiliateMode() {
         availableStores={availableStores}
       />
 
+      {/* Info Page */}
+      <AffiliateInfoPage
+        isOpen={showInfoPage}
+        onClose={() => setShowInfoPage(false)}
+      />
+
       {/* Header */}
-      <header className="sticky top-0 z-50 h-16 flex items-center justify-center border-b border-border bg-card/95 backdrop-blur-sm px-4">
+      <header className="sticky top-0 z-50 h-16 flex items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm px-4">
+        <div className="w-10" /> {/* Spacer for centering logo */}
         <Link to="/products" className="flex items-center gap-2">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
         </Link>
+        <button
+          onClick={() => setShowInfoPage(true)}
+          className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center",
+            "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          )}
+        >
+          <Info className="w-5 h-5" />
+        </button>
       </header>
 
       {/* Main Content */}
