@@ -18,6 +18,8 @@ interface FAQItem {
   answer: { en: string; ar: string };
 }
 
+import { DollarSign } from "lucide-react";
+
 const faqItems: FAQItem[] = [
   {
     id: 'how-to-use',
@@ -31,6 +33,20 @@ const faqItems: FAQItem[] = [
     answer: {
       en: "It's super simple! Just tap on any product you like, and you'll be taken directly to the store (like Amazon). From there, you can view the product, check reviews, and make your purchase as normal. We just help you discover great deals!",
       ar: "الأمر بسيط جداً! فقط اضغط على أي منتج يعجبك، وسيتم نقلك مباشرة إلى المتجر (مثل أمازون). من هناك، يمكنك عرض المنتج، التحقق من التقييمات، وإتمام الشراء كالمعتاد. نحن فقط نساعدك في اكتشاف العروض الرائعة!"
+    }
+  },
+  {
+    id: 'no-extra-cost',
+    icon: DollarSign,
+    colorClass: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30',
+    glowClass: 'shadow-emerald-500/20',
+    question: {
+      en: 'Will I pay extra for you to receive commission?',
+      ar: 'هل سأدفع أكثر حتى تحصلوا على العمولة؟'
+    },
+    answer: {
+      en: "Not at all! The price you pay is exactly the same as everyone else. The store pays us a small thank-you fee from their marketing budget - it costs you nothing extra. You can even use discount codes and coupons to save money, and we still get credited. It's truly a win-win!",
+      ar: "أبداً! السعر الذي تدفعه هو نفسه تماماً الذي يدفعه أي شخص آخر. المتجر يدفع لنا رسوم شكر صغيرة من ميزانية التسويق الخاصة بهم - لا يكلفك شيئاً إضافياً. يمكنك حتى استخدام أكواد الخصم والكوبونات لتوفير المال، ونحن لا نزال نحصل على العمولة. الكل يربح حقاً!"
     }
   },
   {
@@ -155,12 +171,12 @@ export function AffiliateInfoPage({ isOpen, onClose }: AffiliateInfoPageProps) {
         </div>
 
         {/* FAQ Section */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-sm sm:text-base font-semibold text-muted-foreground uppercase tracking-wide">
             {isArabic ? 'الأسئلة الشائعة' : 'Frequently Asked Questions'}
           </h2>
           
-          <div className="space-y-2">
+          <div className="space-y-2 sm:space-y-3">
             {faqItems.map((item) => {
               const Icon = item.icon;
               const isExpanded = expandedId === item.id;
@@ -169,37 +185,37 @@ export function AffiliateInfoPage({ isOpen, onClose }: AffiliateInfoPageProps) {
                 <div
                   key={item.id}
                   className={cn(
-                    "rounded-xl border overflow-hidden transition-all duration-300",
+                    "rounded-xl sm:rounded-2xl border overflow-hidden transition-all duration-300",
                     item.colorClass,
                     isExpanded && `shadow-lg ${item.glowClass}`
                   )}
                 >
                   <button
                     onClick={() => toggleExpand(item.id)}
-                    className="w-full flex items-center gap-3 p-3 text-left"
+                    className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 text-left"
                   >
                     <div className={cn(
-                      "shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
+                      "shrink-0 w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center",
                       item.colorClass.replace('/20', '/30')
                     )}>
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <span className="flex-1 text-sm font-medium text-foreground">
+                    <span className="flex-1 text-sm sm:text-base font-medium text-foreground">
                       {isArabic ? item.question.ar : item.question.en}
                     </span>
                     <ChevronDown className={cn(
-                      "w-4 h-4 shrink-0 transition-transform duration-300 text-muted-foreground",
+                      "w-4 h-4 sm:w-5 sm:h-5 shrink-0 transition-transform duration-300 text-muted-foreground",
                       isExpanded && "rotate-180"
                     )} />
                   </button>
                   
                   <div className={cn(
                     "overflow-hidden transition-all duration-300",
-                    isExpanded ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+                    isExpanded ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
                   )}>
-                    <div className="px-3 pb-3 pt-0">
-                      <div className="p-3 rounded-lg bg-background/60 backdrop-blur-sm">
-                        <p className="text-xs text-muted-foreground leading-relaxed">
+                    <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0">
+                      <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-background/60 backdrop-blur-sm">
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                           {isArabic ? item.answer.ar : item.answer.en}
                         </p>
                       </div>
