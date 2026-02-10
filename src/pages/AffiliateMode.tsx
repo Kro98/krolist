@@ -20,6 +20,7 @@ import { AffiliateFilter, SortOption, StoreFilter } from "@/components/affiliate
 import { AffiliateProductAd } from "@/components/affiliate/AffiliateProductAd";
 import { AffiliateInfoPage } from "@/components/affiliate/AffiliateInfoPage";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useSectionLocks } from "@/hooks/useSectionLocks";
 
 interface AffiliateProduct {
   id: string;
@@ -35,6 +36,7 @@ interface AffiliateProduct {
 
 export default function AffiliateMode() {
   const { language } = useLanguage();
+  const sectionLocks = useSectionLocks();
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -224,26 +226,30 @@ export default function AffiliateMode() {
       {/* Header */}
       <header className="sticky top-0 z-50 h-16 flex items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm px-4">
         <div className="flex items-center gap-2">
-          <Link
-            to="/articles"
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
-              "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">{language === 'ar' ? 'مقالات' : 'Articles'}</span>
-          </Link>
-          <Link
-            to="/stickers"
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
-              "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Sticker className="w-4 h-4" />
-            <span className="hidden sm:inline">{language === 'ar' ? 'ملصقات' : 'Stickers'}</span>
-          </Link>
+          {!sectionLocks.articles && (
+            <Link
+              to="/articles"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
+                "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">{language === 'ar' ? 'مقالات' : 'Articles'}</span>
+            </Link>
+          )}
+          {!sectionLocks.stickers && (
+            <Link
+              to="/stickers"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
+                "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Sticker className="w-4 h-4" />
+              <span className="hidden sm:inline">{language === 'ar' ? 'ملصقات' : 'Stickers'}</span>
+            </Link>
+          )}
         </div>
         <Link to="/" className="flex items-center gap-2">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
