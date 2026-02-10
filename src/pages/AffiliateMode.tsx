@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, ShoppingBag, Info } from "lucide-react";
+import { Search, ExternalLink, ShoppingBag, Info, FileText, Sticker } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -223,8 +223,29 @@ export default function AffiliateMode() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 h-16 flex items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm px-4">
-        <div className="w-10" /> {/* Spacer for centering logo */}
-        <Link to="/products" className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Link
+            to="/articles"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
+              "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline">{language === 'ar' ? 'مقالات' : 'Articles'}</span>
+          </Link>
+          <Link
+            to="/stickers"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
+              "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Sticker className="w-4 h-4" />
+            <span className="hidden sm:inline">{language === 'ar' ? 'ملصقات' : 'Stickers'}</span>
+          </Link>
+        </div>
+        <Link to="/" className="flex items-center gap-2">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
         </Link>
         <button
