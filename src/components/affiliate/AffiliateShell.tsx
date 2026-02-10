@@ -1,10 +1,11 @@
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Lock as LockIcon } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import krolistLogo from "@/assets/krolist-logo.png";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Helmet } from "react-helmet-async";
+import { useSectionLocks } from "@/hooks/useSectionLocks";
 
 interface AffiliateShellProps {
   children: React.ReactNode;
@@ -13,8 +14,15 @@ interface AffiliateShellProps {
 
 export function AffiliateShell({ children, title }: AffiliateShellProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { language } = useLanguage();
   const isArabic = language === 'ar';
+  const locks = useSectionLocks();
+
+  // Determine if current section is locked
+  const isArticlesRoute = location.pathname.startsWith('/articles');
+  const isStickersRoute = location.pathname.startsWith('/stickers');
+  const isLocked = (isArticlesRoute && locks.articles) || (isStickersRoute && locks.stickers);
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir={isArabic ? 'rtl' : 'ltr'}>
@@ -45,9 +53,25 @@ export function AffiliateShell({ children, title }: AffiliateShellProps) {
         <div className="w-20" /> {/* Spacer for centering */}
       </header>
 
-      {/* Content */}
+      {/* Content - show locked message or children */}
       <main className="flex-1">
-        {children}
+        {!locks.loading && isLocked ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+              <LockIcon className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">
+              {isArabic ? 'هذا القسم مغلق حالياً' : 'This section is currently locked'}
+            </h2>
+            <p className="text-muted-foreground max-w-md">
+              {isArabic 
+                ? 'هذه الصفحة غير متاحة حالياً. يرجى العودة لاحقاً.'
+                : 'This page is currently unavailable. Please check back later.'}
+            </p>
+          </div>
+        ) : (
+          children
+        )}
       </main>
     </div>
   );
