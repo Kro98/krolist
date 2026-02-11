@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, ExternalLink, RefreshCw, ChevronDown, ChevronUp, MoreVertical, Download, Upload, Loader2, Sparkles } from 'lucide-react';
 import { STORES, getEnabledStores } from '@/config/stores';
-import { ProductCarousel } from '@/components/ProductCarousel';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { FunnyLoadingText } from '@/components/FunnyLoadingText';
 interface KrolistProduct {
@@ -1086,15 +1086,38 @@ export default function KrolistProductsManager() {
             
             <CollapsibleContent className="animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="mt-2 pl-2 border-l-2 border-muted">
-                <ProductCarousel title="" products={collectionProducts.map(p => ({
-                  ...p,
-                  isKrolistProduct: true,
-                  price_history: [],
-                  last_checked_at: p.last_checked_at || p.updated_at
-                }))} onDelete={handleDelete} onUpdate={(id, updates) => {
-                  const product = collectionProducts.find(p => p.id === id);
-                  if (product) handleOpenDialog(product);
-                }} />
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {collectionProducts.map(product => (
+                    <Card key={product.id} className="relative">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="icon" className="absolute top-3 right-3 z-10 h-8 w-8 bg-background shadow-md hover:bg-accent">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenDialog(product)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            {t('admin.editProduct')}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {t('admin.deleteProduct')}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <CardContent className="p-4">
+                        {product.image_url && (
+                          <img src={product.image_url} alt={product.title} className="w-full h-32 object-contain rounded mb-2" />
+                        )}
+                        <h4 className="font-medium text-sm line-clamp-2">{product.title}</h4>
+                        <p className="text-primary font-bold mt-1">{product.current_price} {product.currency}</p>
+                        <Badge variant="outline" className="mt-1 text-xs">{product.store}</Badge>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>
