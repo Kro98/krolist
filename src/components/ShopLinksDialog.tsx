@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { getStoreById } from "@/config/stores";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAdTrigger } from "@/contexts/AdTriggerContext";
+
 
 interface ShopCampaign {
   id: string;
@@ -41,7 +41,7 @@ export function ShopLinksDialog({ open, onOpenChange, shopId, shopUrl, onShowGui
   const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const hasFetched = useRef(false);
-  const { triggerShopOpen } = useAdTrigger();
+  
   
   const storeConfig = getStoreById(shopId);
 
@@ -105,7 +105,6 @@ export function ShopLinksDialog({ open, onOpenChange, shopId, shopUrl, onShowGui
   };
 
   const handleLinkClick = (url: string) => {
-    triggerShopOpen();
     window.open(url, '_blank');
   };
 
@@ -138,7 +137,6 @@ export function ShopLinksDialog({ open, onOpenChange, shopId, shopUrl, onShowGui
         <div className="flex gap-2 flex-shrink-0">
           <Button 
             onClick={() => {
-              triggerShopOpen();
               window.open(shopUrl, '_blank');
             }}
             className="flex-1 bg-gradient-primary hover:opacity-90"
