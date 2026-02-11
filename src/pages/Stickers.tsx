@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
-import GeminiGradientBackground from "@/components/GeminiGradientBackground";
+
 import stickersTitleImage from "@/assets/stickers-title.png";
 
 interface StickerItem {
@@ -209,8 +209,6 @@ export default function Stickers() {
       </Helmet>
 
       <div className={`min-h-screen overflow-x-hidden ${isArabic ? 'rtl' : 'ltr'}`}>
-        {/* Gemini-style Abstract Gradient Background */}
-        <GeminiGradientBackground />
 
         {/* Glassmorphic Header */}
         <div className="sticky top-0 z-40 backdrop-blur-2xl bg-background/20 border-b border-white/10">
