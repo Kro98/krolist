@@ -22,8 +22,7 @@ import Admin from "./pages/Admin";
 import ArticlesManager from "./pages/admin/ArticlesManager";
 import ArticleEditor from "./pages/admin/ArticleEditor";
 import { AffiliateShell } from "@/components/affiliate/AffiliateShell";
-import { Layout } from "@/components/Layout";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -77,10 +76,10 @@ const App = () => (
                         <Route path="/terms-of-service" element={<TermsOfService />} />
                         <Route path="/contact-us" element={<ContactUs />} />
 
-                        {/* Admin - protected, uses legacy Layout for sidebar */}
-                        <Route path="/admin" element={<Layout><Admin /></Layout>} />
-                        <Route path="/admin/articles" element={<Layout><ArticlesManager /></Layout>} />
-                        <Route path="/admin/articles/:id" element={<Layout><ArticleEditor /></Layout>} />
+                        {/* Admin - protected with role check */}
+                        <Route path="/admin" element={<AdminLayout><Admin /></AdminLayout>} />
+                        <Route path="/admin/articles" element={<AdminLayout><ArticlesManager /></AdminLayout>} />
+                        <Route path="/admin/articles/:id" element={<AdminLayout><ArticleEditor /></AdminLayout>} />
 
                         {/* Legacy redirects */}
                         <Route path="/events" element={<Navigate to="/" replace />} />

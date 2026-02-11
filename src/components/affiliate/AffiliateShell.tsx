@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Helmet } from "react-helmet-async";
 import { useSectionLocks } from "@/hooks/useSectionLocks";
+import { motion } from "framer-motion";
 
 interface AffiliateShellProps {
   children: React.ReactNode;
@@ -53,8 +54,14 @@ export function AffiliateShell({ children, title }: AffiliateShellProps) {
         <div className="w-20" /> {/* Spacer for centering */}
       </header>
 
-      {/* Content - show locked message or children */}
-      <main className="flex-1">
+      {/* Content with smooth transition */}
+      <motion.main
+        className="flex-1"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        key={location.pathname}
+      >
         {!locks.loading && isLocked ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
@@ -72,7 +79,7 @@ export function AffiliateShell({ children, title }: AffiliateShellProps) {
         ) : (
           children
         )}
-      </main>
+      </motion.main>
     </div>
   );
 }
