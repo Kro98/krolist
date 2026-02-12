@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings,
+  Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Server,
   Tag, Image, Upload, X, Key, Sparkles, Sun, Moon, RotateCcw,
   Eye, Contrast, Droplets, ZoomIn, Move, ChevronRight,
   Monitor, Tablet, Smartphone, PanelTop, Square, Columns, Palette, Copy, ExternalLink, Plug
@@ -22,6 +22,7 @@ import StickersManager from "./admin/StickersManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
 import ApiSettingsManager from "./admin/ApiSettingsManager";
 import IntegrationHub from "./admin/IntegrationHub";
+import SelfHostingGuide from "./admin/SelfHostingGuide";
 import { toast as sonnerToast } from "sonner";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
@@ -139,6 +140,7 @@ export default function Admin() {
     { value: "promo-codes", label: "Promo Codes", icon: Tag, color: "bg-accent text-accent-foreground" },
     { value: "api-settings", label: "API Keys", icon: Key, color: "bg-accent text-accent-foreground" },
     { value: "integrations", label: "Hub", icon: Plug, color: "bg-accent text-accent-foreground" },
+    { value: "hosting", label: "Hosting", icon: Server, color: "bg-accent text-accent-foreground" },
     { value: "settings", label: "Settings", icon: Settings, color: "bg-accent text-accent-foreground" },
   ];
 
@@ -514,6 +516,12 @@ export default function Admin() {
                 <TabsContent value="integrations" className="mt-0">
                   <motion.div key="integrations" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
                     <IntegrationHub />
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="hosting" className="mt-0">
+                  <motion.div key="hosting" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+                    <SelfHostingGuide />
                   </motion.div>
                 </TabsContent>
 
@@ -985,6 +993,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="integrations" className="mt-0">
             <IntegrationHub />
+          </TabsContent>
+          <TabsContent value="hosting" className="mt-0">
+            <SelfHostingGuide />
           </TabsContent>
           <TabsContent value="settings" className="mt-0">
             <div className="space-y-4">
