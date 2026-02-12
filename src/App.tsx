@@ -21,6 +21,7 @@ import ArticleEditor from "./pages/admin/ArticleEditor";
 import { AffiliateShell } from "@/components/affiliate/AffiliateShell";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { SiteBackground } from "@/components/SiteBackground";
+import { TrackingScripts } from "@/components/TrackingScripts";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +35,8 @@ const App = () => (
               <TooltipProvider>
                 <Toaster />
                 <BrowserRouter>
-                  <SiteBackground />
+                   <TrackingScripts />
+                   <SiteBackground />
                   <div className="relative z-10">
                   <Routes>
                     {/* Default: Affiliate Mode */}
