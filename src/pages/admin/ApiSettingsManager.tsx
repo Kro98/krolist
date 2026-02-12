@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Key, Save, Plus, Trash2, AlertTriangle, Shield, RefreshCw, Lock } from "lucide-react";
+import { Key, Save, Plus, Trash2, AlertTriangle, Shield, RefreshCw, Lock, Zap, CheckCircle, XCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,10 @@ export default function ApiSettingsManager() {
 
   // Delete
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Test connection
+  const [testing, setTesting] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, { success: boolean; status: string; message: string }>>({});
 
   const fetchSecrets = async () => {
     try {
@@ -187,6 +191,43 @@ export default function ApiSettingsManager() {
     }
   };
 
+  const handleTestConnection = async (name: string) => {
+    setTesting(name);
+    setTestResults(prev => { const copy = { ...prev }; delete copy[name]; return copy; });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const res = await fetch(
+        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/test-secret-connection`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ secretName: name }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Test failed');
+
+      setTestResults(prev => ({ ...prev, [name]: data }));
+      if (data.success) {
+        toast.success(`${name}: ${data.message}`);
+      } else {
+        toast.error(`${name}: ${data.message}`);
+      }
+    } catch (err: any) {
+      const result = { success: false, status: 'error', message: err.message || 'Test failed' };
+      setTestResults(prev => ({ ...prev, [name]: result }));
+      toast.error(err.message || 'Test failed');
+    } finally {
+      setTesting(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -274,51 +315,81 @@ export default function ApiSettingsManager() {
       {userSecrets.length > 0 && (
         <div className="space-y-2">
           <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your Secrets</Label>
-          {userSecrets.map(secret => (
-            <div key={secret.name} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card/50 group hover:border-primary/20 transition-colors">
-              <Key className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span className="font-mono text-sm font-medium flex-1">{secret.name}</span>
+          {userSecrets.map(secret => {
+            const testResult = testResults[secret.name];
+            return (
+            <div key={secret.name} className="space-y-1">
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card/50 group hover:border-primary/20 transition-colors">
+                {testResult ? (
+                  testResult.success
+                    ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                    : <XCircle className="w-4 h-4 text-destructive shrink-0" />
+                ) : (
+                  <Key className="w-4 h-4 text-muted-foreground shrink-0" />
+                )}
+                <span className="font-mono text-sm font-medium flex-1">{secret.name}</span>
 
-              {editingName === secret.name ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="password"
-                    placeholder="New value..."
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="font-mono text-xs h-8 w-48"
-                    autoFocus
-                  />
-                  <Button size="sm" className="h-8" onClick={() => handleUpdateSecret(secret.name)} disabled={updatingSaving}>
-                    {updatingSaving ? '...' : 'Save'}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8" onClick={() => { setEditingName(null); setEditValue(""); }}>
-                    ✕
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-xs"
-                    onClick={() => { setEditingName(secret.name); setEditValue(""); }}
-                  >
-                    Update
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-xs text-destructive hover:text-destructive"
-                    onClick={() => handleDeleteSecret(secret.name)}
-                    disabled={deleting === secret.name}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                {editingName === secret.name ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="password"
+                      placeholder="New value..."
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="font-mono text-xs h-8 w-48"
+                      autoFocus
+                    />
+                    <Button size="sm" className="h-8" onClick={() => handleUpdateSecret(secret.name)} disabled={updatingSaving}>
+                      {updatingSaving ? '...' : 'Save'}
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8" onClick={() => { setEditingName(null); setEditValue(""); }}>
+                      ✕
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => handleTestConnection(secret.name)}
+                      disabled={testing === secret.name}
+                    >
+                      <Zap className={cn("w-3.5 h-3.5 mr-1", testing === secret.name && "animate-pulse")} />
+                      {testing === secret.name ? 'Testing...' : 'Test'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => { setEditingName(secret.name); setEditValue(""); }}
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs text-destructive hover:text-destructive"
+                      onClick={() => handleDeleteSecret(secret.name)}
+                      disabled={deleting === secret.name}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+              {testResult && (
+                <div className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ml-7",
+                  testResult.success ? "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950/30" : "text-destructive bg-destructive/5"
+                )}>
+                  <Info className="w-3 h-3 shrink-0" />
+                  <span>{testResult.message}</span>
                 </div>
               )}
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
 

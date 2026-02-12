@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.manage-secrets]
 verify_jwt = false
+
+[functions.test-secret-connection]
+verify_jwt = false
