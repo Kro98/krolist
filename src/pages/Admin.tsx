@@ -485,32 +485,32 @@ export default function Admin() {
         {/* Main Content */}
         <div className="flex-1 min-w-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              >
-                <TabsContent value="products" className="mt-0" forceMount={activeTab === "products" ? true : undefined}>
-                  {activeTab === "products" && <KrolistProductsManager />}
+                <TabsContent value="products" className="mt-0">
+                  <motion.div key="products" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+                    <KrolistProductsManager />
+                  </motion.div>
                 </TabsContent>
 
-                <TabsContent value="stickers" className="mt-0" forceMount={activeTab === "stickers" ? true : undefined}>
-                  {activeTab === "stickers" && <StickersManager />}
+                <TabsContent value="stickers" className="mt-0">
+                  <motion.div key="stickers" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+                    <StickersManager />
+                  </motion.div>
                 </TabsContent>
 
-                <TabsContent value="promo-codes" className="mt-0" forceMount={activeTab === "promo-codes" ? true : undefined}>
-                  {activeTab === "promo-codes" && <PromoCodesManager />}
+                <TabsContent value="promo-codes" className="mt-0">
+                  <motion.div key="promo-codes" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+                    <PromoCodesManager />
+                  </motion.div>
                 </TabsContent>
 
-                <TabsContent value="api-settings" className="mt-0" forceMount={activeTab === "api-settings" ? true : undefined}>
-                  {activeTab === "api-settings" && <ApiSettingsManager />}
+                <TabsContent value="api-settings" className="mt-0">
+                  <motion.div key="api-settings" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+                    <ApiSettingsManager />
+                  </motion.div>
                 </TabsContent>
 
-                <TabsContent value="settings" className="mt-0" forceMount={activeTab === "settings" ? true : undefined}>
-                  {activeTab === "settings" && (
+                <TabsContent value="settings" className="mt-0">
+                  <motion.div key="settings" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
                     <div className="max-w-3xl space-y-6">
                       {/* Section Visibility */}
                       <GlassCard glow>
@@ -954,10 +954,8 @@ export default function Admin() {
                         </div>
                       </GlassCard>
                     </div>
-                  )}
+                  </motion.div>
                 </TabsContent>
-              </motion.div>
-            </AnimatePresence>
           </Tabs>
         </div>
       </div>
