@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { FunnyLoadingText } from "@/components/FunnyLoadingText";
@@ -28,6 +28,31 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
 
+  // Rate limiting: 3 attempts, then 15-minute lockout
+  const MAX_ATTEMPTS = 3;
+  const LOCKOUT_MS = 15 * 60 * 1000;
+  const STORAGE_KEY = 'admin_login_attempts';
+
+  const getAttemptData = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { count: 0, lockedUntil: 0 };
+      return JSON.parse(raw) as { count: number; lockedUntil: number };
+    } catch { return { count: 0, lockedUntil: 0 }; }
+  };
+
+  const [attemptData, setAttemptData] = useState(getAttemptData);
+
+  const isLocked = useMemo(() => attemptData.lockedUntil > Date.now(), [attemptData]);
+  const remainingMinutes = useMemo(() => Math.ceil((attemptData.lockedUntil - Date.now()) / 60000), [attemptData]);
+
+  // Refresh lock state every 30s
+  useEffect(() => {
+    if (!isLocked) return;
+    const t = setInterval(() => setAttemptData(getAttemptData()), 30000);
+    return () => clearInterval(t);
+  }, [isLocked]);
+
   const fetchBg = useCallback(async () => {
     try {
       const { data } = await supabase
@@ -54,11 +79,37 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
+
+    // Check lockout
+    const current = getAttemptData();
+    if (current.lockedUntil > Date.now()) {
+      toast.error('Too many attempts. Try again later.');
+      setAttemptData(current);
+      return;
+    }
+
     setLoggingIn(true);
     try {
       const { error } = await signIn(email, password, true);
       if (error) {
-        toast.error(error.message || 'Login failed');
+        const newCount = current.count + 1;
+        const locked = newCount >= MAX_ATTEMPTS;
+        const data = {
+          count: newCount,
+          lockedUntil: locked ? Date.now() + LOCKOUT_MS : 0,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        setAttemptData(data);
+
+        if (locked) {
+          toast.error('Too many failed attempts. Locked for 15 minutes.');
+        } else {
+          toast.error(`${error.message || 'Login failed'} (${MAX_ATTEMPTS - newCount} attempts left)`);
+        }
+      } else {
+        // Success — reset attempts
+        localStorage.removeItem(STORAGE_KEY);
+        setAttemptData({ count: 0, lockedUntil: 0 });
       }
     } catch (err: any) {
       toast.error(err.message || 'Login failed');
@@ -123,9 +174,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={loggingIn}>
+              <Button type="submit" className="w-full" disabled={loggingIn || isLocked}>
                 <LogIn className="w-4 h-4 mr-2" />
-                {loggingIn ? 'Signing in...' : 'Sign In'}
+                {isLocked ? `Locked (${remainingMinutes}m)` : loggingIn ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           )}
