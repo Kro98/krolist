@@ -45,11 +45,13 @@ export default function AffiliateMode() {
    // Secret admin access: tap logo 7 times
    const logoTapCount = useRef(0);
    const logoTapTimer = useRef<ReturnType<typeof setTimeout>>();
-   const handleLogoTap = useCallback(() => {
+   const handleLogoTap = useCallback(async () => {
      logoTapCount.current += 1;
      clearTimeout(logoTapTimer.current);
      if (logoTapCount.current >= 7) {
       logoTapCount.current = 0;
+      // Sign out first so the admin login page is shown
+      await supabase.auth.signOut();
       navigate('/admin');
       return;
     }
