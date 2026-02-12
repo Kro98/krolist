@@ -1,176 +1,190 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Key, Eye, EyeOff, Save, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Key, Save, Plus, Trash2, AlertTriangle, Shield, RefreshCw, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-interface ApiKey {
-  id: string;
-  key_name: string;
-  key_value: string;
-  description: string;
-  is_active: boolean;
-  updated_at: string;
+interface SecretEntry {
+  name: string;
+  protected: boolean;
 }
 
 export default function ApiSettingsManager() {
-  const { user } = useAuth();
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [secrets, setSecrets] = useState<SecretEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
-  const [saving, setSaving] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // New key form
+  // New secret form
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newKeyName, setNewKeyName] = useState("");
-  const [newKeyValue, setNewKeyValue] = useState("");
-  const [newKeyDesc, setNewKeyDesc] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newValue, setNewValue] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchApiKeys();
-  }, []);
+  // Update existing secret
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [updatingSaving, setUpdatingSaving] = useState(false);
 
-  const fetchApiKeys = async () => {
+  // Delete
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const fetchSecrets = async () => {
     try {
-      const { data, error } = await supabase
-        .from('page_content')
-        .select('*')
-        .eq('category', 'api_settings')
-        .order('updated_at', { ascending: false });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      if (error) throw error;
-
-      const keys: ApiKey[] = (data || []).map(row => {
-        let parsed: { value?: string; description?: string; is_active?: boolean } = {};
-        try {
-          parsed = JSON.parse(row.content_en);
-        } catch {
-          parsed = { value: row.content_en, description: row.description || '', is_active: true };
+      const res = await fetch(
+        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
         }
-        return {
-          id: row.id,
-          key_name: row.page_key.replace('api_key_', ''),
-          key_value: parsed.value || '',
-          description: parsed.description || row.description || '',
-          is_active: parsed.is_active !== false,
-          updated_at: row.updated_at || '',
-        };
-      });
+      );
 
-      setApiKeys(keys);
-    } catch (err) {
-      console.error('Error fetching API keys:', err);
-      toast.error('Failed to load API settings');
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to fetch');
+      }
+
+      const data = await res.json();
+      setSecrets(data);
+    } catch (err: any) {
+      console.error('Error fetching secrets:', err);
+      toast.error(err.message || 'Failed to load secrets');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const toggleVisibility = (id: string) => {
-    setVisibleKeys(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  useEffect(() => {
+    fetchSecrets();
+  }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchSecrets();
   };
 
-  const maskValue = (value: string) => {
-    if (value.length <= 8) return '•'.repeat(value.length);
-    return value.slice(0, 4) + '•'.repeat(Math.min(value.length - 8, 20)) + value.slice(-4);
-  };
+  const handleAddSecret = async () => {
+    const trimmedName = newName.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+    const trimmedValue = newValue.trim();
 
-  const saveKey = async (key: ApiKey) => {
-    setSaving(key.id);
-    try {
-      const { error } = await supabase
-        .from('page_content')
-        .update({
-          content_en: JSON.stringify({
-            value: key.key_value,
-            description: key.description,
-            is_active: key.is_active,
-          }),
-          description: key.description,
-          updated_by: user?.id,
-        })
-        .eq('id', key.id);
-
-      if (error) throw error;
-      toast.success(`${key.key_name} updated`);
-    } catch (err) {
-      console.error('Error saving API key:', err);
-      toast.error('Failed to save');
-    } finally {
-      setSaving(null);
-    }
-  };
-
-  const addNewKey = async () => {
-    if (!newKeyName.trim() || !newKeyValue.trim()) {
+    if (!trimmedName || !trimmedValue) {
       toast.error('Name and value are required');
       return;
     }
 
-    setSaving('new');
+    setSaving(true);
     try {
-      const pageKey = `api_key_${newKeyName.trim().toLowerCase().replace(/\s+/g, '_')}`;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-      const { error } = await supabase
-        .from('page_content')
-        .upsert({
-          page_key: pageKey,
-          content_en: JSON.stringify({
-            value: newKeyValue.trim(),
-            description: newKeyDesc.trim(),
-            is_active: true,
-          }),
-          description: newKeyDesc.trim(),
-          category: 'api_settings',
-          updated_by: user?.id,
-        }, { onConflict: 'page_key' });
+      const res = await fetch(
+        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: trimmedName, value: trimmedValue }),
+        }
+      );
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to save');
+      }
 
-      toast.success(`${newKeyName} added`);
-      setNewKeyName("");
-      setNewKeyValue("");
-      setNewKeyDesc("");
+      toast.success(`${trimmedName} saved successfully`);
+      setNewName("");
+      setNewValue("");
       setShowNewForm(false);
-      fetchApiKeys();
-    } catch (err) {
-      console.error('Error adding API key:', err);
-      toast.error('Failed to add key');
+      fetchSecrets();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save secret');
     } finally {
-      setSaving(null);
+      setSaving(false);
     }
   };
 
-  const deleteKey = async (key: ApiKey) => {
-    if (!confirm(`Delete "${key.key_name}"? This cannot be undone.`)) return;
+  const handleUpdateSecret = async (name: string) => {
+    const trimmedValue = editValue.trim();
+    if (!trimmedValue) {
+      toast.error('Value is required');
+      return;
+    }
 
+    setUpdatingSaving(true);
     try {
-      const { error } = await supabase
-        .from('page_content')
-        .delete()
-        .eq('id', key.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-      if (error) throw error;
-      toast.success(`${key.key_name} deleted`);
-      setApiKeys(prev => prev.filter(k => k.id !== key.id));
-    } catch (err) {
-      console.error('Error deleting API key:', err);
-      toast.error('Failed to delete');
+      const res = await fetch(
+        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, value: trimmedValue }),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to update');
+      }
+
+      toast.success(`${name} updated`);
+      setEditingName(null);
+      setEditValue("");
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update secret');
+    } finally {
+      setUpdatingSaving(false);
     }
   };
 
-  const updateLocalKey = (id: string, field: keyof ApiKey, value: string | boolean) => {
-    setApiKeys(prev => prev.map(k => k.id === id ? { ...k, [field]: value } : k));
+  const handleDeleteSecret = async (name: string) => {
+    if (!confirm(`Delete secret "${name}"? Edge functions using it will break.`)) return;
+
+    setDeleting(name);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const res = await fetch(
+        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ names: [name] }),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to delete');
+      }
+
+      toast.success(`${name} deleted`);
+      setSecrets(prev => prev.filter(s => s.name !== name));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete secret');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   if (loading) {
@@ -178,157 +192,156 @@ export default function ApiSettingsManager() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-24 bg-muted rounded-xl" />
+            <div key={i} className="h-14 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
     );
   }
 
+  const userSecrets = secrets.filter(s => !s.protected);
+  const protectedSecrets = secrets.filter(s => s.protected);
+
   return (
     <div className="max-w-2xl mx-auto space-y-6 px-4">
-      {/* Warning */}
-      <div className="flex items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/5">
-        <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+      {/* Info */}
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5">
+        <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-medium text-destructive">Sensitive Data</p>
+          <p className="font-medium">Supabase Edge Function Secrets</p>
           <p className="text-muted-foreground mt-1">
-            API keys stored here are saved in the database. For production secrets, use Supabase Edge Function secrets instead.
+            These secrets are securely stored in Supabase and available as environment variables in all edge functions. Values cannot be viewed after saving — only names are shown.
           </p>
         </div>
       </div>
 
-      {/* Existing Keys */}
-      {apiKeys.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5" />
-              API Keys
-            </CardTitle>
-            <CardDescription>
-              Manage your API keys and credentials.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {apiKeys.map(key => (
-              <div key={key.id} className="p-4 rounded-xl border border-border bg-card space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold">{key.key_name}</p>
-                    {key.description && (
-                      <p className="text-xs text-muted-foreground">{key.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => toggleVisibility(key.id)}
-                    >
-                      {visibleKeys.has(key.id) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deleteKey(key)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <Key className="w-5 h-5" />
+          Secrets ({secrets.length})
+        </h2>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw className={cn("w-4 h-4 mr-1", refreshing && "animate-spin")} />
+            Refresh
+          </Button>
+          <Button size="sm" onClick={() => setShowNewForm(true)} disabled={showNewForm}>
+            <Plus className="w-4 h-4 mr-1" />
+            Add Secret
+          </Button>
+        </div>
+      </div>
 
-                <div className="flex gap-2">
-                  <Input
-                    type={visibleKeys.has(key.id) ? "text" : "password"}
-                    value={key.key_value}
-                    onChange={(e) => updateLocalKey(key.id, 'key_value', e.target.value)}
-                    className="font-mono text-xs flex-1"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => saveKey(key)}
-                    disabled={saving === key.id}
-                  >
-                    <Save className="w-3.5 h-3.5 mr-1" />
-                    {saving === key.id ? '...' : 'Save'}
-                  </Button>
-                </div>
-
-                {key.updated_at && (
-                  <p className="text-[10px] text-muted-foreground">
-                    Last updated: {new Date(key.updated_at).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Add New Key */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Plus className="h-4 w-4" />
-            {showNewForm ? 'New API Key' : 'Add API Key'}
-          </CardTitle>
-        </CardHeader>
-        {showNewForm ? (
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm">Key Name</Label>
+      {/* Add New Secret Form */}
+      {showNewForm && (
+        <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 space-y-3">
+          <Label className="text-sm font-semibold">New Secret</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Name</Label>
               <Input
-                placeholder="e.g. OPENAI_API_KEY"
-                value={newKeyName}
-                onChange={(e) => setNewKeyName(e.target.value)}
+                placeholder="MY_API_KEY"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_'))}
+                className="font-mono text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm">Value</Label>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Value</Label>
               <Input
                 type="password"
                 placeholder="sk-..."
-                value={newKeyValue}
-                onChange={(e) => setNewKeyValue(e.target.value)}
-                className="font-mono text-xs"
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                className="font-mono text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm">Description (optional)</Label>
-              <Input
-                placeholder="Used for AI product search"
-                value={newKeyDesc}
-                onChange={(e) => setNewKeyDesc(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={addNewKey} disabled={saving === 'new'} className="flex-1">
-                {saving === 'new' ? 'Adding...' : 'Add Key'}
-              </Button>
-              <Button variant="outline" onClick={() => setShowNewForm(false)}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        ) : (
-          <CardContent>
-            <Button variant="outline" className="w-full" onClick={() => setShowNewForm(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New API Key
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleAddSecret} disabled={saving} size="sm">
+              <Save className="w-3.5 h-3.5 mr-1" />
+              {saving ? 'Saving...' : 'Save Secret'}
             </Button>
-          </CardContent>
-        )}
-      </Card>
-
-      {apiKeys.length === 0 && !showNewForm && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Key className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No API keys configured yet.</p>
+            <Button variant="ghost" size="sm" onClick={() => { setShowNewForm(false); setNewName(""); setNewValue(""); }}>
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
+
+      {/* User Secrets */}
+      {userSecrets.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your Secrets</Label>
+          {userSecrets.map(secret => (
+            <div key={secret.name} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card/50 group hover:border-primary/20 transition-colors">
+              <Key className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="font-mono text-sm font-medium flex-1">{secret.name}</span>
+
+              {editingName === secret.name ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="password"
+                    placeholder="New value..."
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="font-mono text-xs h-8 w-48"
+                    autoFocus
+                  />
+                  <Button size="sm" className="h-8" onClick={() => handleUpdateSecret(secret.name)} disabled={updatingSaving}>
+                    {updatingSaving ? '...' : 'Save'}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8" onClick={() => { setEditingName(null); setEditValue(""); }}>
+                    ✕
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => { setEditingName(secret.name); setEditValue(""); }}
+                  >
+                    Update
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs text-destructive hover:text-destructive"
+                    onClick={() => handleDeleteSecret(secret.name)}
+                    disabled={deleting === secret.name}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Protected Secrets */}
+      {protectedSecrets.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Secrets (Protected)</Label>
+          {protectedSecrets.map(secret => (
+            <div key={secret.name} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-muted/30">
+              <Lock className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+              <span className="font-mono text-sm text-muted-foreground">{secret.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Warning */}
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-destructive/20 bg-destructive/5">
+        <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground">
+          Deleting or modifying secrets used by edge functions will break those functions. Protected system secrets cannot be deleted from this interface.
+        </p>
+      </div>
     </div>
   );
 }

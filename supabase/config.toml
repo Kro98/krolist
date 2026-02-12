@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.admin-login-guard]
 verify_jwt = false
+
+[functions.manage-secrets]
+verify_jwt = false
