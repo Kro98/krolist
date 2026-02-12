@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { useAdSlots } from '@/hooks/useAdSlots';
 
 declare global {
   interface Window {
@@ -14,8 +15,10 @@ export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
   const adKey = useMemo(() => Math.random().toString(36).substring(7), []);
+  const { slots, loading } = useAdSlots();
 
   useEffect(() => {
+    if (loading || !slots.articleInlineSlot) return;
     if (adRef.current && !adLoaded) {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -24,7 +27,9 @@ export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
         console.error('AdSense error:', e);
       }
     }
-  }, [adLoaded]);
+  }, [adLoaded, loading, slots.articleInlineSlot]);
+
+  if (!slots.articleInlineSlot) return null;
 
   return (
     <div className={`my-8 w-full ${className}`}>
@@ -37,8 +42,8 @@ export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
           key={adKey}
           className="adsbygoogle"
           style={{ display: 'block', textAlign: 'center' }}
-          data-ad-client="ca-pub-2793689855806571"
-          data-ad-slot="auto"
+          data-ad-client={slots.clientId}
+          data-ad-slot={slots.articleInlineSlot}
           data-ad-format="fluid"
           data-ad-layout-key="-fb+5w+4e-db+86"
           data-full-width-responsive="true"
