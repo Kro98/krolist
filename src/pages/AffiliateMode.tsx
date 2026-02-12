@@ -42,13 +42,13 @@ export default function AffiliateMode() {
   const navigate = useNavigate();
   const sectionLocks = useSectionLocks();
   
-  // Secret admin access: tap logo 5 times
-  const logoTapCount = useRef(0);
-  const logoTapTimer = useRef<ReturnType<typeof setTimeout>>();
-  const handleLogoTap = useCallback(() => {
-    logoTapCount.current += 1;
-    clearTimeout(logoTapTimer.current);
-    if (logoTapCount.current >= 5) {
+   // Secret admin access: tap logo 7 times
+   const logoTapCount = useRef(0);
+   const logoTapTimer = useRef<ReturnType<typeof setTimeout>>();
+   const handleLogoTap = useCallback(() => {
+     logoTapCount.current += 1;
+     clearTimeout(logoTapTimer.current);
+     if (logoTapCount.current >= 7) {
       logoTapCount.current = 0;
       navigate('/admin');
       return;

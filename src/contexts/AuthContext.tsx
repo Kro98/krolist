@@ -21,66 +21,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
-  const isInitialLoad = useRef(true);
+  
 
   useEffect(() => {
+    let isMounted = true;
+
     // Load guest status from localStorage
     const guestStatus = localStorage.getItem('isGuest') === 'true';
     setIsGuest(guestStatus);
 
-    // Set up auth state listener FIRST
+    // Set up auth state listener FIRST (for ONGOING changes only)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+      (event, currentSession) => {
+        if (!isMounted) return;
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         
         // Clear guest mode when user signs in
-        if (session?.user) {
+        if (currentSession?.user) {
           setIsGuest(false);
           localStorage.removeItem('isGuest');
-        }
-        
-        // Auth state is now handled reactively without page refresh
-        
-        // Handle remember me functionality
-        if (session?.user && !sessionStorage.getItem('rememberMeSession')) {
-          const rememberMe = localStorage.getItem('rememberMe') === 'true';
-          if (!rememberMe) {
-            setTimeout(() => {
-              supabase.auth.signOut();
-            }, 0);
-          }
         }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      // Mark initial load as complete after a short delay
-      setTimeout(() => {
-        isInitialLoad.current = false;
-      }, 500);
-      
-      // Check remember me on initial load
-      if (session?.user) {
-        const rememberMe = localStorage.getItem('rememberMe') === 'true';
-        if (!rememberMe && !sessionStorage.getItem('rememberMeSession')) {
-          setTimeout(() => {
-            supabase.auth.signOut();
-          }, 0);
-        }
-      } else if (!guestStatus) {
-        setIsGuest(true);
-        localStorage.setItem('isGuest', 'true');
-      }
-    });
+    // THEN check for existing session (controls loading state)
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        if (!isMounted) return;
 
-    return () => subscription.unsubscribe();
+        setSession(existingSession);
+        setUser(existingSession?.user ?? null);
+
+        if (!existingSession?.user && !guestStatus) {
+          setIsGuest(true);
+          localStorage.setItem('isGuest', 'true');
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, username: string) => {
