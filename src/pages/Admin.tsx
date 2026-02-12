@@ -74,19 +74,27 @@ export default function Admin() {
   const [stickersLocked, setStickersLocked] = useState(false);
   const [loadingLocks, setLoadingLocks] = useState(true);
 
-  // Background settings
+  // Background settings - per device
+  type DeviceKey = 'desktop' | 'tablet' | 'mobile';
+  type BgSettings = { blur: number; opacity: number; overlay: number; brightness: number; saturation: number; scale: number; posX: number; posY: number };
+  const defaultBg: BgSettings = { blur: 0, opacity: 20, overlay: 60, brightness: 100, saturation: 100, scale: 100, posX: 50, posY: 50 };
+
   const [bgImageUrl, setBgImageUrl] = useState("");
-  const [bgBlur, setBgBlur] = useState(0);
-  const [bgOpacity, setBgOpacity] = useState(20);
-  const [bgOverlay, setBgOverlay] = useState(60);
-  const [bgBrightness, setBgBrightness] = useState(100);
-  const [bgSaturation, setBgSaturation] = useState(100);
-  const [bgScale, setBgScale] = useState(100);
-  const [bgPosX, setBgPosX] = useState(50);
-  const [bgPosY, setBgPosY] = useState(50);
+  const [deviceSettings, setDeviceSettings] = useState<Record<DeviceKey, BgSettings>>({
+    desktop: { ...defaultBg },
+    tablet: { ...defaultBg },
+    mobile: { ...defaultBg },
+  });
+  const [selectedDevice, setSelectedDevice] = useState<DeviceKey>('desktop');
   const [savingBg, setSavingBg] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
   const [isDraggingPos, setIsDraggingPos] = useState(false);
+
+  const currentBg = deviceSettings[selectedDevice];
+  const updateCurrentBg = (patch: Partial<BgSettings>) => {
+    setDeviceSettings(prev => ({ ...prev, [selectedDevice]: { ...prev[selectedDevice], ...patch } }));
+  };
+  const getBg = (device: DeviceKey) => deviceSettings[device];
 
   const tabs = [
     { value: "products", label: t('admin.krolistProducts'), icon: Package, color: "bg-primary/10 text-primary" },
@@ -151,27 +159,46 @@ export default function Admin() {
     }
   };
 
+  const devices: DeviceKey[] = ['desktop', 'tablet', 'mobile'];
+  const bgFieldKeys = ['blur', 'opacity', 'overlay', 'brightness', 'saturation', 'scale', 'pos_x', 'pos_y'] as const;
+
   const fetchBgSettings = async () => {
     try {
+      const allKeys = ['admin_bg_image'];
+      for (const d of devices) {
+        for (const f of bgFieldKeys) {
+          allKeys.push(`admin_bg_${d}_${f}`);
+        }
+      }
+      // Also fetch legacy keys for backwards compat
+      for (const f of bgFieldKeys) {
+        allKeys.push(`admin_bg_${f}`);
+      }
       const { data } = await supabase
         .from('page_content')
         .select('page_key, content_en')
-        .in('page_key', [
-          'admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity',
-          'admin_bg_overlay', 'admin_bg_brightness', 'admin_bg_saturation',
-          'admin_bg_scale', 'admin_bg_pos_x', 'admin_bg_pos_y',
-        ]);
+        .in('page_key', allKeys);
       if (data) {
-        data.forEach(row => {
-          if (row.page_key === 'admin_bg_image') setBgImageUrl(row.content_en || '');
-          if (row.page_key === 'admin_bg_blur') setBgBlur(Number(row.content_en) || 0);
-          if (row.page_key === 'admin_bg_opacity') setBgOpacity(Number(row.content_en) || 20);
-          if (row.page_key === 'admin_bg_overlay') setBgOverlay(Number(row.content_en) ?? 60);
-          if (row.page_key === 'admin_bg_brightness') setBgBrightness(Number(row.content_en) || 100);
-          if (row.page_key === 'admin_bg_saturation') setBgSaturation(Number(row.content_en) || 100);
-          if (row.page_key === 'admin_bg_scale') setBgScale(Number(row.content_en) || 100);
-          if (row.page_key === 'admin_bg_pos_x') setBgPosX(Number(row.content_en) ?? 50);
-          if (row.page_key === 'admin_bg_pos_y') setBgPosY(Number(row.content_en) ?? 50);
+        const map: Record<string, string> = {};
+        data.forEach(row => { map[row.page_key] = row.content_en; });
+        if (map['admin_bg_image']) setBgImageUrl(map['admin_bg_image']);
+
+        setDeviceSettings(prev => {
+          const next = { ...prev };
+          for (const d of devices) {
+            const s = { ...next[d] };
+            // Try device-specific first, fall back to legacy
+            s.blur = Number(map[`admin_bg_${d}_blur`] ?? map['admin_bg_blur'] ?? 0);
+            s.opacity = Number(map[`admin_bg_${d}_opacity`] ?? map['admin_bg_opacity'] ?? 20);
+            s.overlay = Number(map[`admin_bg_${d}_overlay`] ?? map['admin_bg_overlay'] ?? 60);
+            s.brightness = Number(map[`admin_bg_${d}_brightness`] ?? map['admin_bg_brightness'] ?? 100);
+            s.saturation = Number(map[`admin_bg_${d}_saturation`] ?? map['admin_bg_saturation'] ?? 100);
+            s.scale = Number(map[`admin_bg_${d}_scale`] ?? map['admin_bg_scale'] ?? 100);
+            s.posX = Number(map[`admin_bg_${d}_pos_x`] ?? map['admin_bg_pos_x'] ?? 50);
+            s.posY = Number(map[`admin_bg_${d}_pos_y`] ?? map['admin_bg_pos_y'] ?? 50);
+            next[d] = s;
+          }
+          return next;
         });
       }
     } catch (err) {
@@ -182,17 +209,34 @@ export default function Admin() {
   const saveBgSettings = async () => {
     setSavingBg(true);
     try {
-      const settings = [
+      const settings: { page_key: string; content_en: string; description: string }[] = [
         { page_key: 'admin_bg_image', content_en: bgImageUrl, description: 'Admin background image URL' },
-        { page_key: 'admin_bg_blur', content_en: String(bgBlur), description: 'Admin background blur (px)' },
-        { page_key: 'admin_bg_opacity', content_en: String(bgOpacity), description: 'Admin background opacity (%)' },
-        { page_key: 'admin_bg_overlay', content_en: String(bgOverlay), description: 'Admin background overlay opacity (%)' },
-        { page_key: 'admin_bg_brightness', content_en: String(bgBrightness), description: 'Admin background brightness (%)' },
-        { page_key: 'admin_bg_saturation', content_en: String(bgSaturation), description: 'Admin background saturation (%)' },
-        { page_key: 'admin_bg_scale', content_en: String(bgScale), description: 'Admin background scale/zoom (%)' },
-        { page_key: 'admin_bg_pos_x', content_en: String(bgPosX), description: 'Admin background position X (%)' },
-        { page_key: 'admin_bg_pos_y', content_en: String(bgPosY), description: 'Admin background position Y (%)' },
       ];
+      for (const d of devices) {
+        const s = deviceSettings[d];
+        settings.push(
+          { page_key: `admin_bg_${d}_blur`, content_en: String(s.blur), description: `Admin bg ${d} blur` },
+          { page_key: `admin_bg_${d}_opacity`, content_en: String(s.opacity), description: `Admin bg ${d} opacity` },
+          { page_key: `admin_bg_${d}_overlay`, content_en: String(s.overlay), description: `Admin bg ${d} overlay` },
+          { page_key: `admin_bg_${d}_brightness`, content_en: String(s.brightness), description: `Admin bg ${d} brightness` },
+          { page_key: `admin_bg_${d}_saturation`, content_en: String(s.saturation), description: `Admin bg ${d} saturation` },
+          { page_key: `admin_bg_${d}_scale`, content_en: String(s.scale), description: `Admin bg ${d} scale` },
+          { page_key: `admin_bg_${d}_pos_x`, content_en: String(s.posX), description: `Admin bg ${d} posX` },
+          { page_key: `admin_bg_${d}_pos_y`, content_en: String(s.posY), description: `Admin bg ${d} posY` },
+        );
+      }
+      // Also save desktop as legacy keys for AdminLayout compat
+      const ds = deviceSettings.desktop;
+      settings.push(
+        { page_key: 'admin_bg_blur', content_en: String(ds.blur), description: 'Admin background blur (px)' },
+        { page_key: 'admin_bg_opacity', content_en: String(ds.opacity), description: 'Admin background opacity (%)' },
+        { page_key: 'admin_bg_overlay', content_en: String(ds.overlay), description: 'Admin background overlay opacity (%)' },
+        { page_key: 'admin_bg_brightness', content_en: String(ds.brightness), description: 'Admin background brightness (%)' },
+        { page_key: 'admin_bg_saturation', content_en: String(ds.saturation), description: 'Admin background saturation (%)' },
+        { page_key: 'admin_bg_scale', content_en: String(ds.scale), description: 'Admin background scale/zoom (%)' },
+        { page_key: 'admin_bg_pos_x', content_en: String(ds.posX), description: 'Admin background position X (%)' },
+        { page_key: 'admin_bg_pos_y', content_en: String(ds.posY), description: 'Admin background position Y (%)' },
+      );
       for (const s of settings) {
         await supabase.from('page_content').upsert(s, { onConflict: 'page_key' });
       }
@@ -207,9 +251,13 @@ export default function Admin() {
   };
 
   const resetBgDefaults = () => {
-    setBgBlur(0); setBgOpacity(20); setBgOverlay(60);
-    setBgBrightness(100); setBgSaturation(100); setBgScale(100);
-    setBgPosX(50); setBgPosY(50);
+    setDeviceSettings(prev => ({ ...prev, [selectedDevice]: { ...defaultBg } }));
+  };
+
+  const copyToAllDevices = () => {
+    const current = deviceSettings[selectedDevice];
+    setDeviceSettings({ desktop: { ...current }, tablet: { ...current }, mobile: { ...current } });
+    sonnerToast.success('Copied to all devices');
   };
 
   return (
@@ -540,161 +588,173 @@ export default function Admin() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Move className="w-3.5 h-3.5 text-muted-foreground" />
-                                  <Label className="text-xs font-semibold">Drag to reposition</Label>
+                                  <Label className="text-xs font-semibold">Click a device to adjust it</Label>
                                 </div>
-                                <button
-                                  type="button"
-                                  className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                                  onClick={() => { setBgPosX(50); setBgPosY(50); }}
-                                >
-                                  Center
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    className="text-[10px] text-primary hover:text-primary/80 font-medium transition-colors"
+                                    onClick={copyToAllDevices}
+                                  >
+                                    Copy to all
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                                    onClick={() => updateCurrentBg({ posX: 50, posY: 50 })}
+                                  >
+                                    Center
+                                  </button>
+                                </div>
                               </div>
 
                               {/* Multi-device preview */}
                               <div className="flex items-end justify-center gap-3">
-                                {/* Desktop */}
-                                <div className="flex flex-col items-center gap-1 flex-1 max-w-[260px]">
-                                  <div
-                                    className={cn(
-                                      "relative w-full aspect-[16/10] rounded-lg overflow-hidden border border-border/50 cursor-grab active:cursor-grabbing select-none",
-                                      "shadow-[var(--shadow-md)] transition-shadow hover:shadow-[var(--shadow-lg)] bg-muted/30"
-                                    )}
-                                    onMouseDown={(e) => {
-                                      e.preventDefault();
-                                      setIsDraggingPos(true);
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      const handleMove = (ev: MouseEvent) => {
-                                        const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
-                                        const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
-                                        setBgPosX(Math.round(x));
-                                        setBgPosY(Math.round(y));
-                                      };
-                                      const handleUp = () => {
-                                        setIsDraggingPos(false);
-                                        window.removeEventListener('mousemove', handleMove);
-                                        window.removeEventListener('mouseup', handleUp);
-                                      };
-                                      window.addEventListener('mousemove', handleMove);
-                                      window.addEventListener('mouseup', handleUp);
-                                    }}
-                                    onTouchStart={(e) => {
-                                      setIsDraggingPos(true);
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      const handleMove = (ev: TouchEvent) => {
-                                        const touch = ev.touches[0];
-                                        const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
-                                        const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
-                                        setBgPosX(Math.round(x));
-                                        setBgPosY(Math.round(y));
-                                      };
-                                      const handleEnd = () => {
-                                        setIsDraggingPos(false);
-                                        window.removeEventListener('touchmove', handleMove);
-                                        window.removeEventListener('touchend', handleEnd);
-                                      };
-                                      window.addEventListener('touchmove', handleMove);
-                                      window.addEventListener('touchend', handleEnd);
-                                    }}
-                                  >
-                                    <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
-                                      filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
-                                      opacity: bgOpacity / 100, objectFit: 'cover', objectPosition: `${bgPosX}% ${bgPosY}%`, transform: `scale(${bgScale / 100})`,
-                                    }} />
-                                    <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
-                                    {/* Simulated content overlay */}
-                                    <div className="absolute inset-0 flex flex-col p-2 pointer-events-none">
-                                      <div className="flex gap-1 mb-1.5">
-                                        <div className="h-1 w-8 rounded-full bg-foreground/15" />
-                                        <div className="h-1 w-5 rounded-full bg-foreground/10" />
-                                        <div className="h-1 w-5 rounded-full bg-foreground/10 ml-auto" />
+                                {([
+                                  { key: 'desktop' as DeviceKey, icon: Monitor, label: 'Desktop', aspect: 'aspect-[16/10]', maxW: 'flex-1 max-w-[260px]' },
+                                  { key: 'tablet' as DeviceKey, icon: Tablet, label: 'Tablet', aspect: 'aspect-[3/4]', maxW: 'w-[90px]' },
+                                  { key: 'mobile' as DeviceKey, icon: Smartphone, label: 'Mobile', aspect: 'aspect-[9/16]', maxW: 'w-[50px]' },
+                                ]).map(device => {
+                                  const s = getBg(device.key);
+                                  const isSelected = selectedDevice === device.key;
+                                  const DevIcon = device.icon;
+                                  return (
+                                    <div key={device.key} className={cn("flex flex-col items-center gap-1", device.maxW)}>
+                                      <div
+                                        className={cn(
+                                          "relative w-full rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing select-none",
+                                          "shadow-[var(--shadow-md)] transition-all duration-300 bg-muted/30",
+                                          device.aspect,
+                                          isSelected
+                                            ? "border-primary shadow-[0_0_16px_hsl(var(--primary)/0.3)] ring-1 ring-primary/20"
+                                            : "border-border/50 hover:border-border opacity-70 hover:opacity-100"
+                                        )}
+                                        onClick={() => setSelectedDevice(device.key)}
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          setSelectedDevice(device.key);
+                                          setIsDraggingPos(true);
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          const handleMove = (ev: MouseEvent) => {
+                                            const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
+                                            const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
+                                            setDeviceSettings(prev => ({ ...prev, [device.key]: { ...prev[device.key], posX: Math.round(x), posY: Math.round(y) } }));
+                                          };
+                                          const handleUp = () => {
+                                            setIsDraggingPos(false);
+                                            window.removeEventListener('mousemove', handleMove);
+                                            window.removeEventListener('mouseup', handleUp);
+                                          };
+                                          window.addEventListener('mousemove', handleMove);
+                                          window.addEventListener('mouseup', handleUp);
+                                        }}
+                                        onTouchStart={(e) => {
+                                          setSelectedDevice(device.key);
+                                          setIsDraggingPos(true);
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          const handleMove = (ev: TouchEvent) => {
+                                            const touch = ev.touches[0];
+                                            const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
+                                            const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
+                                            setDeviceSettings(prev => ({ ...prev, [device.key]: { ...prev[device.key], posX: Math.round(x), posY: Math.round(y) } }));
+                                          };
+                                          const handleEnd = () => {
+                                            setIsDraggingPos(false);
+                                            window.removeEventListener('touchmove', handleMove);
+                                            window.removeEventListener('touchend', handleEnd);
+                                          };
+                                          window.addEventListener('touchmove', handleMove);
+                                          window.addEventListener('touchend', handleEnd);
+                                        }}
+                                      >
+                                        <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
+                                          filter: `blur(${s.blur}px) brightness(${s.brightness}%) saturate(${s.saturation}%)`,
+                                          opacity: s.opacity / 100, objectFit: 'cover', objectPosition: `${s.posX}% ${s.posY}%`, transform: `scale(${s.scale / 100})`,
+                                        }} />
+                                        <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${s.overlay / 100})` }} />
+                                        {/* Simulated content */}
+                                        {device.key === 'desktop' && (
+                                          <div className="absolute inset-0 flex flex-col p-2 pointer-events-none">
+                                            <div className="flex gap-1 mb-1.5">
+                                              <div className="h-1 w-8 rounded-full bg-foreground/15" />
+                                              <div className="h-1 w-5 rounded-full bg-foreground/10" />
+                                              <div className="h-1 w-5 rounded-full bg-foreground/10 ml-auto" />
+                                            </div>
+                                            <div className="flex-1 flex gap-1.5">
+                                              <div className="w-6 flex flex-col gap-1 py-1">
+                                                {[1,2,3,4].map(i => <div key={i} className="h-1 w-full rounded-full bg-foreground/10" />)}
+                                              </div>
+                                              <div className="flex-1 grid grid-cols-3 gap-1 auto-rows-[12px] py-1">
+                                                {[1,2,3,4,5,6].map(i => <div key={i} className="rounded bg-foreground/8" />)}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                        {device.key === 'tablet' && (
+                                          <div className="absolute inset-0 flex flex-col p-1.5 pointer-events-none">
+                                            <div className="h-0.5 w-6 rounded-full bg-foreground/12 mb-1" />
+                                            <div className="flex-1 grid grid-cols-2 gap-0.5 auto-rows-[8px]">
+                                              {[1,2,3,4].map(i => <div key={i} className="rounded-sm bg-foreground/8" />)}
+                                            </div>
+                                          </div>
+                                        )}
+                                        {device.key === 'mobile' && (
+                                          <div className="absolute inset-0 flex flex-col p-1 pointer-events-none">
+                                            <div className="h-0.5 w-4 rounded-full bg-foreground/12 mx-auto mb-0.5" />
+                                            <div className="flex-1 flex flex-col gap-0.5">
+                                              {[1,2,3].map(i => <div key={i} className="h-2 w-full rounded-sm bg-foreground/8" />)}
+                                            </div>
+                                            <div className="h-1.5 w-6 rounded-full bg-foreground/10 mx-auto mt-0.5" />
+                                          </div>
+                                        )}
+                                        {/* Position indicator */}
+                                        <motion.div
+                                          animate={{ left: `${s.posX}%`, top: `${s.posY}%` }}
+                                          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                          className="absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                                        >
+                                          <div className={cn(
+                                            "w-full h-full rounded-full border-2 transition-all",
+                                            isSelected
+                                              ? "border-primary bg-primary/20 shadow-[0_0_10px_hsl(var(--primary)/0.5)]"
+                                              : "border-muted-foreground/40 bg-muted-foreground/10"
+                                          )} />
+                                        </motion.div>
                                       </div>
-                                      <div className="flex-1 flex gap-1.5">
-                                        <div className="w-6 flex flex-col gap-1 py-1">
-                                          {[1,2,3,4].map(i => <div key={i} className="h-1 w-full rounded-full bg-foreground/10" />)}
-                                        </div>
-                                        <div className="flex-1 grid grid-cols-3 gap-1 auto-rows-[12px] py-1">
-                                          {[1,2,3,4,5,6].map(i => <div key={i} className="rounded bg-foreground/8" />)}
-                                        </div>
-                                      </div>
+                                      <button
+                                        onClick={() => setSelectedDevice(device.key)}
+                                        className={cn(
+                                          "flex items-center gap-1 text-[9px] transition-colors",
+                                          isSelected ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                      >
+                                        <DevIcon className="w-2.5 h-2.5" />
+                                        <span>{device.label}</span>
+                                      </button>
                                     </div>
-                                    <motion.div
-                                      animate={{ left: `${bgPosX}%`, top: `${bgPosY}%` }}
-                                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                                      className="absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                                    >
-                                      <div className="w-full h-full rounded-full border-2 border-primary bg-primary/20 shadow-[0_0_10px_hsl(var(--primary)/0.5)]" />
-                                    </motion.div>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                                    <Monitor className="w-2.5 h-2.5" />
-                                    <span>Desktop</span>
-                                  </div>
-                                </div>
-
-                                {/* Tablet */}
-                                <div className="flex flex-col items-center gap-1 w-[90px]">
-                                  <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden border border-border/50 bg-muted/30 shadow-[var(--shadow-sm)]">
-                                    <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
-                                      filter: `blur(${bgBlur * 0.6}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
-                                      opacity: bgOpacity / 100, objectFit: 'cover', objectPosition: `${bgPosX}% ${bgPosY}%`, transform: `scale(${bgScale / 100})`,
-                                    }} />
-                                    <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
-                                    <div className="absolute inset-0 flex flex-col p-1.5 pointer-events-none">
-                                      <div className="h-0.5 w-6 rounded-full bg-foreground/12 mb-1" />
-                                      <div className="flex-1 grid grid-cols-2 gap-0.5 auto-rows-[8px]">
-                                        {[1,2,3,4].map(i => <div key={i} className="rounded-sm bg-foreground/8" />)}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                                    <Tablet className="w-2.5 h-2.5" />
-                                    <span>Tablet</span>
-                                  </div>
-                                </div>
-
-                                {/* Mobile */}
-                                <div className="flex flex-col items-center gap-1 w-[50px]">
-                                  <div className="relative aspect-[9/16] w-full rounded-lg overflow-hidden border border-border/50 bg-muted/30 shadow-[var(--shadow-sm)]">
-                                    <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
-                                      filter: `blur(${bgBlur * 0.3}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
-                                      opacity: bgOpacity / 100, objectFit: 'cover', objectPosition: `${bgPosX}% ${bgPosY}%`, transform: `scale(${bgScale / 100})`,
-                                    }} />
-                                    <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
-                                    <div className="absolute inset-0 flex flex-col p-1 pointer-events-none">
-                                      <div className="h-0.5 w-4 rounded-full bg-foreground/12 mx-auto mb-0.5" />
-                                      <div className="flex-1 flex flex-col gap-0.5">
-                                        {[1,2,3].map(i => <div key={i} className="h-2 w-full rounded-sm bg-foreground/8" />)}
-                                      </div>
-                                      <div className="h-1.5 w-6 rounded-full bg-foreground/10 mx-auto mt-0.5" />
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                                    <Smartphone className="w-2.5 h-2.5" />
-                                    <span>Mobile</span>
-                                  </div>
-                                </div>
+                                  );
+                                })}
                               </div>
 
                               <p className="text-[10px] text-muted-foreground text-center font-mono tabular-nums">
-                                Position: {bgPosX}% × {bgPosY}%
+                                <span className="text-primary font-semibold capitalize">{selectedDevice}</span> — Position: {currentBg.posX}% × {currentBg.posY}%
                               </p>
                             </motion.div>
                           )}
 
-                          {/* Effects Controls */}
+                          {/* Effects Controls — per selected device */}
                           <div className="space-y-2">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                               <Sparkles className="w-3 h-3" />
-                              Effects
+                              Effects — <span className="text-primary capitalize">{selectedDevice}</span>
                             </Label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <SliderControl icon={Droplets} label="Blur" value={bgBlur} onChange={setBgBlur} min={0} max={30} step={1} unit="px" />
-                              <SliderControl icon={Eye} label="Image Opacity" value={bgOpacity} onChange={setBgOpacity} min={0} max={100} step={5} unit="%" />
-                              <SliderControl icon={Contrast} label="Overlay" value={bgOverlay} onChange={setBgOverlay} min={0} max={100} step={5} unit="%" />
-                              <SliderControl icon={Sun} label="Brightness" value={bgBrightness} onChange={setBgBrightness} min={0} max={200} step={5} unit="%" />
-                              <SliderControl icon={Moon} label="Saturation" value={bgSaturation} onChange={setBgSaturation} min={0} max={200} step={5} unit="%" />
-                              <SliderControl icon={ZoomIn} label="Zoom" value={bgScale} onChange={setBgScale} min={100} max={200} step={5} unit="%" />
+                              <SliderControl icon={Droplets} label="Blur" value={currentBg.blur} onChange={(v) => updateCurrentBg({ blur: v })} min={0} max={30} step={1} unit="px" />
+                              <SliderControl icon={Eye} label="Image Opacity" value={currentBg.opacity} onChange={(v) => updateCurrentBg({ opacity: v })} min={0} max={100} step={5} unit="%" />
+                              <SliderControl icon={Contrast} label="Overlay" value={currentBg.overlay} onChange={(v) => updateCurrentBg({ overlay: v })} min={0} max={100} step={5} unit="%" />
+                              <SliderControl icon={Sun} label="Brightness" value={currentBg.brightness} onChange={(v) => updateCurrentBg({ brightness: v })} min={0} max={200} step={5} unit="%" />
+                              <SliderControl icon={Moon} label="Saturation" value={currentBg.saturation} onChange={(v) => updateCurrentBg({ saturation: v })} min={0} max={200} step={5} unit="%" />
+                              <SliderControl icon={ZoomIn} label="Zoom" value={currentBg.scale} onChange={(v) => updateCurrentBg({ scale: v })} min={100} max={200} step={5} unit="%" />
                             </div>
                           </div>
 
@@ -841,55 +901,75 @@ export default function Admin() {
 
                   {/* Mobile Preview */}
                   {bgImageUrl && (
-                    <div
-                      className="relative w-full h-36 rounded-xl overflow-hidden border border-border/40 cursor-grab active:cursor-grabbing select-none"
-                      onTouchStart={(e) => {
-                        setIsDraggingPos(true);
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const handleMove = (ev: TouchEvent) => {
-                          const touch = ev.touches[0];
-                          const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
-                          const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
-                          setBgPosX(Math.round(x));
-                          setBgPosY(Math.round(y));
-                        };
-                        const handleEnd = () => {
-                          setIsDraggingPos(false);
-                          window.removeEventListener('touchmove', handleMove);
-                          window.removeEventListener('touchend', handleEnd);
-                        };
-                        window.addEventListener('touchmove', handleMove);
-                        window.addEventListener('touchend', handleEnd);
-                      }}
-                    >
-                      <img
-                        src={bgImageUrl}
-                        alt="Preview"
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        style={{
-                          filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
-                          opacity: bgOpacity / 100,
-                          objectFit: 'cover',
-                          objectPosition: `${bgPosX}% ${bgPosY}%`,
-                          transform: `scale(${bgScale / 100})`,
-                        }}
-                      />
-                      <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
+                    <div className="space-y-2">
+                      {/* Device selector tabs */}
+                      <div className="flex gap-1 p-1 rounded-lg bg-background/40 border border-border/30">
+                        {(['desktop', 'tablet', 'mobile'] as DeviceKey[]).map(d => (
+                          <button
+                            key={d}
+                            onClick={() => setSelectedDevice(d)}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-medium transition-all",
+                              selectedDevice === d ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                            )}
+                          >
+                            {d === 'desktop' ? <Monitor className="w-3 h-3" /> : d === 'tablet' ? <Tablet className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
+                            <span className="capitalize">{d}</span>
+                          </button>
+                        ))}
+                      </div>
                       <div
-                        className="absolute w-3 h-3 rounded-full border-2 border-primary bg-primary/20 -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
-                        style={{ left: `${bgPosX}%`, top: `${bgPosY}%` }}
-                      />
+                        className="relative w-full h-36 rounded-xl overflow-hidden border border-primary/30 cursor-grab active:cursor-grabbing select-none shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
+                        onTouchStart={(e) => {
+                          setIsDraggingPos(true);
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const handleMove = (ev: TouchEvent) => {
+                            const touch = ev.touches[0];
+                            const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
+                            const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
+                            updateCurrentBg({ posX: Math.round(x), posY: Math.round(y) });
+                          };
+                          const handleEnd = () => {
+                            setIsDraggingPos(false);
+                            window.removeEventListener('touchmove', handleMove);
+                            window.removeEventListener('touchend', handleEnd);
+                          };
+                          window.addEventListener('touchmove', handleMove);
+                          window.addEventListener('touchend', handleEnd);
+                        }}
+                      >
+                        <img
+                          src={bgImageUrl}
+                          alt="Preview"
+                          className="absolute inset-0 w-full h-full pointer-events-none"
+                          style={{
+                            filter: `blur(${currentBg.blur}px) brightness(${currentBg.brightness}%) saturate(${currentBg.saturation}%)`,
+                            opacity: currentBg.opacity / 100,
+                            objectFit: 'cover',
+                            objectPosition: `${currentBg.posX}% ${currentBg.posY}%`,
+                            transform: `scale(${currentBg.scale / 100})`,
+                          }}
+                        />
+                        <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${currentBg.overlay / 100})` }} />
+                        <div
+                          className="absolute w-3 h-3 rounded-full border-2 border-primary bg-primary/20 -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+                          style={{ left: `${currentBg.posX}%`, top: `${currentBg.posY}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground text-center font-mono">
+                        <span className="text-primary capitalize font-semibold">{selectedDevice}</span> — {currentBg.posX}% × {currentBg.posY}%
+                      </p>
                     </div>
                   )}
 
                   {/* Mobile Sliders */}
                   <div className="space-y-2">
-                    <SliderControl icon={Droplets} label="Blur" value={bgBlur} onChange={setBgBlur} min={0} max={30} step={1} unit="px" />
-                    <SliderControl icon={Eye} label="Opacity" value={bgOpacity} onChange={setBgOpacity} min={0} max={100} step={5} unit="%" />
-                    <SliderControl icon={Contrast} label="Overlay" value={bgOverlay} onChange={setBgOverlay} min={0} max={100} step={5} unit="%" />
-                    <SliderControl icon={Sun} label="Brightness" value={bgBrightness} onChange={setBgBrightness} min={0} max={200} step={5} unit="%" />
-                    <SliderControl icon={Moon} label="Saturation" value={bgSaturation} onChange={setBgSaturation} min={0} max={200} step={5} unit="%" />
-                    <SliderControl icon={ZoomIn} label="Zoom" value={bgScale} onChange={setBgScale} min={100} max={200} step={5} unit="%" />
+                    <SliderControl icon={Droplets} label="Blur" value={currentBg.blur} onChange={(v) => updateCurrentBg({ blur: v })} min={0} max={30} step={1} unit="px" />
+                    <SliderControl icon={Eye} label="Opacity" value={currentBg.opacity} onChange={(v) => updateCurrentBg({ opacity: v })} min={0} max={100} step={5} unit="%" />
+                    <SliderControl icon={Contrast} label="Overlay" value={currentBg.overlay} onChange={(v) => updateCurrentBg({ overlay: v })} min={0} max={100} step={5} unit="%" />
+                    <SliderControl icon={Sun} label="Brightness" value={currentBg.brightness} onChange={(v) => updateCurrentBg({ brightness: v })} min={0} max={200} step={5} unit="%" />
+                    <SliderControl icon={Moon} label="Saturation" value={currentBg.saturation} onChange={(v) => updateCurrentBg({ saturation: v })} min={0} max={200} step={5} unit="%" />
+                    <SliderControl icon={ZoomIn} label="Zoom" value={currentBg.scale} onChange={(v) => updateCurrentBg({ scale: v })} min={100} max={200} step={5} unit="%" />
                   </div>
 
                   <Button
