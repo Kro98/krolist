@@ -1,8 +1,9 @@
-import { Server, Globe, Terminal, FileCode, Copy, CheckCircle2, ExternalLink, BookOpen } from "lucide-react";
+import { Server, Globe, Terminal, FileCode, Copy, CheckCircle2, ExternalLink, BookOpen, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 function CopyBlock({ code, label }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -53,6 +54,134 @@ export const SUPABASE_PUBLISHABLE_KEY = "your-anon-key";`;
 
 export default function SelfHostingGuide() {
   const [activeHost, setActiveHost] = useState<"vercel" | "netlify" | "vps">("vercel");
+  const [exporting, setExporting] = useState(false);
+
+  const generateDeploymentZip = async () => {
+    setExporting(true);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+
+      // .env.example
+      zip.file(".env.example", `# Supabase Configuration
+# Get these from your Supabase project dashboard → Settings → API
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# NOTE: This project reads config from src/config/supabase.ts
+# Update that file directly — .env vars are optional reference only.
+`);
+
+      // vercel.json
+      zip.file("vercel.json", JSON.stringify({
+        rewrites: [{ source: "/(.*)", destination: "/index.html" }],
+      }, null, 2) + "\n");
+
+      // netlify _redirects
+      zip.file("public/_redirects", "/*    /index.html   200\n");
+
+      // nginx.conf
+      zip.file("nginx.conf", `server {
+    listen 80;
+    server_name yourdomain.com;
+    root /var/www/krolist/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets
+    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+`);
+
+      // Dockerfile
+      zip.file("Dockerfile", `FROM node:18-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+`);
+
+      // docker-compose.yml
+      zip.file("docker-compose.yml", `version: "3.8"
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    restart: unless-stopped
+`);
+
+      // README
+      zip.file("DEPLOYMENT.md", `# Krolist — Deployment Guide
+
+## Quick Start
+
+1. Update \`src/config/supabase.ts\` with your Supabase project URL and anon key.
+2. Run \`npm install && npm run build\`.
+3. Deploy the \`dist/\` folder to any static hosting provider.
+
+## Files Included
+
+| File | Purpose |
+|---|---|
+| \`.env.example\` | Environment variable reference |
+| \`vercel.json\` | SPA rewrite rules for Vercel |
+| \`public/_redirects\` | SPA rewrite for Netlify |
+| \`nginx.conf\` | Nginx config with SPA fallback + caching |
+| \`Dockerfile\` | Multi-stage Docker build |
+| \`docker-compose.yml\` | One-command Docker deployment |
+
+## Edge Functions
+
+Edge functions run on Supabase, not your host. Deploy them with:
+
+\`\`\`bash
+supabase link --project-ref your-project-ref
+supabase functions deploy
+\`\`\`
+
+## Supabase Auth
+
+Add your new domain to **Supabase Dashboard → Authentication → URL Configuration → Redirect URLs**.
+
+## Checklist
+
+- [ ] Update src/config/supabase.ts
+- [ ] Deploy edge functions
+- [ ] Set Supabase secrets
+- [ ] Update favicon & OG meta in index.html
+- [ ] Set up DNS & HTTPS
+- [ ] Add domain to Supabase Auth redirect URLs
+`);
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "krolist-deployment-kit.zip";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Deployment kit downloaded!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate zip");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const hosts = [
     { key: "vercel" as const, label: "Vercel", icon: Globe },
@@ -62,15 +191,19 @@ export default function SelfHostingGuide() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 px-4">
-      {/* Header */}
+      {/* Header + Export */}
       <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5">
         <BookOpen className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-        <div className="text-sm">
+        <div className="text-sm flex-1">
           <p className="font-medium">Self-Hosting Guide</p>
           <p className="text-muted-foreground mt-1">
             Everything you need to export this project and deploy it anywhere — Vercel, Netlify, a VPS, or any static hosting provider.
           </p>
         </div>
+        <Button size="sm" className="shrink-0 gap-1.5" onClick={generateDeploymentZip} disabled={exporting}>
+          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? "Generating…" : "Export Kit"}
+        </Button>
       </div>
 
       {/* Prerequisites */}
