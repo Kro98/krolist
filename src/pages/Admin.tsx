@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag } from "lucide-react";
+import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag, Image } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import StickersManager from "./admin/StickersManager";
@@ -26,6 +28,12 @@ export default function Admin() {
   const [stickersLocked, setStickersLocked] = useState(false);
   const [loadingLocks, setLoadingLocks] = useState(true);
 
+  // Background settings
+  const [bgImageUrl, setBgImageUrl] = useState("");
+  const [bgBlur, setBgBlur] = useState(0);
+  const [bgOpacity, setBgOpacity] = useState(20);
+  const [savingBg, setSavingBg] = useState(false);
+
   const tabs = [
     { value: "products", label: t('admin.krolistProducts'), icon: Package },
     { value: "articles", label: "Articles", icon: FileText, isLink: true, href: "/admin/articles" },
@@ -36,6 +44,7 @@ export default function Admin() {
 
   useEffect(() => {
     fetchSectionLocks();
+    fetchBgSettings();
   }, []);
 
   const fetchSectionLocks = async () => {
@@ -87,8 +96,48 @@ export default function Admin() {
     }
   };
 
+  const fetchBgSettings = async () => {
+    try {
+      const { data } = await supabase
+        .from('page_content')
+        .select('page_key, content_en')
+        .in('page_key', ['admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity']);
+      if (data) {
+        data.forEach(row => {
+          if (row.page_key === 'admin_bg_image') setBgImageUrl(row.content_en || '');
+          if (row.page_key === 'admin_bg_blur') setBgBlur(Number(row.content_en) || 0);
+          if (row.page_key === 'admin_bg_opacity') setBgOpacity(Number(row.content_en) || 20);
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching bg settings:', err);
+    }
+  };
+
+  const saveBgSettings = async () => {
+    setSavingBg(true);
+    try {
+      const settings = [
+        { page_key: 'admin_bg_image', content_en: bgImageUrl, description: 'Admin background image URL' },
+        { page_key: 'admin_bg_blur', content_en: String(bgBlur), description: 'Admin background blur (px)' },
+        { page_key: 'admin_bg_opacity', content_en: String(bgOpacity), description: 'Admin background opacity (%)' },
+      ];
+      for (const s of settings) {
+        await supabase.from('page_content').upsert(s, { onConflict: 'page_key' });
+      }
+      sonnerToast.success('Background settings saved');
+      // Dispatch event so AdminLayout picks it up live
+      window.dispatchEvent(new CustomEvent('admin-bg-updated'));
+    } catch (err) {
+      console.error('Error saving bg settings:', err);
+      sonnerToast.error('Failed to save background settings');
+    } finally {
+      setSavingBg(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen pb-20 md:pb-6">
+    <div className="min-h-screen pb-20 md:pb-6 relative z-10">
       {/* Mobile Header */}
       <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between px-4 py-3">
@@ -247,6 +296,83 @@ export default function Admin() {
                       disabled={loadingLocks}
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Background Customization */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Image className="h-5 w-5" />
+                    Admin Background
+                  </CardTitle>
+                  <CardDescription>
+                    Set a background image with blur and transparency effects.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Image URL */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Image URL</Label>
+                    <Input
+                      placeholder="https://images.unsplash.com/..."
+                      value={bgImageUrl}
+                      onChange={(e) => setBgImageUrl(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Preview */}
+                  {bgImageUrl && (
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-border">
+                      <img
+                        src={bgImageUrl}
+                        alt="Background preview"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        style={{
+                          filter: `blur(${bgBlur}px)`,
+                          opacity: bgOpacity / 100,
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-background/60" />
+                      <p className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground">
+                        Live Preview
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Blur Slider */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">Blur</Label>
+                      <span className="text-xs text-muted-foreground">{bgBlur}px</span>
+                    </div>
+                    <Slider
+                      value={[bgBlur]}
+                      onValueChange={([v]) => setBgBlur(v)}
+                      min={0}
+                      max={30}
+                      step={1}
+                    />
+                  </div>
+
+                  {/* Opacity Slider */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">Image Opacity</Label>
+                      <span className="text-xs text-muted-foreground">{bgOpacity}%</span>
+                    </div>
+                    <Slider
+                      value={[bgOpacity]}
+                      onValueChange={([v]) => setBgOpacity(v)}
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
+
+                  <Button onClick={saveBgSettings} disabled={savingBg} className="w-full">
+                    {savingBg ? 'Saving...' : 'Save Background Settings'}
+                  </Button>
                 </CardContent>
               </Card>
             </div>
