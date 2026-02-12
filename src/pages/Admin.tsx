@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
-import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock } from "lucide-react";
+import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -14,13 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import StickersManager from "./admin/StickersManager";
-import { FunnyLoadingText } from "@/components/FunnyLoadingText";
+import PromoCodesManager from "./admin/PromoCodesManager";
 import { toast as sonnerToast } from "sonner";
 
 export default function Admin() {
-  const { isAdmin, isLoading: roleLoading } = useAdminRole();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("products");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -34,14 +30,13 @@ export default function Admin() {
     { value: "products", label: t('admin.krolistProducts'), icon: Package },
     { value: "articles", label: "Articles", icon: FileText, isLink: true, href: "/admin/articles" },
     { value: "stickers", label: "Stickers", icon: Sticker },
-    { value: "settings", label: "Settings", icon: Lock },
+    { value: "promo-codes", label: "Promo Codes", icon: Tag },
+    { value: "settings", label: "Settings", icon: Settings },
   ];
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchSectionLocks();
-    }
-  }, [isAdmin]);
+    fetchSectionLocks();
+  }, []);
 
   const fetchSectionLocks = async () => {
     try {
@@ -68,7 +63,6 @@ export default function Admin() {
     const value = locked ? 'locked' : 'unlocked';
 
     try {
-      // Upsert the setting
       const { error } = await supabase
         .from('page_content')
         .upsert({
@@ -92,37 +86,6 @@ export default function Admin() {
       sonnerToast.error('Failed to update section lock');
     }
   };
-
-  useEffect(() => {
-    if (!roleLoading && !isAdmin) {
-      toast({
-        title: t('admin.accessDenied'),
-        description: t('admin.accessDeniedDesc'),
-        variant: "destructive",
-      });
-      navigate('/');
-    }
-  }, [isAdmin, roleLoading, navigate, toast, t]);
-
-  if (roleLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <FunnyLoadingText />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Shield className="h-12 w-12 mx-auto mb-4 text-destructive" />
-          <h1 className="text-2xl font-bold mb-2">{t('admin.accessDenied')}</h1>
-          <p className="text-muted-foreground">{t('admin.accessDeniedDesc')}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen pb-20 md:pb-6">
@@ -222,6 +185,10 @@ export default function Admin() {
             <StickersManager />
           </TabsContent>
 
+          <TabsContent value="promo-codes" className="mt-0 md:mt-6">
+            <PromoCodesManager />
+          </TabsContent>
+
           <TabsContent value="settings" className="mt-0 md:mt-6">
             <div className="max-w-2xl mx-auto space-y-6 px-4">
               <Card>
@@ -231,7 +198,7 @@ export default function Admin() {
                     Section Visibility
                   </CardTitle>
                   <CardDescription>
-                    Lock sections to hide them from public visitors. Locked sections show a "currently unavailable" message if accessed directly.
+                    Lock sections to hide them from public visitors.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -289,7 +256,7 @@ export default function Admin() {
 
       {/* Mobile Bottom Nav */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="grid grid-cols-4 gap-1 p-2">
+        <div className="grid grid-cols-5 gap-1 p-2">
           {tabs.map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.value;

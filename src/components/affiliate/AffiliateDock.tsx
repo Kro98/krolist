@@ -1,4 +1,4 @@
-import { Search, Heart, Settings, Filter } from "lucide-react";
+import { Search, Heart, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect } from "react";
@@ -6,21 +6,18 @@ interface AffiliateDockProps {
   onSearchClick: () => void;
   onHeartClick: () => void;
   onSettingsClick: () => void;
-  onFilterClick: () => void;
 }
 
 export function AffiliateDock({ 
   onSearchClick, 
   onHeartClick, 
   onSettingsClick,
-  onFilterClick 
 }: AffiliateDockProps) {
   const { language } = useLanguage();
   const isArabic = language === 'ar';
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger animation after mount
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
@@ -32,14 +29,6 @@ export function AffiliateDock({
       colorClass: 'text-primary',
       bgClass: 'bg-primary/10 hover:bg-primary/20',
       glowClass: 'group-hover:shadow-primary/30'
-    },
-    {
-      icon: Filter,
-      label: isArabic ? 'تصفية' : 'Filter',
-      onClick: onFilterClick,
-      colorClass: 'text-blue-500',
-      bgClass: 'bg-blue-500/10 hover:bg-blue-500/20',
-      glowClass: 'group-hover:shadow-blue-500/30'
     },
     {
       icon: Heart,
@@ -67,16 +56,11 @@ export function AffiliateDock({
         ? "opacity-100 translate-y-0" 
         : "opacity-0 translate-y-8 scale-95"
     )}>
-      {/* iOS-style glass dock with enhanced blur */}
       <div className={cn(
         "flex items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-2xl sm:rounded-3xl",
-        // Enhanced glass effect with stronger backdrop blur
         "bg-background/40 backdrop-blur-2xl backdrop-saturate-150",
-        // Subtle border with gradient
         "border border-white/20 dark:border-white/10",
-        // Deep shadow for depth
         "shadow-xl shadow-black/20",
-        // Subtle inner highlight
         "before:absolute before:inset-0 before:rounded-2xl sm:before:rounded-3xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none",
         "relative overflow-hidden"
       )}>
@@ -89,34 +73,27 @@ export function AffiliateDock({
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-1 sm:gap-1.5",
                 "px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl",
-                // Bubble effect background
                 item.bgClass,
                 item.colorClass,
-                // Smooth transitions
                 "transition-all duration-300 ease-out",
-                // Bubble scale on hover
                 "hover:scale-110 active:scale-95",
-                // Glow effect on hover
                 "hover:shadow-lg",
                 item.glowClass
               )}
               aria-label={item.label}
             >
-              {/* Bubble highlight effect */}
               <div className={cn(
                 "absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100",
                 "bg-gradient-to-t from-transparent via-white/10 to-white/20",
                 "transition-opacity duration-300"
               )} />
               
-              {/* Icon */}
               <Icon className={cn(
                 "w-5 h-5 sm:w-6 sm:h-6 relative z-10",
                 "transition-transform duration-300",
                 "group-hover:scale-110"
               )} />
               
-              {/* Label */}
               <span className={cn(
                 "text-[10px] sm:text-xs font-medium relative z-10",
                 "opacity-70 group-hover:opacity-100",

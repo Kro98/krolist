@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, ShoppingBag, Info, FileText, Sticker } from "lucide-react";
+import { Search, ExternalLink, ShoppingBag, Info, Newspaper, Sparkles, SlidersHorizontal, History } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +21,8 @@ import { AffiliateProductAd } from "@/components/affiliate/AffiliateProductAd";
 import { AffiliateInfoPage } from "@/components/affiliate/AffiliateInfoPage";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSectionLocks } from "@/hooks/useSectionLocks";
+import { PriceHistoryChart } from "@/components/article/PriceHistoryChart";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface AffiliateProduct {
   id: string;
@@ -46,6 +48,9 @@ export default function AffiliateMode() {
   const [showDonation, setShowDonation] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showInfoPage, setShowInfoPage] = useState(false);
+  
+  // Price history state
+  const [priceHistoryProduct, setPriceHistoryProduct] = useState<AffiliateProduct | null>(null);
   
   // Filter & Sort state
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -124,7 +129,6 @@ export default function AffiliateMode() {
         break;
       case 'newest':
       default:
-        // Already sorted by created_at from DB
         break;
     }
 
@@ -167,7 +171,7 @@ export default function AffiliateMode() {
 
   // Insert ads every N products
   const getProductsWithAds = () => {
-    const AD_INTERVAL = 12; // Insert ad every 12 products
+    const AD_INTERVAL = 12;
     const items: (AffiliateProduct | 'ad')[] = [];
     
     filteredProducts.forEach((product, index) => {
@@ -181,6 +185,7 @@ export default function AffiliateMode() {
   };
 
   const itemsWithAds = getProductsWithAds();
+  const hasActiveFilters = sortBy !== 'newest' || storeFilter !== null;
 
   if (loading) {
     return (
@@ -234,7 +239,7 @@ export default function AffiliateMode() {
                 "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               )}
             >
-              <FileText className="w-4 h-4" />
+              <Newspaper className="w-4 h-4" />
               <span className="hidden sm:inline">{language === 'ar' ? 'مقالات' : 'Articles'}</span>
             </Link>
           )}
@@ -242,12 +247,12 @@ export default function AffiliateMode() {
             <Link
               to="/stickers"
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
+                "group relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium",
                 "bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               )}
             >
-              <Sticker className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'ar' ? 'ملصقات' : 'Stickers'}</span>
+              <Sparkles className="w-4 h-4 holographic-icon" />
+              <span className="hidden sm:inline relative z-10">{language === 'ar' ? 'ملصقات' : 'Stickers'}</span>
             </Link>
           )}
         </div>
@@ -267,16 +272,33 @@ export default function AffiliateMode() {
 
       {/* Main Content */}
       <main className="flex-1 px-4 py-4 pb-28">
-        {/* Search Bar */}
-        <div className="relative mb-3 max-w-2xl mx-auto">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            ref={searchInputRef}
-            placeholder={language === 'ar' ? 'ابحث عن المنتجات...' : 'Search products...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-11 bg-card border-border focus:ring-2 focus:ring-primary/20"
-          />
+        {/* Search Bar with Filter Button */}
+        <div className="relative mb-3 max-w-2xl mx-auto flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={searchInputRef}
+              placeholder={language === 'ar' ? 'ابحث عن المنتجات...' : 'Search products...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11 bg-card border-border focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <button
+            onClick={() => setShowFilter(true)}
+            className={cn(
+              "h-11 px-3 rounded-lg border flex items-center gap-1.5 transition-all shrink-0",
+              hasActiveFilters
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="text-sm hidden sm:inline">{language === 'ar' ? 'تصفية' : 'Filter'}</span>
+            {hasActiveFilters && (
+              <span className="w-2 h-2 rounded-full bg-primary" />
+            )}
+          </button>
         </div>
 
         {/* Amazon Search Banner */}
@@ -345,10 +367,9 @@ export default function AffiliateMode() {
             const discount = getDiscount(product.original_price, product.current_price);
             
             return (
-              <button
+              <div
                 key={product.id}
-                onClick={() => handleProductClick(product)}
-                className="group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all duration-200 text-left"
+                className="group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all duration-200"
               >
                 {/* Discount Badge */}
                 {discount && (
@@ -362,21 +383,26 @@ export default function AffiliateMode() {
                   <ExternalLink className="h-3 w-3 text-muted-foreground" />
                 </div>
 
-                {/* Image */}
-                <div className="aspect-square bg-muted overflow-hidden">
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <span className="text-xs">{language === 'ar' ? 'لا صورة' : 'No image'}</span>
-                    </div>
-                  )}
-                </div>
+                {/* Clickable Image */}
+                <button
+                  onClick={() => handleProductClick(product)}
+                  className="w-full text-left"
+                >
+                  <div className="aspect-square bg-muted overflow-hidden">
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        <span className="text-xs">{language === 'ar' ? 'لا صورة' : 'No image'}</span>
+                      </div>
+                    )}
+                  </div>
+                </button>
 
                 {/* Info */}
                 <div className="p-2 space-y-1">
@@ -386,7 +412,10 @@ export default function AffiliateMode() {
                   </span>
 
                   {/* Title */}
-                  <h3 className="text-xs font-medium text-foreground line-clamp-2 leading-tight">
+                  <h3 
+                    className="text-xs font-medium text-foreground line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => handleProductClick(product)}
+                  >
                     {product.title}
                   </h3>
 
@@ -401,8 +430,24 @@ export default function AffiliateMode() {
                       </span>
                     )}
                   </div>
+
+                  {/* Price History Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPriceHistoryProduct(product);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-center gap-1.5 mt-1 py-1.5 rounded-md text-[10px] font-medium",
+                      "border border-border/50 text-muted-foreground",
+                      "hover:bg-muted hover:text-foreground transition-colors"
+                    )}
+                  >
+                    <History className="w-3 h-3" />
+                    {language === 'ar' ? 'سجل الأسعار' : 'Price History'}
+                  </button>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -417,12 +462,27 @@ export default function AffiliateMode() {
         )}
       </main>
 
-      {/* Floating Dock */}
+      {/* Price History Modal */}
+      <Dialog open={!!priceHistoryProduct} onOpenChange={(open) => !open && setPriceHistoryProduct(null)}>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+          {priceHistoryProduct && (
+            <PriceHistoryChart
+              productId={priceHistoryProduct.id}
+              productTitle={priceHistoryProduct.title}
+              currentPrice={priceHistoryProduct.current_price}
+              originalPrice={priceHistoryProduct.original_price}
+              currency={priceHistoryProduct.currency}
+              onClose={() => setPriceHistoryProduct(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Floating Dock - without filter */}
       <AffiliateDock 
         onSearchClick={handleSearchClick}
         onHeartClick={() => setShowDonation(true)}
         onSettingsClick={() => setShowSettings(true)}
-        onFilterClick={() => setShowFilter(true)}
       />
 
       {/* Footer - simplified */}
