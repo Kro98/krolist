@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { edgeFunctionUrl } from "@/config/supabase";
 import { Key, Save, Plus, Trash2, AlertTriangle, Shield, RefreshCw, Lock, Zap, CheckCircle, XCircle, Info, MonitorPlay } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,7 +53,7 @@ export default function ApiSettingsManager() {
       if (!session) return;
 
       const res = await fetch(
-        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        edgeFunctionUrl('manage-secrets'),
         {
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
@@ -144,7 +145,7 @@ export default function ApiSettingsManager() {
       if (!session) throw new Error('Not authenticated');
 
       const res = await fetch(
-        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        edgeFunctionUrl('manage-secrets'),
         {
           method: 'POST',
           headers: {
@@ -185,7 +186,7 @@ export default function ApiSettingsManager() {
       if (!session) throw new Error('Not authenticated');
 
       const res = await fetch(
-        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        edgeFunctionUrl('manage-secrets'),
         {
           method: 'POST',
           headers: {
@@ -220,7 +221,7 @@ export default function ApiSettingsManager() {
       if (!session) throw new Error('Not authenticated');
 
       const res = await fetch(
-        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/manage-secrets`,
+        edgeFunctionUrl('manage-secrets'),
         {
           method: 'DELETE',
           headers: {
@@ -253,7 +254,7 @@ export default function ApiSettingsManager() {
       if (!session) throw new Error('Not authenticated');
 
       const res = await fetch(
-        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/test-secret-connection`,
+        edgeFunctionUrl('test-secret-connection'),
         {
           method: 'POST',
           headers: {
