@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { FunnyLoadingText } from "@/components/FunnyLoadingText";
-import { Shield, LogIn, Eye, EyeOff } from "lucide-react";
+import { Shield, LogIn, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFunctionUrl } from "@/config/supabase";
 import { Button } from "@/components/ui/button";
@@ -199,7 +199,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 relative">
+        <a
+          href="/"
+          className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to site
+        </a>
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <Shield className="h-12 w-12 mx-auto mb-4 text-primary" />
