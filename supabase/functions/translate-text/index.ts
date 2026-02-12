@@ -5,14 +5,69 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Free Google Translate API (no API key required).
+ * Falls back to MyMemory translation API if Google fails.
+ * No Lovable dependency.
+ */
+async function translateWithGoogle(text: string, sourceLang: string, targetLang: string): Promise<string> {
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+
+  const response = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Google Translate returned ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  // Google returns nested arrays: [[["translated text","original text",null,null,x],...]]
+  if (!Array.isArray(data) || !Array.isArray(data[0])) {
+    throw new Error("Unexpected Google Translate response format");
+  }
+
+  const translated = data[0]
+    .filter((segment: any) => Array.isArray(segment) && segment[0])
+    .map((segment: any) => segment[0])
+    .join('');
+
+  if (!translated) {
+    throw new Error("Empty translation result from Google");
+  }
+
+  return translated;
+}
+
+async function translateWithMyMemory(text: string, sourceLang: string, targetLang: string): Promise<string> {
+  const langPair = `${sourceLang}|${targetLang}`;
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`MyMemory returned ${response.status}`);
+  }
+
+  const data = await response.json();
+  const translated = data?.responseData?.translatedText;
+
+  if (!translated) {
+    throw new Error("No translation from MyMemory");
+  }
+
+  return translated;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { text, targetLanguage, context } = await req.json();
-    
+    const { text, targetLanguage } = await req.json();
+
     if (!text || !targetLanguage) {
       return new Response(
         JSON.stringify({ error: 'Text and targetLanguage are required' }),
@@ -20,65 +75,23 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    const sourceLang = targetLanguage === 'ar' ? 'en' : 'ar';
+    const targetLang = targetLanguage === 'ar' ? 'ar' : 'en';
 
-    const targetLang = targetLanguage === 'ar' ? 'Arabic' : 'English';
-    const sourceLang = targetLanguage === 'ar' ? 'English' : 'Arabic';
-    
-    const systemPrompt = `You are a professional translator specializing in ${sourceLang} to ${targetLang} translations. 
-Your translations must:
-- Be contextually accurate, not literal word-for-word translations
-- Sound natural to native speakers
-- Preserve the original meaning and tone
-- Be appropriate for a product/shopping/tech context
-- For Arabic: Use Modern Standard Arabic that's widely understood across Arab countries
-- For English: Use clear, professional American English
+    let translatedText: string;
 
-${context ? `Context: This is for ${context}` : 'Context: This is for a product comparison/shopping website article.'}
-
-IMPORTANT: Only return the translated text, nothing else. No explanations, no quotes, just the translation.`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Translate the following to ${targetLang}:\n\n${text}` }
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    try {
+      // Primary: Google Translate (free, no key)
+      translatedText = await translateWithGoogle(text, sourceLang, targetLang);
+    } catch (googleError) {
+      console.warn("Google Translate failed, falling back to MyMemory:", googleError);
+      try {
+        // Fallback: MyMemory (free, no key, 5000 chars/day limit for anonymous)
+        translatedText = await translateWithMyMemory(text, sourceLang, targetLang);
+      } catch (mmError) {
+        console.error("Both translation services failed:", mmError);
+        throw new Error("All translation services unavailable. Please try again later.");
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("Translation service error");
-    }
-
-    const data = await response.json();
-    const translatedText = data.choices?.[0]?.message?.content?.trim();
-
-    if (!translatedText) {
-      throw new Error("No translation received");
     }
 
     return new Response(

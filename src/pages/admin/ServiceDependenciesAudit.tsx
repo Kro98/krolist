@@ -6,7 +6,7 @@ interface ServiceDependency {
   id: string;
   name: string;
   icon: React.ReactNode;
-  category: 'core' | 'lovable' | 'external';
+  category: 'core' | 'lovable' | 'external' | 'resolved';
   requiredSecrets: string[];
   status: 'ok' | 'warning' | 'critical';
   description: string;
@@ -41,26 +41,25 @@ const DEPENDENCIES: ServiceDependency[] = [
   },
   {
     id: 'lovable-ai',
-    name: 'Lovable AI Gateway',
+    name: 'Lovable AI Gateway (REMOVED)',
     icon: <Brain className="w-4 h-4" />,
-    category: 'lovable',
-    requiredSecrets: ['LOVABLE_API_KEY'],
-    status: 'critical',
-    description: 'Used for AI-powered text translation (Arabic ↔ English) in the article editor. This is the ONLY Lovable-specific dependency.',
+    category: 'resolved',
+    requiredSecrets: [],
+    status: 'ok',
+    description: '✅ MIGRATED: Translation now uses free Google Translate API with MyMemory fallback. No API key required. No Lovable dependency.',
     whatBreaks: [
-      'Article translation (translate-text edge function) — the admin "Translate" button in the article editor will fail.',
+      'Nothing — this dependency has been fully removed.',
     ],
     affectedFiles: [
-      { path: 'supabase/functions/translate-text/index.ts', description: 'Calls ai.gateway.lovable.dev for chat completions. Replace with OpenAI API or any compatible endpoint.' },
+      { path: 'supabase/functions/translate-text/index.ts', description: 'Now uses free Google Translate (translate.googleapis.com) with MyMemory fallback. No API keys needed.' },
     ],
     migrationSteps: [
-      'Open supabase/functions/translate-text/index.ts',
-      'Replace the URL "https://ai.gateway.lovable.dev/v1/chat/completions" with "https://api.openai.com/v1/chat/completions"',
-      'Replace LOVABLE_API_KEY with OPENAI_API_KEY (already configured)',
-      'Change the Authorization header to use the OPENAI_API_KEY instead',
-      'The request/response format is identical (OpenAI-compatible), so no other changes needed.',
+      '✅ Already done — no action needed.',
+      'The translate-text function now uses Google Translate (free, no key) as primary.',
+      'MyMemory API (free, no key) is used as automatic fallback.',
+      'LOVABLE_API_KEY is no longer needed for translation.',
     ],
-    docsUrl: 'https://platform.openai.com/docs/api-reference/chat',
+    docsUrl: '',
   },
   {
     id: 'lovable-domain',
@@ -69,12 +68,12 @@ const DEPENDENCIES: ServiceDependency[] = [
     category: 'lovable',
     requiredSecrets: [],
     status: 'warning',
-    description: 'The sitemap generator and published URL use krolist.lovable.app. If you use a custom domain, update these.',
+    description: 'The sitemap generator uses SITE_URL env var (defaults to krolist.lovable.app). Set SITE_URL secret in Supabase to your custom domain when migrating.',
     whatBreaks: [
-      'SEO sitemap will reference the old lovable.app domain instead of your custom domain.',
+      'SEO sitemap will reference the old lovable.app domain instead of your custom domain if SITE_URL env is not set.',
     ],
     affectedFiles: [
-      { path: 'supabase/functions/generate-sitemap/index.ts', description: 'Hardcoded SITE_URL = "https://krolist.lovable.app" — change to your custom domain' },
+      { path: 'supabase/functions/generate-sitemap/index.ts', description: 'Now reads SITE_URL from env, falls back to krolist.lovable.app. Set SITE_URL secret to your domain.' },
       { path: 'public/robots.txt', description: 'May reference the lovable.app sitemap URL' },
       { path: 'public/sitemap.xml', description: 'Static fallback sitemap — update domain references' },
     ],
