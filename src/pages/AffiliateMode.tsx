@@ -24,6 +24,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSectionLocks } from "@/hooks/useSectionLocks";
 import { PriceHistoryChart } from "@/components/article/PriceHistoryChart";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { InterstitialAd } from "@/components/affiliate/InterstitialAd";
 
 interface AffiliateProduct {
   id: string;
@@ -153,9 +154,16 @@ export default function AffiliateMode() {
     return result;
   }, [products, searchQuery, storeFilter, sortBy]);
 
+  // Interstitial ad state
+  const [interstitialOpen, setInterstitialOpen] = useState(false);
+  const [interstitialUrl, setInterstitialUrl] = useState("");
+  const [interstitialTitle, setInterstitialTitle] = useState("");
+
   const handleProductClick = (product: AffiliateProduct) => {
     const affiliateUrl = replaceWithAffiliateLink(product.product_url);
-    window.open(affiliateUrl, '_blank');
+    setInterstitialUrl(affiliateUrl);
+    setInterstitialTitle(product.title);
+    setInterstitialOpen(true);
   };
 
   const formatPrice = (price: number, currency: string) => {
@@ -501,6 +509,14 @@ export default function AffiliateMode() {
         onSearchClick={handleSearchClick}
         onHeartClick={() => setShowDonation(true)}
         onSettingsClick={() => setShowSettings(true)}
+      />
+
+      {/* Interstitial Ad */}
+      <InterstitialAd
+        open={interstitialOpen}
+        onClose={() => setInterstitialOpen(false)}
+        targetUrl={interstitialUrl}
+        productTitle={interstitialTitle}
       />
 
       {/* Footer - simplified */}
