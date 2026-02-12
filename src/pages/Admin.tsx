@@ -33,8 +33,15 @@ export default function Admin() {
   const [bgImageUrl, setBgImageUrl] = useState("");
   const [bgBlur, setBgBlur] = useState(0);
   const [bgOpacity, setBgOpacity] = useState(20);
+  const [bgOverlay, setBgOverlay] = useState(60);
+  const [bgBrightness, setBgBrightness] = useState(100);
+  const [bgSaturation, setBgSaturation] = useState(100);
+  const [bgScale, setBgScale] = useState(100);
+  const [bgPosX, setBgPosX] = useState(50);
+  const [bgPosY, setBgPosY] = useState(50);
   const [savingBg, setSavingBg] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [isDraggingPos, setIsDraggingPos] = useState(false);
 
   const tabs = [
     { value: "products", label: t('admin.krolistProducts'), icon: Package },
@@ -104,12 +111,22 @@ export default function Admin() {
       const { data } = await supabase
         .from('page_content')
         .select('page_key, content_en')
-        .in('page_key', ['admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity']);
+        .in('page_key', [
+          'admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity',
+          'admin_bg_overlay', 'admin_bg_brightness', 'admin_bg_saturation',
+          'admin_bg_scale', 'admin_bg_pos_x', 'admin_bg_pos_y',
+        ]);
       if (data) {
         data.forEach(row => {
           if (row.page_key === 'admin_bg_image') setBgImageUrl(row.content_en || '');
           if (row.page_key === 'admin_bg_blur') setBgBlur(Number(row.content_en) || 0);
           if (row.page_key === 'admin_bg_opacity') setBgOpacity(Number(row.content_en) || 20);
+          if (row.page_key === 'admin_bg_overlay') setBgOverlay(Number(row.content_en) ?? 60);
+          if (row.page_key === 'admin_bg_brightness') setBgBrightness(Number(row.content_en) || 100);
+          if (row.page_key === 'admin_bg_saturation') setBgSaturation(Number(row.content_en) || 100);
+          if (row.page_key === 'admin_bg_scale') setBgScale(Number(row.content_en) || 100);
+          if (row.page_key === 'admin_bg_pos_x') setBgPosX(Number(row.content_en) ?? 50);
+          if (row.page_key === 'admin_bg_pos_y') setBgPosY(Number(row.content_en) ?? 50);
         });
       }
     } catch (err) {
@@ -124,6 +141,12 @@ export default function Admin() {
         { page_key: 'admin_bg_image', content_en: bgImageUrl, description: 'Admin background image URL' },
         { page_key: 'admin_bg_blur', content_en: String(bgBlur), description: 'Admin background blur (px)' },
         { page_key: 'admin_bg_opacity', content_en: String(bgOpacity), description: 'Admin background opacity (%)' },
+        { page_key: 'admin_bg_overlay', content_en: String(bgOverlay), description: 'Admin background overlay opacity (%)' },
+        { page_key: 'admin_bg_brightness', content_en: String(bgBrightness), description: 'Admin background brightness (%)' },
+        { page_key: 'admin_bg_saturation', content_en: String(bgSaturation), description: 'Admin background saturation (%)' },
+        { page_key: 'admin_bg_scale', content_en: String(bgScale), description: 'Admin background scale/zoom (%)' },
+        { page_key: 'admin_bg_pos_x', content_en: String(bgPosX), description: 'Admin background position X (%)' },
+        { page_key: 'admin_bg_pos_y', content_en: String(bgPosY), description: 'Admin background position Y (%)' },
       ];
       for (const s of settings) {
         await supabase.from('page_content').upsert(s, { onConflict: 'page_key' });
@@ -386,53 +409,141 @@ export default function Admin() {
                     </div>
                   </div>
 
-                  {/* Preview */}
+                  {/* Draggable Preview */}
                   {bgImageUrl && (
-                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-border">
-                      <img
-                        src={bgImageUrl}
-                        alt="Background preview"
-                        className="absolute inset-0 w-full h-full object-cover"
-                        style={{
-                          filter: `blur(${bgBlur}px)`,
-                          opacity: bgOpacity / 100,
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Preview — Drag to reposition</Label>
+                        <button
+                          type="button"
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => { setBgPosX(50); setBgPosY(50); }}
+                        >
+                          Reset position
+                        </button>
+                      </div>
+                      <div
+                        className="relative w-full h-40 rounded-xl overflow-hidden border border-border cursor-grab active:cursor-grabbing select-none"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setIsDraggingPos(true);
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const handleMove = (ev: MouseEvent) => {
+                            const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
+                            const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
+                            setBgPosX(Math.round(x));
+                            setBgPosY(Math.round(y));
+                          };
+                          const handleUp = () => {
+                            setIsDraggingPos(false);
+                            window.removeEventListener('mousemove', handleMove);
+                            window.removeEventListener('mouseup', handleUp);
+                          };
+                          window.addEventListener('mousemove', handleMove);
+                          window.addEventListener('mouseup', handleUp);
                         }}
-                      />
-                      <div className="absolute inset-0 bg-background/60" />
-                      <p className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground">
-                        Live Preview
+                        onTouchStart={(e) => {
+                          setIsDraggingPos(true);
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const handleMove = (ev: TouchEvent) => {
+                            const touch = ev.touches[0];
+                            const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
+                            const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
+                            setBgPosX(Math.round(x));
+                            setBgPosY(Math.round(y));
+                          };
+                          const handleEnd = () => {
+                            setIsDraggingPos(false);
+                            window.removeEventListener('touchmove', handleMove);
+                            window.removeEventListener('touchend', handleEnd);
+                          };
+                          window.addEventListener('touchmove', handleMove);
+                          window.addEventListener('touchend', handleEnd);
+                        }}
+                      >
+                        <img
+                          src={bgImageUrl}
+                          alt="Background preview"
+                          className="absolute inset-0 w-full h-full pointer-events-none"
+                          style={{
+                            filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
+                            opacity: bgOpacity / 100,
+                            objectFit: 'cover',
+                            objectPosition: `${bgPosX}% ${bgPosY}%`,
+                            transform: `scale(${bgScale / 100})`,
+                          }}
+                        />
+                        <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
+                        <p className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground">
+                          Live Preview
+                        </p>
+                        {/* Crosshair indicator */}
+                        <div
+                          className="absolute w-3 h-3 rounded-full border-2 border-primary bg-primary/30 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                          style={{ left: `${bgPosX}%`, top: `${bgPosY}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground text-center">
+                        Position: {bgPosX}% × {bgPosY}%
                       </p>
                     </div>
                   )}
 
-                  {/* Blur Slider */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold">Blur</Label>
-                      <span className="text-xs text-muted-foreground">{bgBlur}px</span>
+                  {/* Sliders */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Blur */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Blur</Label>
+                        <span className="text-xs text-muted-foreground">{bgBlur}px</span>
+                      </div>
+                      <Slider value={[bgBlur]} onValueChange={([v]) => setBgBlur(v)} min={0} max={30} step={1} />
                     </div>
-                    <Slider
-                      value={[bgBlur]}
-                      onValueChange={([v]) => setBgBlur(v)}
-                      min={0}
-                      max={30}
-                      step={1}
-                    />
-                  </div>
 
-                  {/* Opacity Slider */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold">Image Opacity</Label>
-                      <span className="text-xs text-muted-foreground">{bgOpacity}%</span>
+                    {/* Image Opacity */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Image Opacity</Label>
+                        <span className="text-xs text-muted-foreground">{bgOpacity}%</span>
+                      </div>
+                      <Slider value={[bgOpacity]} onValueChange={([v]) => setBgOpacity(v)} min={0} max={100} step={5} />
                     </div>
-                    <Slider
-                      value={[bgOpacity]}
-                      onValueChange={([v]) => setBgOpacity(v)}
-                      min={0}
-                      max={100}
-                      step={5}
-                    />
+
+                    {/* Overlay */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Overlay</Label>
+                        <span className="text-xs text-muted-foreground">{bgOverlay}%</span>
+                      </div>
+                      <Slider value={[bgOverlay]} onValueChange={([v]) => setBgOverlay(v)} min={0} max={100} step={5} />
+                    </div>
+
+                    {/* Brightness */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Brightness</Label>
+                        <span className="text-xs text-muted-foreground">{bgBrightness}%</span>
+                      </div>
+                      <Slider value={[bgBrightness]} onValueChange={([v]) => setBgBrightness(v)} min={0} max={200} step={5} />
+                    </div>
+
+                    {/* Saturation */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Saturation</Label>
+                        <span className="text-xs text-muted-foreground">{bgSaturation}%</span>
+                      </div>
+                      <Slider value={[bgSaturation]} onValueChange={([v]) => setBgSaturation(v)} min={0} max={200} step={5} />
+                    </div>
+
+                    {/* Scale / Zoom */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">Zoom</Label>
+                        <span className="text-xs text-muted-foreground">{bgScale}%</span>
+                      </div>
+                      <Slider value={[bgScale]} onValueChange={([v]) => setBgScale(v)} min={100} max={200} step={5} />
+                    </div>
                   </div>
 
                   <Button onClick={saveBgSettings} disabled={savingBg} className="w-full">

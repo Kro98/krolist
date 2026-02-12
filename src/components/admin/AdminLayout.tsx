@@ -21,6 +21,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [bgImage, setBgImage] = useState("");
   const [bgBlur, setBgBlur] = useState(0);
   const [bgOpacity, setBgOpacity] = useState(20);
+  const [bgOverlay, setBgOverlay] = useState(60);
+  const [bgBrightness, setBgBrightness] = useState(100);
+  const [bgSaturation, setBgSaturation] = useState(100);
+  const [bgScale, setBgScale] = useState(100);
+  const [bgPosX, setBgPosX] = useState(50);
+  const [bgPosY, setBgPosY] = useState(50);
 
   // Login form state
   const [email, setEmail] = useState("");
@@ -58,12 +64,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       const { data } = await supabase
         .from('page_content')
         .select('page_key, content_en')
-        .in('page_key', ['admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity']);
+        .in('page_key', [
+          'admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity',
+          'admin_bg_overlay', 'admin_bg_brightness', 'admin_bg_saturation',
+          'admin_bg_scale', 'admin_bg_pos_x', 'admin_bg_pos_y',
+        ]);
       if (data) {
         data.forEach(row => {
           if (row.page_key === 'admin_bg_image') setBgImage(row.content_en || '');
           if (row.page_key === 'admin_bg_blur') setBgBlur(Number(row.content_en) || 0);
           if (row.page_key === 'admin_bg_opacity') setBgOpacity(Number(row.content_en) || 20);
+          if (row.page_key === 'admin_bg_overlay') setBgOverlay(Number(row.content_en) ?? 60);
+          if (row.page_key === 'admin_bg_brightness') setBgBrightness(Number(row.content_en) || 100);
+          if (row.page_key === 'admin_bg_saturation') setBgSaturation(Number(row.content_en) || 100);
+          if (row.page_key === 'admin_bg_scale') setBgScale(Number(row.content_en) || 100);
+          if (row.page_key === 'admin_bg_pos_x') setBgPosX(Number(row.content_en) ?? 50);
+          if (row.page_key === 'admin_bg_pos_y') setBgPosY(Number(row.content_en) ?? 50);
         });
       }
     } catch { /* silent */ }
@@ -189,17 +205,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <div className="relative min-h-screen">
       {/* Background layer */}
       {bgImage && (
-        <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
           <img
             src={bgImage}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full"
             style={{
-              filter: `blur(${bgBlur}px)`,
+              filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
               opacity: bgOpacity / 100,
+              objectFit: 'cover',
+              objectPosition: `${bgPosX}% ${bgPosY}%`,
+              transform: `scale(${bgScale / 100})`,
             }}
           />
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
+          <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
         </div>
       )}
       {/* Content */}
