@@ -39,5 +39,8 @@ verify_jwt = false
 [functions.admin-login-guard]
 verify_jwt = false
 
+[functions.auto-update-prices]
+verify_jwt = true
+
 [functions.manage-secrets]
 verify_jwt = false
