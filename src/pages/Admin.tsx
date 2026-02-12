@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,6 +22,7 @@ import StickersManager from "./admin/StickersManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
 import ApiSettingsManager from "./admin/ApiSettingsManager";
 import { toast as sonnerToast } from "sonner";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
 // Glassmorphic card wrapper — uses admin element CSS vars
 function GlassCard({ children, className, glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
@@ -98,6 +99,9 @@ export default function Admin() {
   const [uploadingBg, setUploadingBg] = useState(false);
   const [isDraggingPos, setIsDraggingPos] = useState(false);
 
+  // Track saved state for unsaved changes detection
+  const savedStateRef = useRef<string>("");
+
   // Element-level style settings
   type ElementKey = 'card' | 'border' | 'header';
   type ElementStyle = { blur: number; opacity: number; color: string };
@@ -119,6 +123,14 @@ export default function Admin() {
   };
   const getBg = (device: DeviceKey) => deviceSettings[device];
 
+  // Compute current settings snapshot for dirty detection
+  const currentSettingsSnapshot = useMemo(() => 
+    JSON.stringify({ bgImageUrl, deviceSettings, elementStyles }),
+    [bgImageUrl, deviceSettings, elementStyles]
+  );
+  const settingsTabDirty = activeTab === 'settings' && savedStateRef.current !== '' && currentSettingsSnapshot !== savedStateRef.current;
+  const { UnsavedChangesDialog } = useUnsavedChanges(settingsTabDirty);
+
   const tabs = [
     { value: "products", label: t('admin.krolistProducts'), icon: Package, color: "bg-primary/10 text-primary" },
     { value: "articles", label: "Articles", icon: FileText, isLink: true, href: "/admin/articles", color: "bg-accent text-accent-foreground" },
@@ -130,8 +142,19 @@ export default function Admin() {
 
   useEffect(() => {
     fetchSectionLocks();
-    fetchBgSettings();
+    fetchBgSettings().then(() => {
+      // Will be set by the effect below once state settles
+    });
   }, []);
+
+  // Set saved snapshot once after settings load (loadingLocks goes false after fetch)
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!loadingLocks && !initializedRef.current && currentSettingsSnapshot) {
+      initializedRef.current = true;
+      savedStateRef.current = currentSettingsSnapshot;
+    }
+  }, [loadingLocks, currentSettingsSnapshot]);
 
   const fetchSectionLocks = async () => {
     try {
@@ -294,6 +317,7 @@ export default function Admin() {
         await supabase.from('page_content').upsert(s, { onConflict: 'page_key' });
       }
       sonnerToast.success('Background settings saved');
+      savedStateRef.current = JSON.stringify({ bgImageUrl, deviceSettings, elementStyles });
       window.dispatchEvent(new CustomEvent('admin-bg-updated'));
     } catch (err) {
       console.error('Error saving bg settings:', err);
@@ -314,6 +338,8 @@ export default function Admin() {
   };
 
   return (
+    <>
+    <UnsavedChangesDialog />
     <div className="min-h-screen pb-20 md:pb-6 relative z-10">
       {/* Mobile Header — floating glass */}
       <div className="md:hidden sticky top-0 z-40">
@@ -1213,5 +1239,6 @@ export default function Admin() {
         </div>
       </div>
     </div>
+    </>
   );
 }
