@@ -95,7 +95,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 lg:p-10"
       onClick={onClose}
     >
       {/* Backdrop with blur */}
@@ -104,7 +104,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
       {/* Main Panel */}
       <div 
         className={cn(
-          "relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl",
+          "relative w-full max-w-[92vw] sm:max-w-lg lg:max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl",
           "bg-gradient-to-b from-background/95 to-background/90",
           "backdrop-blur-2xl backdrop-saturate-150",
           "border border-white/20 dark:border-white/10",
