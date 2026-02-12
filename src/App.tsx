@@ -66,17 +66,6 @@ const App = () => (
                     <Route path="/admin/articles" element={<AdminLayout><ArticlesManager /></AdminLayout>} />
                     <Route path="/admin/articles/:id" element={<AdminLayout><ArticleEditor /></AdminLayout>} />
 
-                    {/* Legacy redirects */}
-                    <Route path="/events" element={<Navigate to="/" replace />} />
-                    <Route path="/analytics" element={<Navigate to="/" replace />} />
-                    <Route path="/search-products" element={<Navigate to="/" replace />} />
-                    <Route path="/categories" element={<Navigate to="/" replace />} />
-                    <Route path="/category/:categoryId" element={<Navigate to="/" replace />} />
-                    <Route path="/my-orders" element={<Navigate to="/" replace />} />
-                    <Route path="/donation" element={<Navigate to="/" replace />} />
-                    <Route path="/promo-codes" element={<Navigate to="/" replace />} />
-                    <Route path="/settings" element={<Navigate to="/" replace />} />
-                    <Route path="/how-to-use-search" element={<Navigate to="/" replace />} />
 
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />
