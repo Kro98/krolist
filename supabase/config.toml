@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.test-secret-connection]
 verify_jwt = false
+
+[functions.service-proxy]
+verify_jwt = true
