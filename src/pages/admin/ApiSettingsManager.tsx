@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import ServiceDependenciesAudit from "./ServiceDependenciesAudit";
 
 interface SecretEntry {
   name: string;
@@ -412,6 +413,15 @@ export default function ApiSettingsManager() {
         <p className="text-xs text-muted-foreground">
           Deleting or modifying secrets used by edge functions will break those functions. Protected system secrets cannot be deleted from this interface.
         </p>
+      </div>
+
+      {/* Service Dependencies Audit */}
+      <div className="pt-4 border-t border-border">
+        <h2 className="text-lg font-bold flex items-center gap-2 mb-4">
+          <Zap className="w-5 h-5" />
+          Service Dependencies & Migration Guide
+        </h2>
+        <ServiceDependenciesAudit existingSecrets={secrets.map(s => s.name)} />
       </div>
     </div>
   );
