@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag, Image, Upload, X } from "lucide-react";
+import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag, Image, Upload, X, Key } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import KrolistProductsManager from "./admin/KrolistProductsManager";
 import StickersManager from "./admin/StickersManager";
 import PromoCodesManager from "./admin/PromoCodesManager";
+import ApiSettingsManager from "./admin/ApiSettingsManager";
 import { toast as sonnerToast } from "sonner";
 
 export default function Admin() {
@@ -40,6 +41,7 @@ export default function Admin() {
     { value: "articles", label: "Articles", icon: FileText, isLink: true, href: "/admin/articles" },
     { value: "stickers", label: "Stickers", icon: Sticker },
     { value: "promo-codes", label: "Promo Codes", icon: Tag },
+    { value: "api-settings", label: "API Keys", icon: Key },
     { value: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -237,6 +239,10 @@ export default function Admin() {
 
           <TabsContent value="promo-codes" className="mt-0 md:mt-6">
             <PromoCodesManager />
+          </TabsContent>
+
+          <TabsContent value="api-settings" className="mt-0 md:mt-6">
+            <ApiSettingsManager />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-0 md:mt-6">
@@ -441,7 +447,7 @@ export default function Admin() {
 
       {/* Mobile Bottom Nav */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="grid grid-cols-5 gap-1 p-2">
+        <div className="grid grid-cols-6 gap-1 p-2">
           {tabs.map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.value;
