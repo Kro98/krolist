@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.process-sticker-image]
 verify_jwt = false
+
+[functions.admin-login-guard]
+verify_jwt = false

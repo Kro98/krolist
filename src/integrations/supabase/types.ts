@@ -65,6 +65,30 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_login_attempts: {
+        Row: {
+          attempted_at: string
+          email: string
+          id: string
+          ip_address: string
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string
+          email: string
+          id?: string
+          ip_address: string
+          success?: boolean
+        }
+        Update: {
+          attempted_at?: string
+          email?: string
+          id?: string
+          ip_address?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       app_installs: {
         Row: {
           id: string

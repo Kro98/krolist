@@ -14,7 +14,7 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { user, loading: authLoading, signIn } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin, isLoading: roleLoading } = useAdminRole();
   const isLoading = authLoading || roleLoading;
 
@@ -120,7 +120,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     e.preventDefault();
     if (!email || !password) return;
 
-    // Check lockout
+    // Client-side lockout check (mirrors server)
     const current = getAttemptData();
     if (current.lockedUntil > Date.now()) {
       toast.error('Too many attempts. Try again later.');
@@ -130,8 +130,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
     setLoggingIn(true);
     try {
-      const { error } = await signIn(email, password, true);
-      if (error) {
+      // Use server-side rate-limited login guard
+      const res = await fetch(
+        `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/admin-login-guard`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+      const result = await res.json();
+
+      if (res.status === 429) {
+        // Server-side lockout
+        const data = {
+          count: MAX_ATTEMPTS,
+          lockedUntil: Date.now() + (result.remaining_minutes || 30) * 60 * 1000,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        setAttemptData(data);
+        toast.error(result.error || 'Too many failed attempts.');
+        return;
+      }
+
+      if (!res.ok) {
         const newCount = current.count + 1;
         const locked = newCount >= MAX_ATTEMPTS;
         const data = {
@@ -144,13 +166,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         if (locked) {
           toast.error('Too many failed attempts. Locked for 15 minutes.');
         } else {
-          toast.error(`${error.message || 'Login failed'} (${MAX_ATTEMPTS - newCount} attempts left)`);
+          const left = result.attempts_left ?? (MAX_ATTEMPTS - newCount);
+          toast.error(`${result.error || 'Login failed'} (${left} attempts left)`);
         }
-      } else {
-        // Success — reset attempts
-        localStorage.removeItem(STORAGE_KEY);
-        setAttemptData({ count: 0, lockedUntil: 0 });
+        return;
       }
+
+      // Success — set session on the client
+      if (result.session) {
+        await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token,
+        });
+      }
+      localStorage.removeItem(STORAGE_KEY);
+      setAttemptData({ count: 0, lockedUntil: 0 });
     } catch (err: any) {
       toast.error(err.message || 'Login failed');
     } finally {
