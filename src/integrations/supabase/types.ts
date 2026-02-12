@@ -515,6 +515,42 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          category: string
+          config: Json
+          created_at: string
+          description: string | null
+          flag_key: string
+          flag_name: string
+          id: string
+          is_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          flag_key: string
+          flag_name: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          flag_key?: string
+          flag_name?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       global_notifications: {
         Row: {
           created_at: string
@@ -1061,6 +1097,51 @@ export type Database = {
           search_query?: string
           searched_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      service_integrations: {
+        Row: {
+          category: string
+          config: Json
+          created_at: string
+          description: string | null
+          docs_url: string | null
+          icon_url: string | null
+          id: string
+          is_enabled: boolean
+          secret_keys: string[]
+          service_key: string
+          service_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          docs_url?: string | null
+          icon_url?: string | null
+          id?: string
+          is_enabled?: boolean
+          secret_keys?: string[]
+          service_key: string
+          service_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          docs_url?: string | null
+          icon_url?: string | null
+          id?: string
+          is_enabled?: boolean
+          secret_keys?: string[]
+          service_key?: string
+          service_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
