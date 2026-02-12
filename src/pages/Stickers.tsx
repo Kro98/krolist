@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { edgeFunctionUrl } from "@/config/supabase";
 import { Button } from "@/components/ui/button";
 import { 
   ShoppingCart,
@@ -94,7 +95,7 @@ export default function Stickers() {
   // Get watermarked image URL for viewing in new tab
   const getWatermarkedViewUrl = useCallback((url: string | null) => {
     if (!url) return '/placeholder.svg';
-    const baseUrl = 'https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/process-sticker-image';
+    const baseUrl = edgeFunctionUrl('process-sticker-image');
     return `${baseUrl}?url=${encodeURIComponent(url)}&watermark=true`;
   }, []);
 

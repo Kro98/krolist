@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { restApiUrl, restHeaders } from '@/config/supabase';
 import { PageSEO } from '@/components/seo/PageSEO';
 
 interface SuggestedProduct {
@@ -30,13 +31,8 @@ const NotFound = () => {
     const fetchSuggestions = async () => {
       try {
         const response = await fetch(
-          `https://cnmdwgdizfrvyplllmdn.supabase.co/rest/v1/krolist_products?select=id,title,image_url,current_price,currency&is_active=eq.true&limit=4`,
-          {
-            headers: {
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNubWR3Z2RpemZydnlwbGxsbWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0Mjk3MjksImV4cCI6MjA3NDAwNTcyOX0.OYMhi7Hj5xu5lXJMdCJJvb-k2HeIALRdE6-bH7GGBBY',
-              'Content-Type': 'application/json',
-            },
-          }
+          restApiUrl('krolist_products?select=id,title,image_url,current_price,currency&is_active=eq.true&limit=4'),
+          { headers: restHeaders }
         );
         const data = await response.json();
         if (Array.isArray(data)) {
