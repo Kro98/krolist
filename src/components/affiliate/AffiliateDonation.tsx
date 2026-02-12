@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAdSlots } from "@/hooks/useAdSlots";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PromoCode {
   id: string;
@@ -93,28 +94,41 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
     setVideoCountdown(10);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 lg:p-10"
-      onClick={onClose}
-    >
-      {/* Backdrop with blur */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-      
-      {/* Main Panel */}
-      <div 
-        className={cn(
-          "relative w-full max-w-[92vw] sm:max-w-lg lg:max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl",
-          "bg-gradient-to-b from-background/95 to-background/90",
-          "backdrop-blur-2xl backdrop-saturate-150",
-          "border border-white/20 dark:border-white/10",
-          "shadow-2xl shadow-pink-500/10",
-          "animate-in zoom-in-95 duration-300"
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 lg:p-10"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {/* Backdrop with blur */}
+          <motion.div
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          />
+          
+          {/* Main Panel */}
+          <motion.div 
+            className={cn(
+              "relative w-full max-w-[92vw] sm:max-w-lg lg:max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl",
+              "bg-gradient-to-b from-background/95 to-background/90",
+              "backdrop-blur-2xl backdrop-saturate-150",
+              "border border-white/20 dark:border-white/10",
+              "shadow-2xl shadow-pink-500/10",
+            )}
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.85, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.8 }}
+          >
         {/* Decorative gradient orbs */}
         <div className="absolute top-0 left-1/4 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
@@ -310,7 +324,9 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
             </div>
           </div>
         )}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
