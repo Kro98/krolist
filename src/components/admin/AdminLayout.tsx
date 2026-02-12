@@ -1,14 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { FunnyLoadingText } from "@/components/FunnyLoadingText";
-import { Shield, LogIn, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { edgeFunctionUrl } from "@/config/supabase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { AdminLoginPage } from "./AdminLoginPage";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -40,37 +35,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [headerOpacity, setHeaderOpacity] = useState(80);
   const [headerColor, setHeaderColor] = useState('');
 
-  // Login form state
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loggingIn, setLoggingIn] = useState(false);
-
-  // Rate limiting: 3 attempts, then 15-minute lockout
-  const MAX_ATTEMPTS = 3;
-  const LOCKOUT_MS = 15 * 60 * 1000;
-  const STORAGE_KEY = 'admin_login_attempts';
-
-  const getAttemptData = () => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { count: 0, lockedUntil: 0 };
-      return JSON.parse(raw) as { count: number; lockedUntil: number };
-    } catch { return { count: 0, lockedUntil: 0 }; }
-  };
-
-  const [attemptData, setAttemptData] = useState(getAttemptData);
-
-  const isLocked = useMemo(() => attemptData.lockedUntil > Date.now(), [attemptData]);
-  const remainingMinutes = useMemo(() => Math.ceil((attemptData.lockedUntil - Date.now()) / 60000), [attemptData]);
-
-  // Refresh lock state every 30s
-  useEffect(() => {
-    if (!isLocked) return;
-    const t = setInterval(() => setAttemptData(getAttemptData()), 30000);
-    return () => clearInterval(t);
-  }, [isLocked]);
-
   const fetchBg = useCallback(async () => {
     try {
       const { data } = await supabase
@@ -96,7 +60,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         if (m['admin_bg_scale']) setBgScale(Number(m['admin_bg_scale']));
         if (m['admin_bg_pos_x']) setBgPosX(Number(m['admin_bg_pos_x']));
         if (m['admin_bg_pos_y']) setBgPosY(Number(m['admin_bg_pos_y']));
-        // Element styles
         if (m['admin_el_card_blur'] !== undefined) setCardBlur(Number(m['admin_el_card_blur']));
         if (m['admin_el_card_opacity'] !== undefined) setCardOpacity(Number(m['admin_el_card_opacity']));
         if (m['admin_el_card_color'] !== undefined) setCardColor(m['admin_el_card_color']);
@@ -117,78 +80,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return () => window.removeEventListener('admin-bg-updated', handler);
   }, [fetchBg]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-
-    // Client-side lockout check (mirrors server)
-    const current = getAttemptData();
-    if (current.lockedUntil > Date.now()) {
-      toast.error('Too many attempts. Try again later.');
-      setAttemptData(current);
-      return;
-    }
-
-    setLoggingIn(true);
-    try {
-      // Use server-side rate-limited login guard
-      const res = await fetch(
-        edgeFunctionUrl('admin-login-guard'),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        }
-      );
-      const result = await res.json();
-
-      if (res.status === 429) {
-        // Server-side lockout
-        const data = {
-          count: MAX_ATTEMPTS,
-          lockedUntil: Date.now() + (result.remaining_minutes || 30) * 60 * 1000,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        setAttemptData(data);
-        toast.error(result.error || 'Too many failed attempts.');
-        return;
-      }
-
-      if (!res.ok) {
-        const newCount = current.count + 1;
-        const locked = newCount >= MAX_ATTEMPTS;
-        const data = {
-          count: newCount,
-          lockedUntil: locked ? Date.now() + LOCKOUT_MS : 0,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        setAttemptData(data);
-
-        if (locked) {
-          toast.error('Too many failed attempts. Locked for 15 minutes.');
-        } else {
-          const left = result.attempts_left ?? (MAX_ATTEMPTS - newCount);
-          toast.error(`${result.error || 'Login failed'} (${left} attempts left)`);
-        }
-        return;
-      }
-
-      // Success — set session on the client
-      if (result.session) {
-        await supabase.auth.setSession({
-          access_token: result.session.access_token,
-          refresh_token: result.session.refresh_token,
-        });
-      }
-      localStorage.removeItem(STORAGE_KEY);
-      setAttemptData({ count: 0, lockedUntil: 0 });
-    } catch (err: any) {
-      toast.error(err.message || 'Login failed');
-    } finally {
-      setLoggingIn(false);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -198,69 +89,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4 relative">
-        <a
-          href="/"
-          className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to site
-        </a>
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <Shield className="h-12 w-12 mx-auto mb-4 text-primary" />
-            <h1 className="text-2xl font-bold mb-1">Admin Access</h1>
-            <p className="text-sm text-muted-foreground">
-              {user ? 'Your account does not have admin privileges.' : 'Sign in with your admin account to continue.'}
-            </p>
-          </div>
-
-          {!user && (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="admin-email" className="text-sm font-medium">Email</Label>
-                <Input
-                  id="admin-email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="admin-password" className="text-sm font-medium">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="admin-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                    required
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-              <Button type="submit" className="w-full" disabled={loggingIn || isLocked}>
-                <LogIn className="w-4 h-4 mr-2" />
-                {isLocked ? `Locked (${remainingMinutes}m)` : loggingIn ? 'Signing in...' : 'Sign In'}
-              </Button>
-            </form>
-          )}
-        </div>
-      </div>
-    );
+    return <AdminLoginPage hasUser={!!user} />;
   }
 
   return (
@@ -278,7 +107,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         '--admin-header-color': headerColor || undefined,
       } as React.CSSProperties}
     >
-      {/* Background layer */}
       {bgImage && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
           <img
@@ -296,7 +124,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
         </div>
       )}
-      {/* Content */}
       <div className="relative z-10">
         {children}
       </div>
