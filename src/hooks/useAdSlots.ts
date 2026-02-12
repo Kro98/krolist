@@ -6,6 +6,7 @@ interface AdSlots {
   donationSlot: string;
   productBannerSlot: string;
   articleInlineSlot: string;
+  interstitialSlot: string;
 }
 
 const defaults: AdSlots = {
@@ -13,6 +14,7 @@ const defaults: AdSlots = {
   donationSlot: "",
   productBannerSlot: "",
   articleInlineSlot: "",
+  interstitialSlot: "",
 };
 
 const keyMap: Record<string, keyof AdSlots> = {
@@ -20,6 +22,7 @@ const keyMap: Record<string, keyof AdSlots> = {
   adsense_slot_donation: "donationSlot",
   adsense_slot_product_banner: "productBannerSlot",
   adsense_slot_article_inline: "articleInlineSlot",
+  adsense_slot_interstitial: "interstitialSlot",
 };
 
 export function useAdSlots() {

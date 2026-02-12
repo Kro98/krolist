@@ -43,6 +43,7 @@ export default function ApiSettingsManager() {
     adsense_slot_donation: '',
     adsense_slot_product_banner: '',
     adsense_slot_article_inline: '',
+    adsense_slot_interstitial: '',
   });
   const [adSlotsLoading, setAdSlotsLoading] = useState(true);
   const [adSlotsSaving, setAdSlotsSaving] = useState(false);
@@ -88,7 +89,7 @@ export default function ApiSettingsManager() {
       const { data, error } = await supabase
         .from('ad_settings')
         .select('setting_key, setting_value')
-        .in('setting_key', ['adsense_client_id', 'adsense_slot_donation', 'adsense_slot_product_banner', 'adsense_slot_article_inline']);
+        .in('setting_key', ['adsense_client_id', 'adsense_slot_donation', 'adsense_slot_product_banner', 'adsense_slot_article_inline', 'adsense_slot_interstitial']);
 
       if (error) throw error;
 
@@ -525,6 +526,15 @@ export default function ApiSettingsManager() {
                 placeholder="1234567890"
                 value={adSlots.adsense_slot_article_inline}
                 onChange={(e) => setAdSlots(prev => ({ ...prev, adsense_slot_article_inline: e.target.value }))}
+                className="font-mono text-sm"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Interstitial (Product Click) Slot ID</Label>
+              <Input
+                placeholder="1234567890"
+                value={adSlots.adsense_slot_interstitial}
+                onChange={(e) => setAdSlots(prev => ({ ...prev, adsense_slot_interstitial: e.target.value }))}
                 className="font-mono text-sm"
               />
             </div>
