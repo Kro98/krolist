@@ -5,7 +5,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings,
   Tag, Image, Upload, X, Key, Sparkles, Sun, Moon, RotateCcw,
-  Eye, Contrast, Droplets, ZoomIn, Move, ChevronRight
+  Eye, Contrast, Droplets, ZoomIn, Move, ChevronRight,
+  Monitor, Tablet, Smartphone
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -534,7 +535,7 @@ export default function Admin() {
                             <motion.div
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              className="space-y-2"
+                              className="space-y-3"
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -549,75 +550,134 @@ export default function Admin() {
                                   Center
                                 </button>
                               </div>
-                              <div
-                                className={cn(
-                                  "relative w-full h-44 rounded-2xl overflow-hidden border border-border/40 cursor-grab active:cursor-grabbing select-none",
-                                  "shadow-[var(--shadow-md)] transition-shadow hover:shadow-[var(--shadow-lg)]"
-                                )}
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  setIsDraggingPos(true);
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  const handleMove = (ev: MouseEvent) => {
-                                    const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
-                                    const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
-                                    setBgPosX(Math.round(x));
-                                    setBgPosY(Math.round(y));
-                                  };
-                                  const handleUp = () => {
-                                    setIsDraggingPos(false);
-                                    window.removeEventListener('mousemove', handleMove);
-                                    window.removeEventListener('mouseup', handleUp);
-                                  };
-                                  window.addEventListener('mousemove', handleMove);
-                                  window.addEventListener('mouseup', handleUp);
-                                }}
-                                onTouchStart={(e) => {
-                                  setIsDraggingPos(true);
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  const handleMove = (ev: TouchEvent) => {
-                                    const touch = ev.touches[0];
-                                    const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
-                                    const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
-                                    setBgPosX(Math.round(x));
-                                    setBgPosY(Math.round(y));
-                                  };
-                                  const handleEnd = () => {
-                                    setIsDraggingPos(false);
-                                    window.removeEventListener('touchmove', handleMove);
-                                    window.removeEventListener('touchend', handleEnd);
-                                  };
-                                  window.addEventListener('touchmove', handleMove);
-                                  window.addEventListener('touchend', handleEnd);
-                                }}
-                              >
-                                <img
-                                  src={bgImageUrl}
-                                  alt="Background preview"
-                                  className="absolute inset-0 w-full h-full pointer-events-none"
-                                  style={{
-                                    filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
-                                    opacity: bgOpacity / 100,
-                                    objectFit: 'cover',
-                                    objectPosition: `${bgPosX}% ${bgPosY}%`,
-                                    transform: `scale(${bgScale / 100})`,
-                                  }}
-                                />
-                                <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
-                                <p className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground/80 backdrop-blur-[0.5px]">
-                                  Live Preview
-                                </p>
-                                {/* Focal point crosshair */}
-                                <motion.div
-                                  animate={{ left: `${bgPosX}%`, top: `${bgPosY}%` }}
-                                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                                  className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                                >
-                                  <div className="w-full h-full rounded-full border-2 border-primary bg-primary/20 shadow-[0_0_12px_hsl(var(--primary)/0.5)]" />
-                                </motion.div>
+
+                              {/* Multi-device preview */}
+                              <div className="flex items-end justify-center gap-3">
+                                {/* Desktop */}
+                                <div className="flex flex-col items-center gap-1 flex-1 max-w-[260px]">
+                                  <div
+                                    className={cn(
+                                      "relative w-full aspect-[16/10] rounded-lg overflow-hidden border border-border/50 cursor-grab active:cursor-grabbing select-none",
+                                      "shadow-[var(--shadow-md)] transition-shadow hover:shadow-[var(--shadow-lg)] bg-muted/30"
+                                    )}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      setIsDraggingPos(true);
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const handleMove = (ev: MouseEvent) => {
+                                        const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
+                                        const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
+                                        setBgPosX(Math.round(x));
+                                        setBgPosY(Math.round(y));
+                                      };
+                                      const handleUp = () => {
+                                        setIsDraggingPos(false);
+                                        window.removeEventListener('mousemove', handleMove);
+                                        window.removeEventListener('mouseup', handleUp);
+                                      };
+                                      window.addEventListener('mousemove', handleMove);
+                                      window.addEventListener('mouseup', handleUp);
+                                    }}
+                                    onTouchStart={(e) => {
+                                      setIsDraggingPos(true);
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const handleMove = (ev: TouchEvent) => {
+                                        const touch = ev.touches[0];
+                                        const x = Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100));
+                                        const y = Math.max(0, Math.min(100, ((touch.clientY - rect.top) / rect.height) * 100));
+                                        setBgPosX(Math.round(x));
+                                        setBgPosY(Math.round(y));
+                                      };
+                                      const handleEnd = () => {
+                                        setIsDraggingPos(false);
+                                        window.removeEventListener('touchmove', handleMove);
+                                        window.removeEventListener('touchend', handleEnd);
+                                      };
+                                      window.addEventListener('touchmove', handleMove);
+                                      window.addEventListener('touchend', handleEnd);
+                                    }}
+                                  >
+                                    <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
+                                      filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
+                                      opacity: bgOpacity / 100, objectFit: 'cover', objectPosition: `${bgPosX}% ${bgPosY}%`, transform: `scale(${bgScale / 100})`,
+                                    }} />
+                                    <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
+                                    {/* Simulated content overlay */}
+                                    <div className="absolute inset-0 flex flex-col p-2 pointer-events-none">
+                                      <div className="flex gap-1 mb-1.5">
+                                        <div className="h-1 w-8 rounded-full bg-foreground/15" />
+                                        <div className="h-1 w-5 rounded-full bg-foreground/10" />
+                                        <div className="h-1 w-5 rounded-full bg-foreground/10 ml-auto" />
+                                      </div>
+                                      <div className="flex-1 flex gap-1.5">
+                                        <div className="w-6 flex flex-col gap-1 py-1">
+                                          {[1,2,3,4].map(i => <div key={i} className="h-1 w-full rounded-full bg-foreground/10" />)}
+                                        </div>
+                                        <div className="flex-1 grid grid-cols-3 gap-1 auto-rows-[12px] py-1">
+                                          {[1,2,3,4,5,6].map(i => <div key={i} className="rounded bg-foreground/8" />)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <motion.div
+                                      animate={{ left: `${bgPosX}%`, top: `${bgPosY}%` }}
+                                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                      className="absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                                    >
+                                      <div className="w-full h-full rounded-full border-2 border-primary bg-primary/20 shadow-[0_0_10px_hsl(var(--primary)/0.5)]" />
+                                    </motion.div>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                                    <Monitor className="w-2.5 h-2.5" />
+                                    <span>Desktop</span>
+                                  </div>
+                                </div>
+
+                                {/* Tablet */}
+                                <div className="flex flex-col items-center gap-1 w-[90px]">
+                                  <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden border border-border/50 bg-muted/30 shadow-[var(--shadow-sm)]">
+                                    <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
+                                      filter: `blur(${bgBlur * 0.6}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
+                                      opacity: bgOpacity / 100, objectFit: 'cover', objectPosition: `${bgPosX}% ${bgPosY}%`, transform: `scale(${bgScale / 100})`,
+                                    }} />
+                                    <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
+                                    <div className="absolute inset-0 flex flex-col p-1.5 pointer-events-none">
+                                      <div className="h-0.5 w-6 rounded-full bg-foreground/12 mb-1" />
+                                      <div className="flex-1 grid grid-cols-2 gap-0.5 auto-rows-[8px]">
+                                        {[1,2,3,4].map(i => <div key={i} className="rounded-sm bg-foreground/8" />)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                                    <Tablet className="w-2.5 h-2.5" />
+                                    <span>Tablet</span>
+                                  </div>
+                                </div>
+
+                                {/* Mobile */}
+                                <div className="flex flex-col items-center gap-1 w-[50px]">
+                                  <div className="relative aspect-[9/16] w-full rounded-lg overflow-hidden border border-border/50 bg-muted/30 shadow-[var(--shadow-sm)]">
+                                    <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{
+                                      filter: `blur(${bgBlur * 0.3}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
+                                      opacity: bgOpacity / 100, objectFit: 'cover', objectPosition: `${bgPosX}% ${bgPosY}%`, transform: `scale(${bgScale / 100})`,
+                                    }} />
+                                    <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
+                                    <div className="absolute inset-0 flex flex-col p-1 pointer-events-none">
+                                      <div className="h-0.5 w-4 rounded-full bg-foreground/12 mx-auto mb-0.5" />
+                                      <div className="flex-1 flex flex-col gap-0.5">
+                                        {[1,2,3].map(i => <div key={i} className="h-2 w-full rounded-sm bg-foreground/8" />)}
+                                      </div>
+                                      <div className="h-1.5 w-6 rounded-full bg-foreground/10 mx-auto mt-0.5" />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                                    <Smartphone className="w-2.5 h-2.5" />
+                                    <span>Mobile</span>
+                                  </div>
+                                </div>
                               </div>
+
                               <p className="text-[10px] text-muted-foreground text-center font-mono tabular-nums">
-                                {bgPosX}% × {bgPosY}%
+                                Position: {bgPosX}% × {bgPosY}%
                               </p>
                             </motion.div>
                           )}
