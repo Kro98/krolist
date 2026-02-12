@@ -6,7 +6,7 @@ import {
   Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings,
   Tag, Image, Upload, X, Key, Sparkles, Sun, Moon, RotateCcw,
   Eye, Contrast, Droplets, ZoomIn, Move, ChevronRight,
-  Monitor, Tablet, Smartphone
+  Monitor, Tablet, Smartphone, PanelTop, Square, Columns, Palette, Copy
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -23,7 +23,7 @@ import PromoCodesManager from "./admin/PromoCodesManager";
 import ApiSettingsManager from "./admin/ApiSettingsManager";
 import { toast as sonnerToast } from "sonner";
 
-// Glassmorphic card wrapper
+// Glassmorphic card wrapper — uses admin element CSS vars
 function GlassCard({ children, className, glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
   return (
     <motion.div
@@ -31,11 +31,19 @@ function GlassCard({ children, className, glow = false }: { children: React.Reac
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
       className={cn(
-        "relative rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-[var(--shadow-md)]",
+        "relative rounded-2xl shadow-[var(--shadow-md)]",
         "transition-all duration-300",
         glow && "hover:shadow-[var(--shadow-glow)] hover:border-primary/30",
         className
       )}
+      style={{
+        backdropFilter: `blur(var(--admin-card-blur, 12px))`,
+        backgroundColor: `var(--admin-card-color, hsl(var(--card)))`,
+        opacity: `var(--admin-card-opacity, 0.8)`,
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+      }}
     >
       {children}
     </motion.div>
@@ -89,6 +97,21 @@ export default function Admin() {
   const [savingBg, setSavingBg] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
   const [isDraggingPos, setIsDraggingPos] = useState(false);
+
+  // Element-level style settings
+  type ElementKey = 'card' | 'border' | 'header';
+  type ElementStyle = { blur: number; opacity: number; color: string };
+  const defaultElementStyle: ElementStyle = { blur: 12, opacity: 80, color: '' };
+  const [elementStyles, setElementStyles] = useState<Record<ElementKey, ElementStyle>>({
+    card: { blur: 12, opacity: 80, color: '' },
+    border: { blur: 0, opacity: 50, color: '' },
+    header: { blur: 24, opacity: 80, color: '' },
+  });
+  const [selectedElement, setSelectedElement] = useState<ElementKey>('card');
+  const currentElement = elementStyles[selectedElement];
+  const updateElement = (patch: Partial<ElementStyle>) => {
+    setElementStyles(prev => ({ ...prev, [selectedElement]: { ...prev[selectedElement], ...patch } }));
+  };
 
   const currentBg = deviceSettings[selectedDevice];
   const updateCurrentBg = (patch: Partial<BgSettings>) => {
@@ -161,6 +184,8 @@ export default function Admin() {
 
   const devices: DeviceKey[] = ['desktop', 'tablet', 'mobile'];
   const bgFieldKeys = ['blur', 'opacity', 'overlay', 'brightness', 'saturation', 'scale', 'pos_x', 'pos_y'] as const;
+  const elementKeys: ElementKey[] = ['card', 'border', 'header'];
+  const elementFieldKeys = ['blur', 'opacity', 'color'] as const;
 
   const fetchBgSettings = async () => {
     try {
@@ -170,9 +195,14 @@ export default function Admin() {
           allKeys.push(`admin_bg_${d}_${f}`);
         }
       }
-      // Also fetch legacy keys for backwards compat
       for (const f of bgFieldKeys) {
         allKeys.push(`admin_bg_${f}`);
+      }
+      // Element style keys
+      for (const el of elementKeys) {
+        for (const f of elementFieldKeys) {
+          allKeys.push(`admin_el_${el}_${f}`);
+        }
       }
       const { data } = await supabase
         .from('page_content')
@@ -187,7 +217,6 @@ export default function Admin() {
           const next = { ...prev };
           for (const d of devices) {
             const s = { ...next[d] };
-            // Try device-specific first, fall back to legacy
             s.blur = Number(map[`admin_bg_${d}_blur`] ?? map['admin_bg_blur'] ?? 0);
             s.opacity = Number(map[`admin_bg_${d}_opacity`] ?? map['admin_bg_opacity'] ?? 20);
             s.overlay = Number(map[`admin_bg_${d}_overlay`] ?? map['admin_bg_overlay'] ?? 60);
@@ -197,6 +226,21 @@ export default function Admin() {
             s.posX = Number(map[`admin_bg_${d}_pos_x`] ?? map['admin_bg_pos_x'] ?? 50);
             s.posY = Number(map[`admin_bg_${d}_pos_y`] ?? map['admin_bg_pos_y'] ?? 50);
             next[d] = s;
+          }
+          return next;
+        });
+
+        setElementStyles(prev => {
+          const next = { ...prev };
+          for (const el of elementKeys) {
+            const e = { ...next[el] };
+            const blurVal = map[`admin_el_${el}_blur`];
+            const opVal = map[`admin_el_${el}_opacity`];
+            const colVal = map[`admin_el_${el}_color`];
+            if (blurVal !== undefined) e.blur = Number(blurVal);
+            if (opVal !== undefined) e.opacity = Number(opVal);
+            if (colVal !== undefined) e.color = colVal;
+            next[el] = e;
           }
           return next;
         });
@@ -237,6 +281,15 @@ export default function Admin() {
         { page_key: 'admin_bg_pos_x', content_en: String(ds.posX), description: 'Admin background position X (%)' },
         { page_key: 'admin_bg_pos_y', content_en: String(ds.posY), description: 'Admin background position Y (%)' },
       );
+      // Save element styles
+      for (const el of elementKeys) {
+        const e = elementStyles[el];
+        settings.push(
+          { page_key: `admin_el_${el}_blur`, content_en: String(e.blur), description: `Admin ${el} blur` },
+          { page_key: `admin_el_${el}_opacity`, content_en: String(e.opacity), description: `Admin ${el} opacity` },
+          { page_key: `admin_el_${el}_color`, content_en: e.color, description: `Admin ${el} color` },
+        );
+      }
       for (const s of settings) {
         await supabase.from('page_content').upsert(s, { onConflict: 'page_key' });
       }
@@ -264,7 +317,7 @@ export default function Admin() {
     <div className="min-h-screen pb-20 md:pb-6 relative z-10">
       {/* Mobile Header — floating glass */}
       <div className="md:hidden sticky top-0 z-40">
-        <div className="mx-3 mt-2 rounded-2xl bg-card/80 backdrop-blur-2xl border border-border/50 shadow-[var(--shadow-md)]">
+        <div className="mx-3 mt-2 rounded-2xl shadow-[var(--shadow-md)]" style={{ backdropFilter: `blur(var(--admin-header-blur, 24px))`, backgroundColor: `var(--admin-header-color, hsl(var(--card) / var(--admin-header-opacity, 0.8)))`, border: `1px solid var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))` }}>
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -329,7 +382,7 @@ export default function Admin() {
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
           className="w-[220px] shrink-0 sticky top-6 self-start"
         >
-          <div className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-2xl shadow-[var(--shadow-lg)] p-4 space-y-2">
+          <div className="rounded-2xl shadow-[var(--shadow-lg)] p-4 space-y-2" style={{ backdropFilter: `blur(var(--admin-card-blur, 12px))`, backgroundColor: `var(--admin-card-color, hsl(var(--card) / var(--admin-card-opacity, 0.7)))`, border: `1px solid var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))` }}>
             {/* Logo Area */}
             <div className="flex items-center gap-2.5 px-2 pb-3 mb-2 border-b border-border/40">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shadow-[var(--shadow-glow)]">
@@ -756,6 +809,98 @@ export default function Admin() {
                               <SliderControl icon={Moon} label="Saturation" value={currentBg.saturation} onChange={(v) => updateCurrentBg({ saturation: v })} min={0} max={200} step={5} unit="%" />
                               <SliderControl icon={ZoomIn} label="Zoom" value={currentBg.scale} onChange={(v) => updateCurrentBg({ scale: v })} min={100} max={200} step={5} unit="%" />
                             </div>
+                            </div>
+
+                          {/* Element Styles */}
+                          <div className="space-y-3">
+                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                              <Palette className="w-3 h-3" />
+                              Element Styles
+                            </Label>
+
+                            {/* Element selector tabs */}
+                            <div className="flex gap-1 p-1 rounded-xl bg-background/40 border border-border/30">
+                              {([
+                                { key: 'card' as ElementKey, icon: Square, label: 'Cards' },
+                                { key: 'border' as ElementKey, icon: Columns, label: 'Borders' },
+                                { key: 'header' as ElementKey, icon: PanelTop, label: 'Header' },
+                              ]).map(el => {
+                                const ElIcon = el.icon;
+                                const isActive = selectedElement === el.key;
+                                return (
+                                  <button
+                                    key={el.key}
+                                    onClick={() => setSelectedElement(el.key)}
+                                    className={cn(
+                                      "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
+                                      isActive
+                                        ? "bg-primary/10 text-primary shadow-[0_0_8px_hsl(var(--primary)/0.15)]"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                                    )}
+                                  >
+                                    <ElIcon className="w-3.5 h-3.5" />
+                                    <span>{el.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Element preview chip */}
+                            <div className="flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-background/30">
+                              <div
+                                className="flex-1 h-10 rounded-lg border transition-all"
+                                style={{
+                                  backdropFilter: `blur(${currentElement.blur}px)`,
+                                  backgroundColor: currentElement.color
+                                    ? `${currentElement.color}${Math.round(currentElement.opacity * 2.55).toString(16).padStart(2, '0')}`
+                                    : `hsl(var(--card) / ${currentElement.opacity / 100})`,
+                                  borderColor: currentElement.color
+                                    ? `${currentElement.color}33`
+                                    : `hsl(var(--border) / ${currentElement.opacity / 200})`,
+                                }}
+                              />
+                              <span className="text-[10px] text-muted-foreground font-mono capitalize">{selectedElement}</span>
+                            </div>
+
+                            {/* Element controls */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <SliderControl icon={Droplets} label="Blur" value={currentElement.blur} onChange={(v) => updateElement({ blur: v })} min={0} max={40} step={1} unit="px" />
+                              <SliderControl icon={Eye} label="Opacity" value={currentElement.opacity} onChange={(v) => updateElement({ opacity: v })} min={0} max={100} step={5} unit="%" />
+                            </div>
+
+                            {/* Color picker */}
+                            <div className="group space-y-2 p-3 rounded-xl bg-background/40 border border-border/30 hover:border-primary/20 transition-all duration-200">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary/10 text-primary">
+                                    <Palette className="w-3.5 h-3.5" />
+                                  </div>
+                                  <Label className="text-xs font-semibold">Color</Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {currentElement.color && (
+                                    <button
+                                      onClick={() => updateElement({ color: '' })}
+                                      className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                      Reset
+                                    </button>
+                                  )}
+                                  <input
+                                    type="color"
+                                    value={currentElement.color || '#000000'}
+                                    onChange={(e) => updateElement({ color: e.target.value })}
+                                    className="w-7 h-7 rounded-lg border border-border/50 cursor-pointer bg-transparent"
+                                  />
+                                </div>
+                              </div>
+                              <Input
+                                placeholder="Default (theme color)"
+                                value={currentElement.color}
+                                onChange={(e) => updateElement({ color: e.target.value })}
+                                className="rounded-lg bg-background/40 text-xs h-8 font-mono"
+                              />
+                            </div>
                           </div>
 
                           <Button
@@ -972,6 +1117,37 @@ export default function Admin() {
                     <SliderControl icon={ZoomIn} label="Zoom" value={currentBg.scale} onChange={(v) => updateCurrentBg({ scale: v })} min={100} max={200} step={5} unit="%" />
                   </div>
 
+                  {/* Mobile Element Styles */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                      <Palette className="w-3 h-3" /> Element Styles
+                    </Label>
+                    <div className="flex gap-1 p-1 rounded-lg bg-background/40 border border-border/30">
+                      {([
+                        { key: 'card' as ElementKey, icon: Square, label: 'Cards' },
+                        { key: 'border' as ElementKey, icon: Columns, label: 'Borders' },
+                        { key: 'header' as ElementKey, icon: PanelTop, label: 'Header' },
+                      ]).map(el => {
+                        const ElIcon = el.icon;
+                        return (
+                          <button key={el.key} onClick={() => setSelectedElement(el.key)}
+                            className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-medium transition-all",
+                              selectedElement === el.key ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                            )}>
+                            <ElIcon className="w-3 h-3" /><span>{el.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <SliderControl icon={Droplets} label="Blur" value={currentElement.blur} onChange={(v) => updateElement({ blur: v })} min={0} max={40} step={1} unit="px" />
+                    <SliderControl icon={Eye} label="Opacity" value={currentElement.opacity} onChange={(v) => updateElement({ opacity: v })} min={0} max={100} step={5} unit="%" />
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-background/40 border border-border/30">
+                      <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="text-xs font-medium flex-1">Color</span>
+                      {currentElement.color && <button onClick={() => updateElement({ color: '' })} className="text-[10px] text-muted-foreground">Reset</button>}
+                      <input type="color" value={currentElement.color || '#000000'} onChange={(e) => updateElement({ color: e.target.value })} className="w-6 h-6 rounded border border-border/50 cursor-pointer bg-transparent" />
+                    </div>
+                  </div>
                   <Button
                     onClick={saveBgSettings}
                     disabled={savingBg}
@@ -989,7 +1165,7 @@ export default function Admin() {
 
       {/* Mobile Bottom Nav — floating glass dock */}
       <div className="md:hidden fixed bottom-3 left-3 right-3 z-50">
-        <div className="rounded-2xl bg-card/80 backdrop-blur-2xl border border-border/50 shadow-[var(--shadow-lg)]">
+        <div className="rounded-2xl shadow-[var(--shadow-lg)]" style={{ backdropFilter: `blur(var(--admin-header-blur, 24px))`, backgroundColor: `var(--admin-header-color, hsl(var(--card) / var(--admin-header-opacity, 0.8)))`, border: `1px solid var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))` }}>
           <div className="grid grid-cols-6 gap-1 p-2">
             {tabs.map(tab => {
               const Icon = tab.icon;

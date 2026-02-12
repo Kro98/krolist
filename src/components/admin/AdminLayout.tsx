@@ -28,6 +28,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [bgPosX, setBgPosX] = useState(50);
   const [bgPosY, setBgPosY] = useState(50);
 
+  // Element styles
+  const [cardBlur, setCardBlur] = useState(12);
+  const [cardOpacity, setCardOpacity] = useState(80);
+  const [cardColor, setCardColor] = useState('');
+  const [borderBlur, setBorderBlur] = useState(0);
+  const [borderOpacity, setBorderOpacity] = useState(50);
+  const [borderColor, setBorderColor] = useState('');
+  const [headerBlur, setHeaderBlur] = useState(24);
+  const [headerOpacity, setHeaderOpacity] = useState(80);
+  const [headerColor, setHeaderColor] = useState('');
+
   // Login form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -68,19 +79,32 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           'admin_bg_image', 'admin_bg_blur', 'admin_bg_opacity',
           'admin_bg_overlay', 'admin_bg_brightness', 'admin_bg_saturation',
           'admin_bg_scale', 'admin_bg_pos_x', 'admin_bg_pos_y',
+          'admin_el_card_blur', 'admin_el_card_opacity', 'admin_el_card_color',
+          'admin_el_border_blur', 'admin_el_border_opacity', 'admin_el_border_color',
+          'admin_el_header_blur', 'admin_el_header_opacity', 'admin_el_header_color',
         ]);
       if (data) {
-        data.forEach(row => {
-          if (row.page_key === 'admin_bg_image') setBgImage(row.content_en || '');
-          if (row.page_key === 'admin_bg_blur') setBgBlur(Number(row.content_en) || 0);
-          if (row.page_key === 'admin_bg_opacity') setBgOpacity(Number(row.content_en) || 20);
-          if (row.page_key === 'admin_bg_overlay') setBgOverlay(Number(row.content_en) ?? 60);
-          if (row.page_key === 'admin_bg_brightness') setBgBrightness(Number(row.content_en) || 100);
-          if (row.page_key === 'admin_bg_saturation') setBgSaturation(Number(row.content_en) || 100);
-          if (row.page_key === 'admin_bg_scale') setBgScale(Number(row.content_en) || 100);
-          if (row.page_key === 'admin_bg_pos_x') setBgPosX(Number(row.content_en) ?? 50);
-          if (row.page_key === 'admin_bg_pos_y') setBgPosY(Number(row.content_en) ?? 50);
-        });
+        const m: Record<string, string> = {};
+        data.forEach(row => { m[row.page_key] = row.content_en; });
+        if (m['admin_bg_image']) setBgImage(m['admin_bg_image']);
+        if (m['admin_bg_blur']) setBgBlur(Number(m['admin_bg_blur']));
+        if (m['admin_bg_opacity']) setBgOpacity(Number(m['admin_bg_opacity']));
+        if (m['admin_bg_overlay']) setBgOverlay(Number(m['admin_bg_overlay']));
+        if (m['admin_bg_brightness']) setBgBrightness(Number(m['admin_bg_brightness']));
+        if (m['admin_bg_saturation']) setBgSaturation(Number(m['admin_bg_saturation']));
+        if (m['admin_bg_scale']) setBgScale(Number(m['admin_bg_scale']));
+        if (m['admin_bg_pos_x']) setBgPosX(Number(m['admin_bg_pos_x']));
+        if (m['admin_bg_pos_y']) setBgPosY(Number(m['admin_bg_pos_y']));
+        // Element styles
+        if (m['admin_el_card_blur'] !== undefined) setCardBlur(Number(m['admin_el_card_blur']));
+        if (m['admin_el_card_opacity'] !== undefined) setCardOpacity(Number(m['admin_el_card_opacity']));
+        if (m['admin_el_card_color'] !== undefined) setCardColor(m['admin_el_card_color']);
+        if (m['admin_el_border_blur'] !== undefined) setBorderBlur(Number(m['admin_el_border_blur']));
+        if (m['admin_el_border_opacity'] !== undefined) setBorderOpacity(Number(m['admin_el_border_opacity']));
+        if (m['admin_el_border_color'] !== undefined) setBorderColor(m['admin_el_border_color']);
+        if (m['admin_el_header_blur'] !== undefined) setHeaderBlur(Number(m['admin_el_header_blur']));
+        if (m['admin_el_header_opacity'] !== undefined) setHeaderOpacity(Number(m['admin_el_header_opacity']));
+        if (m['admin_el_header_color'] !== undefined) setHeaderColor(m['admin_el_header_color']);
       }
     } catch { /* silent */ }
   }, []);
@@ -202,7 +226,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div
+      className="relative min-h-screen"
+      style={{
+        '--admin-card-blur': `${cardBlur}px`,
+        '--admin-card-opacity': cardOpacity / 100,
+        '--admin-card-color': cardColor || undefined,
+        '--admin-border-blur': `${borderBlur}px`,
+        '--admin-border-opacity': borderOpacity / 100,
+        '--admin-border-color': borderColor || undefined,
+        '--admin-header-blur': `${headerBlur}px`,
+        '--admin-header-opacity': headerOpacity / 100,
+        '--admin-header-color': headerColor || undefined,
+      } as React.CSSProperties}
+    >
       {/* Background layer */}
       {bgImage && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
