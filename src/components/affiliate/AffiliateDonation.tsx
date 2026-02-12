@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { useAdSlots } from "@/hooks/useAdSlots";
 
 interface PromoCode {
   id: string;
@@ -23,6 +24,7 @@ interface AffiliateDonationProps {
 export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
   const { language } = useLanguage();
   const isArabic = language === 'ar';
+  const { slots: adSlots } = useAdSlots();
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showVideoSupport, setShowVideoSupport] = useState(false);
@@ -288,8 +290,8 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                 <ins
                   className="adsbygoogle"
                   style={{ display: 'block', width: '100%', minHeight: '260px' }}
-                  data-ad-client="ca-pub-2793689855806571"
-                  data-ad-slot=""
+                  data-ad-client={adSlots.clientId}
+                  data-ad-slot={adSlots.donationSlot}
                   data-ad-format="fluid"
                   data-full-width-responsive="true"
                 />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Key, Save, Plus, Trash2, AlertTriangle, Shield, RefreshCw, Lock, Zap, CheckCircle, XCircle, Info } from "lucide-react";
+import { Key, Save, Plus, Trash2, AlertTriangle, Shield, RefreshCw, Lock, Zap, CheckCircle, XCircle, Info, MonitorPlay } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,16 @@ export default function ApiSettingsManager() {
   const [testing, setTesting] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; status: string; message: string }>>({});
 
+  // AdSense slot settings
+  const [adSlots, setAdSlots] = useState({
+    adsense_client_id: '',
+    adsense_slot_donation: '',
+    adsense_slot_product_banner: '',
+    adsense_slot_article_inline: '',
+  });
+  const [adSlotsLoading, setAdSlotsLoading] = useState(true);
+  const [adSlotsSaving, setAdSlotsSaving] = useState(false);
+
   const fetchSecrets = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -69,7 +79,50 @@ export default function ApiSettingsManager() {
 
   useEffect(() => {
     fetchSecrets();
+    fetchAdSlots();
   }, []);
+
+  const fetchAdSlots = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ad_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['adsense_client_id', 'adsense_slot_donation', 'adsense_slot_product_banner', 'adsense_slot_article_inline']);
+
+      if (error) throw error;
+
+      const updated = { ...adSlots };
+      data?.forEach((row) => {
+        if (row.setting_key in updated) {
+          (updated as any)[row.setting_key] = row.setting_value || '';
+        }
+      });
+      setAdSlots(updated);
+    } catch (err) {
+      console.error('Failed to load ad slots:', err);
+    } finally {
+      setAdSlotsLoading(false);
+    }
+  };
+
+  const handleSaveAdSlots = async () => {
+    setAdSlotsSaving(true);
+    try {
+      for (const [key, value] of Object.entries(adSlots)) {
+        const { error } = await supabase
+          .from('ad_settings')
+          .update({ setting_value: value, updated_at: new Date().toISOString() })
+          .eq('setting_key', key);
+
+        if (error) throw error;
+      }
+      toast.success('AdSense settings saved');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save ad settings');
+    } finally {
+      setAdSlotsSaving(false);
+    }
+  };
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -415,7 +468,69 @@ export default function ApiSettingsManager() {
         </p>
       </div>
 
-      {/* Service Dependencies Audit */}
+      {/* AdSense Slot Configuration */}
+      <div className="pt-4 border-t border-border space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <MonitorPlay className="w-5 h-5" />
+            AdSense Slot IDs
+          </h2>
+          <Button size="sm" onClick={handleSaveAdSlots} disabled={adSlotsSaving || adSlotsLoading}>
+            <Save className={cn("w-4 h-4 mr-1", adSlotsSaving && "animate-spin")} />
+            {adSlotsSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Configure your Google AdSense ad slot IDs here. Leave a slot empty to hide that ad placement. Changes take effect immediately after saving.
+        </p>
+
+        {adSlotsLoading ? (
+          <div className="animate-pulse space-y-3">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-10 bg-muted rounded-xl" />)}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Publisher Client ID</Label>
+              <Input
+                placeholder="ca-pub-XXXXXXXXXXXXX"
+                value={adSlots.adsense_client_id}
+                onChange={(e) => setAdSlots(prev => ({ ...prev, adsense_client_id: e.target.value }))}
+                className="font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Donation / Support Video Slot</Label>
+              <Input
+                placeholder="1234567890"
+                value={adSlots.adsense_slot_donation}
+                onChange={(e) => setAdSlots(prev => ({ ...prev, adsense_slot_donation: e.target.value }))}
+                className="font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Affiliate Product Banner Slot</Label>
+              <Input
+                placeholder="1234567890"
+                value={adSlots.adsense_slot_product_banner}
+                onChange={(e) => setAdSlots(prev => ({ ...prev, adsense_slot_product_banner: e.target.value }))}
+                className="font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Article Inline Ad Slot</Label>
+              <Input
+                placeholder="1234567890"
+                value={adSlots.adsense_slot_article_inline}
+                onChange={(e) => setAdSlots(prev => ({ ...prev, adsense_slot_article_inline: e.target.value }))}
+                className="font-mono text-sm"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="pt-4 border-t border-border">
         <h2 className="text-lg font-bold flex items-center gap-2 mb-4">
           <Zap className="w-5 h-5" />
