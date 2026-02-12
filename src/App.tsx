@@ -20,6 +20,7 @@ import ArticlesManager from "./pages/admin/ArticlesManager";
 import ArticleEditor from "./pages/admin/ArticleEditor";
 import { AffiliateShell } from "@/components/affiliate/AffiliateShell";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { SiteBackground } from "@/components/SiteBackground";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,8 @@ const App = () => (
               <TooltipProvider>
                 <Toaster />
                 <BrowserRouter>
+                  <SiteBackground />
+                  <div className="relative z-10">
                   <Routes>
                     {/* Default: Affiliate Mode */}
                     <Route path="/" element={<AffiliateMode />} />
@@ -81,6 +84,7 @@ const App = () => (
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </div>
                 </BrowserRouter>
               </TooltipProvider>
             </GuestAuthProvider>
