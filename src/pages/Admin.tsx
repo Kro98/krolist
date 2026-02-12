@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag, Image } from "lucide-react";
+import { Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings, Tag, Image, Upload, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ export default function Admin() {
   const [bgBlur, setBgBlur] = useState(0);
   const [bgOpacity, setBgOpacity] = useState(20);
   const [savingBg, setSavingBg] = useState(false);
+  const [uploadingBg, setUploadingBg] = useState(false);
 
   const tabs = [
     { value: "products", label: t('admin.krolistProducts'), icon: Package },
@@ -311,14 +312,72 @@ export default function Admin() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Image URL */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">Image URL</Label>
-                    <Input
-                      placeholder="https://images.unsplash.com/..."
-                      value={bgImageUrl}
-                      onChange={(e) => setBgImageUrl(e.target.value)}
-                    />
+                  {/* Image Upload or URL */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">Background Image</Label>
+                    
+                    {/* Upload button */}
+                    <div className="flex gap-2">
+                      <label className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setUploadingBg(true);
+                            try {
+                              const ext = file.name.split('.').pop();
+                              const path = `backgrounds/admin-bg-${Date.now()}.${ext}`;
+                              const { error } = await supabase.storage
+                                .from('admin-assets')
+                                .upload(path, file, { upsert: true });
+                              if (error) throw error;
+                              const { data: urlData } = supabase.storage
+                                .from('admin-assets')
+                                .getPublicUrl(path);
+                              setBgImageUrl(urlData.publicUrl);
+                              sonnerToast.success('Image uploaded');
+                            } catch (err) {
+                              console.error(err);
+                              sonnerToast.error('Upload failed');
+                            } finally {
+                              setUploadingBg(false);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                        <div className={cn(
+                          "flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-border",
+                          "hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all text-sm text-muted-foreground",
+                          uploadingBg && "opacity-50 pointer-events-none"
+                        )}>
+                          <Upload className="w-4 h-4" />
+                          {uploadingBg ? 'Uploading...' : 'Upload Image'}
+                        </div>
+                      </label>
+                    </div>
+
+                    {/* OR URL input */}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex-1 h-px bg-border" />
+                      <span>or paste URL</span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="https://images.unsplash.com/..."
+                        value={bgImageUrl}
+                        onChange={(e) => setBgImageUrl(e.target.value)}
+                        className="flex-1"
+                      />
+                      {bgImageUrl && (
+                        <Button variant="ghost" size="icon" onClick={() => setBgImageUrl('')} className="shrink-0">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Preview */}
