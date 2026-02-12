@@ -4,6 +4,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { FunnyLoadingText } from "@/components/FunnyLoadingText";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLoginPage } from "./AdminLoginPage";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -24,7 +25,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [bgPosX, setBgPosX] = useState(50);
   const [bgPosY, setBgPosY] = useState(50);
 
-  // Element styles
   const [cardBlur, setCardBlur] = useState(12);
   const [cardOpacity, setCardOpacity] = useState(80);
   const [cardColor, setCardColor] = useState('');
@@ -88,45 +88,62 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (!user || !isAdmin) {
-    return <AdminLoginPage hasUser={!!user} />;
-  }
+  const isAuthenticated = !!user && isAdmin;
 
   return (
-    <div
-      className="relative min-h-screen"
-      style={{
-        '--admin-card-blur': `${cardBlur}px`,
-        '--admin-card-opacity': cardOpacity / 100,
-        '--admin-card-color': cardColor || undefined,
-        '--admin-border-blur': `${borderBlur}px`,
-        '--admin-border-opacity': borderOpacity / 100,
-        '--admin-border-color': borderColor || undefined,
-        '--admin-header-blur': `${headerBlur}px`,
-        '--admin-header-opacity': headerOpacity / 100,
-        '--admin-header-color': headerColor || undefined,
-      } as React.CSSProperties}
-    >
-      {bgImage && (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <img
-            src={bgImage}
-            alt=""
-            className="absolute inset-0 w-full h-full"
-            style={{
-              filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
-              opacity: bgOpacity / 100,
-              objectFit: 'cover',
-              objectPosition: `${bgPosX}% ${bgPosY}%`,
-              transform: `scale(${bgScale / 100})`,
-            }}
-          />
-          <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
-        </div>
+    <AnimatePresence mode="wait">
+      {!isAuthenticated ? (
+        <motion.div
+          key="admin-login"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.04, filter: "blur(8px)" }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <AdminLoginPage hasUser={!!user} />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="admin-dashboard"
+          className="relative min-h-screen"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20, filter: "blur(6px)" }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            '--admin-card-blur': `${cardBlur}px`,
+            '--admin-card-opacity': cardOpacity / 100,
+            '--admin-card-color': cardColor || undefined,
+            '--admin-border-blur': `${borderBlur}px`,
+            '--admin-border-opacity': borderOpacity / 100,
+            '--admin-border-color': borderColor || undefined,
+            '--admin-header-blur': `${headerBlur}px`,
+            '--admin-header-opacity': headerOpacity / 100,
+            '--admin-header-color': headerColor || undefined,
+          } as React.CSSProperties}
+        >
+          {bgImage && (
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+              <img
+                src={bgImage}
+                alt=""
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) saturate(${bgSaturation}%)`,
+                  opacity: bgOpacity / 100,
+                  objectFit: 'cover',
+                  objectPosition: `${bgPosX}% ${bgPosY}%`,
+                  transform: `scale(${bgScale / 100})`,
+                }}
+              />
+              <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${bgOverlay / 100})` }} />
+            </div>
+          )}
+          <div className="relative z-10">
+            {children}
+          </div>
+        </motion.div>
       )}
-      <div className="relative z-10">
-        {children}
-      </div>
-    </div>
+    </AnimatePresence>
   );
 }
