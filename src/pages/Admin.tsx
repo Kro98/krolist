@@ -6,7 +6,7 @@ import {
   Shield, Package, Menu, FileText, Sticker, Lock, Unlock, Settings,
   Tag, Image, Upload, X, Key, Sparkles, Sun, Moon, RotateCcw,
   Eye, Contrast, Droplets, ZoomIn, Move, ChevronRight,
-  Monitor, Tablet, Smartphone, PanelTop, Square, Columns, Palette, Copy
+  Monitor, Tablet, Smartphone, PanelTop, Square, Columns, Palette, Copy, ExternalLink
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -325,6 +325,10 @@ export default function Admin() {
               </div>
               <h1 className="text-base font-bold">{t('admin.dashboard')}</h1>
             </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate('/')}>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-xl">
@@ -369,6 +373,7 @@ export default function Admin() {
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
         </div>
       </div>
@@ -439,6 +444,15 @@ export default function Admin() {
                 </button>
               );
             })}
+
+            {/* Back to site */}
+            <button
+              onClick={() => navigate('/')}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 mt-2 border-t border-border/30 pt-4"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Back to Site</span>
+            </button>
           </div>
         </motion.aside>
 
