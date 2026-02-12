@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Search, ExternalLink, ShoppingBag, Info, Newspaper, Sparkles, SlidersHorizontal, History } from "lucide-react";
@@ -38,7 +39,22 @@ interface AffiliateProduct {
 
 export default function AffiliateMode() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const sectionLocks = useSectionLocks();
+  
+  // Secret admin access: tap logo 5 times
+  const logoTapCount = useRef(0);
+  const logoTapTimer = useRef<ReturnType<typeof setTimeout>>();
+  const handleLogoTap = useCallback(() => {
+    logoTapCount.current += 1;
+    clearTimeout(logoTapTimer.current);
+    if (logoTapCount.current >= 5) {
+      logoTapCount.current = 0;
+      navigate('/admin');
+      return;
+    }
+    logoTapTimer.current = setTimeout(() => { logoTapCount.current = 0; }, 2000);
+  }, [navigate]);
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -256,9 +272,9 @@ export default function AffiliateMode() {
             </Link>
           )}
         </div>
-        <Link to="/" className="flex items-center gap-2">
+        <button onClick={handleLogoTap} className="flex items-center gap-2" type="button">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-        </Link>
+        </button>
         <button
           onClick={() => setShowInfoPage(true)}
           className={cn(
