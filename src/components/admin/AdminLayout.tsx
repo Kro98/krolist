@@ -1,7 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { FunnyLoadingText } from "@/components/FunnyLoadingText";
 import { Shield } from "lucide-react";
 
@@ -12,15 +10,8 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isLoading: roleLoading } = useAdminRole();
-  const navigate = useNavigate();
 
   const isLoading = authLoading || roleLoading;
-
-  useEffect(() => {
-    if (!isLoading && (!user || !isAdmin)) {
-      navigate("/");
-    }
-  }, [isLoading, user, isAdmin, navigate]);
 
   if (isLoading) {
     return (
