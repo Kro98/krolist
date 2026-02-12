@@ -241,24 +241,24 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
 
         {/* Video Support Overlay */}
         {showVideoSupport && (
-          <div className="absolute inset-0 bg-background/95 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-6 z-20">
-            <div className="text-center space-y-6">
+          <div className="absolute inset-0 bg-background/95 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-4 sm:p-6 z-20 overflow-y-auto">
+            <div className="text-center space-y-4 w-full max-w-sm mx-auto">
               {/* Countdown Circle */}
-              <div className="relative w-24 h-24 mx-auto">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto">
                 <svg className="w-full h-full -rotate-90">
                   <circle
-                    cx="48"
-                    cy="48"
-                    r="44"
+                    cx="50%"
+                    cy="50%"
+                    r="45%"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="4"
                     className="text-muted"
                   />
                   <circle
-                    cx="48"
-                    cy="48"
-                    r="44"
+                    cx="50%"
+                    cy="50%"
+                    r="45%"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="4"
@@ -268,29 +268,30 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold">{videoCountdown}</span>
+                  <span className="text-2xl sm:text-3xl font-bold">{videoCountdown}</span>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="text-base sm:text-lg font-semibold mb-1">
                   {isArabic ? 'شكراً لدعمك!' : 'Thank you for your support!'}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {isArabic 
                     ? 'يتم تحميل الإعلان...'
                     : 'Loading advertisement...'}
                 </p>
               </div>
 
-              {/* Ad Container */}
-              <div className="w-full max-w-[300px] h-[250px] bg-muted/30 rounded-xl flex items-center justify-center border border-border/50">
+              {/* Ad Container - responsive sizing */}
+              <div className="w-full min-h-[280px] sm:min-h-[300px] bg-muted/20 rounded-xl flex items-center justify-center border-2 border-dashed border-primary/30 p-2">
                 <ins
                   className="adsbygoogle"
-                  style={{ display: 'block', width: '300px', height: '250px' }}
+                  style={{ display: 'block', width: '100%', minHeight: '260px' }}
                   data-ad-client="ca-pub-2793689855806571"
                   data-ad-slot=""
-                  data-ad-format="rectangle"
+                  data-ad-format="fluid"
+                  data-full-width-responsive="true"
                 />
               </div>
 
@@ -300,7 +301,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                   setIsVideoPlaying(false);
                   setVideoCountdown(10);
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
               >
                 {isArabic ? 'إلغاء' : 'Cancel'}
               </button>
