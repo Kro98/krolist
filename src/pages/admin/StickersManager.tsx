@@ -13,8 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon, Loader2, Maximize2 } from "lucide-react";
-import { getExtensionFromMimeType, formatFileSize } from "@/lib/imageCompression";
+import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon, Loader2, Maximize2, Shrink } from "lucide-react";
+import { getExtensionFromMimeType, formatFileSize, compressImage } from "@/lib/imageCompression";
 import { ImageCompressionPreview } from "@/components/ImageCompressionPreview";
 
 interface Sticker {
@@ -80,6 +80,8 @@ export default function StickersManager() {
   // Compression preview state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionPreviewOpen, setCompressionPreviewOpen] = useState(false);
+  const [targetSizeKB, setTargetSizeKB] = useState<number>(100);
+  const [compressing, setCompressing] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -219,6 +221,73 @@ export default function StickersManager() {
   const handleCompressionCancel = () => {
     setCompressionPreviewOpen(false);
     setSelectedFile(null);
+  };
+
+  const handleCompressExisting = async () => {
+    if (!formData.image_url) return;
+    setCompressing(true);
+
+    try {
+      // Fetch the existing image
+      const response = await fetch(formData.image_url);
+      const blob = await response.blob();
+      const originalSize = blob.size;
+      const file = new File([blob], 'image.jpg', { type: blob.type || 'image/jpeg' });
+
+      const targetBytes = targetSizeKB * 1024;
+
+      // Binary search for the right quality
+      let lo = 0.05, hi = 1.0, bestBlob: Blob = blob;
+      for (let i = 0; i < 8; i++) {
+        const mid = (lo + hi) / 2;
+        const compressed = await compressImage(file, 2000, 2000, mid);
+        bestBlob = compressed;
+        if (compressed.size > targetBytes) {
+          hi = mid;
+        } else {
+          lo = mid;
+        }
+      }
+
+      // If still too large, reduce dimensions too
+      if (bestBlob.size > targetBytes * 1.1) {
+        const ratio = Math.sqrt(targetBytes / bestBlob.size);
+        const maxDim = Math.round(2000 * ratio);
+        bestBlob = await compressImage(file, maxDim, maxDim, lo);
+      }
+
+      // Upload the compressed image
+      const fileExt = getExtensionFromMimeType(bestBlob.type);
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `stickers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('sticker-images')
+        .upload(filePath, bestBlob, { contentType: bestBlob.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('sticker-images')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+
+      const savedPercent = Math.round((1 - bestBlob.size / originalSize) * 100);
+      toast({
+        title: "Image Compressed",
+        description: `${formatFileSize(originalSize)} → ${formatFileSize(bestBlob.size)} (${savedPercent > 0 ? `-${savedPercent}%` : 'optimized'})`,
+      });
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to compress image",
+        variant: "destructive",
+      });
+    } finally {
+      setCompressing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -655,6 +724,40 @@ export default function StickersManager() {
                     </div>
                   </div>
                 </div>
+
+                {/* Compress existing image to target size */}
+                {formData.image_url && (
+                  <div className="p-3 rounded-lg border bg-muted/30 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Shrink className="h-4 w-4 text-muted-foreground" />
+                      <Label className="text-sm font-medium">Compress to Target Size</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={10}
+                        max={5000}
+                        value={targetSizeKB}
+                        onChange={(e) => setTargetSizeKB(parseInt(e.target.value) || 100)}
+                        className="w-28 font-mono"
+                      />
+                      <span className="text-sm text-muted-foreground">KB</span>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleCompressExisting}
+                        disabled={compressing}
+                      >
+                        {compressing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Shrink className="h-4 w-4 mr-1" />}
+                        {compressing ? 'Compressing...' : 'Compress'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter target file size in KB. The image will be re-compressed to approximately this size.
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap gap-6">
                   <div className="flex items-center gap-2">
