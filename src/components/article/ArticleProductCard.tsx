@@ -123,15 +123,18 @@ export const ArticleProductCard = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className={cn(
+                    "w-full border-primary/40 bg-primary/5 hover:bg-primary/15 hover:border-primary text-primary font-medium transition-all duration-300 group/history",
+                    chartExpanded && "border-primary bg-primary/15"
+                  )}
                   onClick={handleViewHistory}
                 >
-                  <History className="w-4 h-4 mr-2" />
+                  <History className="w-4 h-4 mr-2 transition-transform duration-500 group-hover/history:rotate-[360deg]" />
                   {language === 'ar' ? 'سجل الأسعار' : 'Price History'}
                   {showInlineChart && (
                     chartExpanded ? 
-                      <ChevronUp className="w-4 h-4 ml-1" /> : 
-                      <ChevronDown className="w-4 h-4 ml-1" />
+                      <ChevronUp className="w-4 h-4 ml-auto" /> : 
+                      <ChevronDown className="w-4 h-4 ml-auto" />
                   )}
                 </Button>
                 
