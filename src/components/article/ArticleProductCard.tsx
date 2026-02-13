@@ -125,7 +125,8 @@ export const ArticleProductCard = ({
                   size="sm"
                   className={cn(
                     "w-full border-primary/40 bg-primary/5 hover:bg-primary/15 hover:border-primary text-primary font-medium transition-all duration-300 group/history",
-                    chartExpanded && "border-primary bg-primary/15"
+                    chartExpanded && "border-primary bg-primary/15",
+                    isPriceDrop && "animate-pulse border-emerald-500/60 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:border-emerald-500 shadow-[0_0_12px_-2px_hsl(var(--chart-2)/0.4)]"
                   )}
                   onClick={handleViewHistory}
                 >
