@@ -119,11 +119,11 @@ export const ArticleProductCard = ({
               </div>
               
               {/* Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1"
+                  className="w-full"
                   onClick={handleViewHistory}
                 >
                   <History className="w-4 h-4 mr-2" />
@@ -137,7 +137,7 @@ export const ArticleProductCard = ({
                 
                 <Button
                   size="sm"
-                  className="flex-1"
+                  className="w-full"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.open(product.product_url, '_blank');
