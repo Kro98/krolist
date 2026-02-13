@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
@@ -328,8 +329,14 @@ export default function AffiliateMode() {
         </div>
 
         {/* Amazon Search Banner */}
+        <AnimatePresence>
         {searchQuery.trim() && showAmazonBanner && (
-          <button
+          <motion.button
+            key="amazon-banner"
+            initial={{ opacity: 0, y: -12, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.97 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             onClick={() => {
               const affiliateTag = getAffiliateTag('amazon');
               const amazonSearchUrl = `https://www.amazon.sa/s?k=${encodeURIComponent(searchQuery)}&linkCode=sl2&tag=${affiliateTag}`;
@@ -365,8 +372,9 @@ export default function AffiliateMode() {
                 </div>
               </div>
             </div>
-          </button>
+          </motion.button>
         )}
+        </AnimatePresence>
 
         {/* Products Count & Active Filters */}
         <div className="flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground">
