@@ -422,7 +422,7 @@ export default function AffiliateMode() {
             return itemsWithAds.map((item, index) => {
               if (item === 'ad') {
                 return (
-                  <div key={`ad-${index}`} className="col-span-full">
+                  <div key={`ad-${index}`} className="col-span-full max-w-md mx-auto">
                     <AffiliateProductAd />
                   </div>
                 );
