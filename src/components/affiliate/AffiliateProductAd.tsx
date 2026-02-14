@@ -89,10 +89,13 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
 
       {/* Live click counter */}
       {clickCount !== null && (
-        <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border/40">
-          <Heart className="w-3 h-3 text-destructive fill-destructive" />
-          <span className="text-[11px] font-semibold tabular-nums text-foreground">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-destructive/90 to-destructive/70 backdrop-blur-md shadow-lg shadow-destructive/20 border border-destructive/30 animate-fade-in">
+          <Heart className="w-3.5 h-3.5 text-destructive-foreground fill-destructive-foreground animate-[pulse_1.5s_ease-in-out_infinite]" />
+          <span className="text-xs font-bold tabular-nums text-destructive-foreground tracking-wide">
             {clickCount.toLocaleString()}
+          </span>
+          <span className="text-[9px] font-medium text-destructive-foreground/70 uppercase tracking-wider">
+            supporters
           </span>
         </div>
       )}
