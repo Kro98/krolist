@@ -717,39 +717,109 @@ export default function KrolistProductsManager() {
 
       {/* All products in a flat grid */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        {products.map(product => (
-          <Card key={product.id} className="relative">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="absolute top-3 right-3 z-10 h-8 w-8 bg-background shadow-md hover:bg-accent">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleOpenDialog(product)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  {t('admin.editProduct')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {t('admin.deleteProduct')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <CardContent className="p-4">
-              {product.image_url && (
-                <img src={product.image_url} alt={product.title} className="w-full h-32 object-contain rounded mb-2" />
-              )}
-              <h4 className="font-medium text-sm line-clamp-2">{product.title}</h4>
-              <p className="text-primary font-bold mt-1">{product.current_price} {product.currency}</p>
-              <div className="flex gap-1 mt-1 flex-wrap">
-                <Badge variant="outline" className="text-xs">{product.store}</Badge>
-                {product.category && <Badge variant="outline" className="text-xs">{product.category}</Badge>}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {(() => {
+          // Calculate discount % for each product
+          const withDiscount = products.map(p => ({
+            ...p,
+            discountPct: p.original_price > 0 && p.original_price > p.current_price
+              ? ((p.original_price - p.current_price) / p.original_price) * 100
+              : 0,
+          }));
+
+          // Sort by discount to find top 5 and best
+          const sorted = [...withDiscount].sort((a, b) => b.discountPct - a.discountPct);
+          const bestId = sorted[0]?.discountPct > 0 ? sorted[0].id : null;
+          const top5Ids = new Set(
+            sorted.filter(p => p.discountPct > 0).slice(0, 5).map(p => p.id)
+          );
+
+          // Bad = no discount or price >= original
+          const getAura = (p: typeof withDiscount[0]) => {
+            if (p.id === bestId) return 'golden';
+            if (top5Ids.has(p.id)) return 'green';
+            if (p.discountPct <= 0) return 'red';
+            return 'none';
+          };
+
+          const auraStyles: Record<string, string> = {
+            red: 'ring-2 ring-red-500/40 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]',
+            green: 'ring-2 ring-green-500/40 shadow-[0_0_20px_-4px_rgba(34,197,94,0.5)]',
+            golden: 'ring-2 ring-amber-400/60 shadow-[0_0_28px_-4px_rgba(251,191,36,0.6)]',
+            none: '',
+          };
+
+          return withDiscount.map(product => {
+            const aura = getAura(product);
+            return (
+              <Card key={product.id} className={`relative transition-shadow duration-300 ${auraStyles[aura]}`}>
+                {/* Golden star particles for best deal */}
+                {aura === 'golden' && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl z-0">
+                    {[...Array(6)].map((_, i) => (
+                      <span
+                        key={i}
+                        className="absolute text-amber-400 animate-pulse"
+                        style={{
+                          fontSize: `${8 + (i % 3) * 4}px`,
+                          top: `${10 + (i * 15) % 80}%`,
+                          left: `${5 + (i * 18) % 90}%`,
+                          animationDelay: `${i * 0.3}s`,
+                          animationDuration: `${1.5 + (i % 3) * 0.5}s`,
+                          opacity: 0.7,
+                        }}
+                      >
+                        ✦
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="absolute top-3 right-3 z-10 h-8 w-8 bg-background shadow-md hover:bg-accent">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleOpenDialog(product)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      {t('admin.editProduct')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(product.id)}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t('admin.deleteProduct')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <CardContent className="p-4 relative z-[1]">
+                  {product.image_url && (
+                    <img src={product.image_url} alt={product.title} className="w-full h-32 object-contain rounded mb-2" />
+                  )}
+                  <h4 className="font-medium text-sm line-clamp-2">{product.title}</h4>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <p className="text-primary font-bold">{product.current_price} {product.currency}</p>
+                    {product.discountPct > 0 && (
+                      <Badge className={`text-[10px] px-1.5 py-0 ${
+                        aura === 'golden'
+                          ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                          : aura === 'green'
+                          ? 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30'
+                          : 'bg-muted text-muted-foreground border-border'
+                      }`}>
+                        {Math.round(product.discountPct)}% OFF
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-1 mt-1 flex-wrap">
+                    <Badge variant="outline" className="text-xs">{product.store}</Badge>
+                    {product.category && <Badge variant="outline" className="text-xs">{product.category}</Badge>}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          });
+        })()}
       </div>
 
       {products.length === 0 && (
