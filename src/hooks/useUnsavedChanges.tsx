@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from "react";
-import { useBlocker } from "react-router-dom";
+import { useEffect, useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,20 +13,18 @@ import {
 
 /**
  * Hook that warns users before navigating away when there are unsaved changes.
- * Handles both in-app navigation (react-router) and browser navigation (beforeunload).
- *
- * Returns a `UnsavedChangesDialog` component that must be rendered in the tree.
+ * Uses beforeunload for browser-level navigation (refresh, close tab).
+ * Note: In-app route blocking requires a data router; this hook gracefully
+ * skips that and relies on beforeunload instead.
  */
 export function useUnsavedChanges(isDirty: boolean) {
-  // Block in-app navigation via react-router
-  const blocker = useBlocker(isDirty);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
 
   // Block browser-level navigation (refresh, close tab, external URL)
   useEffect(() => {
     if (!isDirty) return;
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      // Legacy browsers need returnValue set
       e.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
@@ -34,7 +32,7 @@ export function useUnsavedChanges(isDirty: boolean) {
   }, [isDirty]);
 
   const UnsavedChangesDialog = useCallback(() => {
-    if (blocker.state !== "blocked") return null;
+    if (!pendingPath) return null;
 
     return (
       <AlertDialog open>
@@ -46,11 +44,15 @@ export function useUnsavedChanges(isDirty: boolean) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
+            <AlertDialogCancel onClick={() => setPendingPath(null)}>
               Stay on Page
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => blocker.proceed?.()}
+              onClick={() => {
+                const path = pendingPath;
+                setPendingPath(null);
+                window.location.href = path;
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Leave Page
@@ -59,7 +61,7 @@ export function useUnsavedChanges(isDirty: boolean) {
         </AlertDialogContent>
       </AlertDialog>
     );
-  }, [blocker]);
+  }, [pendingPath]);
 
   return { UnsavedChangesDialog };
 }
