@@ -190,7 +190,8 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                           "group relative p-3 rounded-xl text-left overflow-hidden",
                           "bg-white/[0.04] hover:bg-white/[0.08]",
                           "border border-white/[0.06] hover:border-primary/30",
-                          "transition-all duration-300"
+                          "transition-all duration-300",
+                          copiedCode === promo.code && "border-primary/50 shadow-[0_0_16px_-2px_hsl(var(--primary)/0.4)]"
                         )}
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
