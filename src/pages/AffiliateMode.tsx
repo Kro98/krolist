@@ -478,8 +478,8 @@ export default function AffiliateMode() {
                     }}
                     className={cn(
                       "w-full flex items-center justify-center gap-1.5 mt-1 py-1.5 rounded-md text-[10px] font-medium",
-                      "bg-gradient-to-r from-blue-500/80 to-purple-500/80 text-white border-0",
-                      "hover:from-blue-500 hover:to-purple-500 transition-all"
+                      "bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-white border-0",
+                      "hover:from-blue-500/50 hover:to-purple-500/50 transition-all"
                     )}
                   >
                     <History className="w-3 h-3" />
