@@ -31,6 +31,31 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
   const [showVideoSupport, setShowVideoSupport] = useState(false);
   const [videoCountdown, setVideoCountdown] = useState(10);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [clickCount, setClickCount] = useState<number | null>(null);
+
+  // Fetch support counter + real-time updates
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { data } = await supabase
+        .from('global_counters')
+        .select('counter_value')
+        .eq('counter_key', 'support_ad_clicks')
+        .single();
+      if (data) setClickCount(data.counter_value);
+    };
+    fetchCount();
+
+    const channel = supabase
+      .channel('donation_counter_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'global_counters', filter: 'counter_key=eq.support_ad_clicks' },
+        (payload) => setClickCount(payload.new.counter_value)
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -253,6 +278,14 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                       {isArabic ? '10 ثواني فقط • مجاني' : '10s only • Free & easy'}
                     </p>
                   </div>
+                  {clickCount !== null && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-destructive/90 to-destructive/70 shadow-md shadow-destructive/20 border border-destructive/30 shrink-0">
+                      <Heart className="w-3 h-3 text-destructive-foreground fill-destructive-foreground animate-[pulse_1.5s_ease-in-out_infinite]" />
+                      <span className="text-[11px] font-bold tabular-nums text-destructive-foreground">
+                        {clickCount.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </motion.button>
 
                 {/* Ko-fi */}
