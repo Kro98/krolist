@@ -551,6 +551,24 @@ export type Database = {
         }
         Relationships: []
       }
+      global_counters: {
+        Row: {
+          counter_key: string
+          counter_value: number
+          updated_at: string
+        }
+        Insert: {
+          counter_key: string
+          counter_value?: number
+          updated_at?: string
+        }
+        Update: {
+          counter_key?: string
+          counter_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       global_notifications: {
         Row: {
           created_at: string
