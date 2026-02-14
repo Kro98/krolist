@@ -163,6 +163,7 @@ export default function AdminSettings() {
   // Section locks
   const [articlesLocked, setArticlesLocked] = useState(false);
   const [stickersLocked, setStickersLocked] = useState(false);
+  const [aurasEnabled, setAurasEnabled] = useState(false);
   const [loadingLocks, setLoadingLocks] = useState(true);
 
   // Background settings
@@ -222,11 +223,12 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('page_content')
         .select('page_key, content_en')
-        .in('page_key', ['section_lock_articles', 'section_lock_stickers']);
+        .in('page_key', ['section_lock_articles', 'section_lock_stickers', 'product_auras_enabled']);
       if (!error && data) {
         data.forEach(row => {
           if (row.page_key === 'section_lock_articles') setArticlesLocked(row.content_en === 'locked');
           if (row.page_key === 'section_lock_stickers') setStickersLocked(row.content_en === 'locked');
+          if (row.page_key === 'product_auras_enabled') setAurasEnabled(row.content_en === 'true');
         });
       }
     } catch (err) {
@@ -250,6 +252,21 @@ export default function AdminSettings() {
     } catch (err) {
       console.error('Error toggling section lock:', err);
       sonnerToast.error('Failed to update section lock');
+    }
+  };
+
+  const toggleAuras = async (enabled: boolean) => {
+    try {
+      const { error } = await supabase.from('page_content').upsert({
+        page_key: 'product_auras_enabled', content_en: enabled ? 'true' : 'false',
+        description: 'Toggle price aura effects on product cards',
+      }, { onConflict: 'page_key' });
+      if (error) throw error;
+      setAurasEnabled(enabled);
+      sonnerToast.success(enabled ? 'Price auras enabled' : 'Price auras disabled');
+    } catch (err) {
+      console.error('Error toggling auras:', err);
+      sonnerToast.error('Failed to update aura setting');
     }
   };
 
@@ -452,6 +469,34 @@ export default function AdminSettings() {
                 />
               </div>
             ))}
+
+            {/* Price Auras Toggle */}
+            <div className={cn(
+              "flex items-center justify-between p-3 rounded-xl border transition-all duration-200",
+              aurasEnabled
+                ? "border-amber-400/20 bg-amber-400/5"
+                : "border-border/30 bg-background/30"
+            )}>
+              <div className="flex items-center gap-2.5">
+                <div className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                  aurasEnabled ? "bg-amber-400/10 text-amber-400" : "bg-muted text-muted-foreground"
+                )}>
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="text-sm font-medium">Price Auras</span>
+                  <p className="text-[11px] text-muted-foreground">
+                    {aurasEnabled ? "Glow effects on product cards" : "No glow effects"}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={aurasEnabled}
+                onCheckedChange={toggleAuras}
+                disabled={loadingLocks}
+              />
+            </div>
           </div>
         </SettingsSection>
 

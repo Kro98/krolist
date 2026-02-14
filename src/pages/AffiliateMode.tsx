@@ -92,8 +92,14 @@ export default function AffiliateMode() {
 
   const showAmazonBanner = localStorage.getItem('affiliateShowAmazonBanner') !== 'false';
 
+  // Aura toggle from admin settings
+  const [aurasEnabled, setAurasEnabled] = useState(false);
+
   useEffect(() => {
     loadProducts();
+    // Fetch aura toggle setting
+    supabase.from('page_content').select('content_en').eq('page_key', 'product_auras_enabled').maybeSingle()
+      .then(({ data }) => { if (data?.content_en === 'true') setAurasEnabled(true); });
   }, []);
 
   const loadProducts = async () => {
@@ -393,23 +399,59 @@ export default function AffiliateMode() {
 
         {/* Products Grid with Ads */}
         <div className={gridClass}>
-          {itemsWithAds.map((item, index) => {
-            if (item === 'ad') {
-              return (
-                <div key={`ad-${index}`} className="col-span-full">
-                  <AffiliateProductAd />
-                </div>
-              );
-            }
+          {(() => {
+            // Pre-compute aura ranks
+            const productsWithDiscount = filteredProducts.map(p => ({
+              id: p.id,
+              discountPct: p.original_price > p.current_price
+                ? ((p.original_price - p.current_price) / p.original_price) * 100
+                : 0,
+            })).filter(p => p.discountPct > 0).sort((a, b) => b.discountPct - a.discountPct);
 
-            const product = item;
-            const discount = getDiscount(product.original_price, product.current_price);
-            
-            return (
-              <div
-                key={product.id}
-                className="group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all duration-200"
-              >
+            const bestId = productsWithDiscount[0]?.id ?? null;
+            const top5Ids = new Set(productsWithDiscount.slice(1, 5).map(p => p.id));
+
+            const getAuraClass = (productId: string, discountPct: number) => {
+              if (!aurasEnabled) return '';
+              if (productId === bestId) return 'ring-2 ring-amber-400/60 shadow-[0_0_24px_-4px_rgba(251,191,36,0.55)]';
+              if (top5Ids.has(productId)) return 'ring-2 ring-green-500/40 shadow-[0_0_18px_-4px_rgba(34,197,94,0.45)]';
+              if (discountPct <= 0) return 'ring-2 ring-red-500/40 shadow-[0_0_18px_-4px_rgba(239,68,68,0.4)]';
+              return '';
+            };
+
+            return itemsWithAds.map((item, index) => {
+              if (item === 'ad') {
+                return (
+                  <div key={`ad-${index}`} className="col-span-full">
+                    <AffiliateProductAd />
+                  </div>
+                );
+              }
+
+              const product = item;
+              const discount = getDiscount(product.original_price, product.current_price);
+              const discountPct = product.original_price > product.current_price
+                ? ((product.original_price - product.current_price) / product.original_price) * 100
+                : 0;
+              const auraClass = getAuraClass(product.id, discountPct);
+              const isGolden = aurasEnabled && product.id === bestId;
+
+              return (
+                <div
+                  key={product.id}
+                  className={cn(
+                    "group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all duration-200",
+                    auraClass
+                  )}
+                >
+                  {/* Golden stars */}
+                  {isGolden && (
+                    <>
+                      <span className="absolute -top-1 -left-1 z-20 text-amber-400 text-xs animate-pulse pointer-events-none">✦</span>
+                      <span className="absolute -top-0.5 -right-1 z-20 text-amber-300 text-[10px] animate-pulse pointer-events-none" style={{ animationDelay: '0.3s' }}>✦</span>
+                      <span className="absolute -bottom-1 left-1/2 z-20 text-amber-400 text-[9px] animate-pulse pointer-events-none" style={{ animationDelay: '0.6s' }}>✦</span>
+                    </>
+                  )}
                 {/* Discount Badge */}
                 {discount && (
                   <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-destructive text-destructive-foreground text-xs font-bold rounded">
@@ -488,7 +530,8 @@ export default function AffiliateMode() {
                 </div>
               </div>
             );
-          })}
+            });
+          })()}
         </div>
 
         {/* No Results */}
