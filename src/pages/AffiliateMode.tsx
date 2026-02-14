@@ -52,9 +52,10 @@ export default function AffiliateMode() {
      clearTimeout(logoTapTimer.current);
      if (logoTapCount.current >= 7) {
       logoTapCount.current = 0;
-      // Sign out first so the admin login page is shown
-      await supabase.auth.signOut();
-      navigate('/admin');
+       // Sign out first so the admin login page is shown
+       await supabase.auth.signOut();
+       // Use hard navigation for PWA compatibility
+       window.location.href = '/admin';
       return;
     }
     logoTapTimer.current = setTimeout(() => { logoTapCount.current = 0; }, 2000);
