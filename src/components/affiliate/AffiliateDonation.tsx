@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Heart, Play, Copy, Check, ExternalLink, Gift } from "lucide-react";
+import { X, Heart, Play, Copy, Check, ExternalLink, Gift, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +38,6 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
     }
   }, [isOpen]);
 
-  // Video countdown timer
   useEffect(() => {
     if (!isVideoPlaying) return;
     
@@ -46,7 +45,6 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
       const timer = setTimeout(() => setVideoCountdown(videoCountdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      // Video completed
       confetti({
         particleCount: 100,
         spread: 70,
@@ -94,6 +92,14 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
     setVideoCountdown(10);
   };
 
+  const stagger = {
+    animate: { transition: { staggerChildren: 0.06 } }
+  };
+  const fadeUp = {
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } },
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -105,9 +111,9 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop with blur */}
+          {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            className="absolute inset-0 bg-black/70 backdrop-blur-xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -117,213 +123,230 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
           {/* Main Panel */}
           <motion.div 
             className={cn(
-              "relative w-full max-w-[92vw] sm:max-w-lg lg:max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl",
-              "bg-gradient-to-b from-background/95 to-background/90",
-              "backdrop-blur-2xl backdrop-saturate-150",
-              "border border-white/20 dark:border-white/10",
-              "shadow-2xl shadow-pink-500/10",
+              "relative w-full max-w-[92vw] sm:max-w-md lg:max-w-lg max-h-[88vh] overflow-y-auto overflow-x-hidden",
+              "rounded-3xl bg-background/80 backdrop-blur-2xl backdrop-saturate-150",
+              "border border-white/10",
+              "shadow-[0_0_80px_-20px_hsl(var(--primary)/0.25)]",
             )}
             onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, scale: 0.85, y: 30 }}
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.8 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 28, stiffness: 380, mass: 0.7 }}
           >
-        {/* Decorative gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+            {/* Top gradient accent line */}
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors z-10"
-        >
-          <X className="w-5 h-5" />
-        </button>
+            {/* Ambient glow orbs */}
+            <div className="absolute -top-20 -left-20 w-40 h-40 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header */}
-        <div className="relative pt-8 pb-4 px-6 text-center">
-          {/* Animated heart */}
-          <div className="relative inline-flex mb-4">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 to-red-500/30 rounded-full blur-xl animate-pulse" />
-            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-pink-500/20 to-red-500/20 border border-pink-500/30 flex items-center justify-center">
-              <Heart className="w-8 h-8 text-pink-500 fill-pink-500/30" />
-            </div>
-          </div>
-          
-          <h2 className="text-2xl font-bold mb-2">
-            {isArabic ? 'شكراً لدعمك' : 'Thank You for Your Support'}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            {isArabic 
-              ? 'دعمك يساعدنا في الحفاظ على Krolist مجانيًا للجميع'
-              : 'Your support helps keep Krolist free for everyone'}
-          </p>
-        </div>
+            {/* Close button */}
+            <motion.button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors z-10"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </motion.button>
 
-        {/* Promo Codes Section */}
-        {promoCodes.length > 0 && (
-          <div className="px-6 pb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Gift className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-semibold">
-                {isArabic ? 'أكواد خصم حصرية' : 'Exclusive Discount Codes'}
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {promoCodes.map((promo) => (
-                <button
-                  key={promo.id}
-                  onClick={() => handleCopyCode(promo.code)}
-                  className={cn(
-                    "group relative p-3 rounded-xl text-left",
-                    "bg-muted/30 hover:bg-muted/50 border border-border/50",
-                    "transition-all duration-200 hover:scale-[1.02]"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground truncate">
-                      {promo.custom_shop_name || promo.store}
-                    </span>
-                    {copiedCode === promo.code ? (
-                      <Check className="w-3 h-3 text-green-500" />
-                    ) : (
-                      <Copy className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
+            {/* Content */}
+            <motion.div variants={stagger} initial="initial" animate="animate">
+              {/* Header */}
+              <motion.div variants={fadeUp} className="relative pt-10 pb-2 px-6 text-center">
+                <div className="relative inline-flex mb-5">
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 to-primary/30 rounded-2xl blur-2xl animate-pulse" />
+                  <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-primary/20 border border-pink-500/20 flex items-center justify-center">
+                    <Heart className="w-7 h-7 text-pink-500 fill-pink-500/40" />
                   </div>
-                  <p className="font-mono text-sm font-semibold text-primary truncate">
-                    {promo.code}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Support Options */}
-        <div className="px-6 pb-6 space-y-3">
-          {/* Video Support Button */}
-          <button
-            onClick={handleStartVideo}
-            disabled={isVideoPlaying}
-            className={cn(
-              "w-full flex items-center justify-center gap-3 p-4 rounded-xl",
-              "bg-gradient-to-r from-primary/10 to-purple-500/10",
-              "border border-primary/20 hover:border-primary/40",
-              "transition-all duration-300 hover:scale-[1.02]",
-              "group"
-            )}
-          >
-            <div className="p-2 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
-              <Play className="w-5 h-5 text-primary" />
-            </div>
-            <div className="text-left flex-1">
-              <p className="font-medium">
-                {isArabic ? 'شاهد فيديو للدعم المجاني' : 'Watch a Video for Free Support'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {isArabic ? '10 ثواني فقط • لا تكلفة عليك' : '10 seconds only • No cost to you'}
-              </p>
-            </div>
-          </button>
-
-          {/* Ko-fi Link */}
-          <a
-            href="https://ko-fi.com/krolist"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              "w-full flex items-center justify-center gap-3 p-4 rounded-xl",
-              "bg-[#FF5E5B]/10 hover:bg-[#FF5E5B]/20",
-              "border border-[#FF5E5B]/20 hover:border-[#FF5E5B]/40",
-              "transition-all duration-300 hover:scale-[1.02]",
-              "group"
-            )}
-          >
-            <div className="p-2 rounded-full bg-[#FF5E5B]/20 group-hover:bg-[#FF5E5B]/30 transition-colors">
-              <Heart className="w-5 h-5 text-[#FF5E5B]" />
-            </div>
-            <div className="text-left flex-1">
-              <p className="font-medium text-[#FF5E5B]">
-                {isArabic ? 'ادعمنا على Ko-fi' : 'Support on Ko-fi'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {isArabic ? 'قهوة افتراضية 💕' : 'Buy us a virtual coffee 💕'}
-              </p>
-            </div>
-            <ExternalLink className="w-4 h-4 text-muted-foreground" />
-          </a>
-        </div>
-
-        {/* Video Support Overlay */}
-        {showVideoSupport && (
-          <div className="absolute inset-0 bg-background/95 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-4 sm:p-6 z-20 overflow-y-auto">
-            <div className="text-center space-y-4 w-full max-w-sm mx-auto">
-              {/* Countdown Circle */}
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto">
-                <svg className="w-full h-full -rotate-90">
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="45%"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    className="text-muted"
-                  />
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="45%"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeDasharray={276.46}
-                    strokeDashoffset={276.46 * (1 - videoCountdown / 10)}
-                    className="text-primary transition-all duration-1000"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl sm:text-3xl font-bold">{videoCountdown}</span>
                 </div>
-              </div>
-
-              <div>
-                <h3 className="text-base sm:text-lg font-semibold mb-1">
-                  {isArabic ? 'شكراً لدعمك!' : 'Thank you for your support!'}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                
+                <h2 className="text-xl font-bold tracking-tight mb-1.5">
+                  {isArabic ? 'شكراً لدعمك' : 'Support Krolist'}
+                </h2>
+                <p className="text-muted-foreground text-xs leading-relaxed max-w-[260px] mx-auto">
                   {isArabic 
-                    ? 'يتم تحميل الإعلان...'
-                    : 'Loading advertisement...'}
+                    ? 'دعمك يساعدنا في الحفاظ على Krolist مجانيًا للجميع'
+                    : 'Help keep Krolist free & independent for everyone'}
                 </p>
-              </div>
+              </motion.div>
 
-              {/* Ad Container - responsive sizing */}
-              <div className="w-full min-h-[280px] sm:min-h-[300px] bg-muted/20 rounded-xl flex items-center justify-center border-2 border-dashed border-primary/30 p-2">
-                <ins
-                  className="adsbygoogle"
-                  style={{ display: 'block', width: '100%', minHeight: '260px' }}
-                  data-ad-client={adSlots.clientId}
-                  data-ad-slot={adSlots.donationSlot}
-                  data-ad-format="fluid"
-                  data-full-width-responsive="true"
-                />
-              </div>
+              {/* Promo Codes */}
+              {promoCodes.length > 0 && (
+                <motion.div variants={fadeUp} className="px-5 pb-3 pt-2">
+                  <div className="flex items-center gap-2 mb-2.5 px-1">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {isArabic ? 'أكواد خصم حصرية' : 'Exclusive Codes'}
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {promoCodes.map((promo, i) => (
+                      <motion.button
+                        key={promo.id}
+                        onClick={() => handleCopyCode(promo.code)}
+                        className={cn(
+                          "group relative p-3 rounded-xl text-left overflow-hidden",
+                          "bg-white/[0.04] hover:bg-white/[0.08]",
+                          "border border-white/[0.06] hover:border-primary/30",
+                          "transition-all duration-300"
+                        )}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] text-muted-foreground/70 uppercase tracking-wider truncate">
+                              {promo.custom_shop_name || promo.store}
+                            </span>
+                            {copiedCode === promo.code ? (
+                              <Check className="w-3 h-3 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            )}
+                          </div>
+                          <p className="font-mono text-sm font-bold text-primary truncate">
+                            {promo.code}
+                          </p>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
-              <button
-                onClick={() => {
-                  setShowVideoSupport(false);
-                  setIsVideoPlaying(false);
-                  setVideoCountdown(10);
-                }}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-              >
-                {isArabic ? 'إلغاء' : 'Cancel'}
-              </button>
-            </div>
-          </div>
-        )}
+              {/* Divider */}
+              <div className="mx-6 my-2 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+
+              {/* Support Options */}
+              <motion.div variants={fadeUp} className="px-5 pb-6 pt-2 space-y-2.5">
+                {/* Video Support */}
+                <motion.button
+                  onClick={handleStartVideo}
+                  disabled={isVideoPlaying}
+                  className={cn(
+                    "w-full flex items-center gap-4 p-4 rounded-2xl text-left",
+                    "bg-gradient-to-r from-primary/[0.08] to-purple-500/[0.06]",
+                    "border border-primary/10 hover:border-primary/25",
+                    "transition-all duration-300 group"
+                  )}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="relative shrink-0">
+                    <div className="absolute inset-0 bg-primary/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative p-2.5 rounded-xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
+                      <Play className="w-5 h-5 text-primary" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">
+                      {isArabic ? 'شاهد فيديو للدعم' : 'Watch to Support'}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                      {isArabic ? '10 ثواني فقط • مجاني' : '10s only • Free & easy'}
+                    </p>
+                  </div>
+                </motion.button>
+
+                {/* Ko-fi */}
+                <motion.a
+                  href="https://ko-fi.com/krolist"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "w-full flex items-center gap-4 p-4 rounded-2xl",
+                    "bg-gradient-to-r from-[hsl(2,90%,65%)]/[0.08] to-[hsl(2,90%,65%)]/[0.04]",
+                    "border border-[hsl(2,90%,65%)]/10 hover:border-[hsl(2,90%,65%)]/25",
+                    "transition-all duration-300 group"
+                  )}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="relative shrink-0">
+                    <div className="absolute inset-0 bg-[hsl(2,90%,65%)]/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative p-2.5 rounded-xl bg-[hsl(2,90%,65%)]/10 group-hover:bg-[hsl(2,90%,65%)]/15 transition-colors">
+                      <Heart className="w-5 h-5 text-[hsl(2,90%,65%)]" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-[hsl(2,90%,65%)]">
+                      {isArabic ? 'ادعمنا على Ko-fi' : 'Buy us a Coffee'}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                      {isArabic ? 'قهوة افتراضية 💕' : 'Support on Ko-fi 💕'}
+                    </p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                </motion.a>
+              </motion.div>
+            </motion.div>
+
+            {/* Video Support Overlay */}
+            <AnimatePresence>
+              {showVideoSupport && (
+                <motion.div
+                  className="absolute inset-0 bg-background/95 backdrop-blur-2xl rounded-3xl flex flex-col items-center justify-center p-4 sm:p-6 z-20 overflow-y-auto"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="text-center space-y-4 w-full max-w-sm mx-auto">
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto">
+                      <svg className="w-full h-full -rotate-90">
+                        <circle cx="50%" cy="50%" r="45%" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/30" />
+                        <circle
+                          cx="50%" cy="50%" r="45%" fill="none" stroke="currentColor" strokeWidth="3"
+                          strokeDasharray={276.46}
+                          strokeDashoffset={276.46 * (1 - videoCountdown / 10)}
+                          strokeLinecap="round"
+                          className="text-primary transition-all duration-1000"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl sm:text-3xl font-bold tabular-nums">{videoCountdown}</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold mb-1">
+                        {isArabic ? 'شكراً لدعمك!' : 'Thank you!'}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {isArabic ? 'يتم تحميل الإعلان...' : 'Loading advertisement...'}
+                      </p>
+                    </div>
+
+                    <div className="w-full min-h-[280px] sm:min-h-[300px] bg-white/[0.03] rounded-2xl flex items-center justify-center border border-dashed border-primary/20 p-2">
+                      <ins
+                        className="adsbygoogle"
+                        style={{ display: 'block', width: '100%', minHeight: '260px' }}
+                        data-ad-client={adSlots.clientId}
+                        data-ad-slot={adSlots.donationSlot}
+                        data-ad-format="fluid"
+                        data-full-width-responsive="true"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setShowVideoSupport(false);
+                        setIsVideoPlaying(false);
+                        setVideoCountdown(10);
+                      }}
+                      className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors py-2"
+                    >
+                      {isArabic ? 'إلغاء' : 'Cancel'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       )}
