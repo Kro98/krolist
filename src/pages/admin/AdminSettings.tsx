@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Lock, Unlock, Settings, Image, Upload, X, Sparkles, Sun, Moon, RotateCcw,
   Eye, Contrast, Droplets, ZoomIn, Move, ChevronDown,
-  Monitor, Tablet, Smartphone, PanelTop, Square, Columns, Palette, Copy
+  Monitor, Tablet, Smartphone, PanelTop, Square, Columns, Palette, Copy, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -190,6 +190,7 @@ export default function AdminSettings() {
     header: { blur: 24, opacity: 80, color: '' },
   });
   const [selectedElement, setSelectedElement] = useState<ElementKey>('card');
+  const [showElementsInPreview, setShowElementsInPreview] = useState(false);
 
   const savedStateRef = useRef<string>("");
   const initializedRef = useRef(false);
@@ -667,14 +668,65 @@ export default function AdminSettings() {
                   opacity: currentBg.opacity / 100, objectFit: 'cover', objectPosition: `${currentBg.posX}% ${currentBg.posY}%`, transform: `scale(${currentBg.scale / 100})`,
                 }} />
                 <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${currentBg.overlay / 100})` }} />
+                {/* Mock elements overlay */}
+                {showElementsInPreview && (
+                  <div className="absolute inset-0 pointer-events-none flex flex-col p-[8%] gap-[4%]">
+                    {/* Mock header */}
+                    <div
+                      className="w-full h-[12%] rounded-md"
+                      style={{
+                        backdropFilter: `blur(${elementStyles.header.blur}px)`,
+                        backgroundColor: elementStyles.header.color
+                          ? `${elementStyles.header.color}${Math.round(elementStyles.header.opacity * 2.55).toString(16).padStart(2, '0')}`
+                          : `hsl(var(--card) / ${elementStyles.header.opacity / 100})`,
+                        borderWidth: 1,
+                        borderColor: elementStyles.border.color
+                          ? `${elementStyles.border.color}${Math.round(elementStyles.border.opacity * 2.55).toString(16).padStart(2, '0')}`
+                          : `hsl(var(--border) / ${elementStyles.border.opacity / 200})`,
+                      }}
+                    />
+                    {/* Mock cards */}
+                    <div className="flex gap-[4%] flex-1">
+                      {[1, 2].map(i => (
+                        <div
+                          key={i}
+                          className="flex-1 rounded-md"
+                          style={{
+                            backdropFilter: `blur(${elementStyles.card.blur}px)`,
+                            backgroundColor: elementStyles.card.color
+                              ? `${elementStyles.card.color}${Math.round(elementStyles.card.opacity * 2.55).toString(16).padStart(2, '0')}`
+                              : `hsl(var(--card) / ${elementStyles.card.opacity / 100})`,
+                            borderWidth: 1,
+                            borderColor: elementStyles.border.color
+                              ? `${elementStyles.border.color}${Math.round(elementStyles.border.opacity * 2.55).toString(16).padStart(2, '0')}`
+                              : `hsl(var(--border) / ${elementStyles.border.opacity / 200})`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div
                   className="absolute w-3.5 h-3.5 rounded-full border-2 border-primary bg-primary/30 -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
                   style={{ left: `${currentBg.posX}%`, top: `${currentBg.posY}%` }}
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground text-center font-mono">
-                <span className="text-primary capitalize font-semibold">{selectedDevice}</span> — {currentBg.posX}% × {currentBg.posY}%
-              </p>
+              {/* Preview controls */}
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-muted-foreground font-mono">
+                  <span className="text-primary capitalize font-semibold">{selectedDevice}</span> — {currentBg.posX}% × {currentBg.posY}%
+                </p>
+                <button
+                  onClick={() => setShowElementsInPreview(v => !v)}
+                  className={cn(
+                    "text-[10px] font-medium flex items-center gap-1 transition-colors",
+                    showElementsInPreview ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Layers className="w-2.5 h-2.5" />
+                  {showElementsInPreview ? 'Hide elements' : 'Show elements'}
+                </button>
+              </div>
             </div>
           )}
         </SettingsSection>
