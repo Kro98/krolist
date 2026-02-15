@@ -669,43 +669,76 @@ export default function AdminSettings() {
                 }} />
                 <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${currentBg.overlay / 100})` }} />
                 {/* Mock elements overlay */}
-                {showElementsInPreview && (
-                  <div className="absolute inset-0 pointer-events-none flex flex-col p-[8%] gap-[4%]">
-                    {/* Mock header */}
-                    <div
-                      className="w-full h-[12%] rounded-md"
-                      style={{
+                {showElementsInPreview && (() => {
+                  const cardBg = elementStyles.card.color
+                    ? `${elementStyles.card.color}${Math.round(elementStyles.card.opacity * 2.55).toString(16).padStart(2, '0')}`
+                    : `hsl(var(--card) / ${elementStyles.card.opacity / 100})`;
+                  const headerBg = elementStyles.header.color
+                    ? `${elementStyles.header.color}${Math.round(elementStyles.header.opacity * 2.55).toString(16).padStart(2, '0')}`
+                    : `hsl(var(--card) / ${elementStyles.header.opacity / 100})`;
+                  const borderC = elementStyles.border.color
+                    ? `${elementStyles.border.color}${Math.round(elementStyles.border.opacity * 2.55).toString(16).padStart(2, '0')}`
+                    : `hsl(var(--border) / ${elementStyles.border.opacity / 200})`;
+                  return (
+                    <div className="absolute inset-0 pointer-events-none flex flex-col p-[6%] gap-[3%]">
+                      {/* Header */}
+                      <div className="w-full h-[10%] rounded-md flex items-center px-[4%] gap-[3%]" style={{
                         backdropFilter: `blur(${elementStyles.header.blur}px)`,
-                        backgroundColor: elementStyles.header.color
-                          ? `${elementStyles.header.color}${Math.round(elementStyles.header.opacity * 2.55).toString(16).padStart(2, '0')}`
-                          : `hsl(var(--card) / ${elementStyles.header.opacity / 100})`,
-                        borderWidth: 1,
-                        borderColor: elementStyles.border.color
-                          ? `${elementStyles.border.color}${Math.round(elementStyles.border.opacity * 2.55).toString(16).padStart(2, '0')}`
-                          : `hsl(var(--border) / ${elementStyles.border.opacity / 200})`,
-                      }}
-                    />
-                    {/* Mock cards */}
-                    <div className="flex gap-[4%] flex-1">
-                      {[1, 2].map(i => (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-md"
-                          style={{
+                        backgroundColor: headerBg, borderWidth: 1, borderColor: borderC,
+                      }}>
+                        <div className="w-[8%] h-[50%] rounded-sm bg-primary/30" />
+                        <div className="flex-1 h-[30%] rounded-sm bg-foreground/10" />
+                        <div className="w-[12%] h-[40%] rounded-sm bg-primary/20" />
+                      </div>
+                      {/* Body: sidebar + content */}
+                      <div className="flex gap-[3%] flex-1 min-h-0">
+                        {/* Sidebar */}
+                        <div className="w-[22%] rounded-md flex flex-col gap-[6%] p-[3%]" style={{
+                          backdropFilter: `blur(${elementStyles.card.blur}px)`,
+                          backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
+                        }}>
+                          {[1,2,3,4].map(i => (
+                            <div key={i} className="w-full h-[8%] rounded-sm bg-foreground/8" />
+                          ))}
+                        </div>
+                        {/* Main content */}
+                        <div className="flex-1 flex flex-col gap-[3%] min-h-0">
+                          {/* Card row */}
+                          <div className="flex gap-[3%] h-[45%]">
+                            {[1, 2, 3].map(i => (
+                              <div key={i} className="flex-1 rounded-md flex flex-col p-[4%] gap-[6%]" style={{
+                                backdropFilter: `blur(${elementStyles.card.blur}px)`,
+                                backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
+                              }}>
+                                <div className="w-full flex-1 rounded-sm bg-foreground/5" />
+                                <div className="w-[60%] h-[10%] rounded-sm bg-foreground/10" />
+                                <div className="w-[40%] h-[8%] rounded-sm bg-primary/15" />
+                              </div>
+                            ))}
+                          </div>
+                          {/* Wide card */}
+                          <div className="flex-1 rounded-md flex items-center px-[4%] gap-[4%]" style={{
                             backdropFilter: `blur(${elementStyles.card.blur}px)`,
-                            backgroundColor: elementStyles.card.color
-                              ? `${elementStyles.card.color}${Math.round(elementStyles.card.opacity * 2.55).toString(16).padStart(2, '0')}`
-                              : `hsl(var(--card) / ${elementStyles.card.opacity / 100})`,
-                            borderWidth: 1,
-                            borderColor: elementStyles.border.color
-                              ? `${elementStyles.border.color}${Math.round(elementStyles.border.opacity * 2.55).toString(16).padStart(2, '0')}`
-                              : `hsl(var(--border) / ${elementStyles.border.opacity / 200})`,
-                          }}
-                        />
-                      ))}
+                            backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
+                          }}>
+                            <div className="w-[15%] h-[60%] rounded-sm bg-foreground/5" />
+                            <div className="flex-1 flex flex-col gap-[8%]">
+                              <div className="w-[70%] h-[15%] rounded-sm bg-foreground/10" />
+                              <div className="w-[45%] h-[10%] rounded-sm bg-foreground/6" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Footer */}
+                      <div className="w-full h-[8%] rounded-md flex items-center justify-center" style={{
+                        backdropFilter: `blur(${elementStyles.card.blur}px)`,
+                        backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
+                      }}>
+                        <div className="w-[30%] h-[30%] rounded-sm bg-foreground/8" />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
                 <div
                   className="absolute w-3.5 h-3.5 rounded-full border-2 border-primary bg-primary/30 -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
                   style={{ left: `${currentBg.posX}%`, top: `${currentBg.posY}%` }}
