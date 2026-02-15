@@ -17,6 +17,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Article } from '@/types/article';
+import { SiteBackground } from '@/components/SiteBackground';
 
 // Preference learning - stored locally
 const PREF_KEY = 'article_preferences';
@@ -70,9 +71,12 @@ const Articles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [pageBgEnabled, setPageBgEnabled] = useState(false);
 
   useEffect(() => {
     fetchArticles();
+    supabase.from('page_content').select('content_en').eq('page_key', 'bg_enabled_articles').maybeSingle()
+      .then(({ data }) => { if (data?.content_en === 'true') setPageBgEnabled(true); });
   }, []);
 
   const fetchArticles = async () => {
@@ -444,7 +448,8 @@ const Articles = () => {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
+        {pageBgEnabled && <SiteBackground />}
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-12 md:py-20">
           <div className="absolute inset-0 bg-grid-pattern opacity-5" />
