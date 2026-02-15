@@ -166,6 +166,11 @@ export default function AdminSettings() {
   const [aurasEnabled, setAurasEnabled] = useState(false);
   const [loadingLocks, setLoadingLocks] = useState(true);
 
+  // Page background toggles
+  const [pageBgToggles, setPageBgToggles] = useState<Record<string, boolean>>({
+    affiliate: false,
+  });
+
   // Background settings
   const [bgImageUrl, setBgImageUrl] = useState("");
   const [deviceSettings, setDeviceSettings] = useState<Record<DeviceKey, BgSettings>>({
@@ -223,12 +228,13 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('page_content')
         .select('page_key, content_en')
-        .in('page_key', ['section_lock_articles', 'section_lock_stickers', 'product_auras_enabled']);
+        .in('page_key', ['section_lock_articles', 'section_lock_stickers', 'product_auras_enabled', 'bg_enabled_affiliate']);
       if (!error && data) {
         data.forEach(row => {
           if (row.page_key === 'section_lock_articles') setArticlesLocked(row.content_en === 'locked');
           if (row.page_key === 'section_lock_stickers') setStickersLocked(row.content_en === 'locked');
           if (row.page_key === 'product_auras_enabled') setAurasEnabled(row.content_en === 'true');
+          if (row.page_key === 'bg_enabled_affiliate') setPageBgToggles(prev => ({ ...prev, affiliate: row.content_en === 'true' }));
         });
       }
     } catch (err) {
@@ -267,6 +273,22 @@ export default function AdminSettings() {
     } catch (err) {
       console.error('Error toggling auras:', err);
       sonnerToast.error('Failed to update aura setting');
+    }
+  };
+
+  const togglePageBg = async (page: string, enabled: boolean) => {
+    const pageKey = `bg_enabled_${page}`;
+    try {
+      const { error } = await supabase.from('page_content').upsert({
+        page_key: pageKey, content_en: enabled ? 'true' : 'false',
+        description: `Background toggle for ${page} page`,
+      }, { onConflict: 'page_key' });
+      if (error) throw error;
+      setPageBgToggles(prev => ({ ...prev, [page]: enabled }));
+      sonnerToast.success(enabled ? `${page} background enabled` : `${page} background disabled`);
+    } catch (err) {
+      console.error('Error toggling page bg:', err);
+      sonnerToast.error('Failed to update page background');
     }
   };
 
@@ -500,7 +522,43 @@ export default function AdminSettings() {
           </div>
         </SettingsSection>
 
-        {/* ─── Section 2: Background Image ─── */}
+        {/* ─── Section: Page Backgrounds ─── */}
+        <SettingsSection
+          icon={Image}
+          title="Page Backgrounds"
+          description="Enable the background image on specific pages"
+        >
+          <div className="space-y-2">
+            {[
+              { page: 'affiliate', label: 'Affiliate (Main Page)', description: 'Show background on the main product page' },
+            ].map(item => (
+              <div key={item.page} className={cn(
+                "flex items-center justify-between p-3 rounded-xl border transition-all duration-200",
+                pageBgToggles[item.page]
+                  ? "border-primary/20 bg-primary/5"
+                  : "border-border/30 bg-background/30"
+              )}>
+                <div className="flex items-center gap-2.5">
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                    pageBgToggles[item.page] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                  )}>
+                    <Image className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium">{item.label}</span>
+                    <p className="text-[11px] text-muted-foreground">{item.description}</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={pageBgToggles[item.page]}
+                  onCheckedChange={(c) => togglePageBg(item.page, c)}
+                  disabled={loadingLocks}
+                />
+              </div>
+            ))}
+          </div>
+        </SettingsSection>
         <SettingsSection
           icon={Image}
           title="Background Image"

@@ -26,6 +26,7 @@ import { useSectionLocks } from "@/hooks/useSectionLocks";
 import { PriceHistoryChart } from "@/components/article/PriceHistoryChart";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { InterstitialAd } from "@/components/affiliate/InterstitialAd";
+import { SiteBackground } from "@/components/SiteBackground";
 
 interface AffiliateProduct {
   id: string;
@@ -95,11 +96,20 @@ export default function AffiliateMode() {
   // Aura toggle from admin settings
   const [aurasEnabled, setAurasEnabled] = useState(false);
 
+  // Page background toggle
+  const [pageBgEnabled, setPageBgEnabled] = useState(false);
+
   useEffect(() => {
     loadProducts();
-    // Fetch aura toggle setting
-    supabase.from('page_content').select('content_en').eq('page_key', 'product_auras_enabled').maybeSingle()
-      .then(({ data }) => { if (data?.content_en === 'true') setAurasEnabled(true); });
+    // Fetch aura toggle setting and page bg toggle
+    supabase.from('page_content').select('page_key, content_en')
+      .in('page_key', ['product_auras_enabled', 'bg_enabled_affiliate'])
+      .then(({ data }) => {
+        data?.forEach(row => {
+          if (row.page_key === 'product_auras_enabled' && row.content_en === 'true') setAurasEnabled(true);
+          if (row.page_key === 'bg_enabled_affiliate' && row.content_en === 'true') setPageBgEnabled(true);
+        });
+      });
   }, []);
 
   const loadProducts = async () => {
@@ -230,7 +240,9 @@ export default function AffiliateMode() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-background flex flex-col relative" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Page Background */}
+      {pageBgEnabled && <SiteBackground />}
       {/* Settings Panel */}
       <AffiliateSettings 
         isOpen={showSettings} 
