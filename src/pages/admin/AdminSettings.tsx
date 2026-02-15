@@ -169,6 +169,8 @@ export default function AdminSettings() {
   // Page background toggles
   const [pageBgToggles, setPageBgToggles] = useState<Record<string, boolean>>({
     affiliate: false,
+    articles: false,
+    stickers: false,
   });
 
   // Background settings
@@ -228,13 +230,16 @@ export default function AdminSettings() {
       const { data, error } = await supabase
         .from('page_content')
         .select('page_key, content_en')
-        .in('page_key', ['section_lock_articles', 'section_lock_stickers', 'product_auras_enabled', 'bg_enabled_affiliate']);
+        .in('page_key', ['section_lock_articles', 'section_lock_stickers', 'product_auras_enabled', 'bg_enabled_affiliate', 'bg_enabled_articles', 'bg_enabled_stickers']);
       if (!error && data) {
         data.forEach(row => {
           if (row.page_key === 'section_lock_articles') setArticlesLocked(row.content_en === 'locked');
           if (row.page_key === 'section_lock_stickers') setStickersLocked(row.content_en === 'locked');
           if (row.page_key === 'product_auras_enabled') setAurasEnabled(row.content_en === 'true');
-          if (row.page_key === 'bg_enabled_affiliate') setPageBgToggles(prev => ({ ...prev, affiliate: row.content_en === 'true' }));
+          if (row.page_key.startsWith('bg_enabled_')) {
+            const page = row.page_key.replace('bg_enabled_', '');
+            setPageBgToggles(prev => ({ ...prev, [page]: row.content_en === 'true' }));
+          }
         });
       }
     } catch (err) {
@@ -531,6 +536,8 @@ export default function AdminSettings() {
           <div className="space-y-2">
             {[
               { page: 'affiliate', label: 'Affiliate (Main Page)', description: 'Show background on the main product page' },
+              { page: 'articles', label: 'Articles', description: 'Show background on the articles listing page' },
+              { page: 'stickers', label: 'Stickers', description: 'Show background on the stickers shop page' },
             ].map(item => (
               <div key={item.page} className={cn(
                 "flex items-center justify-between p-3 rounded-xl border transition-all duration-200",

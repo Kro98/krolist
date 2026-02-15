@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { motion, AnimatePresence } from "framer-motion";
 
 import stickersTitleImage from "@/assets/stickers-title.png";
+import { SiteBackground } from "@/components/SiteBackground";
 
 interface StickerItem {
   id: string;
@@ -61,8 +62,12 @@ export default function Stickers() {
   const DEFAULT_IMAGE_WIDTH = 280;
   const DEFAULT_IMAGE_QUALITY = 70;
 
+  const [pageBgEnabled, setPageBgEnabled] = useState(false);
+
   useEffect(() => {
     fetchStickers();
+    supabase.from('page_content').select('content_en').eq('page_key', 'bg_enabled_stickers').maybeSingle()
+      .then(({ data }) => { if (data?.content_en === 'true') setPageBgEnabled(true); });
   }, []);
 
   const fetchStickers = async () => {
@@ -209,7 +214,8 @@ export default function Stickers() {
         />
       </Helmet>
 
-      <div className={`min-h-screen overflow-x-hidden ${isArabic ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen overflow-x-hidden relative ${isArabic ? 'rtl' : 'ltr'}`}>
+        {pageBgEnabled && <SiteBackground />}
 
         {/* Glassmorphic Header */}
         <div className="sticky top-0 z-40 backdrop-blur-2xl bg-background/20 border-b border-white/10">
