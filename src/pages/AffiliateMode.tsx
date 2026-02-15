@@ -275,7 +275,15 @@ export default function AffiliateMode() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 h-16 flex items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm px-4">
+      <header
+        className="sticky top-0 z-50 h-16 flex items-center justify-between border-b px-4 transition-all"
+        style={{
+          backdropFilter: `blur(var(--admin-header-blur, 12px))`,
+          WebkitBackdropFilter: `blur(var(--admin-header-blur, 12px))`,
+          backgroundColor: `var(--admin-header-color, hsl(var(--card) / var(--admin-header-opacity, 0.95)))`,
+          borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+        }}
+      >
         <div className="flex items-center gap-2">
           {!sectionLocks.articles && (
             <Link
@@ -327,7 +335,12 @@ export default function AffiliateMode() {
               placeholder={language === 'ar' ? 'ابحث عن المنتجات...' : 'Search products...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-card border-border focus:ring-2 focus:ring-primary/20"
+              className="pl-10 h-11 border transition-all"
+              style={{
+                backdropFilter: `blur(var(--admin-card-blur, 0px))`,
+                backgroundColor: `var(--admin-card-color, hsl(var(--card) / var(--admin-card-opacity, 1)))`,
+                borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+              }}
             />
           </div>
           <button
@@ -452,9 +465,16 @@ export default function AffiliateMode() {
                 <div
                   key={product.id}
                   className={cn(
-                    "group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all duration-200",
+                    "group relative rounded-lg overflow-hidden hover:shadow-md transition-all duration-200",
                     auraClass
                   )}
+                  style={{
+                    backdropFilter: `blur(var(--admin-card-blur, 0px))`,
+                    WebkitBackdropFilter: `blur(var(--admin-card-blur, 0px))`,
+                    backgroundColor: `var(--admin-card-color, hsl(var(--card) / var(--admin-card-opacity, 1)))`,
+                    borderWidth: 1,
+                    borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+                  }}
                 >
                   {/* Golden stars */}
                   {isGolden && (
