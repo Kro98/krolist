@@ -679,6 +679,9 @@ export default function AdminSettings() {
                   const borderC = elementStyles.border.color
                     ? `${elementStyles.border.color}${Math.round(elementStyles.border.opacity * 2.55).toString(16).padStart(2, '0')}`
                     : `hsl(var(--border) / ${elementStyles.border.opacity / 200})`;
+                  const isMobile = selectedDevice === 'mobile';
+                  const isTablet = selectedDevice === 'tablet';
+                  const cardCount = isMobile ? 1 : isTablet ? 2 : 3;
                   return (
                     <div className="absolute inset-0 pointer-events-none flex flex-col p-[6%] gap-[3%]">
                       {/* Header */}
@@ -692,20 +695,22 @@ export default function AdminSettings() {
                       </div>
                       {/* Body: sidebar + content */}
                       <div className="flex gap-[3%] flex-1 min-h-0">
-                        {/* Sidebar */}
-                        <div className="w-[22%] rounded-md flex flex-col gap-[6%] p-[3%]" style={{
-                          backdropFilter: `blur(${elementStyles.card.blur}px)`,
-                          backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
-                        }}>
-                          {[1,2,3,4].map(i => (
-                            <div key={i} className="w-full h-[8%] rounded-sm bg-foreground/8" />
-                          ))}
-                        </div>
+                        {/* Sidebar - hidden on mobile */}
+                        {!isMobile && (
+                          <div className={`${isTablet ? 'w-[18%]' : 'w-[22%]'} rounded-md flex flex-col gap-[6%] p-[3%]`} style={{
+                            backdropFilter: `blur(${elementStyles.card.blur}px)`,
+                            backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
+                          }}>
+                            {[1,2,3,4].map(i => (
+                              <div key={i} className="w-full h-[8%] rounded-sm bg-foreground/8" />
+                            ))}
+                          </div>
+                        )}
                         {/* Main content */}
                         <div className="flex-1 flex flex-col gap-[3%] min-h-0">
                           {/* Card row */}
-                          <div className="flex gap-[3%] h-[45%]">
-                            {[1, 2, 3].map(i => (
+                          <div className={`flex gap-[3%] ${isMobile ? 'flex-col' : 'h-[45%]'}`}>
+                            {Array.from({ length: cardCount }, (_, i) => (
                               <div key={i} className="flex-1 rounded-md flex flex-col p-[4%] gap-[6%]" style={{
                                 backdropFilter: `blur(${elementStyles.card.blur}px)`,
                                 backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
@@ -730,11 +735,20 @@ export default function AdminSettings() {
                         </div>
                       </div>
                       {/* Footer */}
-                      <div className="w-full h-[8%] rounded-md flex items-center justify-center" style={{
+                      {/* Footer / Mobile bottom nav */}
+                      <div className={`w-full ${isMobile ? 'h-[8%]' : 'h-[8%]'} rounded-md flex items-center ${isMobile ? 'justify-around px-[2%]' : 'justify-center'}`} style={{
                         backdropFilter: `blur(${elementStyles.card.blur}px)`,
                         backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
                       }}>
-                        <div className="w-[30%] h-[30%] rounded-sm bg-foreground/8" />
+                        {isMobile ? (
+                          <>
+                            {[1,2,3,4].map(i => (
+                              <div key={i} className="w-[12%] h-[40%] rounded-sm bg-foreground/10" />
+                            ))}
+                          </>
+                        ) : (
+                          <div className="w-[30%] h-[30%] rounded-sm bg-foreground/8" />
+                        )}
                       </div>
                     </div>
                   );
