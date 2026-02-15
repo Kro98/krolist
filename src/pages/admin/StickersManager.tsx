@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import { Plus, Pencil, Trash2, Upload, Phone, Settings, ImageIcon, Loader2, Maximize2, Shrink } from "lucide-react";
 import { getExtensionFromMimeType, formatFileSize, compressImage } from "@/lib/imageCompression";
 import { ImageCompressionPreview } from "@/components/ImageCompressionPreview";
@@ -557,10 +558,7 @@ export default function StickersManager() {
               className="h-8"
             >
               {bulkCompressing ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                  {bulkProgress.current}/{bulkProgress.total}
-                </>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <>
                   <Shrink className="h-3.5 w-3.5 mr-1" />
@@ -569,6 +567,14 @@ export default function StickersManager() {
               )}
             </Button>
           </div>
+          {bulkCompressing && (
+            <div className="flex items-center gap-2 w-full sm:w-64">
+              <Progress value={bulkProgress.total > 0 ? (bulkProgress.current / bulkProgress.total) * 100 : 0} className="h-2 flex-1" />
+              <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                {bulkProgress.current}/{bulkProgress.total}
+              </span>
+            </div>
+          )}
 
           <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
             <DialogTrigger asChild>
