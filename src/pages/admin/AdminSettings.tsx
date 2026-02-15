@@ -569,13 +569,13 @@ export default function AdminSettings() {
         <SettingsSection
           icon={Image}
           title="Background Image"
-          description="Upload or link a background image"
+          description="Upload or link a background image or GIF"
           badge={bgImageUrl ? "Active" : undefined}
         >
           {/* Upload area */}
           <label className="block">
             <input
-              type="file" accept="image/*" className="hidden"
+              type="file" accept="image/*,.gif" className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) handleUpload(file);
@@ -588,7 +588,7 @@ export default function AdminSettings() {
               uploadingBg && "opacity-50 pointer-events-none"
             )}>
               <Upload className="w-4 h-4" />
-              {uploadingBg ? 'Uploading...' : 'Upload Image'}
+              {uploadingBg ? 'Uploading...' : 'Upload Image or GIF'}
             </div>
           </label>
 
