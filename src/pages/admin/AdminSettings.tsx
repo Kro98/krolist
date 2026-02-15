@@ -629,7 +629,12 @@ export default function AdminSettings() {
 
               {/* Preview thumbnail */}
               <div
-                className="relative w-full h-32 sm:h-40 rounded-xl overflow-hidden border border-primary/20 cursor-grab active:cursor-grabbing select-none"
+                className={cn(
+                  "relative rounded-xl overflow-hidden border border-primary/20 cursor-grab active:cursor-grabbing select-none mx-auto transition-all duration-300",
+                  selectedDevice === 'desktop' && "w-full aspect-video",
+                  selectedDevice === 'tablet' && "w-3/4 aspect-[4/3]",
+                  selectedDevice === 'mobile' && "w-2/5 aspect-[9/16]",
+                )}
                 onMouseDown={(e) => {
                   e.preventDefault();
                   setIsDraggingPos(true);
