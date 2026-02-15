@@ -221,8 +221,13 @@ const Articles = () => {
     if (variant === 'featured') {
       return (
         <Card 
-          className="group cursor-pointer overflow-hidden border-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 hover:shadow-xl transition-all duration-500 hover:scale-[1.02]"
+          className="group cursor-pointer overflow-hidden border hover:shadow-xl transition-all duration-500 hover:scale-[1.02]"
           onClick={() => handleArticleClick(article)}
+          style={{
+            backdropFilter: `blur(var(--admin-card-blur, 0px))`,
+            backgroundColor: `var(--admin-card-color, hsl(var(--card) / var(--admin-card-opacity, 1)))`,
+            borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+          }}
         >
           <div className="relative h-48 md:h-64 overflow-hidden">
             {article.hero_bg_image_url || article.og_image_url ? (
@@ -291,8 +296,13 @@ const Articles = () => {
     if (variant === 'compact') {
       return (
         <div 
-          className="group flex gap-4 p-4 rounded-xl bg-card/50 hover:bg-card border border-transparent hover:border-border cursor-pointer transition-all duration-300"
+          className="group flex gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 hover:shadow-md"
           onClick={() => handleArticleClick(article)}
+          style={{
+            backdropFilter: `blur(var(--admin-card-blur, 0px))`,
+            backgroundColor: `var(--admin-card-color, hsl(var(--card) / var(--admin-card-opacity, 0.5)))`,
+            borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.3)))`,
+          }}
         >
           {(article.hero_bg_image_url || article.og_image_url) && (
             <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
@@ -331,8 +341,13 @@ const Articles = () => {
     // Default variant
     return (
       <Card 
-        className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50"
+        className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border"
         onClick={() => handleArticleClick(article)}
+        style={{
+          backdropFilter: `blur(var(--admin-card-blur, 0px))`,
+          backgroundColor: `var(--admin-card-color, hsl(var(--card) / var(--admin-card-opacity, 1)))`,
+          borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+        }}
       >
         <div className="relative h-40 overflow-hidden">
           {article.hero_bg_image_url || article.og_image_url ? (
@@ -451,7 +466,13 @@ const Articles = () => {
       <div className="min-h-screen bg-background relative">
         {pageBgEnabled && <SiteBackground />}
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-12 md:py-20">
+        <section
+          className="relative overflow-hidden py-12 md:py-20"
+          style={{
+            backdropFilter: `blur(var(--admin-header-blur, 0px))`,
+            backgroundColor: `var(--admin-header-color, hsl(var(--primary) / 0.03))`,
+          }}
+        >
           <div className="absolute inset-0 bg-grid-pattern opacity-5" />
           <div className="container max-w-6xl mx-auto px-4 relative z-10">
             <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -499,7 +520,15 @@ const Articles = () => {
 
         {/* Category & Tag Filters */}
         {(categories.length > 0 || tags.length > 0) && !hasFilters && (
-          <section className="border-b border-border/50 bg-background/50 backdrop-blur-sm sticky top-0 z-40">
+          <section
+            className="border-b sticky top-0 z-40 transition-all"
+            style={{
+              backdropFilter: `blur(var(--admin-header-blur, 12px))`,
+              WebkitBackdropFilter: `blur(var(--admin-header-blur, 12px))`,
+              backgroundColor: `var(--admin-header-color, hsl(var(--background) / var(--admin-header-opacity, 0.5)))`,
+              borderColor: `var(--admin-border-color, hsl(var(--border) / var(--admin-border-opacity, 0.5)))`,
+            }}
+          >
             <div className="container max-w-6xl mx-auto px-4 py-3">
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                 <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
