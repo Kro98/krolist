@@ -82,6 +82,8 @@ export default function StickersManager() {
   const [compressionPreviewOpen, setCompressionPreviewOpen] = useState(false);
   const [targetSizeKB, setTargetSizeKB] = useState<number>(100);
   const [compressing, setCompressing] = useState(false);
+  const [bulkCompressing, setBulkCompressing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
   
   // Form state
   const [formData, setFormData] = useState({
@@ -290,6 +292,67 @@ export default function StickersManager() {
     }
   };
 
+  const handleCompressAll = async () => {
+    const stickersWithImages = stickers.filter(s => s.image_url);
+    if (stickersWithImages.length === 0) {
+      toast({ title: "No images", description: "No stickers have images to compress." });
+      return;
+    }
+    if (!confirm(`Compress all ${stickersWithImages.length} sticker images to ~${targetSizeKB}KB? This will replace the current images.`)) return;
+
+    setBulkCompressing(true);
+    setBulkProgress({ current: 0, total: stickersWithImages.length });
+    let successCount = 0;
+
+    for (const sticker of stickersWithImages) {
+      try {
+        const response = await fetch(sticker.image_url!);
+        const blob = await response.blob();
+        const file = new File([blob], 'image.jpg', { type: blob.type || 'image/jpeg' });
+        const targetBytes = targetSizeKB * 1024;
+
+        let lo = 0.05, hi = 1.0, bestBlob: Blob = blob;
+        for (let i = 0; i < 8; i++) {
+          const mid = (lo + hi) / 2;
+          const compressed = await compressImage(file, 2000, 2000, mid);
+          bestBlob = compressed;
+          if (compressed.size > targetBytes) hi = mid;
+          else lo = mid;
+        }
+        if (bestBlob.size > targetBytes * 1.1) {
+          const ratio = Math.sqrt(targetBytes / bestBlob.size);
+          bestBlob = await compressImage(file, Math.round(2000 * ratio), Math.round(2000 * ratio), lo);
+        }
+
+        const fileExt = getExtensionFromMimeType(bestBlob.type);
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `stickers/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('sticker-images')
+          .upload(filePath, bestBlob, { contentType: bestBlob.type });
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('sticker-images')
+          .getPublicUrl(filePath);
+
+        await supabase.from('stickers').update({ image_url: publicUrl }).eq('id', sticker.id);
+        successCount++;
+      } catch (err) {
+        console.error(`Failed to compress sticker ${sticker.name}:`, err);
+      }
+      setBulkProgress(prev => ({ ...prev, current: prev.current + 1 }));
+    }
+
+    setBulkCompressing(false);
+    toast({
+      title: "Bulk Compression Complete",
+      description: `${successCount}/${stickersWithImages.length} stickers compressed to ~${targetSizeKB}KB`,
+    });
+    fetchStickers();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -474,7 +537,39 @@ export default function StickersManager() {
           <h2 className="text-2xl font-bold">Stickers Manager</h2>
           <p className="text-muted-foreground">Manage your stickers inventory</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* Bulk Compress */}
+          <div className="flex items-center gap-1.5 border rounded-md px-2">
+            <Input
+              type="number"
+              min={10}
+              max={5000}
+              value={targetSizeKB}
+              onChange={(e) => setTargetSizeKB(parseInt(e.target.value) || 100)}
+              className="w-20 h-8 border-0 p-0 font-mono text-sm shadow-none focus-visible:ring-0"
+            />
+            <span className="text-xs text-muted-foreground">KB</span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleCompressAll}
+              disabled={bulkCompressing}
+              className="h-8"
+            >
+              {bulkCompressing ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  {bulkProgress.current}/{bulkProgress.total}
+                </>
+              ) : (
+                <>
+                  <Shrink className="h-3.5 w-3.5 mr-1" />
+                  Compress All
+                </>
+              )}
+            </Button>
+          </div>
+
           <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
