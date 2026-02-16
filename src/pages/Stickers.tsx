@@ -243,14 +243,14 @@ export default function Stickers() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 text-center select-none"
+            className="relative text-center select-none"
           >
             <h1
               className="leading-[0.82] tracking-[-0.06em]"
               style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900 }}
             >
               <motion.span
-                className="block text-[16vw] sm:text-[16vw] md:text-[14vw] text-white uppercase"
+                className="block text-[16vw] sm:text-[16vw] md:text-[14vw] text-white uppercase relative z-30"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
@@ -261,7 +261,7 @@ export default function Stickers() {
                 KROLIST
               </motion.span>
               <motion.span
-                className="block text-[18vw] sm:text-[18vw] md:text-[16vw] uppercase"
+                className="block text-[18vw] sm:text-[18vw] md:text-[16vw] uppercase relative z-10"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
