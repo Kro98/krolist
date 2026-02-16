@@ -22,6 +22,7 @@ import { AffiliateShell } from "@/components/affiliate/AffiliateShell";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { SiteBackground } from "@/components/SiteBackground";
 import { TrackingScripts } from "@/components/TrackingScripts";
+import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <GuestAuthProvider>
               <TooltipProvider>
                 <Toaster />
+                <PWAUpdatePrompt />
                 <BrowserRouter>
                    <TrackingScripts />
                    <SiteBackground />
