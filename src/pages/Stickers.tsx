@@ -185,17 +185,12 @@ export default function Stickers() {
   // Floating sticker positions - hugging the corners of the text block
   const floatingPositions = [
     // Top-left of KROLIST
-    { top: '28%', left: '8%', size: 'w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44', rotate: -12, delay: 0 },
-    // Top-right of KROLIST
-    { top: '25%', right: '6%', size: 'w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40', rotate: 15, delay: 0.15 },
-    // Bottom-left of STICKERS
-    { top: '58%', left: '4%', size: 'w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36', rotate: -20, delay: 0.3 },
-    // Bottom-right of STICKERS
-    { top: '60%', right: '4%', size: 'w-24 h-24 sm:w-34 sm:h-34 md:w-42 md:h-42', rotate: 18, delay: 0.1 },
-    // Mid-left tucked near text
-    { top: '44%', left: '2%', size: 'w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28', rotate: -30, delay: 0.5 },
-    // Mid-right tucked near text
-    { top: '40%', right: '2%', size: 'w-18 h-18 sm:w-26 sm:h-26 md:w-32 md:h-32', rotate: 22, delay: 0.25 },
+    { top: '28%', left: '8%', size: 'w-16 h-16 sm:w-36 sm:h-36 md:w-44 md:h-44', rotate: -12, delay: 0 },
+    { top: '25%', right: '6%', size: 'w-14 h-14 sm:w-32 sm:h-32 md:w-40 md:h-40', rotate: 15, delay: 0.15 },
+    { top: '58%', left: '4%', size: 'w-14 h-14 sm:w-28 sm:h-28 md:w-36 md:h-36', rotate: -20, delay: 0.3 },
+    { top: '60%', right: '4%', size: 'w-16 h-16 sm:w-34 sm:h-34 md:w-42 md:h-42', rotate: 18, delay: 0.1 },
+    { top: '44%', left: '2%', size: 'w-12 h-12 sm:w-24 sm:h-24 md:w-28 md:h-28', rotate: -30, delay: 0.5 },
+    { top: '40%', right: '2%', size: 'w-12 h-12 sm:w-26 sm:h-26 md:w-32 md:h-32', rotate: 22, delay: 0.25 },
   ];
 
   return (
@@ -210,20 +205,20 @@ export default function Stickers() {
         {pageBgEnabled && <SiteBackground />}
 
         {/* ─── SLOT MACHINE ROLLER (TOP) ─── */}
-        <section className="relative py-8 overflow-hidden border-b border-white/5">
+        <section className="relative py-4 sm:py-8 overflow-hidden border-b border-white/5">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-white/[0.02] to-black" />
           <div className="relative">
-            <div className="relative h-32 sm:h-44 overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-              <div className="flex items-center gap-8 sm:gap-12 absolute top-0 h-full roller-track">
+            <div className="relative h-20 sm:h-44 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+              <div className="flex items-center gap-5 sm:gap-12 absolute top-0 h-full roller-track">
                 {slotStickers.map((sticker, i) => (
-                  <div key={`slot-${sticker.id}-${i}`} className="flex-shrink-0 w-28 h-28 sm:w-40 sm:h-40">
+                  <div key={`slot-${sticker.id}-${i}`} className="flex-shrink-0 w-18 h-18 sm:w-40 sm:h-40">
                     <img
                       src={getOptimizedImageUrl(sticker.image_url)}
                       alt=""
                       className="w-full h-full object-contain select-none"
-                      style={{ filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.5))' }}
+                      style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}
                       loading="eager"
                       draggable={false}
                     />
@@ -238,7 +233,7 @@ export default function Stickers() {
         <motion.section
           ref={heroRef}
           style={{ opacity: heroOpacity, scale: heroScale }}
-          className="relative min-h-[70vh] flex flex-col items-center justify-center overflow-hidden -mt-8 sm:-mt-12"
+          className="relative min-h-[55vh] sm:min-h-[70vh] flex flex-col items-center justify-center overflow-hidden"
         >
           {/* Subtle radial gradient bg */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.08)_0%,_transparent_70%)]" />
@@ -255,7 +250,7 @@ export default function Stickers() {
               style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900 }}
             >
               <motion.span
-                className="block text-[20vw] sm:text-[16vw] md:text-[14vw] text-white uppercase"
+                className="block text-[16vw] sm:text-[16vw] md:text-[14vw] text-white uppercase"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
@@ -266,7 +261,7 @@ export default function Stickers() {
                 KROLIST
               </motion.span>
               <motion.span
-                className="block text-[22vw] sm:text-[18vw] md:text-[16vw] uppercase"
+                className="block text-[18vw] sm:text-[18vw] md:text-[16vw] uppercase"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
@@ -335,7 +330,7 @@ export default function Stickers() {
 
         {/* ─── STICKY HEADER (Cart + Filters) ─── */}
         <div className="sticky top-0 z-40 backdrop-blur-2xl bg-black/60 border-b border-white/10">
-          <div className="container mx-auto px-4 py-3">
+          <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
             <div className="flex items-center justify-between gap-3">
               {/* Filter pills */}
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1">
@@ -496,7 +491,7 @@ export default function Stickers() {
         </div>
 
         {/* ─── STICKERS GRID ─── */}
-        <div ref={gridRef} className="container mx-auto px-4 py-12 pb-32 relative">
+        <div ref={gridRef} className="container mx-auto px-3 sm:px-4 py-6 sm:py-12 pb-28 sm:pb-32 relative">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
@@ -510,7 +505,7 @@ export default function Stickers() {
               <p className="text-xl font-bold text-white/40">{isArabic ? 'لا توجد ملصقات هنا!' : 'No stickers here!'}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-8">
               {filteredStickers.map((sticker, index) => {
                 const isAdded = addedSticker === sticker.id;
                 const isOutOfStock = sticker.stock_status === 'out_of_stock';
