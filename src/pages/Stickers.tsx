@@ -238,7 +238,7 @@ export default function Stickers() {
         <motion.section
           ref={heroRef}
           style={{ opacity: heroOpacity, scale: heroScale }}
-          className="relative h-screen flex flex-col items-center justify-center overflow-hidden"
+          className="relative min-h-[70vh] flex flex-col items-center justify-center overflow-hidden -mt-8 sm:-mt-12"
         >
           {/* Subtle radial gradient bg */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.08)_0%,_transparent_70%)]" />
