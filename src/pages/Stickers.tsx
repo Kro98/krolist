@@ -411,49 +411,127 @@ export default function Stickers() {
         </div>
 
         {/* Frosted Category Buttons */}
-        <div className="sticky top-[73px] z-30 backdrop-blur-2xl bg-background/10 py-4">
+        <div className="sticky top-[73px] z-30 py-3">
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 justify-center flex-wrap">
+            <div className="flex items-center gap-2 justify-center flex-wrap">
+              {/* All button */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={() => setSelectedCategory(null)}
-                className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 backdrop-blur-xl ${
-                  selectedCategory === null
-                    ? 'bg-gradient-to-r from-primary via-pink-500 to-purple-500 text-white shadow-xl shadow-primary/30'
-                    : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
-                }`}
+                className="relative group overflow-hidden"
+                layout
               >
-                {isArabic ? '🔥 الكل' : '🔥 ALL'}
-              </motion.button>
-              {PRICE_CATEGORIES.map((price) => (
-                <motion.button
-                  key={price}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCategory(price)}
-                  className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 backdrop-blur-xl ${
-                    selectedCategory === price
-                      ? 'bg-gradient-to-r from-primary via-pink-500 to-purple-500 text-white shadow-xl shadow-primary/30'
-                      : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
+                <motion.div
+                  className={`relative px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
+                    selectedCategory === null
+                      ? 'text-white'
+                      : 'text-white/70 hover:text-white'
                   }`}
+                  style={{
+                    background: selectedCategory === null
+                      ? 'linear-gradient(135deg, hsl(31 98% 51%), hsl(330 80% 55%), hsl(270 70% 55%))'
+                      : 'rgba(255,255,255,0.08)',
+                    border: selectedCategory === null ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                    boxShadow: selectedCategory === null
+                      ? '0 4px 20px hsl(31 98% 51% / 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                      : 'none',
+                  }}
                 >
-                  {price} {isArabic ? 'ر.س' : 'SAR'}
-                </motion.button>
-              ))}
-              {/* Free stickers category */}
+                  {selectedCategory === null && (
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }}
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    🔥 {isArabic ? 'الكل' : 'ALL'}
+                  </span>
+                </motion.div>
+              </motion.button>
+
+              {/* Price category pills */}
+              {PRICE_CATEGORIES.map((price, i) => {
+                const isActive = selectedCategory === price;
+                const hues = [31, 340, 260]; // orange, rose, violet
+                const hue = hues[i % hues.length];
+                return (
+                  <motion.button
+                    key={price}
+                    whileHover={{ scale: 1.08, y: -2 }}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setSelectedCategory(price)}
+                    className="relative group"
+                    layout
+                  >
+                    <motion.div
+                      className={`relative px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
+                        isActive ? 'text-white' : 'text-white/70 hover:text-white'
+                      }`}
+                      style={{
+                        background: isActive
+                          ? `linear-gradient(135deg, hsl(${hue} 85% 55%), hsl(${hue + 30} 80% 50%))`
+                          : 'rgba(255,255,255,0.08)',
+                        border: isActive ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                        boxShadow: isActive
+                          ? `0 4px 20px hsl(${hue} 85% 55% / 0.4), inset 0 1px 0 rgba(255,255,255,0.2)`
+                          : 'none',
+                      }}
+                    >
+                      {isActive && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full"
+                          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }}
+                          animate={{ x: ['-100%', '200%'] }}
+                          transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                        />
+                      )}
+                      <span className="relative z-10 flex items-center gap-1">
+                        <span className="text-[10px] opacity-70">{isArabic ? 'ر.س' : 'SAR'}</span>
+                        <span className="text-sm">{price}</span>
+                      </span>
+                    </motion.div>
+                  </motion.button>
+                );
+              })}
+
+              {/* Free stickers pill */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={() => setSelectedCategory(0)}
-                className={`px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 backdrop-blur-xl flex items-center gap-2 ${
-                  selectedCategory === 0
-                    ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-xl shadow-green-500/30'
-                    : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
-                }`}
+                className="relative group"
+                layout
               >
-                {!qualifiesForFreeStickers && <Lock className="h-3 w-3" />}
-                {isArabic ? '🎁 مجاني' : '🎁 FREE'}
+                <motion.div
+                  className={`relative px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 ${
+                    selectedCategory === 0 ? 'text-white' : 'text-white/70 hover:text-white'
+                  }`}
+                  style={{
+                    background: selectedCategory === 0
+                      ? 'linear-gradient(135deg, hsl(160 70% 45%), hsl(180 70% 40%))'
+                      : 'rgba(255,255,255,0.08)',
+                    border: selectedCategory === 0 ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                    boxShadow: selectedCategory === 0
+                      ? '0 4px 20px hsl(160 70% 45% / 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                      : 'none',
+                  }}
+                >
+                  {selectedCategory === 0 && (
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }}
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    {!qualifiesForFreeStickers && <Lock className="h-3 w-3" />}
+                    🎁 {isArabic ? 'مجاني' : 'FREE'}
+                  </span>
+                </motion.div>
               </motion.button>
             </div>
           </div>
