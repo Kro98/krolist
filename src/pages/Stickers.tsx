@@ -206,7 +206,7 @@ export default function Stickers() {
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet" />
       </Helmet>
 
-      <div className={`min-h-screen overflow-x-hidden relative bg-black ${isArabic ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen overflow-x-hidden relative bg-black scroll-smooth ${isArabic ? 'rtl' : 'ltr'}`} style={{ willChange: 'auto' }}>
         {pageBgEnabled && <SiteBackground />}
 
         {/* ─── HERO: FULL VIEWPORT ─── */}
@@ -269,30 +269,27 @@ export default function Stickers() {
                   top: pos.top,
                   left: pos.left,
                   right: pos.right,
+                  willChange: 'transform',
                 }}
                 initial={{ opacity: 0, scale: 0.5, rotate: pos.rotate }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  rotate: pos.rotate,
-                  y: [0, -12, 0],
-                }}
-                transition={{
-                  delay: pos.delay + 0.5,
-                  duration: 0.8,
-                  y: { duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut" },
-                }}
+                animate={{ opacity: 1, scale: 1, rotate: pos.rotate }}
+                transition={{ delay: pos.delay + 0.5, duration: 0.8 }}
               >
-                <img
-                  src={getOptimizedImageUrl(sticker.image_url)}
-                  alt=""
-                  className="w-full h-full object-contain"
-                  style={{
-                    filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.7)) drop-shadow(0 10px 20px rgba(0,0,0,0.4))',
-                  }}
-                  loading="eager"
-                  draggable={false}
-                />
+                <div
+                  className="w-full h-full sticker-float"
+                  style={{ animationDelay: `${i * 0.7}s`, animationDuration: `${4 + i * 0.5}s` }}
+                >
+                  <img
+                    src={getOptimizedImageUrl(sticker.image_url)}
+                    alt=""
+                    className="w-full h-full object-contain"
+                    style={{
+                      filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.7)) drop-shadow(0 10px 20px rgba(0,0,0,0.4))',
+                    }}
+                    loading="eager"
+                    draggable={false}
+                  />
+                </div>
               </motion.div>
             );
           })}
@@ -331,12 +328,8 @@ export default function Stickers() {
               <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
               <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-              <motion.div
-                className="flex items-center gap-8 sm:gap-12 absolute top-0 h-full"
-                animate={{ x: ['0%', '-33.33%'] }}
-                transition={{
-                  x: { duration: 30, repeat: Infinity, ease: 'linear' },
-                }}
+              <div
+                className="flex items-center gap-8 sm:gap-12 absolute top-0 h-full roller-track"
               >
                 {slotStickers.map((sticker, i) => (
                   <div
@@ -353,7 +346,7 @@ export default function Stickers() {
                     />
                   </div>
                 ))}
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -546,17 +539,16 @@ export default function Stickers() {
                 return (
                   <motion.button
                     key={sticker.id}
-                    initial={{ opacity: 0, y: 40 }}
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{ delay: (index % 5) * 0.05, type: "spring", stiffness: 200, damping: 20 }}
-                    whileHover={{ scale: 1.1, zIndex: 50, transition: { duration: 0.2 } }}
-                    whileTap={{ scale: 0.95 }}
+                    viewport={{ once: true, margin: "-30px" }}
+                    transition={{ delay: (index % 5) * 0.04, duration: 0.4, ease: "easeOut" }}
                     onClick={() => !isOutOfStock && !isLocked && addToCart(sticker)}
                     disabled={isOutOfStock || isLocked}
-                    className={`relative aspect-square focus:outline-none group ${
+                    className={`relative aspect-square focus:outline-none group transition-transform duration-200 ease-out hover:scale-110 hover:z-50 active:scale-95 ${
                       isOutOfStock || isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
                     }`}
+                    style={{ willChange: 'transform' }}
                   >
                     {/* Hover glow */}
                     <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
@@ -695,6 +687,24 @@ export default function Stickers() {
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes sticker-bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        .sticker-float {
+          animation: sticker-bob ease-in-out infinite;
+          will-change: transform;
+        }
+        
+        @keyframes roller-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.33%); }
+        }
+        .roller-track {
+          animation: roller-scroll 30s linear infinite;
+          will-change: transform;
+        }
       `}</style>
     </>
   );
