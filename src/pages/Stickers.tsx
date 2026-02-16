@@ -205,20 +205,20 @@ export default function Stickers() {
         {pageBgEnabled && <SiteBackground />}
 
         {/* ─── SLOT MACHINE ROLLER (TOP) ─── */}
-        <section className="relative py-4 sm:py-8 overflow-hidden border-b border-white/5">
+        <section className="relative py-3 sm:py-8 overflow-hidden border-b border-white/5">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-white/[0.02] to-black" />
           <div className="relative">
-            <div className="relative h-20 sm:h-44 overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-              <div className="flex items-center gap-5 sm:gap-12 absolute top-0 h-full roller-track">
+            <div className="relative h-16 sm:h-44 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+              <div className="flex items-center gap-4 sm:gap-12 absolute top-0 h-full roller-track" style={{ willChange: 'transform' }}>
                 {slotStickers.map((sticker, i) => (
-                  <div key={`slot-${sticker.id}-${i}`} className="flex-shrink-0 w-18 h-18 sm:w-40 sm:h-40">
+                  <div key={`slot-${sticker.id}-${i}`} className="flex-shrink-0 w-14 h-14 sm:w-40 sm:h-40">
                     <img
                       src={getOptimizedImageUrl(sticker.image_url)}
                       alt=""
                       className="w-full h-full object-contain select-none"
-                      style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}
+                      style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.4))' }}
                       loading="eager"
                       draggable={false}
                     />
@@ -675,12 +675,14 @@ export default function Stickers() {
         }
         
         @keyframes roller-scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); }
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-33.33%, 0, 0); }
         }
         .roller-track {
-          animation: roller-scroll 30s linear infinite;
+          animation: roller-scroll 25s linear infinite;
           will-change: transform;
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
         }
       `}</style>
     </>
