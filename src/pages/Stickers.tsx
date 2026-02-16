@@ -197,7 +197,7 @@ export default function Stickers() {
       <Helmet>
         <title>{isArabic ? 'ملصقات كروليست | كروليست' : 'Krolist Stickers | Krolist'}</title>
         <meta name="description" content={isArabic ? 'اكتشف مجموعة ملصقات كروليست الحصرية' : 'Discover the exclusive Krolist sticker collection'} />
-        <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
       </Helmet>
 
       <div className={`min-h-screen overflow-x-hidden relative bg-black ${isArabic ? 'rtl' : 'ltr'}`}>
@@ -260,7 +260,7 @@ export default function Stickers() {
           >
             <h1
               className="leading-[0.85] tracking-tighter"
-              style={{ fontFamily: "'Permanent Marker', cursive" }}
+              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
             >
               <motion.span
                 className="block text-[15vw] sm:text-[12vw] md:text-[10vw] font-black text-white"
