@@ -209,6 +209,31 @@ export default function Stickers() {
       <div className={`min-h-screen overflow-x-hidden relative bg-black scroll-smooth ${isArabic ? 'rtl' : 'ltr'}`} style={{ willChange: 'auto' }}>
         {pageBgEnabled && <SiteBackground />}
 
+        {/* ─── SLOT MACHINE ROLLER (TOP) ─── */}
+        <section className="relative py-8 overflow-hidden border-b border-white/5">
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-white/[0.02] to-black" />
+          <div className="relative">
+            <div className="relative h-32 sm:h-44 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+              <div className="flex items-center gap-8 sm:gap-12 absolute top-0 h-full roller-track">
+                {slotStickers.map((sticker, i) => (
+                  <div key={`slot-${sticker.id}-${i}`} className="flex-shrink-0 w-28 h-28 sm:w-40 sm:h-40">
+                    <img
+                      src={getOptimizedImageUrl(sticker.image_url)}
+                      alt=""
+                      className="w-full h-full object-contain select-none"
+                      style={{ filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.5))' }}
+                      loading="eager"
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ─── HERO: FULL VIEWPORT ─── */}
         <motion.section
           ref={heroRef}
@@ -307,49 +332,6 @@ export default function Stickers() {
             <ChevronDown className="h-5 w-5" />
           </motion.button>
         </motion.section>
-
-        {/* ─── SLOT MACHINE ROLLER ─── */}
-        <section className="relative py-12 overflow-hidden border-t border-b border-white/5">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-white/[0.02] to-black" />
-          
-          <div className="relative">
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-center text-xs font-bold uppercase tracking-[0.3em] text-white/30 mb-8"
-            >
-              {isArabic ? '— المجموعة —' : '— THE COLLECTION —'}
-            </motion.p>
-
-            {/* Rolling strip */}
-            <div className="relative h-40 sm:h-52 overflow-hidden">
-              {/* Fade edges */}
-              <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-
-              <div
-                className="flex items-center gap-8 sm:gap-12 absolute top-0 h-full roller-track"
-              >
-                {slotStickers.map((sticker, i) => (
-                  <div
-                    key={`slot-${sticker.id}-${i}`}
-                    className="flex-shrink-0 w-28 h-28 sm:w-40 sm:h-40"
-                  >
-                    <img
-                      src={getOptimizedImageUrl(sticker.image_url)}
-                      alt=""
-                      className="w-full h-full object-contain select-none"
-                      style={{ filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.5))' }}
-                      loading="lazy"
-                      draggable={false}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ─── STICKY HEADER (Cart + Filters) ─── */}
         <div className="sticky top-0 z-40 backdrop-blur-2xl bg-black/60 border-b border-white/10">
