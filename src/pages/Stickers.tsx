@@ -218,45 +218,6 @@ export default function Stickers() {
           {/* Subtle radial gradient bg */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.08)_0%,_transparent_70%)]" />
 
-          {/* Floating sticker images */}
-          {heroStickers.map((sticker, i) => {
-            const pos = floatingPositions[i % floatingPositions.length];
-            return (
-              <motion.div
-                key={sticker.id}
-                className={`absolute ${pos.size} pointer-events-none select-none`}
-                style={{
-                  top: pos.top,
-                  left: pos.left,
-                  right: pos.right,
-                }}
-                initial={{ opacity: 0, scale: 0.5, rotate: pos.rotate }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  rotate: pos.rotate,
-                  y: [0, -12, 0],
-                }}
-                transition={{
-                  delay: pos.delay + 0.5,
-                  duration: 0.8,
-                  y: { duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut" },
-                }}
-              >
-                <img
-                  src={getOptimizedImageUrl(sticker.image_url)}
-                  alt=""
-                  className="w-full h-full object-contain"
-                  style={{
-                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))',
-                  }}
-                  loading="eager"
-                  draggable={false}
-                />
-              </motion.div>
-            );
-          })}
-
           {/* BIG TEXT */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -296,6 +257,45 @@ export default function Stickers() {
               </motion.span>
             </h1>
           </motion.div>
+
+          {/* Floating sticker images - IN FRONT of text */}
+          {heroStickers.map((sticker, i) => {
+            const pos = floatingPositions[i % floatingPositions.length];
+            return (
+              <motion.div
+                key={sticker.id}
+                className={`absolute ${pos.size} pointer-events-none select-none z-20`}
+                style={{
+                  top: pos.top,
+                  left: pos.left,
+                  right: pos.right,
+                }}
+                initial={{ opacity: 0, scale: 0.5, rotate: pos.rotate }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  rotate: pos.rotate,
+                  y: [0, -12, 0],
+                }}
+                transition={{
+                  delay: pos.delay + 0.5,
+                  duration: 0.8,
+                  y: { duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut" },
+                }}
+              >
+                <img
+                  src={getOptimizedImageUrl(sticker.image_url)}
+                  alt=""
+                  className="w-full h-full object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.7)) drop-shadow(0 10px 20px rgba(0,0,0,0.4))',
+                  }}
+                  loading="eager"
+                  draggable={false}
+                />
+              </motion.div>
+            );
+          })}
 
           {/* Scroll down indicator */}
           <motion.button
