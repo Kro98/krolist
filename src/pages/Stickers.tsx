@@ -182,14 +182,20 @@ export default function Stickers() {
     gridRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Floating sticker positions - scattered around hero
+  // Floating sticker positions - hugging the corners of the text block
   const floatingPositions = [
-    { top: '12%', left: '5%', size: 'w-28 h-28 sm:w-40 sm:h-40', rotate: -15, delay: 0 },
-    { top: '8%', right: '8%', size: 'w-24 h-24 sm:w-36 sm:h-36', rotate: 12, delay: 0.2 },
-    { top: '55%', left: '3%', size: 'w-20 h-20 sm:w-32 sm:h-32', rotate: -8, delay: 0.4 },
-    { top: '60%', right: '5%', size: 'w-24 h-24 sm:w-36 sm:h-36', rotate: 20, delay: 0.1 },
-    { top: '35%', left: '15%', size: 'w-16 h-16 sm:w-24 sm:h-24', rotate: -25, delay: 0.6 },
-    { top: '30%', right: '12%', size: 'w-20 h-20 sm:w-28 sm:h-28', rotate: 15, delay: 0.3 },
+    // Top-left of KROLIST
+    { top: '28%', left: '8%', size: 'w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44', rotate: -12, delay: 0 },
+    // Top-right of KROLIST
+    { top: '25%', right: '6%', size: 'w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40', rotate: 15, delay: 0.15 },
+    // Bottom-left of STICKERS
+    { top: '58%', left: '4%', size: 'w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36', rotate: -20, delay: 0.3 },
+    // Bottom-right of STICKERS
+    { top: '60%', right: '4%', size: 'w-24 h-24 sm:w-34 sm:h-34 md:w-42 md:h-42', rotate: 18, delay: 0.1 },
+    // Mid-left tucked near text
+    { top: '44%', left: '2%', size: 'w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28', rotate: -30, delay: 0.5 },
+    // Mid-right tucked near text
+    { top: '40%', right: '2%', size: 'w-18 h-18 sm:w-26 sm:h-26 md:w-32 md:h-32', rotate: 22, delay: 0.25 },
   ];
 
   return (
@@ -197,7 +203,7 @@ export default function Stickers() {
       <Helmet>
         <title>{isArabic ? 'ملصقات كروليست | كروليست' : 'Krolist Stickers | Krolist'}</title>
         <meta name="description" content={isArabic ? 'اكتشف مجموعة ملصقات كروليست الحصرية' : 'Discover the exclusive Krolist sticker collection'} />
-        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet" />
       </Helmet>
 
       <div className={`min-h-screen overflow-x-hidden relative bg-black ${isArabic ? 'rtl' : 'ltr'}`}>
@@ -259,11 +265,11 @@ export default function Stickers() {
             className="relative z-10 text-center select-none"
           >
             <h1
-              className="leading-[0.85] tracking-tighter"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="leading-[0.82] tracking-[-0.06em]"
+              style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900 }}
             >
               <motion.span
-                className="block text-[15vw] sm:text-[12vw] md:text-[10vw] font-black text-white"
+                className="block text-[20vw] sm:text-[16vw] md:text-[14vw] text-white uppercase"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
@@ -274,7 +280,7 @@ export default function Stickers() {
                 KROLIST
               </motion.span>
               <motion.span
-                className="block text-[18vw] sm:text-[14vw] md:text-[12vw] font-black"
+                className="block text-[22vw] sm:text-[18vw] md:text-[16vw] uppercase"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
