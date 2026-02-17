@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAdSlots } from "@/hooks/useAdSlots";
@@ -21,6 +22,8 @@ interface InterstitialAdProps {
 const COUNTDOWN_SECONDS = 5;
 
 export function InterstitialAd({ open, onClose, targetUrl, productTitle }: InterstitialAdProps) {
+  const { language } = useLanguage();
+  const isArabic = language === 'ar';
   const { slots, loading } = useAdSlots();
   const adRef = useRef<HTMLModElement>(null);
   const adPushed = useRef(false);
@@ -73,7 +76,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Redirecting you to
+              {isArabic ? 'جاري نقلك إلى' : 'Redirecting you to'}
             </p>
             {productTitle && (
               <p className="text-sm font-semibold text-foreground truncate mt-0.5">
@@ -113,7 +116,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
                   <ExternalLink className="w-5 h-5 text-primary" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Taking you to the store...
+                  {isArabic ? 'جاري نقلك للمتجر...' : 'Taking you to the store...'}
                 </p>
               </div>
             )}
@@ -132,7 +135,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
               >
                 <Button onClick={handleContinue} className="w-full gap-2">
                   <ExternalLink className="w-4 h-4" />
-                  Continue to Store
+                  {isArabic ? 'الذهاب للمتجر' : 'Continue to Store'}
                 </Button>
               </motion.div>
             ) : (
@@ -167,7 +170,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Please wait...
+                  {isArabic ? 'انتظر لحظة...' : 'Please wait...'}
                 </p>
               </motion.div>
             )}

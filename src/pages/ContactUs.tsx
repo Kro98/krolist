@@ -17,7 +17,8 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 );
 
 export default function ContactUs() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
   const navigate = useNavigate();
   
   return (
@@ -80,7 +81,7 @@ export default function ContactUs() {
                   className="w-full bg-green-500 hover:bg-green-600"
                   onClick={() => window.open('https://whatsapp.com/channel/0029VbBpXPrAO7RImVlY0v3t', '_blank')}
                 >
-                  Join Channel
+                  {language === 'ar' ? 'انضم للقناة' : 'Join Channel'}
                 </Button>
               </div>
             </Card>
