@@ -182,74 +182,147 @@ async function getAmazonPrice(asin: string): Promise<{ price: number; originalPr
   }
 }
 
-// ============= Firecrawl fallback =============
-async function getAmazonPriceViaFirecrawl(productUrl: string): Promise<{ price: number; originalPrice?: number } | null> {
-  const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
-  if (!firecrawlApiKey) {
-    console.log('[Firecrawl] API key not configured, skipping fallback');
-    return null;
+// ============= Free direct scraper fallback =============
+function extractPriceFromHtml(html: string): { price: number; originalPrice?: number } | null {
+  // Strategy 1: Look for priceblock / apex price spans (common Amazon patterns)
+  const pricePatterns = [
+    // Amazon .sa / .ae / .com price whole + fraction
+    /class="a-price-whole"[^>]*>([0-9,\.]+)<.*?class="a-price-fraction"[^>]*>(\d+)</s,
+    // corePriceDisplay
+    /corePriceDisplay_desktop_feature_div.*?class="a-price-whole"[^>]*>([0-9,\.]+)<.*?class="a-price-fraction"[^>]*>(\d+)</s,
+    // a-price aok-align-center
+    /class="a-price aok-align-center[^"]*"[^>]*>.*?class="a-offscreen"[^>]*>([^<]+)</s,
+    // a-offscreen (first match is usually the current price)
+    /class="a-offscreen"[^>]*>\s*(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    // priceblock_ourprice
+    /id="priceblock_ourprice"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    // priceblock_dealprice
+    /id="priceblock_dealprice"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    // apex price
+    /id="price_inside_buybox"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    // twister price
+    /id="newBuyBoxPrice"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    // JSON-LD price
+    /"price"\s*:\s*"?([0-9,]+\.?\d*)"?/,
+  ];
+
+  let price = 0;
+  
+  for (const pattern of pricePatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      if (match[2]) {
+        // whole + fraction pattern
+        price = parseFloat(match[1].replace(/,/g, '') + '.' + match[2]);
+      } else {
+        price = parseFloat(match[1].replace(/,/g, ''));
+      }
+      if (price > 0) break;
+    }
   }
 
-  try {
-    console.log(`[Firecrawl] Scraping price from: ${productUrl}`);
+  if (price <= 0) return null;
 
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: productUrl,
-        formats: [
-          {
-            type: 'json',
-            schema: {
-              type: 'object',
-              properties: {
-                current_price: { type: 'number', description: 'The current selling price of the product in the local currency (SAR/AED/USD)' },
-                original_price: { type: 'number', description: 'The original/list price before discount, if shown. Null if no discount.' },
-                currency: { type: 'string', description: 'The currency code (e.g. SAR, AED, USD)' },
-                availability: { type: 'string', description: 'Product availability status' },
-              },
-              required: ['current_price'],
-            },
-            prompt: 'Extract the current selling price of this Amazon product. If there is a strikethrough/original price, extract that too. Return prices as numbers without currency symbols.',
-          }
-        ],
-        onlyMainContent: true,
-        waitFor: 3000,
-      }),
-    });
+  // Try to find original/strikethrough price
+  let originalPrice: number | undefined;
+  const origPatterns = [
+    /class="a-text-price"[^>]*>.*?class="a-offscreen"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/s,
+    /class="a-price a-text-price"[^>]*>.*?class="a-offscreen"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/s,
+    /class="priceBlockStrikePriceString[^"]*"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    /"listPrice"\s*:\s*"?([0-9,]+\.?\d*)"?/,
+  ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[Firecrawl] API error ${response.status}:`, errorText);
-      return null;
+  for (const pattern of origPatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      const op = parseFloat(match[1].replace(/,/g, ''));
+      if (op > price) {
+        originalPrice = op;
+        break;
+      }
     }
-
-    const data = await response.json();
-    const extracted = data?.data?.json || data?.json;
-
-    if (!extracted) {
-      console.log('[Firecrawl] No structured data extracted');
-      return null;
-    }
-
-    const price = parseFloat(extracted.current_price);
-    const originalPrice = extracted.original_price ? parseFloat(extracted.original_price) : undefined;
-
-    if (price && price > 0) {
-      console.log(`[Firecrawl] ✓ Extracted price: ${price}${originalPrice ? ` (was ${originalPrice})` : ''}`);
-      return { price, originalPrice };
-    }
-
-    console.log('[Firecrawl] Could not extract a valid price from scraped data');
-    return null;
-  } catch (error) {
-    console.error('[Firecrawl] Error scraping:', error);
-    return null;
   }
+
+  return { price, originalPrice };
+}
+
+async function getAmazonPriceViaScraper(productUrl: string, retries = 2): Promise<{ price: number; originalPrice?: number } | null> {
+  // Build a clean Amazon URL from the ASIN to avoid redirects
+  const asin = extractASIN(productUrl);
+  let scrapeUrl = productUrl;
+  if (asin) {
+    // Determine the domain from the original URL
+    try {
+      const parsed = new URL(productUrl);
+      scrapeUrl = `https://${parsed.hostname}/dp/${asin}`;
+    } catch {
+      // Keep original URL
+    }
+  }
+
+  const userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  ];
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const ua = userAgents[attempt % userAgents.length];
+      console.log(`[Scraper] Attempt ${attempt + 1} for: ${scrapeUrl}`);
+
+      const response = await fetch(scrapeUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': ua,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+          'Accept-Encoding': 'identity',
+          'Cache-Control': 'no-cache',
+        },
+        redirect: 'follow',
+      });
+
+      if (!response.ok) {
+        console.error(`[Scraper] HTTP ${response.status} for ${scrapeUrl}`);
+        await response.text(); // consume body
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
+        return null;
+      }
+
+      const html = await response.text();
+      
+      if (html.length < 5000) {
+        console.log(`[Scraper] Response too short (${html.length} chars), likely captcha/block`);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          continue;
+        }
+        return null;
+      }
+
+      const result = extractPriceFromHtml(html);
+      if (result) {
+        console.log(`[Scraper] ✓ Extracted price: ${result.price}${result.originalPrice ? ` (was ${result.originalPrice})` : ''}`);
+        return result;
+      }
+
+      console.log(`[Scraper] Could not extract price from HTML (attempt ${attempt + 1})`);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    } catch (error) {
+      console.error(`[Scraper] Error on attempt ${attempt + 1}:`, error);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  }
+
+  return null;
 }
 
 interface Product {
@@ -422,14 +495,14 @@ serve(async (req) => {
               }
             }
 
-            // Firecrawl fallback if PA-API didn't return a price
+            // Free scraper fallback if PA-API didn't return a price
             if (!newPrice || newPrice <= 0) {
-              console.log(`[Auto-Update] Trying Firecrawl fallback for ${product.title}`);
-              const firecrawlResult = await getAmazonPriceViaFirecrawl(product.product_url);
-              if (firecrawlResult && firecrawlResult.price > 0) {
-                newPrice = firecrawlResult.price;
-                priceSource = 'firecrawl';
-                console.log(`[Auto-Update] ✓ Firecrawl returned price: ${newPrice}`);
+              console.log(`[Auto-Update] Trying direct scraper for ${product.title}`);
+              const scraperResult = await getAmazonPriceViaScraper(product.product_url);
+              if (scraperResult && scraperResult.price > 0) {
+                newPrice = scraperResult.price;
+                priceSource = 'scraper';
+                console.log(`[Auto-Update] ✓ Scraper returned price: ${newPrice}`);
               }
             }
           }
@@ -469,8 +542,8 @@ serve(async (req) => {
               console.log(`[Auto-Update] ✓ Updated ${product.title}: ${product.current_price} → ${newPrice} (via ${priceSource})`);
             }
           } else {
-            console.error(`[Auto-Update] Could not fetch price for ${product.title} (PA-API + Firecrawl both failed)`);
-            result.error = 'Could not fetch price from PA-API or Firecrawl';
+            console.error(`[Auto-Update] Could not fetch price for ${product.title} (PA-API + scraper both failed)`);
+            result.error = 'Could not fetch price from PA-API or scraper';
             failed++;
           }
         } catch (error) {
@@ -481,8 +554,8 @@ serve(async (req) => {
 
         results.push(result);
 
-        // Slightly longer delay for Firecrawl to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, paApiEligible ? 500 : 1500));
+        // Delay between requests to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, paApiEligible ? 500 : 2000));
       }
 
       if (priceHistoryRecords.length > 0) {
