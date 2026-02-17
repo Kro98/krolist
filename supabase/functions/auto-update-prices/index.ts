@@ -100,8 +100,13 @@ async function signAmazonRequest(
   return { authorization, amzDate };
 }
 
-// Get price for a single Amazon product by ASIN
+// Track whether PA-API is eligible (skip all PA-API calls once we know it's not)
+let paApiEligible = true;
+
+// Get price for a single Amazon product by ASIN via PA-API
 async function getAmazonPrice(asin: string): Promise<{ price: number; originalPrice?: number } | null> {
+  if (!paApiEligible) return null;
+
   const { accessKey, secretKey, affiliateTag } = AFFILIATE_CONFIG.amazon;
   
   if (!accessKey || !secretKey) {
@@ -146,6 +151,12 @@ async function getAmazonPrice(asin: string): Promise<{ price: number; originalPr
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Amazon PA-API failed for ASIN ${asin}: ${response.status}`, errorText);
+      
+      // If AssociateNotEligible, disable PA-API for the rest of this run
+      if (errorText.includes('AssociateNotEligible')) {
+        console.log('[Auto-Update] PA-API not eligible — switching to Firecrawl fallback for all remaining products');
+        paApiEligible = false;
+      }
       return null;
     }
     
@@ -171,6 +182,76 @@ async function getAmazonPrice(asin: string): Promise<{ price: number; originalPr
   }
 }
 
+// ============= Firecrawl fallback =============
+async function getAmazonPriceViaFirecrawl(productUrl: string): Promise<{ price: number; originalPrice?: number } | null> {
+  const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+  if (!firecrawlApiKey) {
+    console.log('[Firecrawl] API key not configured, skipping fallback');
+    return null;
+  }
+
+  try {
+    console.log(`[Firecrawl] Scraping price from: ${productUrl}`);
+
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: productUrl,
+        formats: [
+          {
+            type: 'json',
+            schema: {
+              type: 'object',
+              properties: {
+                current_price: { type: 'number', description: 'The current selling price of the product in the local currency (SAR/AED/USD)' },
+                original_price: { type: 'number', description: 'The original/list price before discount, if shown. Null if no discount.' },
+                currency: { type: 'string', description: 'The currency code (e.g. SAR, AED, USD)' },
+                availability: { type: 'string', description: 'Product availability status' },
+              },
+              required: ['current_price'],
+            },
+            prompt: 'Extract the current selling price of this Amazon product. If there is a strikethrough/original price, extract that too. Return prices as numbers without currency symbols.',
+          }
+        ],
+        onlyMainContent: true,
+        waitFor: 3000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Firecrawl] API error ${response.status}:`, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const extracted = data?.data?.json || data?.json;
+
+    if (!extracted) {
+      console.log('[Firecrawl] No structured data extracted');
+      return null;
+    }
+
+    const price = parseFloat(extracted.current_price);
+    const originalPrice = extracted.original_price ? parseFloat(extracted.original_price) : undefined;
+
+    if (price && price > 0) {
+      console.log(`[Firecrawl] ✓ Extracted price: ${price}${originalPrice ? ` (was ${originalPrice})` : ''}`);
+      return { price, originalPrice };
+    }
+
+    console.log('[Firecrawl] Could not extract a valid price from scraped data');
+    return null;
+  } catch (error) {
+    console.error('[Firecrawl] Error scraping:', error);
+    return null;
+  }
+}
+
 interface Product {
   id: string;
   product_url: string;
@@ -188,6 +269,7 @@ interface UpdateResult {
   newPrice: number;
   success: boolean;
   error?: string;
+  source?: string;
 }
 
 // Helper to broadcast progress via Supabase Realtime
@@ -225,14 +307,15 @@ serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+  // Reset PA-API eligibility flag per invocation
+  paApiEligible = true;
+
   try {
-    // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')!;
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Verify the user is authenticated
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       console.error('Authentication error:', userError);
@@ -242,7 +325,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is admin
     const { data: isAdmin, error: roleError } = await supabase.rpc('has_role', {
       _user_id: user.id,
       _role: 'admin'
@@ -256,16 +338,12 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
     const { collection_title, session_id } = await req.json().catch(() => ({}));
-    
-    // Generate session ID if not provided
     const sessionId = session_id || crypto.randomUUID();
 
     console.log('[Auto-Update] Starting price auto-update for:', collection_title || 'ALL collections');
     console.log('[Auto-Update] Session ID:', sessionId);
 
-    // Build query for krolist products (only Amazon products)
     let query = supabase
       .from('krolist_products')
       .select('id, product_url, current_price, original_price, title, store, currency')
@@ -298,7 +376,6 @@ serve(async (req) => {
       );
     }
 
-    // Background task for price updates with progress broadcasting
     const backgroundTask = async () => {
       const results: UpdateResult[] = [];
       let updated = 0;
@@ -317,7 +394,6 @@ serve(async (req) => {
           success: false
         };
 
-        // Broadcast current progress
         await broadcastProgress(supabase, sessionId, {
           current: i + 1,
           total,
@@ -330,29 +406,41 @@ serve(async (req) => {
 
         try {
           let newPrice: number | null = null;
+          let priceSource = 'pa-api';
 
-          // Get price from Amazon PA-API
           if (isAmazonProductUrl(product.product_url)) {
             const asin = extractASIN(product.product_url);
-            if (asin) {
+
+            // Try PA-API first (skipped automatically if already marked ineligible)
+            if (asin && paApiEligible) {
               console.log(`[Auto-Update] Fetching Amazon PA-API for ${product.title} (ASIN: ${asin})`);
               const amazonResult = await getAmazonPrice(asin);
               if (amazonResult && amazonResult.price > 0) {
                 newPrice = amazonResult.price;
-                console.log(`[Auto-Update] ✓ Amazon PA-API returned price: ${newPrice}`);
+                priceSource = 'pa-api';
+                console.log(`[Auto-Update] ✓ PA-API returned price: ${newPrice}`);
+              }
+            }
+
+            // Firecrawl fallback if PA-API didn't return a price
+            if (!newPrice || newPrice <= 0) {
+              console.log(`[Auto-Update] Trying Firecrawl fallback for ${product.title}`);
+              const firecrawlResult = await getAmazonPriceViaFirecrawl(product.product_url);
+              if (firecrawlResult && firecrawlResult.price > 0) {
+                newPrice = firecrawlResult.price;
+                priceSource = 'firecrawl';
+                console.log(`[Auto-Update] ✓ Firecrawl returned price: ${newPrice}`);
               }
             }
           }
 
           if (newPrice && newPrice > 0) {
-            // Check if price actually changed
             if (Math.abs(newPrice - product.current_price) < 0.01) {
               console.log(`[Auto-Update] Price unchanged for ${product.title}`);
               skipped++;
               continue;
             }
 
-            // Update the product price
             const { error: updateError } = await supabase
               .from('krolist_products')
               .update({
@@ -368,9 +456,9 @@ serve(async (req) => {
             } else {
               result.newPrice = newPrice;
               result.success = true;
+              result.source = priceSource;
               updated++;
 
-              // Record price history
               priceHistoryRecords.push({
                 product_id: product.id,
                 price: newPrice,
@@ -378,11 +466,11 @@ serve(async (req) => {
                 currency: product.currency || 'SAR'
               });
 
-              console.log(`[Auto-Update] ✓ Updated ${product.title}: ${product.current_price} → ${newPrice}`);
+              console.log(`[Auto-Update] ✓ Updated ${product.title}: ${product.current_price} → ${newPrice} (via ${priceSource})`);
             }
           } else {
-            console.error(`[Auto-Update] Could not fetch price for ${product.title}`);
-            result.error = 'Could not fetch price from Amazon PA-API';
+            console.error(`[Auto-Update] Could not fetch price for ${product.title} (PA-API + Firecrawl both failed)`);
+            result.error = 'Could not fetch price from PA-API or Firecrawl';
             failed++;
           }
         } catch (error) {
@@ -393,11 +481,10 @@ serve(async (req) => {
 
         results.push(result);
 
-        // Add small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Slightly longer delay for Firecrawl to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, paApiEligible ? 500 : 1500));
       }
 
-      // Insert price history records
       if (priceHistoryRecords.length > 0) {
         const { error: historyError } = await supabase
           .from('krolist_price_history')
@@ -408,7 +495,6 @@ serve(async (req) => {
         }
       }
 
-      // Create global notification if prices were updated
       if (updated > 0) {
         await supabase.from('global_notifications').insert({
           type: 'price_update',
@@ -420,7 +506,6 @@ serve(async (req) => {
         });
       }
 
-      // Broadcast completion
       await broadcastProgress(supabase, sessionId, {
         current: total,
         total,
@@ -435,14 +520,12 @@ serve(async (req) => {
       console.log(`[Auto-Update] Complete. Updated: ${updated}, Failed: ${failed}, Skipped: ${skipped}`);
     };
 
-    // Start background task
     EdgeRuntime.waitUntil(backgroundTask());
 
-    // Return immediate response with session ID
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Auto-update started for ${products.length} Amazon products.`,
+        message: `Auto-update started for ${products.length} Amazon products (with Firecrawl fallback).`,
         products_count: products.length,
         collection: collection_title || 'ALL',
         session_id: sessionId
