@@ -82,6 +82,7 @@ export default function KrolistProductsManager() {
     message?: string;
   } | null>(null);
   const [autoUpdateSessionId, setAutoUpdateSessionId] = useState<string | null>(null);
+  const [scraperUpdatedIds, setScraperUpdatedIds] = useState<Set<string>>(new Set());
   
   // Manual price update progress state
   const [isSavingPrices, setIsSavingPrices] = useState(false);
@@ -159,6 +160,7 @@ export default function KrolistProductsManager() {
   // Handle auto-update prices using Amazon PA-API + Firecrawl fallback
   const handleAutoUpdatePrices = async () => {
     setIsAutoUpdating(true);
+    setScraperUpdatedIds(new Set());
     const sessionId = crypto.randomUUID();
     setAutoUpdateSessionId(sessionId);
     setAutoUpdateProgress({
@@ -186,6 +188,11 @@ export default function KrolistProductsManager() {
         });
         
         if (payload.status === 'completed') {
+          // Track scraper-updated product IDs for green highlighting
+          if (payload.scraperUpdatedIds && Array.isArray(payload.scraperUpdatedIds)) {
+            setScraperUpdatedIds(new Set(payload.scraperUpdatedIds));
+          }
+          
           toast({
             title: 'Auto-update completed',
             description: payload.message || `Updated: ${payload.updated}, Failed: ${payload.failed}, Skipped: ${payload.skipped}`
@@ -798,7 +805,7 @@ export default function KrolistProductsManager() {
                   )}
                   <h4 className="font-medium text-sm line-clamp-2">{product.title}</h4>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <p className="text-primary font-bold">{product.current_price} {product.currency}</p>
+                    <p className={`font-bold ${scraperUpdatedIds.has(product.id) ? 'text-green-500' : 'text-primary'}`}>{product.current_price} {product.currency}</p>
                     {product.discountPct > 0 && (
                       <Badge className={`text-[10px] px-1.5 py-0 ${
                         aura === 'golden'

@@ -464,6 +464,7 @@ serve(async (req) => {
       let failed = 0;
       let skipped = 0;
       const priceHistoryRecords: any[] = [];
+      const scraperUpdatedIds: string[] = [];
       const total = products.length;
 
       for (let i = 0; i < (products as Product[]).length; i++) {
@@ -485,6 +486,7 @@ serve(async (req) => {
           failed,
           skipped
         });
+
 
         try {
           let newPrice: number | null = null;
@@ -549,6 +551,9 @@ serve(async (req) => {
               });
 
               console.log(`[Auto-Update] ✓ Updated ${product.title}: ${product.current_price} → ${newPrice} (via ${priceSource})`);
+              if (priceSource === 'scraper') {
+                scraperUpdatedIds.push(product.id);
+              }
             }
           } else {
             console.error(`[Auto-Update] Could not fetch price for ${product.title} (PA-API + scraper both failed)`);
@@ -596,6 +601,7 @@ serve(async (req) => {
         updated,
         failed,
         skipped,
+        scraperUpdatedIds,
         message: `Completed! Updated: ${updated}, Failed: ${failed}, Skipped: ${skipped}`
       });
 
