@@ -806,6 +806,11 @@ export default function KrolistProductsManager() {
                   <h4 className="font-medium text-sm line-clamp-2">{product.title}</h4>
                   <div className="flex items-baseline gap-2 mt-1">
                     <p className={`font-bold ${scraperUpdatedIds.has(product.id) ? 'text-green-500' : 'text-primary'}`}>{product.current_price} {product.currency}</p>
+                    {scraperUpdatedIds.has(product.id) && (
+                      <Badge className="text-[9px] px-1 py-0 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30 animate-pulse">
+                        scraped
+                      </Badge>
+                    )}
                     {product.discountPct > 0 && (
                       <Badge className={`text-[10px] px-1.5 py-0 ${
                         aura === 'golden'
