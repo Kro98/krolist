@@ -327,8 +327,8 @@ export default function KrolistProductsManager() {
         }
         
         const hasDiscount = product.originalPrice && product.originalPrice > product.price;
-        const currentPrice = hasDiscount ? product.price.toString() : '';
-        const originalPrice = hasDiscount ? product.originalPrice.toString() : product.price.toString();
+        const currentPrice = product.price ? product.price.toString() : '';
+        const originalPrice = hasDiscount ? product.originalPrice.toString() : '';
         
         setFormData(prev => ({
           ...prev,
