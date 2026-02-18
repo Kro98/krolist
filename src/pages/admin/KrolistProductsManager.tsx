@@ -1255,7 +1255,14 @@ export default function KrolistProductsManager() {
                     </CardHeader>
                     <CardContent className="pt-0 space-y-2 px-[5px] mx-[2px]">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Previous: {prods[0].current_price} {prods[0].currency}</span>
+                        <span className={`flex items-center gap-1 ${scraperUpdatedIds.has(prods[0].id) ? 'text-green-500 font-medium' : ''}`}>
+                          Previous: {prods[0].current_price} {prods[0].currency}
+                          {scraperUpdatedIds.has(prods[0].id) && (
+                            <Badge className="text-[8px] px-1 py-0 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30 animate-pulse">
+                              scraped
+                            </Badge>
+                          )}
+                        </span>
                         <span>Original: {prods[0].original_price} {prods[0].currency}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1358,8 +1365,13 @@ export default function KrolistProductsManager() {
                         </td>
                         <td className="p-3">
                           <div>
-                            <span className="font-semibold">
+                            <span className={`font-semibold flex items-center gap-1 ${scraperUpdatedIds.has(prods[0].id) ? 'text-green-500' : ''}`}>
                               {prods[0].current_price} {prods[0].currency}
+                              {scraperUpdatedIds.has(prods[0].id) && (
+                                <Badge className="text-[9px] px-1 py-0 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30 animate-pulse">
+                                  scraped
+                                </Badge>
+                              )}
                             </span>
                             <p className="text-xs text-muted-foreground">
                               Original: {prods[0].original_price} {prods[0].currency}
