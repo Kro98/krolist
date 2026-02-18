@@ -489,11 +489,37 @@ serve(async (req) => {
       let updated = 0;
       let failed = 0;
       let skipped = 0;
+      let cancelled = false;
       const priceHistoryRecords: any[] = [];
       const scraperUpdatedIds: string[] = [];
       const total = products.length;
 
+      // Listen for cancel events on the same channel
+      const cancelChannel = supabase.channel(`auto-update-cancel-${sessionId}`)
+        .on('broadcast', { event: 'cancel' }, () => {
+          console.log('[Auto-Update] Cancel requested by user');
+          cancelled = true;
+        })
+        .subscribe();
+
       for (let i = 0; i < (products as Product[]).length; i++) {
+        if (cancelled) {
+          console.log(`[Auto-Update] Cancelled at product ${i + 1}/${total}`);
+          await broadcastProgress(supabase, sessionId, {
+            current: i,
+            total,
+            currentProduct: '',
+            status: 'completed',
+            updated,
+            failed,
+            skipped: skipped + (total - i),
+            scraperUpdatedIds,
+            message: `Cancelled. Updated: ${updated}, Failed: ${failed}, Skipped: ${skipped + (total - i)}`
+          });
+          cancelChannel.unsubscribe();
+          return;
+        }
+
         const product = (products as Product[])[i];
         const result: UpdateResult = {
           id: product.id,
@@ -618,6 +644,8 @@ serve(async (req) => {
           data: { updatedCount: updated, timestamp: new Date().toISOString() }
         });
       }
+
+      cancelChannel.unsubscribe();
 
       await broadcastProgress(supabase, sessionId, {
         current: total,
