@@ -351,10 +351,20 @@ function extractProductDetailsFromHtml(html: string, url: string): { title: stri
     /"large"\s*:\s*"([^"]+images\/I\/[^"]+)"/,
     /data-old-hires="([^"]+)"/,
     /class="a-dynamic-image"[^>]*src="([^"]+)"/,
+    // Mobile patterns
+    /id="main-image-widget"[^>]*>.*?<img[^>]*src="([^"]+)"/s,
+    /id="aw-image-wrapper"[^>]*>.*?<img[^>]*src="([^"]+)"/s,
+    /<img[^>]*id="[^"]*[Ii]mage[^"]*"[^>]*src="([^"]+)"/,
+    // OG image (reliable fallback)
+    /<meta\s+property="og:image"\s+content="([^"]+)"/i,
+    /<meta\s+content="([^"]+)"\s+property="og:image"/i,
+    // Any Amazon product image
+    /src="(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+)"/,
+    /src="(https:\/\/images-na\.ssl-images-amazon\.com\/images\/I\/[^"]+)"/,
   ];
   for (const p of imagePatterns) {
     const m = html.match(p);
-    if (m && m[1].startsWith('http')) {
+    if (m && m[1] && m[1].startsWith('http')) {
       image = m[1];
       break;
     }
