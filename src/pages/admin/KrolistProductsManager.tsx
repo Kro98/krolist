@@ -309,10 +309,10 @@ export default function KrolistProductsManager() {
 
       if (error) throw error;
 
-      if (data?.errorCode === 'API_NOT_ELIGIBLE' || data?.success === false) {
+      if (data?.success === false) {
         toast({
           title: 'Auto-fill Unavailable',
-          description: 'Amazon PA-API requires 3 qualifying sales in 180 days. Please enter details manually.',
+          description: data?.error || 'Could not fetch product details. Please enter manually.',
           variant: 'default'
         });
         return;
@@ -344,7 +344,7 @@ export default function KrolistProductsManager() {
 
         toast({
           title: 'Auto-fill successful',
-          description: 'Product details have been loaded from Amazon'
+          description: `Product details loaded${data.source === 'scraper' ? ' via scraper (PA-API unavailable)' : ' from Amazon'}`
         });
       } else {
         toast({
