@@ -295,6 +295,172 @@ async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<{ prod
   }
 }
 
+// ============= Free HTML scraper fallback for auto-fill =============
+function extractProductDetailsFromHtml(html: string, url: string): { title: string; image: string; price: number; originalPrice?: number } | null {
+  // Extract title
+  let title = '';
+  const titlePatterns = [
+    /id="productTitle"[^>]*>\s*([^<]+)/s,
+    /id="title"[^>]*>\s*([^<]+)/s,
+    /<title[^>]*>([^<]+)/,
+    /"name"\s*:\s*"([^"]+)"/,
+  ];
+  for (const p of titlePatterns) {
+    const m = html.match(p);
+    if (m && m[1].trim().length > 5) {
+      title = m[1].trim().replace(/\s+/g, ' ');
+      // Remove "Amazon.sa" suffix from <title>
+      title = title.replace(/\s*[-–|:]\s*Amazon\.\w+.*$/i, '').trim();
+      if (title.length > 200) title = title.substring(0, 199) + '...';
+      break;
+    }
+  }
+
+  // Extract image
+  let image = '';
+  const imagePatterns = [
+    /id="landingImage"[^>]*src="([^"]+)"/,
+    /id="imgBlkFront"[^>]*src="([^"]+)"/,
+    /id="main-image"[^>]*src="([^"]+)"/,
+    /"hiRes"\s*:\s*"([^"]+)"/,
+    /"large"\s*:\s*"([^"]+images\/I\/[^"]+)"/,
+    /data-old-hires="([^"]+)"/,
+    /class="a-dynamic-image"[^>]*src="([^"]+)"/,
+  ];
+  for (const p of imagePatterns) {
+    const m = html.match(p);
+    if (m && m[1].startsWith('http')) {
+      image = m[1];
+      break;
+    }
+  }
+
+  // Extract price (reuse patterns from auto-update-prices)
+  const pricePatterns = [
+    /class="a-price-whole"[^>]*>([0-9,\.]+)<.*?class="a-price-fraction"[^>]*>(\d+)</s,
+    /corePriceDisplay_desktop_feature_div.*?class="a-price-whole"[^>]*>([0-9,\.]+)<.*?class="a-price-fraction"[^>]*>(\d+)</s,
+    /class="a-offscreen"[^>]*>\s*(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    /id="priceblock_ourprice"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    /id="priceblock_dealprice"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/,
+    /"price"\s*:\s*"?([0-9,]+\.?\d*)"?/,
+  ];
+
+  let price = 0;
+  for (const pattern of pricePatterns) {
+    const m = html.match(pattern);
+    if (m) {
+      if (m[2]) {
+        price = parseFloat(m[1].replace(/,/g, '') + '.' + m[2]);
+      } else {
+        price = parseFloat(m[1].replace(/,/g, ''));
+      }
+      if (price > 0) break;
+    }
+  }
+
+  // Extract original/strikethrough price
+  let originalPrice: number | undefined;
+  const origPatterns = [
+    /class="a-text-price"[^>]*>.*?class="a-offscreen"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/s,
+    /class="a-price a-text-price"[^>]*>.*?class="a-offscreen"[^>]*>(?:SAR|AED|USD|€|\$|£)?\s*([0-9,]+\.?\d*)/s,
+    /"listPrice"\s*:\s*"?([0-9,]+\.?\d*)"?/,
+  ];
+  for (const pattern of origPatterns) {
+    const m = html.match(pattern);
+    if (m) {
+      const op = parseFloat(m[1].replace(/,/g, ''));
+      if (op > price) { originalPrice = op; break; }
+    }
+  }
+
+  if (!title && price <= 0) return null;
+
+  return { title, image, price, originalPrice };
+}
+
+async function scrapeAmazonProductForAutoFill(productUrl: string): Promise<{ title: string; image: string; price: number; originalPrice?: number; productUrl: string } | null> {
+  const asin = extractASIN(productUrl);
+  let domain = 'www.amazon.sa';
+  try { domain = new URL(productUrl).hostname; } catch {}
+
+  // Try mobile URL first (less blocking), then desktop
+  const urls: string[] = [];
+  if (asin) {
+    urls.push(`https://${domain}/gp/aw/d/${asin}`);
+    urls.push(`https://${domain}/dp/${asin}`);
+  } else {
+    urls.push(productUrl);
+  }
+
+  const mobileUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+  const desktopUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
+  for (const scrapeUrl of urls) {
+    const isMobile = scrapeUrl.includes('/gp/aw/d/');
+    
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        console.log(`[AutoFill Scraper] Attempt ${attempt + 1} (${isMobile ? 'mobile' : 'desktop'}) for: ${scrapeUrl}`);
+        
+        const response = await fetch(scrapeUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': isMobile ? mobileUA : desktopUA,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+            'Accept-Encoding': 'identity',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Referer': `https://${domain}/`,
+          },
+          redirect: 'follow',
+        });
+
+        if (!response.ok) {
+          await response.text();
+          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          continue;
+        }
+
+        const html = await response.text();
+        if (html.length < 3000) {
+          console.log(`[AutoFill Scraper] Response too short (${html.length} chars)`);
+          await new Promise(r => setTimeout(r, 4000 * (attempt + 1)));
+          continue;
+        }
+
+        const result = extractProductDetailsFromHtml(html, scrapeUrl);
+        if (result && (result.title || result.price > 0)) {
+          const affiliateTag = Deno.env.get('AMAZON_PARTNER_TAG') || 'krolist07-21';
+          const cleanUrl = asin ? `https://${domain}/dp/${asin}?tag=${affiliateTag}` : productUrl;
+          
+          console.log(`[AutoFill Scraper] ✓ Title: ${result.title.substring(0, 50)}..., Price: ${result.price}`);
+          return {
+            title: result.title,
+            image: result.image,
+            price: result.price,
+            originalPrice: result.originalPrice,
+            productUrl: cleanUrl,
+          };
+        }
+
+        console.log(`[AutoFill Scraper] Could not extract details (attempt ${attempt + 1})`);
+        await new Promise(r => setTimeout(r, 3000));
+      } catch (error) {
+        console.error(`[AutoFill Scraper] Error:`, error);
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+  }
+
+  return null;
+}
+
 async function searchAmazonAPI(query: string, retryCount = 0): Promise<ScrapedProduct[]> {
   console.log(`Searching Amazon PA-API for query: ${query}`);
   
@@ -533,40 +699,61 @@ serve(async (req) => {
       
       console.log(`Auto-fill request for ASIN: ${asin}`);
       
+      // Try PA-API first
       const result = await getAmazonItemByASIN(asin);
       
-      if (!result.product) {
-        // Return 200 with error info so frontend can parse it properly
-        // Non-2xx responses cause Supabase client to throw before parsing body
+      if (result.product) {
+        // PA-API succeeded
+        const seller = result.product.sellers[0];
         return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: result.error || 'Could not fetch product details from Amazon',
-            errorCode: result.errorCode,
-            suggestion: 'Please enter product details manually'
+          JSON.stringify({
+            success: true,
+            source: 'pa-api',
+            product: {
+              title: result.product.title,
+              image: result.product.image,
+              price: seller.price,
+              originalPrice: seller.originalPrice,
+              productUrl: seller.productUrl,
+              store: 'Amazon',
+            }
           }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
       
-      // Return product data formatted for auto-fill
-      const seller = result.product.sellers[0];
+      // PA-API failed — try free scraper fallback
+      console.log(`[AutoFill] PA-API failed (${result.errorCode}), trying scraper fallback...`);
+      
+      const scraperResult = await scrapeAmazonProductForAutoFill(url);
+      
+      if (scraperResult && (scraperResult.title || scraperResult.price > 0)) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            source: 'scraper',
+            product: {
+              title: scraperResult.title,
+              image: scraperResult.image,
+              price: scraperResult.price,
+              originalPrice: scraperResult.originalPrice,
+              productUrl: scraperResult.productUrl,
+              store: 'Amazon',
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
+      
+      // Both methods failed
       return new Response(
-        JSON.stringify({
-          success: true,
-          product: {
-            title: result.product.title,
-            image: result.product.image,
-            price: seller.price,
-            originalPrice: seller.originalPrice,
-            productUrl: seller.productUrl,
-            store: 'Amazon',
-          }
+        JSON.stringify({ 
+          success: false,
+          error: 'Could not fetch product details from Amazon (PA-API and scraper both failed)',
+          errorCode: result.errorCode || 'SCRAPER_FAILED',
+          suggestion: 'Please enter product details manually'
         }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
