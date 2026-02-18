@@ -333,6 +333,7 @@ export default function KrolistProductsManager() {
         setFormData(prev => ({
           ...prev,
           title: processedTitle,
+          description: product.description || '',
           image_url: product.image || '',
           current_price: currentPrice,
           original_price: originalPrice,

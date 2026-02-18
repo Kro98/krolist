@@ -296,7 +296,7 @@ async function getAmazonItemByASIN(asin: string, retryCount = 0): Promise<{ prod
 }
 
 // ============= Free HTML scraper fallback for auto-fill =============
-function extractProductDetailsFromHtml(html: string, url: string): { title: string; image: string; price: number; originalPrice?: number } | null {
+function extractProductDetailsFromHtml(html: string, url: string): { title: string; description: string; image: string; price: number; originalPrice?: number } | null {
   // Extract title
   let title = '';
   const titlePatterns = [
@@ -309,10 +309,35 @@ function extractProductDetailsFromHtml(html: string, url: string): { title: stri
     const m = html.match(p);
     if (m && m[1].trim().length > 5) {
       title = m[1].trim().replace(/\s+/g, ' ');
-      // Remove "Amazon.sa" suffix from <title>
       title = title.replace(/\s*[-–|:]\s*Amazon\.\w+.*$/i, '').trim();
       if (title.length > 200) title = title.substring(0, 199) + '...';
       break;
+    }
+  }
+
+  // Extract description from feature bullets or product description
+  let description = '';
+  const descPatterns = [
+    // Feature bullets
+    /id="feature-bullets"[^>]*>.*?<ul[^>]*>(.*?)<\/ul>/s,
+    // Product description
+    /id="productDescription"[^>]*>.*?<p[^>]*>([^<]+)/s,
+    // Meta description
+    /meta\s+name="description"\s+content="([^"]+)"/i,
+    // JSON-LD description
+    /"description"\s*:\s*"([^"]{10,})"/,
+  ];
+  for (const p of descPatterns) {
+    const m = html.match(p);
+    if (m && m[1]) {
+      // Clean HTML tags from bullet points
+      description = m[1]
+        .replace(/<li[^>]*>/gi, '• ')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (description.length > 500) description = description.substring(0, 497) + '...';
+      if (description.length > 10) break;
     }
   }
 
@@ -335,7 +360,7 @@ function extractProductDetailsFromHtml(html: string, url: string): { title: stri
     }
   }
 
-  // Extract price (reuse patterns from auto-update-prices)
+  // Extract price
   const pricePatterns = [
     /class="a-price-whole"[^>]*>([0-9,\.]+)<.*?class="a-price-fraction"[^>]*>(\d+)</s,
     /corePriceDisplay_desktop_feature_div.*?class="a-price-whole"[^>]*>([0-9,\.]+)<.*?class="a-price-fraction"[^>]*>(\d+)</s,
@@ -375,10 +400,10 @@ function extractProductDetailsFromHtml(html: string, url: string): { title: stri
 
   if (!title && price <= 0) return null;
 
-  return { title, image, price, originalPrice };
+  return { title, description, image, price, originalPrice };
 }
 
-async function scrapeAmazonProductForAutoFill(productUrl: string): Promise<{ title: string; image: string; price: number; originalPrice?: number; productUrl: string } | null> {
+async function scrapeAmazonProductForAutoFill(productUrl: string): Promise<{ title: string; description: string; image: string; price: number; originalPrice?: number; productUrl: string } | null> {
   const asin = extractASIN(productUrl);
   let domain = 'www.amazon.sa';
   try { domain = new URL(productUrl).hostname; } catch {}
@@ -442,6 +467,7 @@ async function scrapeAmazonProductForAutoFill(productUrl: string): Promise<{ tit
           console.log(`[AutoFill Scraper] ✓ Title: ${result.title.substring(0, 50)}..., Price: ${result.price}`);
           return {
             title: result.title,
+            description: result.description,
             image: result.image,
             price: result.price,
             originalPrice: result.originalPrice,
@@ -711,6 +737,7 @@ serve(async (req) => {
             source: 'pa-api',
             product: {
               title: result.product.title,
+              description: result.product.description || '',
               image: result.product.image,
               price: seller.price,
               originalPrice: seller.originalPrice,
@@ -734,6 +761,7 @@ serve(async (req) => {
             source: 'scraper',
             product: {
               title: scraperResult.title,
+              description: scraperResult.description || '',
               image: scraperResult.image,
               price: scraperResult.price,
               originalPrice: scraperResult.originalPrice,
