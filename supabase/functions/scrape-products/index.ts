@@ -344,6 +344,7 @@ function extractProductDetailsFromHtml(html: string, url: string): { title: stri
   // Extract image
   let image = '';
   const imagePatterns = [
+    // Desktop patterns
     /id="landingImage"[^>]*src="([^"]+)"/,
     /id="imgBlkFront"[^>]*src="([^"]+)"/,
     /id="main-image"[^>]*src="([^"]+)"/,
@@ -355,19 +356,23 @@ function extractProductDetailsFromHtml(html: string, url: string): { title: stri
     /id="main-image-widget"[^>]*>.*?<img[^>]*src="([^"]+)"/s,
     /id="aw-image-wrapper"[^>]*>.*?<img[^>]*src="([^"]+)"/s,
     /<img[^>]*id="[^"]*[Ii]mage[^"]*"[^>]*src="([^"]+)"/,
-    // OG image (reliable fallback)
+    // OG image
     /<meta\s+property="og:image"\s+content="([^"]+)"/i,
     /<meta\s+content="([^"]+)"\s+property="og:image"/i,
-    // Any Amazon product image
-    /src="(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+)"/,
-    /src="(https:\/\/images-na\.ssl-images-amazon\.com\/images\/I\/[^"]+)"/,
+    // Any Amazon product image from CDN (broad match)
+    /(https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9._%-]+\.(?:jpg|png|webp))/,
+    /(https:\/\/images-na\.ssl-images-amazon\.com\/images\/I\/[A-Za-z0-9._%-]+\.(?:jpg|png|webp))/,
   ];
   for (const p of imagePatterns) {
     const m = html.match(p);
     if (m && m[1] && m[1].startsWith('http')) {
       image = m[1];
+      console.log(`[AutoFill Scraper] Image found with pattern: ${p.toString().substring(0, 40)}`);
       break;
     }
+  }
+  if (!image) {
+    console.log(`[AutoFill Scraper] No image found from HTML patterns, checking for ASIN-based fallback`);
   }
 
   // Extract price
@@ -474,11 +479,18 @@ async function scrapeAmazonProductForAutoFill(productUrl: string): Promise<{ tit
           const affiliateTag = Deno.env.get('AMAZON_PARTNER_TAG') || 'krolist07-21';
           const cleanUrl = asin ? `https://${domain}/dp/${asin}?tag=${affiliateTag}` : productUrl;
           
-          console.log(`[AutoFill Scraper] ✓ Title: ${result.title.substring(0, 50)}..., Price: ${result.price}`);
+          // If no image found, try ASIN-based image URL construction
+          let finalImage = result.image;
+          if (!finalImage && asin) {
+            finalImage = `https://m.media-amazon.com/images/P/${asin}.jpg`;
+            console.log(`[AutoFill Scraper] Using ASIN-based fallback image: ${finalImage}`);
+          }
+          
+          console.log(`[AutoFill Scraper] ✓ Title: ${result.title.substring(0, 50)}..., Price: ${result.price}, Image: ${finalImage ? 'YES' : 'NO'}`);
           return {
             title: result.title,
             description: result.description,
-            image: result.image,
+            image: finalImage,
             price: result.price,
             originalPrice: result.originalPrice,
             productUrl: cleanUrl,
