@@ -246,78 +246,104 @@ function extractPriceFromHtml(html: string): { price: number; originalPrice?: nu
   return { price, originalPrice };
 }
 
-async function getAmazonPriceViaScraper(productUrl: string, retries = 2): Promise<{ price: number; originalPrice?: number } | null> {
-  // Build a clean Amazon URL from the ASIN to avoid redirects
+async function getAmazonPriceViaScraper(productUrl: string, retries = 3): Promise<{ price: number; originalPrice?: number } | null> {
   const asin = extractASIN(productUrl);
-  let scrapeUrl = productUrl;
+  let domain = 'www.amazon.sa';
+  try {
+    const parsed = new URL(productUrl);
+    domain = parsed.hostname;
+  } catch { /* keep default */ }
+
+  // Try mobile URL first (lighter pages, less aggressive blocking), then desktop
+  const urls: string[] = [];
   if (asin) {
-    // Determine the domain from the original URL
-    try {
-      const parsed = new URL(productUrl);
-      scrapeUrl = `https://${parsed.hostname}/dp/${asin}`;
-    } catch {
-      // Keep original URL
-    }
+    urls.push(`https://${domain}/gp/aw/d/${asin}`);   // mobile
+    urls.push(`https://${domain}/dp/${asin}`);          // desktop
+  } else {
+    urls.push(productUrl);
   }
 
+  // Expanded User-Agent pool with mobile + desktop variants
   const userAgents = [
+    // Mobile UAs (match mobile URL)
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+    // Desktop UAs
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0',
   ];
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const ua = userAgents[attempt % userAgents.length];
-      console.log(`[Scraper] Attempt ${attempt + 1} for: ${scrapeUrl}`);
+  for (const scrapeUrl of urls) {
+    const isMobile = scrapeUrl.includes('/gp/aw/d/');
+    
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        // Pick UA matching URL type (mobile UA for mobile URL, desktop for desktop)
+        const uaPool = isMobile ? userAgents.slice(0, 3) : userAgents.slice(3);
+        const ua = uaPool[attempt % uaPool.length];
+        
+        console.log(`[Scraper] Attempt ${attempt + 1} (${isMobile ? 'mobile' : 'desktop'}) for: ${scrapeUrl}`);
 
-      const response = await fetch(scrapeUrl, {
-        method: 'GET',
-        headers: {
-          'User-Agent': ua,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
-          'Accept-Encoding': 'identity',
-          'Cache-Control': 'no-cache',
-        },
-        redirect: 'follow',
-      });
+        const response = await fetch(scrapeUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': ua,
+            'Accept': isMobile 
+              ? 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+              : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+            'Accept-Encoding': 'identity',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Referer': `https://${domain}/`,
+          },
+          redirect: 'follow',
+        });
 
-      if (!response.ok) {
-        console.error(`[Scraper] HTTP ${response.status} for ${scrapeUrl}`);
-        await response.text(); // consume body
-        if (attempt < retries) {
-          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
-          continue;
+        if (!response.ok) {
+          console.error(`[Scraper] HTTP ${response.status} for ${scrapeUrl}`);
+          await response.text(); // consume body
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+            continue;
+          }
+          break; // try next URL variant
         }
-        return null;
-      }
 
-      const html = await response.text();
-      
-      if (html.length < 5000) {
-        console.log(`[Scraper] Response too short (${html.length} chars), likely captcha/block`);
-        if (attempt < retries) {
-          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
-          continue;
+        const html = await response.text();
+        
+        if (html.length < 3000) {
+          console.log(`[Scraper] Response too short (${html.length} chars), likely captcha/block`);
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 4000 * (attempt + 1)));
+            continue;
+          }
+          break; // try next URL variant
         }
-        return null;
-      }
 
-      const result = extractPriceFromHtml(html);
-      if (result) {
-        console.log(`[Scraper] ✓ Extracted price: ${result.price}${result.originalPrice ? ` (was ${result.originalPrice})` : ''}`);
-        return result;
-      }
+        const result = extractPriceFromHtml(html);
+        if (result) {
+          console.log(`[Scraper] ✓ Extracted price: ${result.price}${result.originalPrice ? ` (was ${result.originalPrice})` : ''} via ${isMobile ? 'mobile' : 'desktop'}`);
+          return result;
+        }
 
-      console.log(`[Scraper] Could not extract price from HTML (attempt ${attempt + 1})`);
-      if (attempt < retries) {
-        await new Promise(r => setTimeout(r, 2000));
-      }
-    } catch (error) {
-      console.error(`[Scraper] Error on attempt ${attempt + 1}:`, error);
-      if (attempt < retries) {
-        await new Promise(r => setTimeout(r, 2000));
+        console.log(`[Scraper] Could not extract price from HTML (attempt ${attempt + 1})`);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      } catch (error) {
+        console.error(`[Scraper] Error on attempt ${attempt + 1}:`, error);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 3000));
+        }
       }
     }
   }
@@ -569,7 +595,7 @@ serve(async (req) => {
         results.push(result);
 
         // Delay between requests to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, paApiEligible ? 500 : 2000));
+        await new Promise(resolve => setTimeout(resolve, paApiEligible ? 500 : 4000));
       }
 
       if (priceHistoryRecords.length > 0) {
