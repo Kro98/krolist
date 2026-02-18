@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ExternalLink, RefreshCw, MoreVertical, Download, Upload, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Edit, Trash2, ExternalLink, RefreshCw, MoreVertical, Download, Upload, Loader2, Sparkles, XCircle } from 'lucide-react';
 import { STORES, getEnabledStores } from '@/config/stores';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { FunnyLoadingText } from '@/components/FunnyLoadingText';
@@ -236,6 +236,24 @@ export default function KrolistProductsManager() {
       setIsAutoUpdating(false);
       setAutoUpdateProgress(null);
       channel.unsubscribe();
+    }
+  };
+
+  const handleCancelAutoUpdate = async () => {
+    if (!autoUpdateSessionId) return;
+    try {
+      const channel = supabase.channel(`auto-update-cancel-${autoUpdateSessionId}`);
+      await channel.send({
+        type: 'broadcast',
+        event: 'cancel',
+        payload: {}
+      });
+      toast({
+        title: 'Cancelling auto-update...',
+        description: 'The update will stop after the current product finishes.'
+      });
+    } catch (error) {
+      console.error('Failed to cancel auto-update:', error);
     }
   };
 
@@ -1173,9 +1191,22 @@ export default function KrolistProductsManager() {
                       : 'Auto-updating prices...'}
                   </span>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {autoUpdateProgress.current} / {autoUpdateProgress.total}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {autoUpdateProgress.current} / {autoUpdateProgress.total}
+                  </span>
+                  {autoUpdateProgress.status === 'processing' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelAutoUpdate}
+                      className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </div>
               
               <Progress 
