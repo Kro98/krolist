@@ -742,7 +742,7 @@ export default function KrolistProductsManager() {
       </div>
 
       {/* All products in a flat grid */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
         {(() => {
           // Calculate discount % for each product
           const withDiscount = products.map(p => ({
