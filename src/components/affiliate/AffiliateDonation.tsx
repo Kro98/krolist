@@ -361,8 +361,8 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                         className="adsbygoogle"
                         style={{ display: 'block', width: '100%', minHeight: '260px' }}
                         data-ad-client={adSlots.clientId}
-                        data-ad-slot={adSlots.donationSlot}
-                        data-ad-format="fluid"
+                        data-ad-slot={adSlots.donationSlot || undefined}
+                        data-ad-format="auto"
                         data-full-width-responsive="true"
                       />
                     </div>
