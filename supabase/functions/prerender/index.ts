@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://krolist.com';
+const rawSiteUrl = (Deno.env.get('SITE_URL') || 'https://krolist.com').toLowerCase().replace(/\/+$/, '');
+const SITE_URL = rawSiteUrl.startsWith('http') ? rawSiteUrl : `https://${rawSiteUrl}`;
 const OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/YFgGWEsxfNOaFdRM8i5OBPIS5c33/social-images/social-1766587034681-1000242010.png';
 
 function escapeHtml(str: string): string {
