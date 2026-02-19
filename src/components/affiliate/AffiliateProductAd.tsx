@@ -56,7 +56,7 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
   };
 
   useEffect(() => {
-    if (loading || !slots.productBannerSlot) return;
+    if (loading) return;
     if (adRef.current && !adLoaded.current) {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -67,7 +67,7 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
     }
   }, [loading, slots.productBannerSlot]);
 
-  if (!slots.productBannerSlot) return null;
+  if (!slots.clientId) return null;
 
   return (
     <div
@@ -105,8 +105,8 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%', minHeight: '150px' }}
         data-ad-client={slots.clientId}
-        data-ad-slot={slots.productBannerSlot}
-        data-ad-format="fluid"
+        data-ad-slot={slots.productBannerSlot || undefined}
+        data-ad-format="auto"
         data-full-width-responsive="true"
       />
     </div>

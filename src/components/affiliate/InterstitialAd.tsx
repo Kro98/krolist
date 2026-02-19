@@ -52,7 +52,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
 
   // Push ad
   useEffect(() => {
-    if (!open || loading || !slots.interstitialSlot || adPushed.current) return;
+    if (!open || loading || adPushed.current) return;
     const timer = setTimeout(() => {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -62,7 +62,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
       }
     }, 100);
     return () => clearTimeout(timer);
-  }, [open, loading, slots.interstitialSlot]);
+  }, [open, loading]);
 
   const handleContinue = () => {
     onClose();
@@ -100,14 +100,14 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
             <span className="absolute top-2 left-2 text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider z-10">
               Ad
             </span>
-            {slots.interstitialSlot ? (
+            {slots.clientId ? (
               <ins
                 ref={adRef}
                 className="adsbygoogle"
                 style={{ display: "block", width: "100%", minHeight: "250px" }}
                 data-ad-client={slots.clientId}
-                data-ad-slot={slots.interstitialSlot}
-                data-ad-format="fluid"
+                data-ad-slot={slots.interstitialSlot || undefined}
+                data-ad-format="auto"
                 data-full-width-responsive="true"
               />
             ) : (
