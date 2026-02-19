@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.service-proxy]
 verify_jwt = true
+
+[functions.prerender]
+verify_jwt = false

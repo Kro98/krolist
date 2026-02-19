@@ -1,5 +1,23 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/generate-sitemap"
+    },
+    {
+      "source": "/((?!assets|favicon|manifest|sw-push|pwa-|robots).*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(Googlebot|bingbot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Twitterbot|facebookexternalhit|LinkedInBot|Applebot|PinterestBot|Discordbot|TelegramBot|WhatsApp|Snapchat|redditbot|Embedly|Quora Link Preview|Showyoubot|outbrain|W3C_Validator|ia_archiver).*"
+        }
+      ],
+      "destination": "https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/prerender?path=/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
