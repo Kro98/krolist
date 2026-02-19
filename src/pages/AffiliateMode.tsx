@@ -178,8 +178,7 @@ export default function AffiliateMode() {
   const [interstitialTitle, setInterstitialTitle] = useState("");
 
   const handleProductClick = (product: AffiliateProduct) => {
-    const affiliateUrl = replaceWithAffiliateLink(product.product_url);
-    setInterstitialUrl(affiliateUrl);
+    setInterstitialUrl(product.product_url);
     setInterstitialTitle(product.title);
     setInterstitialOpen(true);
   };
