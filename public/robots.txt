@@ -17,4 +17,7 @@ Allow: /
 Crawl-delay: 2
 
 # Dynamic sitemap from edge function
+Sitemap: https://krolist.com/sitemap.xml
+
+# Also available via edge function
 Sitemap: https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/generate-sitemap
