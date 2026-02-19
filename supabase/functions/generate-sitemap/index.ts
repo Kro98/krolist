@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 // Configure your custom domain here when migrating away from Lovable
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://krolist.lovable.app';
+const rawSiteUrl = (Deno.env.get('SITE_URL') || 'https://krolist.com').toLowerCase().replace(/\/+$/, '');
+const SITE_URL = rawSiteUrl.startsWith('http') ? rawSiteUrl : `https://${rawSiteUrl}`;
 
 interface SitemapUrl {
   loc: string;
