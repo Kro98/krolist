@@ -38,6 +38,7 @@ export const ArticleProductCard = ({
   
   const handleCardClick = () => {
     onProductClick?.(product.id);
+    window.open(product.product_url, '_blank');
   };
 
   const handleViewHistory = (e: React.MouseEvent) => {
