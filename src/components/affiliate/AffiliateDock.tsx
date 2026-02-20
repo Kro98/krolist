@@ -1,7 +1,9 @@
 import { Search, Heart, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+
 interface AffiliateDockProps {
   onSearchClick: () => void;
   onHeartClick: () => void;
@@ -16,37 +18,78 @@ export function AffiliateDock({
   const { language } = useLanguage();
   const isArabic = language === 'ar';
   const [isVisible, setIsVisible] = useState(false);
+  const [activeAnim, setActiveAnim] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  const triggerAnim = useCallback((key: string, callback: () => void) => {
+    setActiveAnim(key);
+    callback();
+    setTimeout(() => setActiveAnim(null), 600);
+  }, []);
+
   const dockItems = [
     {
+      key: 'search',
       icon: Search,
       label: isArabic ? 'بحث' : 'Search',
-      onClick: onSearchClick,
+      onClick: () => triggerAnim('search', onSearchClick),
       colorClass: 'text-primary',
       bgClass: 'bg-primary/10 hover:bg-primary/20',
       glowClass: 'group-hover:shadow-primary/30'
     },
     {
+      key: 'heart',
       icon: Heart,
       label: isArabic ? 'دعم' : 'Support',
-      onClick: onHeartClick,
+      onClick: () => triggerAnim('heart', onHeartClick),
       colorClass: 'text-pink-500',
       bgClass: 'bg-pink-500/10 hover:bg-pink-500/20',
       glowClass: 'group-hover:shadow-pink-500/30'
     },
     {
+      key: 'settings',
       icon: Settings,
       label: isArabic ? 'إعدادات' : 'Settings',
-      onClick: onSettingsClick,
+      onClick: () => triggerAnim('settings', onSettingsClick),
       colorClass: 'text-muted-foreground',
       bgClass: 'bg-muted/50 hover:bg-muted/80',
       glowClass: 'group-hover:shadow-muted/30'
     }
   ];
+
+  // Animation variants per icon
+  const iconVariants: Record<string, any> = {
+    search: {
+      animate: {
+        scale: [1, 1.3, 1],
+        opacity: [1, 0.6, 1],
+        filter: [
+          "brightness(1) drop-shadow(0 0 0px transparent)",
+          "brightness(1.8) drop-shadow(0 0 8px hsl(var(--primary) / 0.6))",
+          "brightness(1) drop-shadow(0 0 0px transparent)"
+        ],
+        transition: { duration: 0.5, ease: "easeInOut" }
+      }
+    },
+    heart: {
+      animate: {
+        scale: [1, 1.4, 0.9, 1.2, 1],
+        rotate: [0, -10, 10, -5, 0],
+        transition: { duration: 0.5, ease: "easeInOut" }
+      }
+    },
+    settings: {
+      animate: {
+        rotate: [0, 90],
+        scale: [1, 1.1, 1],
+        transition: { duration: 0.5, ease: "easeOut" }
+      }
+    }
+  };
 
   return (
     <div className={cn(
@@ -64,11 +107,14 @@ export function AffiliateDock({
         "before:absolute before:inset-0 before:rounded-2xl sm:before:rounded-3xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none",
         "relative overflow-hidden"
       )}>
-        {dockItems.map((item, index) => {
+        {dockItems.map((item) => {
           const Icon = item.icon;
+          const isActive = activeAnim === item.key;
+          const variant = iconVariants[item.key];
+          
           return (
             <button
-              key={index}
+              key={item.key}
               onClick={item.onClick}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-1 sm:gap-1.5",
@@ -88,11 +134,18 @@ export function AffiliateDock({
                 "transition-opacity duration-300"
               )} />
               
-              <Icon className={cn(
-                "w-5 h-5 sm:w-6 sm:h-6 relative z-10",
-                "transition-transform duration-300",
-                "group-hover:scale-110"
-              )} />
+              <motion.div
+                className="relative z-10"
+                animate={isActive ? variant.animate : {}}
+                style={item.key === 'heart' && isActive ? { fill: 'currentColor' } : {}}
+              >
+                <Icon className={cn(
+                  "w-5 h-5 sm:w-6 sm:h-6",
+                  "transition-transform duration-300",
+                  "group-hover:scale-110",
+                  item.key === 'heart' && isActive && "fill-current"
+                )} />
+              </motion.div>
               
               <span className={cn(
                 "text-[10px] sm:text-xs font-medium relative z-10",
