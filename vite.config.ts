@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        skipWaiting: false,
+        skipWaiting: true,
         clientsClaim: true,
         importScripts: ['sw-push.js'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB limit
