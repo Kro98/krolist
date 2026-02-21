@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAdSlots } from "@/hooks/useAdSlots";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,10 +15,29 @@ interface AffiliateProductAdProps {
 }
 
 export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const adRef = useRef<HTMLModElement>(null);
-  const adLoaded = useRef(false);
+  const adPushed = useRef(false);
   const { slots, loading } = useAdSlots();
   const [clickCount, setClickCount] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Observe visibility so we only push the ad when the container has width
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && entry.boundingClientRect.width > 0) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Fetch initial count + subscribe to real-time updates
   useEffect(() => {
@@ -37,76 +56,73 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'global_counters', filter: 'counter_key=eq.support_ad_clicks' },
-        (payload) => {
-          setClickCount(payload.new.counter_value);
-        }
+        (payload) => { setClickCount(payload.new.counter_value); }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Increment counter on ad click
-  const handleAdClick = async () => {
+  const handleAdClick = useCallback(async () => {
     if (clickCount === null) return;
     await supabase
       .from('global_counters')
       .update({ counter_value: clickCount + 1, updated_at: new Date().toISOString() })
       .eq('counter_key', 'support_ad_clicks');
-  };
+  }, [clickCount]);
 
+  // Push ad only when visible and container has width
   useEffect(() => {
-    if (loading) return;
-    if (adRef.current && !adLoaded.current) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        adLoaded.current = true;
-      } catch (e) {
-        console.error('AdSense error:', e);
-      }
+    if (loading || !isVisible || adPushed.current) return;
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      adPushed.current = true;
+    } catch (e) {
+      console.error('AdSense error:', e);
     }
-  }, [loading, slots.productBannerSlot]);
+  }, [loading, isVisible]);
 
   if (!slots.clientId) return null;
 
   return (
     <div
+      ref={containerRef}
       onClick={handleAdClick}
       className={cn(
-        "relative rounded-lg overflow-hidden",
-        "bg-gradient-to-br from-muted/50 to-muted/30",
-        "border border-border/50",
-        "flex items-center justify-center",
-        "min-h-[150px]",
+        "relative w-full rounded-xl overflow-hidden",
+        "bg-muted/20 border border-border/40",
         className
       )}
     >
-      <div className="absolute top-2 left-2 z-10">
-        <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
+      {/* Subtle "Ad" label */}
+      <div className="absolute top-1.5 left-2 z-10">
+        <span className="text-[9px] font-medium text-muted-foreground/40 uppercase tracking-widest">
           Ad
         </span>
       </div>
 
       {/* Live click counter */}
       {clickCount !== null && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-destructive/90 to-destructive/70 backdrop-blur-md shadow-lg shadow-destructive/20 border border-destructive/30 animate-fade-in">
-          <Heart className="w-3.5 h-3.5 text-destructive-foreground fill-destructive-foreground animate-[pulse_1.5s_ease-in-out_infinite]" />
-          <span className="text-xs font-bold tabular-nums text-destructive-foreground tracking-wide">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/85 backdrop-blur-sm shadow-sm">
+          <Heart className="w-3 h-3 text-destructive-foreground fill-destructive-foreground animate-[pulse_2s_ease-in-out_infinite]" />
+          <span className="text-[10px] font-semibold tabular-nums text-destructive-foreground">
             {clickCount.toLocaleString()}
           </span>
-          <span className="text-[9px] font-medium text-destructive-foreground/70 uppercase tracking-wider">
+          <span className="text-[8px] font-medium text-destructive-foreground/70 uppercase tracking-wider">
             supporters
           </span>
         </div>
       )}
 
+      {/* Ad slot – responsive with proper min-height */}
       <ins
         ref={adRef}
         className="adsbygoogle"
-        style={{ display: 'block', width: '100%', height: '100%', minHeight: '150px' }}
+        style={{ display: 'block', width: '100%', minHeight: '100px' }}
         data-ad-client={slots.clientId}
         data-ad-slot={slots.productBannerSlot || undefined}
-        data-ad-format="auto"
+        data-ad-format="fluid"
+        data-ad-layout-key="-fb+5w+4e-db+86"
         data-full-width-responsive="true"
       />
     </div>

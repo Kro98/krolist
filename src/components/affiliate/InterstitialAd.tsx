@@ -25,6 +25,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
   const { language } = useLanguage();
   const isArabic = language === 'ar';
   const { slots, loading } = useAdSlots();
+  const adContainerRef = useRef<HTMLDivElement>(null);
   const adRef = useRef<HTMLModElement>(null);
   const adPushed = useRef(false);
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
@@ -50,17 +51,20 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
     return () => clearTimeout(t);
   }, [open, countdown]);
 
-  // Push ad
+  // Push ad only after dialog renders and container has width
   useEffect(() => {
     if (!open || loading || adPushed.current) return;
     const timer = setTimeout(() => {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        adPushed.current = true;
-      } catch (e) {
-        console.error("Interstitial AdSense error:", e);
+      const el = adContainerRef.current;
+      if (el && el.offsetWidth > 0) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          adPushed.current = true;
+        } catch (e) {
+          console.error("Interstitial AdSense error:", e);
+        }
       }
-    }, 100);
+    }, 300); // wait for dialog animation to finish
     return () => clearTimeout(timer);
   }, [open, loading]);
 
@@ -75,7 +79,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-widest">
               {isArabic ? 'جاري نقلك إلى' : 'Redirecting you to'}
             </p>
             {productTitle && (
@@ -96,8 +100,11 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
 
         {/* Ad area */}
         <div className="px-5 pb-3">
-          <div className="relative rounded-xl overflow-hidden bg-muted/30 border border-border/30 min-h-[250px] flex items-center justify-center">
-            <span className="absolute top-2 left-2 text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider z-10">
+          <div
+            ref={adContainerRef}
+            className="relative w-full rounded-xl overflow-hidden bg-muted/15 border border-border/20 min-h-[250px] flex items-center justify-center"
+          >
+            <span className="absolute top-1.5 left-2 text-[9px] font-medium text-muted-foreground/40 uppercase tracking-widest z-10">
               Ad
             </span>
             {slots.clientId ? (
