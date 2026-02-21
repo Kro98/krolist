@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAdSlots } from '@/hooks/useAdSlots';
+import { AdSkeleton } from '@/components/ui/AdSkeleton';
 
 declare global {
   interface Window {
@@ -52,10 +53,11 @@ export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
         <div className="text-[9px] text-muted-foreground/40 text-center py-1 sm:py-1.5 uppercase tracking-widest">
           Advertisement
         </div>
+        {!isVisible && <AdSkeleton className="min-h-[clamp(50px,15vw,200px)]" />}
         <ins
           ref={adRef}
           className="adsbygoogle"
-          style={{ display: 'block', width: '100%', minHeight: 'clamp(50px, 15vw, 200px)' }}
+          style={{ display: isVisible ? 'block' : 'none', width: '100%', minHeight: 'clamp(50px, 15vw, 200px)' }}
           data-ad-client={slots.clientId}
           data-ad-slot={slots.articleInlineSlot || undefined}
           data-ad-format="auto"
