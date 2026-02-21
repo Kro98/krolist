@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { useAdSlots } from "@/hooks/useAdSlots";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart } from "lucide-react";
+import { AdSkeleton } from "@/components/ui/AdSkeleton";
 
 declare global {
   interface Window {
@@ -109,10 +110,11 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
         </div>
       )}
 
+      {!isVisible && <AdSkeleton className="min-h-[clamp(90px,20vw,250px)]" />}
       <ins
         ref={adRef}
         className="adsbygoogle"
-        style={{ display: 'block', width: '100%', minHeight: 'clamp(90px, 20vw, 250px)' }}
+        style={{ display: isVisible ? 'block' : 'none', width: '100%', minHeight: 'clamp(90px, 20vw, 250px)' }}
         data-ad-client={slots.clientId}
         data-ad-slot={slots.productBannerSlot || undefined}
         data-ad-format="fluid"
