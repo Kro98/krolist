@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAdSlots } from '@/hooks/useAdSlots';
 
 declare global {
@@ -12,36 +12,52 @@ interface ArticleInlineAdProps {
 }
 
 export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const adRef = useRef<HTMLModElement>(null);
-  const [adLoaded, setAdLoaded] = useState(false);
-  const adKey = useMemo(() => Math.random().toString(36).substring(7), []);
+  const adPushed = useRef(false);
   const { slots, loading } = useAdSlots();
+  const [isVisible, setIsVisible] = useState(false);
 
+  // Wait for container to be visible with real width
   useEffect(() => {
-    if (loading) return;
-    if (adRef.current && !adLoaded) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        setAdLoaded(true);
-      } catch (e) {
-        console.error('AdSense error:', e);
-      }
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && entry.boundingClientRect.width > 0) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Push ad only when visible
+  useEffect(() => {
+    if (loading || !isVisible || adPushed.current) return;
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      adPushed.current = true;
+    } catch (e) {
+      console.error('AdSense error:', e);
     }
-  }, [adLoaded, loading, slots.articleInlineSlot]);
+  }, [loading, isVisible]);
 
   if (!slots.clientId) return null;
 
   return (
-    <div className={`my-8 w-full ${className}`}>
-      <div className="bg-muted/30 border border-border/50 rounded-lg p-4 overflow-hidden">
-        <div className="text-xs text-muted-foreground/60 text-center mb-2 uppercase tracking-wider">
+    <div ref={containerRef} className={`my-6 w-full ${className}`}>
+      <div className="rounded-xl overflow-hidden border border-border/30 bg-muted/10">
+        <div className="text-[9px] text-muted-foreground/40 text-center py-1.5 uppercase tracking-widest">
           Advertisement
         </div>
         <ins
           ref={adRef}
-          key={adKey}
           className="adsbygoogle"
-          style={{ display: 'block', textAlign: 'center' }}
+          style={{ display: 'block', width: '100%' }}
           data-ad-client={slots.clientId}
           data-ad-slot={slots.articleInlineSlot || undefined}
           data-ad-format="auto"
