@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAdSlots } from "@/hooks/useAdSlots";
 import { ExternalLink, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AdSkeleton } from "@/components/ui/AdSkeleton";
 
 declare global {
   interface Window {
@@ -100,15 +101,18 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
               Ad
             </span>
             {slots.clientId ? (
-              <ins
-                ref={adRef}
-                className="adsbygoogle"
-                style={{ display: "block", width: "100%", minHeight: 'clamp(180px, 40vw, 300px)' }}
-                data-ad-client={slots.clientId}
-                data-ad-slot={slots.interstitialSlot || undefined}
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-              />
+              <>
+                {!adPushed.current && <AdSkeleton className="min-h-[clamp(180px,40vw,300px)]" />}
+                <ins
+                  ref={adRef}
+                  className="adsbygoogle"
+                  style={{ display: adPushed.current ? "block" : "none", width: "100%", minHeight: 'clamp(180px, 40vw, 300px)' }}
+                  data-ad-client={slots.clientId}
+                  data-ad-slot={slots.interstitialSlot || undefined}
+                  data-ad-format="auto"
+                  data-full-width-responsive="true"
+                />
+              </>
             ) : (
               <div className="flex flex-col items-center gap-2 p-6 sm:p-8 text-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center">

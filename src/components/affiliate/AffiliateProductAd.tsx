@@ -72,12 +72,18 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
 
   useEffect(() => {
     if (loading || !isVisible || adPushed.current) return;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-      adPushed.current = true;
-    } catch (e) {
-      console.error('AdSense error:', e);
-    }
+    const timer = setTimeout(() => {
+      const el = containerRef.current;
+      if (el && el.offsetWidth >= 250) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          adPushed.current = true;
+        } catch (e) {
+          console.error('AdSense error:', e);
+        }
+      }
+    }, 300);
+    return () => clearTimeout(timer);
   }, [loading, isVisible]);
 
   if (!slots.clientId) return null;
