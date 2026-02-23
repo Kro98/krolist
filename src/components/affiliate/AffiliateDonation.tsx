@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Heart, Play, Copy, Check, ExternalLink, Gift, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAdSlots } from "@/hooks/useAdSlots";
 import { motion, AnimatePresence } from "framer-motion";
+import { AdSkeleton } from "@/components/ui/AdSkeleton";
 
 interface PromoCode {
   id: string;
@@ -25,13 +26,14 @@ interface AffiliateDonationProps {
 export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
   const { language } = useLanguage();
   const isArabic = language === 'ar';
-  const { slots: adSlots } = useAdSlots();
+  const { slots: adSlots, loading: adLoading } = useAdSlots();
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showVideoSupport, setShowVideoSupport] = useState(false);
   const [videoCountdown, setVideoCountdown] = useState(10);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [clickCount, setClickCount] = useState<number | null>(null);
+  const adPushed = useRef(false);
 
   // Fetch support counter + real-time updates
   useEffect(() => {
@@ -115,7 +117,22 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
     setShowVideoSupport(true);
     setIsVideoPlaying(true);
     setVideoCountdown(10);
+    adPushed.current = false;
   };
+
+  // Push ad when video support overlay opens
+  useEffect(() => {
+    if (!showVideoSupport || adLoading || adPushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        adPushed.current = true;
+      } catch (e) {
+        console.error('Donation AdSense error:', e);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [showVideoSupport, adLoading]);
 
   const stagger = {
     animate: { transition: { staggerChildren: 0.06 } }
@@ -356,10 +373,14 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                       </p>
                     </div>
 
-                    <div className="w-full min-h-[280px] sm:min-h-[300px] bg-white/[0.03] rounded-2xl flex items-center justify-center border border-dashed border-primary/20 p-2">
+                    <div className="w-full rounded-2xl overflow-hidden bg-muted/10 border border-border/20">
+                      <div className="text-[9px] text-muted-foreground/40 text-center py-1 uppercase tracking-widest">
+                        Ad
+                      </div>
+                      {!adPushed.current && <AdSkeleton className="min-h-[clamp(200px,40vw,280px)]" />}
                       <ins
                         className="adsbygoogle"
-                        style={{ display: 'block', width: '100%', minHeight: '260px' }}
+                        style={{ display: adPushed.current ? 'block' : 'none', width: '100%', minHeight: 'clamp(200px, 40vw, 280px)' }}
                         data-ad-client={adSlots.clientId}
                         data-ad-slot={adSlots.donationSlot || undefined}
                         data-ad-format="auto"
