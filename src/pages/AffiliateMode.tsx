@@ -20,6 +20,7 @@ import { AffiliateSettings } from "@/components/affiliate/AffiliateSettings";
 import { AffiliateDonation } from "@/components/affiliate/AffiliateDonation";
 import { AffiliateFilter, SortOption, StoreFilter } from "@/components/affiliate/AffiliateFilter";
 import { AffiliateProductAd } from "@/components/affiliate/AffiliateProductAd";
+import { HorizontalBannerAd } from "@/components/affiliate/HorizontalBannerAd";
 import { AffiliateInfoPage } from "@/components/affiliate/AffiliateInfoPage";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSectionLocks } from "@/hooks/useSectionLocks";
@@ -214,13 +215,26 @@ export default function AffiliateMode() {
 
   // Insert ads every N products
   const getProductsWithAds = () => {
-    const AD_INTERVAL = 12;
-    const items: (AffiliateProduct | 'ad')[] = [];
+    const items: (AffiliateProduct | 'ad' | 'banner')[] = [];
+    
+    // Calculate how many products make up 5-7 rows
+    const rowSize = productsPerRow;
+    const minRowGap = 5;
+    const maxRowGap = 7;
+    // Randomize banner placement between 5-7 rows
+    let nextBannerRow = minRowGap + Math.floor(Math.random() * (maxRowGap - minRowGap + 1));
+    let currentRow = 0;
     
     filteredProducts.forEach((product, index) => {
       items.push(product);
-      if ((index + 1) % AD_INTERVAL === 0 && index < filteredProducts.length - 1) {
-        items.push('ad');
+      // Check if we've completed a row
+      if ((index + 1) % rowSize === 0) {
+        currentRow++;
+        if (currentRow >= nextBannerRow && index < filteredProducts.length - 1) {
+          items.push('banner');
+          currentRow = 0;
+          nextBannerRow = minRowGap + Math.floor(Math.random() * (maxRowGap - minRowGap + 1));
+        }
       }
     });
     
@@ -448,6 +462,14 @@ export default function AffiliateMode() {
                 return (
                   <div key={`ad-${index}`} className="col-span-full max-w-md mx-auto">
                     <AffiliateProductAd />
+                  </div>
+                );
+              }
+
+              if (item === 'banner') {
+                return (
+                  <div key={`banner-${index}`} className="col-span-full">
+                    <HorizontalBannerAd />
                   </div>
                 );
               }
