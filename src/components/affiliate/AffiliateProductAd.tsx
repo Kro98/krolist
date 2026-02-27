@@ -93,8 +93,8 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
       ref={containerRef}
       onClick={handleAdClick}
       className={cn(
-        "relative w-full rounded-xl overflow-hidden",
-        "bg-muted/20 border border-border/40",
+        "relative w-full rounded-2xl overflow-hidden",
+        "bg-gradient-to-b from-muted/5 to-muted/15 border border-border/50 shadow-sm",
         className
       )}
     >

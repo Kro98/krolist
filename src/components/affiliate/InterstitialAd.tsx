@@ -94,7 +94,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
         <div className="px-4 sm:px-5 pb-2 sm:pb-3">
           <div
             ref={adContainerRef}
-            className="relative w-full rounded-xl overflow-hidden bg-muted/15 border border-border/20 flex items-center justify-center"
+            className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-muted/5 to-muted/15 border border-border/50 shadow-sm flex items-center justify-center"
             style={{ minHeight: 'clamp(180px, 40vw, 300px)' }}
           >
             <span className="absolute top-1.5 left-2 text-[9px] font-medium text-muted-foreground/40 uppercase tracking-widest z-10">
