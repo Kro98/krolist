@@ -49,8 +49,8 @@ export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
 
   return (
     <div ref={containerRef} className={`my-4 sm:my-6 w-full ${className}`}>
-      <div className="rounded-xl overflow-hidden border border-border/30 bg-muted/10">
-        <div className="text-[9px] text-muted-foreground/40 text-center py-1 sm:py-1.5 uppercase tracking-widest">
+      <div className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-b from-muted/5 to-muted/15 shadow-sm">
+        <div className="text-[9px] text-muted-foreground/50 text-center py-1.5 sm:py-2 uppercase tracking-[0.2em] font-medium border-b border-border/20">
           Advertisement
         </div>
         {!isVisible && <AdSkeleton className="min-h-[clamp(50px,15vw,200px)]" />}
