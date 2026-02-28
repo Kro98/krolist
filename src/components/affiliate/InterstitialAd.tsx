@@ -115,9 +115,22 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
               </>
             ) : (
               <div className="flex flex-col items-center gap-2 p-6 sm:p-8 text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <motion.div
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center"
+                  animate={{
+                    rotate: [0, -8, 6, -4, 8, -6, 3, 0],
+                    scale: [1, 1.08, 0.95, 1.05, 0.97, 1.06, 1],
+                    y: [0, -3, 2, -4, 1, -2, 0],
+                  }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    repeatType: "mirror",
+                    ease: "easeInOut",
+                  }}
+                >
                   <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                </div>
+                </motion.div>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {isArabic ? 'جاري نقلك للمتجر...' : 'Taking you to the store...'}
                 </p>
