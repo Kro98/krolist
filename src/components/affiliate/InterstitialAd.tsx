@@ -70,32 +70,32 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-md p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border/50 rounded-xl sm:rounded-2xl max-h-[calc(100dvh-2rem)]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
-          <div className="flex-1 min-w-0">
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-md p-0 gap-0 bg-background/95 backdrop-blur-xl border-border/50 rounded-xl sm:rounded-2xl max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        {/* Header - fixed */}
+        <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 shrink-0">
+          <div className="flex-1 min-w-0 pr-2">
             <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-widest">
               {isArabic ? 'جاري نقلك إلى' : 'Redirecting you to'}
             </p>
             {productTitle && (
-              <p className="text-sm font-semibold text-foreground line-clamp-2 mt-0.5">
+              <p className="text-sm font-semibold text-foreground line-clamp-2 mt-0.5 break-words">
                 {productTitle}
               </p>
             )}
           </div>
           {canSkip && (
-            <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0">
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Ad area – dynamic height */}
-        <div className="px-4 sm:px-5 pb-2 sm:pb-3">
+        {/* Ad area – scrollable, shrinkable */}
+        <div className="px-4 sm:px-5 pb-2 sm:pb-3 min-h-0 flex-1 overflow-y-auto">
           <div
             ref={adContainerRef}
             className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-muted/5 to-muted/15 border border-border/50 shadow-sm flex items-center justify-center"
-            style={{ minHeight: 'clamp(180px, 40vw, 300px)' }}
+            style={{ minHeight: 'min(clamp(180px, 40vw, 300px), 50dvh)' }}
           >
             <span className="absolute top-1.5 left-2 text-[9px] font-medium text-muted-foreground/40 uppercase tracking-widest z-10">
               Ad
@@ -127,7 +127,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 shrink-0">
           <AnimatePresence mode="wait">
             {canSkip ? (
               <motion.div key="continue" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
