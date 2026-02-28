@@ -70,7 +70,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-md p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border/50">
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-md p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border/50 rounded-xl sm:rounded-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
           <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
                   className="adsbygoogle"
                   style={{ display: adPushed.current ? "block" : "none", width: "100%", minHeight: 'clamp(180px, 40vw, 300px)' }}
                   data-ad-client={slots.clientId}
-                  data-ad-slot={slots.interstitialSlot || undefined}
+                  data-ad-slot={slots.interstitialSlot || "4588888052"}
                   data-ad-format="auto"
                   data-full-width-responsive="true"
                 />
