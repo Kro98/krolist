@@ -70,7 +70,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-md p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border/50 rounded-xl sm:rounded-2xl">
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-md p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border/50 rounded-xl sm:rounded-2xl max-h-[calc(100dvh-2rem)]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
           <div className="flex-1 min-w-0">
@@ -78,7 +78,7 @@ export function InterstitialAd({ open, onClose, targetUrl, productTitle }: Inter
               {isArabic ? 'جاري نقلك إلى' : 'Redirecting you to'}
             </p>
             {productTitle && (
-              <p className="text-sm font-semibold text-foreground truncate mt-0.5">
+              <p className="text-sm font-semibold text-foreground line-clamp-2 mt-0.5">
                 {productTitle}
               </p>
             )}
