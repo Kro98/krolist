@@ -59,7 +59,7 @@ export const ArticleInlineAd = ({ className = '' }: ArticleInlineAdProps) => {
           className="adsbygoogle"
           style={{ display: isVisible ? 'block' : 'none', width: '100%', minHeight: 'clamp(50px, 15vw, 200px)' }}
           data-ad-client={slots.clientId}
-          data-ad-slot={slots.articleInlineSlot || undefined}
+          data-ad-slot={slots.articleInlineSlot || "4588888052"}
           data-ad-format="auto"
           data-full-width-responsive="true"
         />

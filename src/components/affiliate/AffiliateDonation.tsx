@@ -382,7 +382,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                         className="adsbygoogle"
                         style={{ display: adPushed.current ? 'block' : 'none', width: '100%', minHeight: 'clamp(200px, 40vw, 280px)' }}
                         data-ad-client={adSlots.clientId}
-                        data-ad-slot={adSlots.donationSlot || undefined}
+                        data-ad-slot={adSlots.donationSlot || "4588888052"}
                         data-ad-format="auto"
                         data-full-width-responsive="true"
                       />
