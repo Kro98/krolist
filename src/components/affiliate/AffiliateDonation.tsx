@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { X, Heart, Play, Copy, Check, ExternalLink, Gift, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -33,7 +33,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
   const [videoCountdown, setVideoCountdown] = useState(10);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [clickCount, setClickCount] = useState<number | null>(null);
-  const adPushed = useRef(false);
+  const [adPushed, setAdPushed] = useState(false);
 
   // Fetch support counter + real-time updates
   useEffect(() => {
@@ -117,22 +117,22 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
     setShowVideoSupport(true);
     setIsVideoPlaying(true);
     setVideoCountdown(10);
-    adPushed.current = false;
+    setAdPushed(false);
   };
 
   // Push ad when video support overlay opens
   useEffect(() => {
-    if (!showVideoSupport || adLoading || adPushed.current) return;
+    if (!showVideoSupport || adLoading || adPushed) return;
     const timer = setTimeout(() => {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
-        adPushed.current = true;
+        setAdPushed(true);
       } catch (e) {
         console.error('Donation AdSense error:', e);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [showVideoSupport, adLoading]);
+  }, [showVideoSupport, adLoading, adPushed]);
 
   const stagger = {
     animate: { transition: { staggerChildren: 0.06 } }
@@ -377,10 +377,10 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                       <div className="text-[9px] text-muted-foreground/40 text-center py-1 uppercase tracking-widest">
                         Ad
                       </div>
-                      {!adPushed.current && <AdSkeleton className="min-h-[clamp(200px,40vw,280px)]" />}
+                      {!adPushed && <AdSkeleton className="min-h-[clamp(200px,40vw,280px)]" />}
                       <ins
                         className="adsbygoogle"
-                        style={{ display: adPushed.current ? 'block' : 'none', width: '100%', minHeight: 'clamp(200px, 40vw, 280px)' }}
+                        style={{ display: adPushed ? 'block' : 'none', width: '100%', minHeight: 'clamp(200px, 40vw, 280px)' }}
                         data-ad-client={adSlots.clientId}
                         data-ad-slot={adSlots.donationSlot || "4588888052"}
                         data-ad-format="auto"
