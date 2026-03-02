@@ -46,10 +46,23 @@ export default function AffiliateMode() {
   const navigate = useNavigate();
   const sectionLocks = useSectionLocks();
   
+   const [products, setProducts] = useState<AffiliateProduct[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [searchQuery, setSearchQuery] = useState("");
+   const searchInputRef = useRef<HTMLInputElement>(null);
+
    // Secret admin access: tap logo 7 times
    const logoTapCount = useRef(0);
    const logoTapTimer = useRef<ReturnType<typeof setTimeout>>();
    const handleLogoTap = useCallback(async () => {
+     // If there's a search query, clear it and blur the input
+     if (searchQuery.trim()) {
+       setSearchQuery("");
+       searchInputRef.current?.blur();
+       logoTapCount.current = 0;
+       return;
+     }
+
      logoTapCount.current += 1;
      clearTimeout(logoTapTimer.current);
      if (logoTapCount.current >= 7) {
@@ -61,10 +74,7 @@ export default function AffiliateMode() {
       return;
     }
     logoTapTimer.current = setTimeout(() => { logoTapCount.current = 0; }, 2000);
-  }, [navigate]);
-  const [products, setProducts] = useState<AffiliateProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+   }, [navigate, searchQuery]);
   
   // Panel states
   const [showSettings, setShowSettings] = useState(false);
@@ -80,7 +90,6 @@ export default function AffiliateMode() {
   const [storeFilter, setStoreFilter] = useState<StoreFilter>(null);
   const [manualGridOverride, setManualGridOverride] = useState<number | null>(null);
   
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Responsive breakpoints for auto grid
   const isXl = useMediaQuery("(min-width: 1280px)");
