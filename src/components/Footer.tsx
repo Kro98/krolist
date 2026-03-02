@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Twitter, Gift, Tag, Sparkles, FileText, Calendar, Mail, Heart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import headerLogo from '@/assets/krolist-header-logo.png';
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -109,7 +110,7 @@ export function Footer({ hideQuickLinks = false }: FooterProps) {
                   alt="Krolist" 
                   className="w-8 h-8"
                 />
-                <span className="font-bold text-xl text-foreground">Krolist</span>
+                <img src={headerLogo} alt="Krolist" className="h-5 object-contain" />
               </div>
               
               {/* Made with love - visible on mobile next to logo */}
@@ -193,8 +194,8 @@ export function Footer({ hideQuickLinks = false }: FooterProps) {
 
         {/* Bottom section */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground text-center sm:text-left">
-            © {new Date().getFullYear()} Krolist. {isArabic ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
+          <p className="text-xs text-muted-foreground text-center sm:text-left flex items-center gap-1">
+            © {new Date().getFullYear()} <img src={headerLogo} alt="Krolist" className="h-3.5 object-contain inline-block" />. {isArabic ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
           </p>
           
           {/* Made with love - hidden on mobile, shown on desktop */}
