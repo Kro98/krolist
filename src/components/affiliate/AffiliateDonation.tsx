@@ -34,6 +34,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [clickCount, setClickCount] = useState<number | null>(null);
   const [adPushed, setAdPushed] = useState(false);
+  const [adKey, setAdKey] = useState(0);
 
   // Fetch support counter + real-time updates
   useEffect(() => {
@@ -125,6 +126,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
     setIsVideoPlaying(true);
     setVideoCountdown(10);
     setAdPushed(false);
+    setAdKey(prev => prev + 1);
   };
 
   // Push ad when video support overlay opens
@@ -386,6 +388,7 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
                       </div>
                       {!adPushed && <AdSkeleton className="min-h-[clamp(200px,40vw,280px)]" />}
                       <ins
+                        key={adKey}
                         className="adsbygoogle"
                         style={{ display: adPushed ? 'block' : 'none', width: '100%', minHeight: 'clamp(200px, 40vw, 280px)' }}
                         data-ad-client={adSlots.clientId}
