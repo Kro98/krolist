@@ -72,6 +72,13 @@ export function AffiliateDonation({ isOpen, onClose }: AffiliateDonationProps) {
       const timer = setTimeout(() => setVideoCountdown(videoCountdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
+      // Increment the global support counter
+      supabase
+        .from('global_counters')
+        .update({ counter_value: (clickCount ?? 0) + 1 })
+        .eq('counter_key', 'support_ad_clicks')
+        .then();
+
       confetti({
         particleCount: 100,
         spread: 70,
