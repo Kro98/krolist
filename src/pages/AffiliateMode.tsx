@@ -25,7 +25,7 @@ import { AffiliateInfoPage } from "@/components/affiliate/AffiliateInfoPage";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSectionLocks } from "@/hooks/useSectionLocks";
 import { PriceHistoryChart } from "@/components/article/PriceHistoryChart";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { InterstitialAd } from "@/components/affiliate/InterstitialAd";
 import { SiteBackground } from "@/components/SiteBackground";
 
