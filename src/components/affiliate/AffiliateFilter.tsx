@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { X, ArrowUpDown, Store, Tag } from "lucide-react";
+import { ArrowUpDown, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 
 export type SortOption = 'newest' | 'price-low' | 'price-high' | 'discount';
 export type StoreFilter = string | null;
@@ -28,8 +28,6 @@ export function AffiliateFilter({
   const { language } = useLanguage();
   const isArabic = language === 'ar';
 
-  if (!isOpen) return null;
-
   const sortOptions: { value: SortOption; label: string; labelAr: string }[] = [
     { value: 'newest', label: 'Newest First', labelAr: 'الأحدث أولاً' },
     { value: 'price-low', label: 'Price: Low to High', labelAr: 'السعر: من الأقل للأعلى' },
@@ -38,36 +36,13 @@ export function AffiliateFilter({
   ];
 
   return (
-    <div 
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
-      onClick={onClose}
-    >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      
-      {/* Filter Panel */}
-      <div 
-        className={cn(
-          "relative w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl overflow-hidden",
-          "bg-background/90 backdrop-blur-2xl backdrop-saturate-150",
-          "border-t sm:border border-white/20 dark:border-white/10",
-          "shadow-2xl",
-          "animate-in slide-in-from-bottom duration-300"
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border/50">
-          <h2 className="text-lg font-semibold">
+    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>
             {isArabic ? 'تصفية وترتيب' : 'Filter & Sort'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-muted/50 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          </DrawerTitle>
+        </DrawerHeader>
 
         {/* Content */}
         <div className="p-4 space-y-6 max-h-[60vh] overflow-y-auto">
@@ -137,7 +112,7 @@ export function AffiliateFilter({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border/50 flex gap-3">
+        <DrawerFooter className="flex-row gap-3 pb-8">
           <button
             onClick={() => {
               onSortChange('newest');
@@ -153,8 +128,8 @@ export function AffiliateFilter({
           >
             {isArabic ? 'تطبيق' : 'Apply'}
           </button>
-        </div>
-      </div>
-    </div>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
