@@ -3,7 +3,7 @@ import { ExternalLink, TrendingDown, TrendingUp, History, ChevronDown, ChevronUp
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { KrolistProduct } from '@/types/article';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/lib/currencyConversion';
@@ -176,18 +176,20 @@ export const ArticleProductCard = ({
 
       {/* Modal Chart (for non-inline mode) */}
       {!showInlineChart && (
-        <Dialog open={showChart} onOpenChange={setShowChart}>
-          <DialogContent className="max-w-2xl p-0 overflow-hidden">
-            <PriceHistoryChart
-              productId={product.id}
-              productTitle={product.title}
-              currentPrice={product.current_price}
-              originalPrice={product.original_price}
-              currency={product.currency}
-              onClose={() => setShowChart(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        <Drawer open={showChart} onOpenChange={setShowChart}>
+          <DrawerContent className="max-h-[85vh]">
+            <div className="p-4 overflow-y-auto">
+              <PriceHistoryChart
+                productId={product.id}
+                productTitle={product.title}
+                currentPrice={product.current_price}
+                originalPrice={product.original_price}
+                currency={product.currency}
+                onClose={() => setShowChart(false)}
+              />
+            </div>
+          </DrawerContent>
+        </Drawer>
       )}
     </>
   );
