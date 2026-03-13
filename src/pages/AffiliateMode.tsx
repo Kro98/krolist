@@ -615,21 +615,23 @@ export default function AffiliateMode() {
         )}
       </main>
 
-      {/* Price History Modal */}
-      <Dialog open={!!priceHistoryProduct} onOpenChange={(open) => !open && setPriceHistoryProduct(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          {priceHistoryProduct && (
-            <PriceHistoryChart
-              productId={priceHistoryProduct.id}
-              productTitle={priceHistoryProduct.title}
-              currentPrice={priceHistoryProduct.current_price}
-              originalPrice={priceHistoryProduct.original_price}
-              currency={priceHistoryProduct.currency}
-              onClose={() => setPriceHistoryProduct(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Price History Bottom Sheet */}
+      <Drawer open={!!priceHistoryProduct} onOpenChange={(open) => !open && setPriceHistoryProduct(null)}>
+        <DrawerContent className="max-h-[85vh]">
+          <div className="p-4 overflow-y-auto">
+            {priceHistoryProduct && (
+              <PriceHistoryChart
+                productId={priceHistoryProduct.id}
+                productTitle={priceHistoryProduct.title}
+                currentPrice={priceHistoryProduct.current_price}
+                originalPrice={priceHistoryProduct.original_price}
+                currency={priceHistoryProduct.currency}
+                onClose={() => setPriceHistoryProduct(null)}
+              />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       {/* Floating Dock - without filter */}
       <AffiliateDock 
