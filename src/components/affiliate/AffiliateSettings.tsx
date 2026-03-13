@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, Globe, Grid3X3, Check } from "lucide-react";
+import { Globe, Grid3X3, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 interface AffiliateSettingsProps {
   isOpen: boolean;
@@ -36,8 +37,6 @@ export function AffiliateSettings({
     setLanguage(lang);
   };
 
-  if (!isOpen) return null;
-
   const gridOptions = [
     { cols: 2, label: '2×2' },
     { cols: 3, label: '3×3' },
@@ -47,36 +46,13 @@ export function AffiliateSettings({
   ];
 
   return (
-    <div 
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
-      onClick={onClose}
-    >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      
-      {/* Settings Panel */}
-      <div 
-        className={cn(
-          "relative w-full max-w-sm rounded-2xl overflow-hidden",
-          "bg-background/80 backdrop-blur-2xl backdrop-saturate-150",
-          "border border-white/20 dark:border-white/10",
-          "shadow-2xl",
-          "animate-in slide-in-from-bottom-4 duration-300"
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border/50">
-          <h2 className="text-lg font-semibold">
+    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>
             {isArabic ? 'الإعدادات' : 'Settings'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-muted/50 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          </DrawerTitle>
+        </DrawerHeader>
 
         {/* Content */}
         <div className="p-4 space-y-6">
@@ -170,14 +146,14 @@ export function AffiliateSettings({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border/50">
+        <div className="p-4 pb-8 border-t border-border/50">
           <p className="text-xs text-muted-foreground text-center">
             {isArabic 
               ? 'يتم حفظ الإعدادات محليًا على جهازك'
               : 'Settings are saved locally on your device'}
           </p>
         </div>
-      </div>
-    </div>
+      </DrawerContent>
+    </Drawer>
   );
 }
