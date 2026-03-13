@@ -3,7 +3,7 @@ import { ExternalLink, TrendingDown, TrendingUp, History, ChevronDown, ChevronUp
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { KrolistProduct } from '@/types/article';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/lib/currencyConversion';
