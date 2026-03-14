@@ -1169,7 +1169,7 @@ export default function KrolistProductsManager() {
                 </Button>
               </div>
             </div>
-          </DialogHeader>
+          </DrawerHeader>
           
           {/* Auto-update Progress Banner */}
           {autoUpdateProgress && (
