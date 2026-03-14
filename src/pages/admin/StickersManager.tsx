@@ -576,17 +576,18 @@ export default function StickersManager() {
             </div>
           )}
 
-          <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
-            <DialogTrigger asChild>
+          <Drawer open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
+            <DrawerTrigger asChild>
               <Button variant="outline">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Sticker Settings</DialogTitle>
-              </DialogHeader>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Sticker Settings</DrawerTitle>
+              </DrawerHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
               <div className="space-y-6 pt-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
