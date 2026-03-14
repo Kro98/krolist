@@ -1108,7 +1108,7 @@ export default function KrolistProductsManager() {
 
           <div className="relative px-6 py-4 border-t border-muted/30 bg-muted/20">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
-            <DialogFooter className="relative gap-2 sm:gap-2">
+            <DrawerFooter className="relative gap-2 sm:gap-2 flex-row justify-end p-0">
               <Button variant="ghost" onClick={() => setShowDialog(false)} className="hover:bg-muted/50">
                 {t('cancel')}
               </Button>
@@ -1118,10 +1118,10 @@ export default function KrolistProductsManager() {
               >
                 {editingProduct ? 'Update Product' : 'Add Product'}
               </Button>
-            </DialogFooter>
+            </DrawerFooter>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
       {/* Manual Price Update Dialog */}
       <Dialog open={showManualPriceDialog} onOpenChange={(open) => {
