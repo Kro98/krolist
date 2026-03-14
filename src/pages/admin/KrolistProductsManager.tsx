@@ -1123,8 +1123,8 @@ export default function KrolistProductsManager() {
         </DrawerContent>
       </Drawer>
 
-      {/* Manual Price Update Dialog */}
-      <Dialog open={showManualPriceDialog} onOpenChange={(open) => {
+      {/* Manual Price Update Drawer */}
+      <Drawer open={showManualPriceDialog} onOpenChange={(open) => {
         if (!open && isAutoUpdating) {
           toast({
             title: 'Auto-update in progress',
@@ -1135,11 +1135,11 @@ export default function KrolistProductsManager() {
         }
         setShowManualPriceDialog(open);
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DrawerContent className="max-h-[90vh] overflow-hidden flex flex-col">
+          <DrawerHeader className="pb-2">
             <div className="flex items-start justify-between">
               <div>
-                <DialogTitle>Manual Price Update</DialogTitle>
+                <DrawerTitle>Manual Price Update</DrawerTitle>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button 
