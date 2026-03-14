@@ -320,8 +320,9 @@ export default function PromoCodesManager() {
               </div>
             ))}
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

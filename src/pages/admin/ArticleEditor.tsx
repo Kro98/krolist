@@ -194,28 +194,30 @@ const ArticleEditor = () => {
                   <Copy className="w-4 h-4 mr-1" />
                   Duplicate
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                <Drawer>
+                  <DrawerTrigger asChild>
                     <Button variant="outline" size="sm" className="text-destructive">
                       <Trash2 className="w-4 h-4 mr-1" />
                       Delete
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Article?</AlertDialogTitle>
-                      <AlertDialogDescription>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>Delete Article?</DrawerTitle>
+                      <DrawerDescription>
                         This action cannot be undone. This will permanently delete the article and all its content.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <DrawerFooter>
+                      <Button onClick={handleDelete} variant="destructive">
                         Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                      </Button>
+                      <DrawerClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </DrawerContent>
+                </Drawer>
               </>
             )}
             <Button onClick={handleSave} disabled={isSaving}>

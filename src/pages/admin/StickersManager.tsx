@@ -896,8 +896,9 @@ export default function StickersManager() {
                   </Button>
                 </div>
               </form>
-            </DialogContent>
-          </Dialog>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
 

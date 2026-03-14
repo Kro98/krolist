@@ -214,30 +214,32 @@ const ArticlesManager = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                      <Drawer>
+                        <DrawerTrigger asChild>
                           <Button variant="ghost" size="icon">
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete "{article.title_en}"?</AlertDialogTitle>
-                            <AlertDialogDescription>
+                        </DrawerTrigger>
+                        <DrawerContent>
+                          <DrawerHeader>
+                            <DrawerTitle>Delete "{article.title_en}"?</DrawerTitle>
+                            <DrawerDescription>
                               This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
+                            </DrawerDescription>
+                          </DrawerHeader>
+                          <DrawerFooter>
+                            <Button 
                               onClick={() => handleDelete(article.id)}
-                              className="bg-destructive text-destructive-foreground"
+                              variant="destructive"
                             >
                               Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                            </Button>
+                            <DrawerClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DrawerClose>
+                          </DrawerFooter>
+                        </DrawerContent>
+                      </Drawer>
                     </div>
                   </div>
                 </CardContent>

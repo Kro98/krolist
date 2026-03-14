@@ -1450,16 +1450,16 @@ export default function KrolistProductsManager() {
             </div>
           </div>
 
-          <DialogFooter className="mt-4">
+          <DrawerFooter className="flex-row justify-end">
             <Button variant="outline" onClick={() => setShowManualPriceDialog(false)}>
               Cancel
             </Button>
             <Button onClick={handleSaveManualPrices}>
               Update Prices
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       {/* Progress indicator for refresh */}
       {showRefreshProgress && (

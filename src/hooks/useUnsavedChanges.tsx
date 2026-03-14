@@ -27,31 +27,31 @@ export function useUnsavedChanges(isDirty: boolean) {
     if (!pendingPath) return null;
 
     return (
-      <AlertDialog open>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Drawer open onOpenChange={(open) => { if (!open) setPendingPath(null); }}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Unsaved Changes</DrawerTitle>
+            <DrawerDescription>
               You have unsaved changes that will be lost if you leave this page. Are you sure you want to continue?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingPath(null)}>
-              Stay on Page
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <Button
+              variant="destructive"
               onClick={() => {
                 const path = pendingPath;
                 setPendingPath(null);
                 window.location.href = path;
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Leave Page
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+            <Button variant="outline" onClick={() => setPendingPath(null)}>
+              Stay on Page
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     );
   }, [pendingPath]);
 
