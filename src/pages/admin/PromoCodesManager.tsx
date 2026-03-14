@@ -200,8 +200,9 @@ export default function PromoCodesManager() {
                 onCancel={() => setDialogOpen(false)}
                 isEditing={!!editingCode}
               />
-            </DialogContent>
-          </Dialog>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
 
