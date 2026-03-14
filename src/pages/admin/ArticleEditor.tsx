@@ -24,17 +24,7 @@ import {
 } from '@/hooks/useArticleAdmin';
 import { Article, ArticleBlock } from '@/types/article';
 import { useAdminRole } from '@/hooks/useAdminRole';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const ArticleEditor = () => {
   const { id } = useParams<{ id: string }>();
