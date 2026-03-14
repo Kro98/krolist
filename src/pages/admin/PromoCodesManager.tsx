@@ -184,14 +184,15 @@ export default function PromoCodesManager() {
             <Eye className="h-4 w-4 mr-2" />
             Preview Cards
           </Button>
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
+          <Drawer open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+            <DrawerTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" />Add Code</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingCode ? 'Edit Promo Code' : 'New Promo Code'}</DialogTitle>
-              </DialogHeader>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>{editingCode ? 'Edit Promo Code' : 'New Promo Code'}</DrawerTitle>
+              </DrawerHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
               <PromoCodeForm
                 formData={formData}
                 setFormData={setFormData}
