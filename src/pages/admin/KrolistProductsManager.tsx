@@ -860,13 +860,13 @@ export default function KrolistProductsManager() {
         </div>
       )}
 
-      {/* Add/Edit Product Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
-          <div className="relative px-6 pt-6 pb-4 border-b border-muted/30">
+      {/* Add/Edit Product Drawer */}
+      <Drawer open={showDialog} onOpenChange={setShowDialog}>
+        <DrawerContent className="max-h-[90vh] flex flex-col overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
+          <div className="relative px-6 pt-2 pb-4 border-b border-muted/30">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5" />
-            <DialogHeader className="relative">
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            <DrawerHeader className="relative p-0">
+              <DrawerTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 {editingProduct ? t('admin.editProduct') : t('admin.addProduct')}
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-1">
