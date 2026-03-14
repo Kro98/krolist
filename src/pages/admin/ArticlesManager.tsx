@@ -12,17 +12,7 @@ import { toast } from 'sonner';
 import { useAdminArticles, useDeleteArticle, useSaveArticle } from '@/hooks/useArticleAdmin';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const ArticlesManager = () => {
   const navigate = useNavigate();
