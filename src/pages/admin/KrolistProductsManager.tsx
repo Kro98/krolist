@@ -868,7 +868,7 @@ export default function KrolistProductsManager() {
             <DrawerHeader className="relative p-0">
               <DrawerTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 {editingProduct ? t('admin.editProduct') : t('admin.addProduct')}
-              </DialogTitle>
+              </DrawerTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {editingProduct ? 'Update product details and pricing' : 'Add a new featured product'}
               </p>
