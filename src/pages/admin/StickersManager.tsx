@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -576,17 +576,18 @@ export default function StickersManager() {
             </div>
           )}
 
-          <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
-            <DialogTrigger asChild>
+          <Drawer open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
+            <DrawerTrigger asChild>
               <Button variant="outline">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Sticker Settings</DialogTitle>
-              </DialogHeader>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Sticker Settings</DrawerTitle>
+              </DrawerHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
               <div className="space-y-6 pt-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
@@ -708,23 +709,25 @@ export default function StickersManager() {
                   Save Settings
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+              </div>
+            </DrawerContent>
+          </Drawer>
           
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
+          <Drawer open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) resetForm();
           }}>
-            <DialogTrigger asChild>
+            <DrawerTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Sticker
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingSticker ? 'Edit Sticker' : 'Add New Sticker'}</DialogTitle>
-              </DialogHeader>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>{editingSticker ? 'Edit Sticker' : 'Add New Sticker'}</DrawerTitle>
+              </DrawerHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
               <form onSubmit={handleSubmit} className="space-y-4 pt-4">
                 {/* Auto-generated SKU display */}
                 <div className="bg-muted/50 p-3 rounded-lg border">
@@ -893,8 +896,9 @@ export default function StickersManager() {
                   </Button>
                 </div>
               </form>
-            </DialogContent>
-          </Dialog>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
 

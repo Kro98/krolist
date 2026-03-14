@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -860,19 +860,19 @@ export default function KrolistProductsManager() {
         </div>
       )}
 
-      {/* Add/Edit Product Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
-          <div className="relative px-6 pt-6 pb-4 border-b border-muted/30">
+      {/* Add/Edit Product Drawer */}
+      <Drawer open={showDialog} onOpenChange={setShowDialog}>
+        <DrawerContent className="max-h-[90vh] flex flex-col overflow-hidden p-0 gap-0 bg-gradient-to-br from-background via-background to-muted/30 border-muted/50">
+          <div className="relative px-6 pt-2 pb-4 border-b border-muted/30">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5" />
-            <DialogHeader className="relative">
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            <DrawerHeader className="relative p-0">
+              <DrawerTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 {editingProduct ? t('admin.editProduct') : t('admin.addProduct')}
-              </DialogTitle>
+              </DrawerTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {editingProduct ? 'Update product details and pricing' : 'Add a new featured product'}
               </p>
-            </DialogHeader>
+            </DrawerHeader>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto p-6">
@@ -1108,7 +1108,7 @@ export default function KrolistProductsManager() {
 
           <div className="relative px-6 py-4 border-t border-muted/30 bg-muted/20">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
-            <DialogFooter className="relative gap-2 sm:gap-2">
+            <DrawerFooter className="relative gap-2 sm:gap-2 flex-row justify-end p-0">
               <Button variant="ghost" onClick={() => setShowDialog(false)} className="hover:bg-muted/50">
                 {t('cancel')}
               </Button>
@@ -1118,13 +1118,13 @@ export default function KrolistProductsManager() {
               >
                 {editingProduct ? 'Update Product' : 'Add Product'}
               </Button>
-            </DialogFooter>
+            </DrawerFooter>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
-      {/* Manual Price Update Dialog */}
-      <Dialog open={showManualPriceDialog} onOpenChange={(open) => {
+      {/* Manual Price Update Drawer */}
+      <Drawer open={showManualPriceDialog} onOpenChange={(open) => {
         if (!open && isAutoUpdating) {
           toast({
             title: 'Auto-update in progress',
@@ -1135,11 +1135,11 @@ export default function KrolistProductsManager() {
         }
         setShowManualPriceDialog(open);
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DrawerContent className="max-h-[90vh] overflow-hidden flex flex-col">
+          <DrawerHeader className="pb-2">
             <div className="flex items-start justify-between">
               <div>
-                <DialogTitle>Manual Price Update</DialogTitle>
+                <DrawerTitle>Manual Price Update</DrawerTitle>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button 
@@ -1169,7 +1169,7 @@ export default function KrolistProductsManager() {
                 </Button>
               </div>
             </div>
-          </DialogHeader>
+          </DrawerHeader>
           
           {/* Auto-update Progress Banner */}
           {autoUpdateProgress && (
@@ -1450,16 +1450,16 @@ export default function KrolistProductsManager() {
             </div>
           </div>
 
-          <DialogFooter className="mt-4">
+          <DrawerFooter className="flex-row justify-end">
             <Button variant="outline" onClick={() => setShowManualPriceDialog(false)}>
               Cancel
             </Button>
             <Button onClick={handleSaveManualPrices}>
               Update Prices
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       {/* Progress indicator for refresh */}
       {showRefreshProgress && (

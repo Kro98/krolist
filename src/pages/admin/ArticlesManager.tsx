@@ -12,17 +12,7 @@ import { toast } from 'sonner';
 import { useAdminArticles, useDeleteArticle, useSaveArticle } from '@/hooks/useArticleAdmin';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const ArticlesManager = () => {
   const navigate = useNavigate();
@@ -224,30 +214,32 @@ const ArticlesManager = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                      <Drawer>
+                        <DrawerTrigger asChild>
                           <Button variant="ghost" size="icon">
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete "{article.title_en}"?</AlertDialogTitle>
-                            <AlertDialogDescription>
+                        </DrawerTrigger>
+                        <DrawerContent>
+                          <DrawerHeader>
+                            <DrawerTitle>Delete "{article.title_en}"?</DrawerTitle>
+                            <DrawerDescription>
                               This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
+                            </DrawerDescription>
+                          </DrawerHeader>
+                          <DrawerFooter>
+                            <Button 
                               onClick={() => handleDelete(article.id)}
-                              className="bg-destructive text-destructive-foreground"
+                              variant="destructive"
                             >
                               Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                            </Button>
+                            <DrawerClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DrawerClose>
+                          </DrawerFooter>
+                        </DrawerContent>
+                      </Drawer>
                     </div>
                   </div>
                 </CardContent>

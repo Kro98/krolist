@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -184,14 +184,15 @@ export default function PromoCodesManager() {
             <Eye className="h-4 w-4 mr-2" />
             Preview Cards
           </Button>
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
+          <Drawer open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+            <DrawerTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" />Add Code</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingCode ? 'Edit Promo Code' : 'New Promo Code'}</DialogTitle>
-              </DialogHeader>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>{editingCode ? 'Edit Promo Code' : 'New Promo Code'}</DrawerTitle>
+              </DrawerHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
               <PromoCodeForm
                 formData={formData}
                 setFormData={setFormData}
@@ -199,8 +200,9 @@ export default function PromoCodesManager() {
                 onCancel={() => setDialogOpen(false)}
                 isEditing={!!editingCode}
               />
-            </DialogContent>
-          </Dialog>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
 
@@ -279,12 +281,13 @@ export default function PromoCodesManager() {
         </CardContent>
       </Card>
 
-      {/* Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Affiliate Panel Preview</DialogTitle>
-          </DialogHeader>
+      {/* Preview Drawer */}
+      <Drawer open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Affiliate Panel Preview</DrawerTitle>
+          </DrawerHeader>
+          <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
           <p className="text-sm text-muted-foreground mb-3">This is how active codes appear to visitors.</p>
           <div className="grid grid-cols-2 gap-2">
             {codes.filter(c => !isExpired(c.expires)).length === 0 && (
@@ -317,8 +320,9 @@ export default function PromoCodesManager() {
               </div>
             ))}
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
