@@ -872,7 +872,7 @@ export default function KrolistProductsManager() {
               <p className="text-sm text-muted-foreground mt-1">
                 {editingProduct ? 'Update product details and pricing' : 'Add a new featured product'}
               </p>
-            </DialogHeader>
+            </DrawerHeader>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto p-6">
