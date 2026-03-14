@@ -281,12 +281,13 @@ export default function PromoCodesManager() {
         </CardContent>
       </Card>
 
-      {/* Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Affiliate Panel Preview</DialogTitle>
-          </DialogHeader>
+      {/* Preview Drawer */}
+      <Drawer open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Affiliate Panel Preview</DrawerTitle>
+          </DrawerHeader>
+          <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
           <p className="text-sm text-muted-foreground mb-3">This is how active codes appear to visitors.</p>
           <div className="grid grid-cols-2 gap-2">
             {codes.filter(c => !isExpired(c.expires)).length === 0 && (
