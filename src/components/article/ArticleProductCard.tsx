@@ -28,6 +28,15 @@ export const ArticleProductCard = ({
   const [imageError, setImageError] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [chartExpanded, setChartExpanded] = useState(false);
+  const [magnifierEnabled, setMagnifierEnabled] = useState(
+    () => localStorage.getItem('imageMagnifierEnabled') !== 'false'
+  );
+
+  useEffect(() => {
+    const handler = () => setMagnifierEnabled(localStorage.getItem('imageMagnifierEnabled') !== 'false');
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
   
   const priceChange = product.original_price - product.current_price;
   const priceChangePercent = product.original_price > 0 
