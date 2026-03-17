@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 interface ImageMagnifierProps {
@@ -11,12 +12,18 @@ interface ImageMagnifierProps {
 
 export function ImageMagnifier({ src, alt, className, children, enabled = true }: ImageMagnifierProps) {
   const [show, setShow] = useState(false);
+  const [rect, setRect] = useState<DOMRect | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const handleMouseEnter = useCallback(() => {
-    if (!enabled) return;
-    timeoutRef.current = setTimeout(() => setShow(true), 200);
+    if (!enabled || !containerRef.current) return;
+    timeoutRef.current = setTimeout(() => {
+      if (containerRef.current) {
+        setRect(containerRef.current.getBoundingClientRect());
+        setShow(true);
+      }
+    }, 200);
   }, [enabled]);
 
   const handleMouseLeave = useCallback(() => {
@@ -24,7 +31,7 @@ export function ImageMagnifier({ src, alt, className, children, enabled = true }
     setShow(false);
   }, []);
 
-  if (!enabled) return <>{children}</>;
+  if (!enabled) return <div className={className}>{children}</div>;
 
   return (
     <div
@@ -35,12 +42,15 @@ export function ImageMagnifier({ src, alt, className, children, enabled = true }
     >
       {children}
 
-      {show && src && (
+      {show && src && rect && createPortal(
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] pointer-events-none animate-in fade-in-0 zoom-in-95 duration-150"
+          className="fixed z-[9999] pointer-events-none animate-in fade-in-0 zoom-in-95 duration-150"
           style={{
-            width: '200%',
-            height: '200%',
+            left: rect.left + rect.width / 2,
+            top: rect.top + rect.height / 2,
+            width: rect.width * 2,
+            height: rect.height * 2,
+            transform: 'translate(-50%, -50%)',
           }}
         >
           <img
@@ -49,7 +59,8 @@ export function ImageMagnifier({ src, alt, className, children, enabled = true }
             className="w-full h-full object-contain bg-background/95 backdrop-blur-sm shadow-2xl shadow-black/30 rounded-lg"
             draggable={false}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
