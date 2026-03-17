@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLink, TrendingDown, TrendingUp, History, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { KrolistProduct } from '@/types/article';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/lib/currencyConversion';
 import { PriceHistoryChart } from './PriceHistoryChart';
+import { ImageMagnifier } from '@/components/ui/ImageMagnifier';
 import { cn } from '@/lib/utils';
 
 interface ArticleProductCardProps {
