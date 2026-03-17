@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLink, TrendingDown, TrendingUp, History, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { KrolistProduct } from '@/types/article';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/lib/currencyConversion';
 import { PriceHistoryChart } from './PriceHistoryChart';
+import { ImageMagnifier } from '@/components/ui/ImageMagnifier';
 import { cn } from '@/lib/utils';
 
 interface ArticleProductCardProps {
@@ -27,6 +28,15 @@ export const ArticleProductCard = ({
   const [imageError, setImageError] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [chartExpanded, setChartExpanded] = useState(false);
+  const [magnifierEnabled, setMagnifierEnabled] = useState(
+    () => localStorage.getItem('imageMagnifierEnabled') !== 'false'
+  );
+
+  useEffect(() => {
+    const handler = () => setMagnifierEnabled(localStorage.getItem('imageMagnifierEnabled') !== 'false');
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
   
   const priceChange = product.original_price - product.current_price;
   const priceChangePercent = product.original_price > 0 
@@ -63,7 +73,12 @@ export const ArticleProductCard = ({
         <CardContent className="p-0">
           <div className="flex flex-col sm:flex-row">
             {/* Product Image */}
-            <div className="relative w-full sm:w-40 h-40 sm:h-auto flex-shrink-0 bg-muted/50 overflow-hidden">
+            <ImageMagnifier
+              src={product.image_url || ''}
+              alt={product.title}
+              enabled={magnifierEnabled && !!product.image_url && !imageError}
+              className="relative w-full sm:w-40 h-40 sm:h-auto flex-shrink-0 bg-muted/50 overflow-hidden"
+            >
               {product.image_url && !imageError ? (
                 <img
                   src={product.image_url}
@@ -91,7 +106,7 @@ export const ArticleProductCard = ({
                   {Math.abs(Number(priceChangePercent))}%
                 </Badge>
               )}
-            </div>
+            </ImageMagnifier>
             
             {/* Product Info */}
             <div className="flex-1 p-4 flex flex-col justify-between">

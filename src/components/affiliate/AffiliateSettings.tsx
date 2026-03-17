@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Globe, Grid3X3, Check } from "lucide-react";
+import { Globe, Grid3X3, Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Switch } from "@/components/ui/switch";
 
 interface AffiliateSettingsProps {
   isOpen: boolean;
@@ -143,6 +144,31 @@ export function AffiliateSettings({
               </p>
             </div>
           )}
+
+          {/* Image Magnifier Toggle */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Search className="w-4 h-4" />
+              {isArabic ? 'عدسة مكبرة للصور' : 'Image Magnifier'}
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">
+                  {isArabic ? 'تكبير صورة المنتج عند التمرير' : 'Magnify product image on hover'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {isArabic ? 'يظهر عرض مكبر للصورة عند تمرير الماوس' : 'Shows a magnified view when hovering over images'}
+                </p>
+              </div>
+              <Switch
+                checked={localStorage.getItem('imageMagnifierEnabled') !== 'false'}
+                onCheckedChange={(checked) => {
+                  localStorage.setItem('imageMagnifierEnabled', checked.toString());
+                  window.dispatchEvent(new Event('storage'));
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
