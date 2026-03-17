@@ -73,7 +73,12 @@ export const ArticleProductCard = ({
         <CardContent className="p-0">
           <div className="flex flex-col sm:flex-row">
             {/* Product Image */}
-            <div className="relative w-full sm:w-40 h-40 sm:h-auto flex-shrink-0 bg-muted/50 overflow-hidden">
+            <ImageMagnifier
+              src={product.image_url || ''}
+              alt={product.title}
+              enabled={magnifierEnabled && !!product.image_url && !imageError}
+              className="relative w-full sm:w-40 h-40 sm:h-auto flex-shrink-0 bg-muted/50 overflow-hidden"
+            >
               {product.image_url && !imageError ? (
                 <img
                   src={product.image_url}
@@ -101,7 +106,7 @@ export const ArticleProductCard = ({
                   {Math.abs(Number(priceChangePercent))}%
                 </Badge>
               )}
-            </div>
+            </ImageMagnifier>
             
             {/* Product Info */}
             <div className="flex-1 p-4 flex flex-col justify-between">
