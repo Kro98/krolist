@@ -143,6 +143,8 @@ export function AffiliateSettings({
                   : 'Layout auto-adjusts based on screen size'}
               </p>
             </div>
+          )}
+
           {/* Image Magnifier Toggle */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
