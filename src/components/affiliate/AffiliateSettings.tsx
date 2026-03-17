@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Globe, Grid3X3, Check } from "lucide-react";
+import { Globe, Grid3X3, Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Switch } from "@/components/ui/switch";
 
 interface AffiliateSettingsProps {
   isOpen: boolean;
