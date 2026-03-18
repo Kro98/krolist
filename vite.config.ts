@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "robots.txt"],
+      includeAssets: ["favicon.png", "robots.txt", "app-icon.svg"],
       manifest: {
         name: "Krolist - Gifts and Cool Stuff",
         short_name: "Krolist",
@@ -27,6 +27,12 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         icons: [
           {
+            src: "/app-icon.svg",
+            sizes: "any",
+            type: "image/svg+xml",
+            purpose: "any maskable",
+          },
+          {
             src: "/pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
@@ -35,12 +41,6 @@ export default defineConfig(({ mode }) => ({
             src: "/pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
-          },
-          {
-            src: "/pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
           },
         ],
       },
