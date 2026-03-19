@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { TrendingDown, TrendingUp, Minus, X, Loader2, Calendar } from 'lucide-react';
+import { TrendingDown, TrendingUp, Minus, X, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/lib/currencyConversion';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,7 +57,7 @@ export const PriceHistoryChart = ({
         // Calculate date range
         let startDate: Date | null = null;
         const now = new Date();
-        
+
         switch (timeRange) {
           case '7d':
             startDate = subDays(now, 7);
@@ -97,8 +98,11 @@ export const PriceHistoryChart = ({
         }));
 
         // Add current price if no recent data
-        if (chartData.length === 0 || (chartData.length > 0 && 
-            new Date(chartData[chartData.length - 1].date).getTime() < now.getTime() - 86400000)) {
+        if (
+          chartData.length === 0 ||
+          (chartData.length > 0 &&
+            new Date(chartData[chartData.length - 1].date).getTime() < now.getTime() - 86400000)
+        ) {
           chartData.push({
             date: now.toISOString(),
             price: currentPrice,
@@ -124,7 +128,7 @@ export const PriceHistoryChart = ({
 
         // Calculate stats
         if (chartData.length > 0) {
-          const prices = chartData.map(d => d.price);
+          const prices = chartData.map((d) => d.price);
           const lowestPrice = Math.min(...prices);
           const highestPrice = Math.max(...prices);
           const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
@@ -161,10 +165,10 @@ export const PriceHistoryChart = ({
             }),
           },
         ]);
-        
+
         const priceChange = currentPrice - originalPrice;
         const priceChangePercent = originalPrice > 0 ? (priceChange / originalPrice) * 100 : 0;
-        
+
         setStats({
           lowestPrice: Math.min(originalPrice, currentPrice),
           highestPrice: Math.max(originalPrice, currentPrice),
@@ -219,9 +223,9 @@ export const PriceHistoryChart = ({
   const getGradientColor = () => {
     if (!stats) return { stroke: 'hsl(var(--primary))', fill: 'hsl(var(--primary))' };
     if (stats.priceChange < 0) {
-      return { stroke: '#10b981', fill: '#10b981' }; // emerald
+      return { stroke: '#10b981', fill: '#10b981' };
     } else if (stats.priceChange > 0) {
-      return { stroke: '#ef4444', fill: '#ef4444' }; // red
+      return { stroke: '#ef4444', fill: '#ef4444' };
     }
     return { stroke: 'hsl(var(--primary))', fill: 'hsl(var(--primary))' };
   };
@@ -250,9 +254,8 @@ export const PriceHistoryChart = ({
           </Button>
         </div>
 
-        {/* Time range selector */}
         <div className="flex gap-1 mt-4">
-          {timeRanges.map(range => (
+          {timeRanges.map((range) => (
             <Button
               key={range.value}
               variant={timeRange === range.value ? 'default' : 'outline'}
@@ -266,17 +269,50 @@ export const PriceHistoryChart = ({
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="min-h-[22rem]">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-48">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-            <p className="text-sm text-muted-foreground">
-              {isArabic ? 'جاري تحميل البيانات...' : 'Loading price data...'}
-            </p>
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="bg-muted/50 rounded-lg p-3 space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              ))}
+            </div>
+
+            <div className="relative h-48 w-full overflow-hidden rounded-xl border border-border/50 bg-muted/30 p-4">
+              <div className="absolute inset-x-4 top-4 flex justify-between opacity-70">
+                <Skeleton className="h-28 w-8" />
+                <Skeleton className="h-28 w-8" />
+              </div>
+              <div className="absolute inset-x-6 bottom-10 top-8">
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-muted/70 to-transparent" />
+                <div className="absolute inset-x-0 bottom-8 h-px border-t border-dashed border-border/60" />
+                <Skeleton className="absolute bottom-6 left-[4%] h-20 w-[14%] rounded-full" />
+                <Skeleton className="absolute bottom-10 left-[20%] h-14 w-[14%] rounded-full" />
+                <Skeleton className="absolute bottom-8 left-[36%] h-24 w-[14%] rounded-full" />
+                <Skeleton className="absolute bottom-14 left-[52%] h-16 w-[14%] rounded-full" />
+                <Skeleton className="absolute bottom-12 left-[68%] h-28 w-[14%] rounded-full" />
+                <Skeleton className="absolute bottom-16 right-[4%] h-12 w-[10%] rounded-full" />
+              </div>
+              <div className="absolute inset-x-4 bottom-3 flex justify-between">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Skeleton key={index} className="h-3 w-10" />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="h-9 w-28 rounded-md" />
+            </div>
           </div>
         ) : (
           <>
-            {/* Stats Cards */}
             {stats && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 <div className="bg-muted/50 rounded-lg p-3">
@@ -309,11 +345,16 @@ export const PriceHistoryChart = ({
                   </p>
                   <div className="flex items-center gap-1">
                     {getPriceChangeIcon()}
-                    <p className={cn(
-                      "text-sm font-bold",
-                      stats.priceChange < 0 ? "text-emerald-500" : 
-                      stats.priceChange > 0 ? "text-red-500" : "text-muted-foreground"
-                    )}>
+                    <p
+                      className={cn(
+                        'text-sm font-bold',
+                        stats.priceChange < 0
+                          ? 'text-emerald-500'
+                          : stats.priceChange > 0
+                            ? 'text-red-500'
+                            : 'text-muted-foreground'
+                      )}
+                    >
                       {stats.priceChangePercent.toFixed(1)}%
                     </p>
                   </div>
@@ -321,13 +362,9 @@ export const PriceHistoryChart = ({
               </div>
             )}
 
-            {/* Chart */}
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={priceData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                >
+                <AreaChart data={priceData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={gradientColors.fill} stopOpacity={0.3} />
@@ -371,7 +408,6 @@ export const PriceHistoryChart = ({
               </ResponsiveContainer>
             </div>
 
-            {/* Current price indicator */}
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="w-4 h-4" />
