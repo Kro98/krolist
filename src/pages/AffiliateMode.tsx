@@ -310,6 +310,12 @@ export default function AffiliateMode() {
         onClose={() => setShowInfoPage(false)}
       />
 
+      {/* Notification Panel */}
+      <NotificationPanel
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
+
       {/* Header */}
       <header
         className="sticky top-0 z-50 h-16 flex items-center justify-between border-b px-4 transition-all"
@@ -349,15 +355,18 @@ export default function AffiliateMode() {
         <button onClick={handleLogoTap} className="flex items-center gap-2" type="button">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
         </button>
-        <button
-          onClick={() => setShowInfoPage(true)}
-          className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center",
-            "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-          )}
-        >
-          <Info className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <NotificationBell onClick={() => setShowNotifications(true)} unreadCount={unreadNotifCount} />
+          <button
+            onClick={() => setShowInfoPage(true)}
+            className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center",
+              "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            )}
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
