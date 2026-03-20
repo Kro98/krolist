@@ -28,6 +28,7 @@ import { PriceHistoryChart } from "@/components/article/PriceHistoryChart";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { InterstitialAd } from "@/components/affiliate/InterstitialAd";
 import { SiteBackground } from "@/components/SiteBackground";
+import { NotificationPanel, NotificationBell, useNotificationCount } from "@/components/affiliate/NotificationPanel";
 
 interface AffiliateProduct {
   id: string;
