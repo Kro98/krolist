@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, ShoppingBag, Info, Newspaper, Sparkles, SlidersHorizontal, History } from "lucide-react";
+import { Search, ExternalLink, ShoppingBag, Info, Newspaper, Sparkles, SlidersHorizontal, History, Bell } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import { PriceHistoryChart } from "@/components/article/PriceHistoryChart";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { InterstitialAd } from "@/components/affiliate/InterstitialAd";
 import { SiteBackground } from "@/components/SiteBackground";
+import { NotificationPanel, NotificationBell, useNotificationCount } from "@/components/affiliate/NotificationPanel";
 
 interface AffiliateProduct {
   id: string;
@@ -81,6 +82,19 @@ export default function AffiliateMode() {
   const [showDonation, setShowDonation] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showInfoPage, setShowInfoPage] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  
+  // Notifications data for unread count
+  const [notifData, setNotifData] = useState<Array<{ id: string; created_at: string }>>([]);
+  useEffect(() => {
+    supabase
+      .from("global_notifications")
+      .select("id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => { if (data) setNotifData(data as any); });
+  }, []);
+  const unreadNotifCount = useNotificationCount(notifData as any);
   
   // Price history state
   const [priceHistoryProduct, setPriceHistoryProduct] = useState<AffiliateProduct | null>(null);
@@ -296,6 +310,12 @@ export default function AffiliateMode() {
         onClose={() => setShowInfoPage(false)}
       />
 
+      {/* Notification Panel */}
+      <NotificationPanel
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
+
       {/* Header */}
       <header
         className="sticky top-0 z-50 h-16 flex items-center justify-between border-b px-4 transition-all"
@@ -335,15 +355,18 @@ export default function AffiliateMode() {
         <button onClick={handleLogoTap} className="flex items-center gap-2" type="button">
           <img src={krolistLogo} alt="Krolist" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
         </button>
-        <button
-          onClick={() => setShowInfoPage(true)}
-          className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center",
-            "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-          )}
-        >
-          <Info className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <NotificationBell onClick={() => setShowNotifications(true)} unreadCount={unreadNotifCount} />
+          <button
+            onClick={() => setShowInfoPage(true)}
+            className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center",
+              "bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            )}
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
