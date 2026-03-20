@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, ShoppingBag, Info, Newspaper, Sparkles, SlidersHorizontal, History } from "lucide-react";
+import { Search, ExternalLink, ShoppingBag, Info, Newspaper, Sparkles, SlidersHorizontal, History, Bell } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
