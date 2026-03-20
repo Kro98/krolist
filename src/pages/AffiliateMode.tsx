@@ -82,6 +82,19 @@ export default function AffiliateMode() {
   const [showDonation, setShowDonation] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showInfoPage, setShowInfoPage] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  
+  // Notifications data for unread count
+  const [notifData, setNotifData] = useState<Array<{ id: string; created_at: string }>>([]);
+  useEffect(() => {
+    supabase
+      .from("global_notifications")
+      .select("id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => { if (data) setNotifData(data as any); });
+  }, []);
+  const unreadNotifCount = useNotificationCount(notifData as any);
   
   // Price history state
   const [priceHistoryProduct, setPriceHistoryProduct] = useState<AffiliateProduct | null>(null);
