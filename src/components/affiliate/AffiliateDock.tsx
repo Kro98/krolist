@@ -118,7 +118,7 @@ export function AffiliateDock({
               onClick={item.onClick}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-1 sm:gap-1.5",
-                "px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl",
+                "w-[4.5rem] sm:w-20 md:w-24 py-2 sm:py-3 rounded-xl sm:rounded-2xl",
                 item.bgClass,
                 item.colorClass,
                 "transition-all duration-300 ease-out",
