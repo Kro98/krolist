@@ -53,3 +53,6 @@ verify_jwt = true
 
 [functions.prerender]
 verify_jwt = false
+
+[functions.amazon-suggest]
+verify_jwt = false
