@@ -44,8 +44,11 @@ const App = () => (
                   <Routes>
                     {/* Default: Affiliate Mode */}
                     <Route path="/" element={<AffiliateMode />} />
+                    <Route path="/search" element={<SearchPage />} />
                     <Route path="/products" element={<Navigate to="/" replace />} />
                     <Route path="/affiliate" element={<Navigate to="/" replace />} />
+
+                    <Route path="/search-products" element={<Navigate to="/search" replace />} />
 
                     {/* Articles & Stickers in affiliate shell */}
                     <Route path="/articles" element={
