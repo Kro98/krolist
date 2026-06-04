@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GuestAuthProvider } from "@/contexts/GuestAuthContext";
 import AffiliateMode from "./pages/AffiliateMode";
+import SearchPage from "./pages/Search";
 import Articles from "./pages/Articles";
 import Article from "./pages/Article";
 import Stickers from "./pages/Stickers";
