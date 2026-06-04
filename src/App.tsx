@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GuestAuthProvider } from "@/contexts/GuestAuthContext";
 import AffiliateMode from "./pages/AffiliateMode";
+import SearchPage from "./pages/Search";
 import Articles from "./pages/Articles";
 import Article from "./pages/Article";
 import Stickers from "./pages/Stickers";
@@ -43,8 +44,11 @@ const App = () => (
                   <Routes>
                     {/* Default: Affiliate Mode */}
                     <Route path="/" element={<AffiliateMode />} />
+                    <Route path="/search" element={<SearchPage />} />
                     <Route path="/products" element={<Navigate to="/" replace />} />
                     <Route path="/affiliate" element={<Navigate to="/" replace />} />
+
+                    <Route path="/search-products" element={<Navigate to="/search" replace />} />
 
                     {/* Articles & Stickers in affiliate shell */}
                     <Route path="/articles" element={
@@ -76,14 +80,14 @@ const App = () => (
                     {/* Legacy 301 redirects for SEO preservation */}
                     <Route path="/events" element={<Navigate to="/" replace />} />
                     <Route path="/analytics" element={<Navigate to="/" replace />} />
-                    <Route path="/search-products" element={<Navigate to="/" replace />} />
+                    <Route path="/how-to-use-search" element={<Navigate to="/search" replace />} />
                     <Route path="/categories" element={<Navigate to="/" replace />} />
                     <Route path="/category/:categoryId" element={<Navigate to="/" replace />} />
                     <Route path="/my-orders" element={<Navigate to="/" replace />} />
                     <Route path="/donation" element={<Navigate to="/" replace />} />
                     <Route path="/promo-codes" element={<Navigate to="/" replace />} />
                     <Route path="/settings" element={<Navigate to="/" replace />} />
-                    <Route path="/how-to-use-search" element={<Navigate to="/" replace />} />
+                    
 
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />
