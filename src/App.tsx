@@ -80,7 +80,7 @@ const App = () => (
                     {/* Legacy 301 redirects for SEO preservation */}
                     <Route path="/events" element={<Navigate to="/" replace />} />
                     <Route path="/analytics" element={<Navigate to="/" replace />} />
-                    <Route path="/search-products" element={<Navigate to="/" replace />} />
+                    <Route path="/how-to-use-search" element={<Navigate to="/search" replace />} />
                     <Route path="/categories" element={<Navigate to="/" replace />} />
                     <Route path="/category/:categoryId" element={<Navigate to="/" replace />} />
                     <Route path="/my-orders" element={<Navigate to="/" replace />} />
