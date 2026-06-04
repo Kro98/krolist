@@ -117,20 +117,15 @@ export default function SearchPage() {
     debounceRef.current = window.setTimeout(async () => {
       const reqId = ++reqIdRef.current;
       try {
-        const { data, error } = await supabase.functions.invoke("amazon-suggest", {
-          body: null,
-          method: "GET",
-          // @ts-expect-error – functions-js supports a query option
-          query: { q, market: "sa" },
-        });
+        const url = `https://cnmdwgdizfrvyplllmdn.supabase.co/functions/v1/amazon-suggest?q=${encodeURIComponent(q)}&market=sa`;
+        const resp = await fetch(url);
         if (reqId !== reqIdRef.current) return;
-        if (error) {
+        if (!resp.ok) {
           setSuggestions([]);
           return;
         }
-        const list: string[] = Array.isArray((data as any)?.suggestions)
-          ? (data as any).suggestions
-          : [];
+        const data = await resp.json();
+        const list: string[] = Array.isArray(data?.suggestions) ? data.suggestions : [];
         setSuggestions(list.slice(0, 8));
       } catch {
         if (reqId === reqIdRef.current) setSuggestions([]);
