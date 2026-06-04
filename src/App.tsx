@@ -87,7 +87,7 @@ const App = () => (
                     <Route path="/donation" element={<Navigate to="/" replace />} />
                     <Route path="/promo-codes" element={<Navigate to="/" replace />} />
                     <Route path="/settings" element={<Navigate to="/" replace />} />
-                    <Route path="/how-to-use-search" element={<Navigate to="/" replace />} />
+                    
 
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />
