@@ -1474,6 +1474,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_global_counter: { Args: { _key: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"
