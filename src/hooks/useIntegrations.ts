@@ -8,20 +8,17 @@ export interface ServiceIntegration {
   category: string;
   is_enabled: boolean;
   config: Record<string, any>;
-  secret_keys: string[];
-  description: string | null;
   icon_url: string | null;
-  docs_url: string | null;
+  secret_keys?: string[];
+  description?: string | null;
+  docs_url?: string | null;
 }
 
 export function useIntegrations() {
   const { data: integrations = [], isLoading, refetch } = useQuery({
     queryKey: ["service-integrations"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("service_integrations")
-        .select("*")
-        .order("category, service_name");
+      const { data, error } = await supabase.rpc('get_public_integrations');
       if (error) throw error;
       return (data || []) as ServiceIntegration[];
     },

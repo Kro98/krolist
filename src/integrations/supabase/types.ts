@@ -1466,6 +1466,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_integrations: {
+        Args: never
+        Returns: {
+          category: string
+          config: Json
+          icon_url: string
+          id: string
+          is_enabled: boolean
+          service_key: string
+          service_name: string
+        }[]
+      }
       get_user_product_stats: { Args: { user_uuid: string }; Returns: Json }
       has_role: {
         Args: {
@@ -1474,6 +1486,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_global_counter: { Args: { _key: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"

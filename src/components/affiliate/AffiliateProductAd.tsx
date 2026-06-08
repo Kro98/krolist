@@ -64,10 +64,7 @@ export function AffiliateProductAd({ className }: AffiliateProductAdProps) {
 
   const handleAdClick = useCallback(async () => {
     if (clickCount === null) return;
-    await supabase
-      .from('global_counters')
-      .update({ counter_value: clickCount + 1, updated_at: new Date().toISOString() })
-      .eq('counter_key', 'support_ad_clicks');
+    await supabase.rpc('increment_global_counter', { _key: 'support_ad_clicks' });
   }, [clickCount]);
 
   useEffect(() => {
