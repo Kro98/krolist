@@ -8,10 +8,10 @@ export interface ServiceIntegration {
   category: string;
   is_enabled: boolean;
   config: Record<string, any>;
-  secret_keys: string[];
-  description: string | null;
   icon_url: string | null;
-  docs_url: string | null;
+  secret_keys?: string[];
+  description?: string | null;
+  docs_url?: string | null;
 }
 
 export function useIntegrations() {
