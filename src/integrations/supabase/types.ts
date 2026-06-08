@@ -1463,38 +1463,21 @@ export type Database = {
       }
     }
     Views: {
-      public_integrations: {
-        Row: {
-          category: string | null
-          config: Json | null
-          icon_url: string | null
-          id: string | null
-          is_enabled: boolean | null
-          service_key: string | null
-          service_name: string | null
-        }
-        Insert: {
-          category?: string | null
-          config?: Json | null
-          icon_url?: string | null
-          id?: string | null
-          is_enabled?: boolean | null
-          service_key?: string | null
-          service_name?: string | null
-        }
-        Update: {
-          category?: string | null
-          config?: Json | null
-          icon_url?: string | null
-          id?: string | null
-          is_enabled?: boolean | null
-          service_key?: string | null
-          service_name?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_public_integrations: {
+        Args: never
+        Returns: {
+          category: string
+          config: Json
+          icon_url: string
+          id: string
+          is_enabled: boolean
+          service_key: string
+          service_name: string
+        }[]
+      }
       get_user_product_stats: { Args: { user_uuid: string }; Returns: Json }
       has_role: {
         Args: {
